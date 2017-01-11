@@ -1,0 +1,615 @@
+1	0	Option Explicit
+2	1	Option Compare Database   'Use database order for string comparisons
+3	0	
+4	0	Private Sub Category_AfterUpdate()
+5	0	
+6	0	Select Case Me.Category
+7	0	
+8	0	Case "cut"
+9	1	    'descr
+10	0	    Me![Exca: Subform Layer descr].Visible = False
+11	0	    Me![Exca: Subform Cut descr].Visible = True
+12	1	    'data
+13	0	    Me![Exca: Unit Data Categories CLUSTER subform].Visible = False
+14	0	    Me![Exca: Unit Data Categories LAYER subform].Visible = False
+15	0	    
+16	0	    Me![Exca: Unit Data Categories CUT subform].Visible = True
+17	0	    Me![Exca: Unit Data Categories CUT subform]![Data Category] = "cut"
+18	1	        'the rest need to be blank
+19	0	    Me![Exca: Unit Data Categories CUT subform]![In Situ] = ""
+20	0	    Me![Exca: Unit Data Categories CUT subform]![Location] = ""
+21	0	    Me![Exca: Unit Data Categories CUT subform]![Description] = ""
+22	0	    Me![Exca: Unit Data Categories CUT subform]![Material] = ""
+23	0	    Me![Exca: Unit Data Categories CUT subform]![Deposition] = ""
+24	0	    Me![Exca: Unit Data Categories CUT subform]![basal spit] = ""
+25	0	    Me.Refresh
+26	0	    
+27	1	    'skelli
+28	0	    Me![Exca: subform Skeleton Sheet].Visible = False
+29	0	    Me![subform Unit: stratigraphy  same as].Visible = True
+30	0	    Me![Exca: subform Skeletons same as].Visible = False
+31	0	
+32	0	Case "layer"
+33	1	    'descr
+34	0	    Me![Exca: Subform Layer descr].Visible = True
+35	0	    Me![Exca: Subform Cut descr].Visible = False
+36	1	    'data
+37	0	    Me![Exca: Unit Data Categories CUT subform].Visible = False
+38	0	    Me![Exca: Unit Data Categories CLUSTER subform].Visible = False
+39	0	    
+40	0	    Me![Exca: Unit Data Categories LAYER subform].Visible = True
+41	0	    Me![Exca: Unit Data Categories LAYER subform]![Data Category] = ""
+42	1	        'the rest need to be blank
+43	0	    Me![Exca: Unit Data Categories LAYER subform]![In Situ] = ""
+44	0	    Me![Exca: Unit Data Categories LAYER subform]![Location] = ""
+45	0	    Me![Exca: Unit Data Categories LAYER subform]![Description] = ""
+46	0	    Me![Exca: Unit Data Categories LAYER subform]![Material] = ""
+47	0	    Me![Exca: Unit Data Categories LAYER subform]![Deposition] = ""
+48	0	    Me![Exca: Unit Data Categories LAYER subform]![basal spit] = ""
+49	0	    Me.Refresh
+50	0	    
+51	0	    
+52	1	    'skelli
+53	0	    Me![Exca: subform Skeleton Sheet].Visible = False
+54	0	    Me![subform Unit: stratigraphy  same as].Visible = True
+55	0	    Me![Exca: subform Skeletons same as].Visible = False
+56	0	    
+57	0	Case "cluster"
+58	1	    'descr
+59	0	    Me![Exca: Subform Layer descr].Visible = True
+60	0	    Me![Exca: Subform Cut descr].Visible = False
+61	1	    'data
+62	0	    Me![Exca: Unit Data Categories CUT subform].Visible = False
+63	0	    Me![Exca: Unit Data Categories LAYER subform].Visible = False
+64	0	    
+65	0	    Me![Exca: Unit Data Categories CLUSTER subform].Visible = True
+66	0	    Me![Exca: Unit Data Categories CLUSTER subform]![Data Category] = "cluster"
+67	1	        'the rest need to be blank
+68	0	    Me![Exca: Unit Data Categories CLUSTER subform]![In Situ] = ""
+69	0	    Me![Exca: Unit Data Categories CLUSTER subform]![Location] = ""
+70	0	    Me![Exca: Unit Data Categories CLUSTER subform]![Description] = ""
+71	0	    Me![Exca: Unit Data Categories CLUSTER subform]![Material] = ""
+72	0	    Me![Exca: Unit Data Categories CLUSTER subform]![Deposition] = ""
+73	0	    Me![Exca: Unit Data Categories CLUSTER subform]![basal spit] = ""
+74	0	    Me.Refresh
+75	0	        
+76	1	    'skelli
+77	0	    Me![Exca: subform Skeleton Sheet].Visible = False
+78	0	    Me![subform Unit: stratigraphy  same as].Visible = True
+79	0	    Me![Exca: subform Skeletons same as].Visible = False
+80	0	
+81	0	Case "skeleton"
+82	1	    'data
+83	0	    Me![Exca: Unit Data Categories CUT subform].Visible = False
+84	0	    Me![Exca: Unit Data Categories CLUSTER subform].Visible = False
+85	0	    Me![Exca: Unit Data Categories LAYER subform].Visible = False
+86	0	    
+87	0	    Me![Exca: Unit Data Categories SKELL subform]![Data Category] = "skeleton"
+88	1	    'the rest need to be blank
+89	0	    Me![Exca: Unit Data Categories SKELL subform]![In Situ] = ""
+90	0	    Me![Exca: Unit Data Categories SKELL subform]![Location] = ""
+91	0	    Me![Exca: Unit Data Categories SKELL subform]![Description] = ""
+92	0	    Me![Exca: Unit Data Categories SKELL subform]![Material] = ""
+93	0	    Me![Exca: Unit Data Categories SKELL subform]![Deposition] = ""
+94	0	    Me![Exca: Unit Data Categories SKELL subform]![basal spit] = ""
+95	0	        
+96	0	    Me.Refresh
+97	0	    
+98	1	    'skelli
+99	0	    Me![Exca: subform Skeleton Sheet].Visible = True
+100	0	    Me![subform Unit: stratigraphy  same as].Visible = False
+101	0	    Me![Exca: Subform Layer descr].Visible = False
+102	0	    Me![Exca: Subform Cut descr].Visible = False
+103	0	    Me![Exca: subform Skeletons same as].Visible = True
+104	0	
+105	0	End Select
+106	0	
+107	0	End Sub
+108	0	
+109	0	Private Sub copy_method_Click()
+110	0	On Error GoTo Err_copy_method_Click
+111	0	
+112	0	    Dim stDocName As String
+113	0	    Dim stLinkCriteria As String
+114	0	
+115	0	    stDocName = "Exca: Copy unit methodology"
+116	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+117	0	
+118	0	Exit_copy_method_Click:
+119	0	    Exit Sub
+120	0	
+121	0	Err_copy_method_Click:
+122	0	    MsgBox Err.Description
+123	0	    Resume Exit_copy_method_Click
+124	0	    
+125	0	
+126	0	End Sub
+127	0	
+128	0	Private Sub cut_desc_Click()
+129	0	On Error GoTo Err_cut_desc_Click
+130	0	
+131	0	    Dim stDocName As String
+132	0	    Dim stLinkCriteria As String
+133	0	
+134	0	    stDocName = "Exca: Cut Display"
+135	0	    
+136	0	    stLinkCriteria = "[Unit Number]=" & Me![Unit number]
+137	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+138	0	
+139	0	Exit_cut_desc_Click:
+140	0	    Exit Sub
+141	0	
+142	0	Err_cut_desc_Click:
+143	0	    MsgBox Err.Description
+144	0	    Resume Exit_cut_desc_Click
+145	0	    
+146	0	End Sub
+147	0	
+148	0	Private Sub Excavation_Click()
+149	0	On Error GoTo Err_Excavation_Click
+150	0	
+151	0	    Dim stDocName As String
+152	0	    Dim stLinkCriteria As String
+153	0	
+154	0	    stDocName = "Excavation"
+155	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+156	0	    DoCmd.Close acForm, "Exca: Unit Sheet"
+157	0	    
+158	0	Exit_Excavation_Click:
+159	0	    Exit Sub
+160	0	
+161	0	Err_Excavation_Click:
+162	0	    MsgBox Err.Description
+163	0	    Resume Exit_Excavation_Click
+164	0	End Sub
+165	0	
+166	0	Sub find_unit_Click()
+167	0	On Error GoTo Err_find_unit_Click
+168	0	
+169	0	
+170	0	    Screen.PreviousControl.SetFocus
+171	0	    Unit_number.SetFocus
+172	0	    DoCmd.DoMenuItem acFormBar, acEditMenu, 10, , acMenuVer70
+173	0	
+174	0	Exit_find_unit_Click:
+175	0	    Exit Sub
+176	0	
+177	0	Err_find_unit_Click:
+178	0	    MsgBox Err.Description
+179	0	    Resume Exit_find_unit_Click
+180	0	    
+181	0	End Sub
+182	0	
+183	0	
+184	0	Private Sub Form_AfterInsert()
+185	0	Me![Date Changed] = Now()
+186	0	End Sub
+187	0	
+188	0	Private Sub Form_AfterUpdate()
+189	0	Me![Date Changed] = Now()
+190	0	
+191	0	End Sub
+192	0	
+193	0	Private Sub Form_BeforeUpdate(Cancel As Integer)
+194	0	Me![Date Changed] = Now()
+195	0	End Sub
+196	0	
+197	0	Private Sub Form_Current()
+198	0	Dim stDocName As String
+199	0	Dim stLinkCriteria As String
+200	0	    
+201	1	'restore all category forms
+202	0	Me![Exca: Unit Data Categories CUT subform].Visible = True
+203	0	Me![Exca: Unit Data Categories CLUSTER subform].Visible = True
+204	0	Me![Exca: Unit Data Categories LAYER subform].Visible = True
+205	0	    
+206	1	'define which form to show
+207	0	Select Case Me.Category
+208	0	
+209	0	Case "layer"
+210	1	    'descr
+211	0	    Me![layer desc].Visible = True
+212	0	    Me![cut desc].Visible = False
+213	0	    Me![skell desc].Visible = False
+214	0	    
+215	1	    'data
+216	0	    Me![Exca: Unit Data Categories CUT subform].Visible = False
+217	0	    Me![Exca: Unit Data Categories CLUSTER subform].Visible = False
+218	0	    Me![Exca: Unit Data Categories LAYER subform].Visible = True
+219	0	   
+220	0	    
+221	1	    'skelli
+222	1	    'Me![Exca: subform Skeleton Sheet].Visible = False
+223	0	    Me![subform Unit: stratigraphy  same as].Visible = True
+224	0	    Me![Exca: subform Skeletons same as].Visible = False
+225	0	
+226	0	Case "cut"
+227	1	    'descr
+228	1	    'Me![Exca: Subform Layer descr].Visible = False
+229	1	    'Me![Exca: Subform Cut descr].Visible = True
+230	0	    Me![layer desc].Visible = False
+231	0	    Me![cut desc].Visible = True
+232	0	    Me![skell desc].Visible = False
+233	0	    
+234	1	    'data
+235	0	    Me![Exca: Unit Data Categories CLUSTER subform].Visible = False
+236	0	    Me![Exca: Unit Data Categories LAYER subform].Visible = False
+237	0	    
+238	0	    Me![Exca: Unit Data Categories CUT subform].Visible = True
+239	0	    Me![Exca: Unit Data Categories CUT subform]![Data Category] = "cut"
+240	0	    Me.Refresh
+241	0	    
+242	1	    'skelli
+243	1	    'Me![Exca: subform Skeleton Sheet].Visible = False
+244	0	    Me![subform Unit: stratigraphy  same as].Visible = True
+245	0	    Me![Exca: subform Skeletons same as].Visible = False
+246	0	
+247	0	    
+248	0	Case "cluster"
+249	1	    'descr
+250	1	    'Me![Exca: Subform Layer descr].Visible = True
+251	1	    'Me![Exca: Subform Cut descr].Visible = False
+252	0	    Me![layer desc].Visible = True
+253	0	    Me![cut desc].Visible = False
+254	0	    Me![skell desc].Visible = False
+255	1	    'data
+256	0	    Me![Exca: Unit Data Categories CUT subform].Visible = False
+257	0	    Me![Exca: Unit Data Categories LAYER subform].Visible = False
+258	0	    
+259	0	    Me![Exca: Unit Data Categories CLUSTER subform].Visible = True
+260	0	    Me![Exca: Unit Data Categories CLUSTER subform]![Data Category] = "cluster"
+261	0	    Me.Refresh
+262	0	    
+263	1	    'skelli
+264	1	    'Me![Exca: subform Skeleton Sheet].Visible = False
+265	0	    Me![subform Unit: stratigraphy  same as].Visible = True
+266	0	    Me![Exca: subform Skeletons same as].Visible = False
+267	0	
+268	0	Case "skeleton"
+269	1	    'data
+270	0	    Me![Exca: Unit Data Categories CUT subform].Visible = False
+271	0	    Me![Exca: Unit Data Categories CLUSTER subform].Visible = False
+272	0	    Me![Exca: Unit Data Categories LAYER subform].Visible = False
+273	0	    Me![Exca: Unit Data Categories SKELL subform]![Data Category] = "skeleton"
+274	0	    Me.Refresh
+275	0	    
+276	1	    'desc
+277	0	    Me![layer desc].Visible = False
+278	0	    Me![cut desc].Visible = False
+279	0	    Me![skell desc].Visible = True
+280	0	    
+281	1	    'skelli
+282	1	    'Me![Exca: subform Skeleton Sheet].Visible = True
+283	0	    Me![subform Unit: stratigraphy  same as].Visible = False
+284	1	    'Me![Exca: Subform Layer descr].Visible = False
+285	1	    'Me![Exca: Subform Cut descr].Visible = False
+286	0	    Me![Exca: subform Skeletons same as].Visible = True
+287	0	
+288	0	Case Else
+289	1	'descr
+290	1	    'Me![Exca: Subform Layer descr].Visible = True
+291	1	    'Me![Exca: Subform Cut descr].Visible = False
+292	0	    Me![layer desc].Visible = True
+293	0	    Me![cut desc].Visible = False
+294	0	    Me![skell desc].Visible = False
+295	0	    
+296	1	    'data
+297	0	    Me![Exca: Unit Data Categories CUT subform].Visible = False
+298	0	    Me![Exca: Unit Data Categories CLUSTER subform].Visible = False
+299	0	    Me![Exca: Unit Data Categories LAYER subform].Visible = True
+300	1	    'skelli
+301	1	    'Me![Exca: subform Skeleton Sheet].Visible = False
+302	0	    Me![subform Unit: stratigraphy  same as].Visible = True
+303	0	    Me![Exca: subform Skeletons same as].Visible = False
+304	0	
+305	0	End Select
+306	0	
+307	0	End Sub
+308	0	
+309	0	
+310	0	Sub go_next_Click()
+311	0	On Error GoTo Err_go_next_Click
+312	0	
+313	0	
+314	0	    DoCmd.GoToRecord , , acNext
+315	0	
+316	0	Exit_go_next_Click:
+317	0	    Exit Sub
+318	0	
+319	0	Err_go_next_Click:
+320	0	    MsgBox Err.Description
+321	0	    Resume Exit_go_next_Click
+322	0	    
+323	0	End Sub
+324	0	
+325	0	
+326	0	Sub go_to_first_Click()
+327	0	On Error GoTo Err_go_to_first_Click
+328	0	
+329	0	
+330	0	    DoCmd.GoToRecord , , acFirst
+331	0	
+332	0	Exit_go_to_first_Click:
+333	0	    Exit Sub
+334	0	
+335	0	Err_go_to_first_Click:
+336	0	    MsgBox Err.Description
+337	0	    Resume Exit_go_to_first_Click
+338	0	    
+339	0	End Sub
+340	0	
+341	0	Sub go_to_last_Click()
+342	0	
+343	0	On Error GoTo Err_go_last_Click
+344	0	
+345	0	
+346	0	    DoCmd.GoToRecord , , acLast
+347	0	
+348	0	Exit_go_last_Click:
+349	0	    Exit Sub
+350	0	
+351	0	Err_go_last_Click:
+352	0	    MsgBox Err.Description
+353	0	    Resume Exit_go_last_Click
+354	0	    
+355	0	End Sub
+356	0	
+357	0	
+358	0	
+359	0	
+360	0	
+361	0	Sub go_previous2_Click()
+362	0	On Error GoTo Err_go_previous2_Click
+363	0	
+364	0	
+365	0	    DoCmd.GoToRecord , , acPrevious
+366	0	
+367	0	Exit_go_previous2_Click:
+368	0	    Exit Sub
+369	0	
+370	0	Err_go_previous2_Click:
+371	0	    MsgBox Err.Description
+372	0	    Resume Exit_go_previous2_Click
+373	0	    
+374	0	End Sub
+375	0	
+376	0	Private Sub Master_Control_Click()
+377	0	On Error GoTo Err_Master_Control_Click
+378	0	
+379	0	    Dim stDocName As String
+380	0	    Dim stLinkCriteria As String
+381	0	
+382	0	    stDocName = "Catal Data Entry"
+383	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+384	0	    DoCmd.Close acForm, "Exca: Unit Sheet"
+385	0	    
+386	0	Exit_Master_Control_Click:
+387	0	    Exit Sub
+388	0	
+389	0	Err_Master_Control_Click:
+390	0	    MsgBox Err.Description
+391	0	    Resume Exit_Master_Control_Click
+392	0	End Sub
+393	0	
+394	0	Sub New_entry_Click()
+395	0	On Error GoTo Err_New_entry_Click
+396	0	
+397	0	
+398	0	    DoCmd.GoToRecord , , acNewRec
+399	0	    Mound.SetFocus
+400	0	    
+401	0	Exit_New_entry_Click:
+402	0	    Exit Sub
+403	0	
+404	0	Err_New_entry_Click:
+405	0	    MsgBox Err.Description
+406	0	    Resume Exit_New_entry_Click
+407	0	    
+408	0	End Sub
+409	0	Sub interpretation_Click()
+410	0	On Error GoTo Err_interpretation_Click
+411	0	
+412	0	    Dim stDocName As String
+413	0	    Dim stLinkCriteria As String
+414	0	    
+415	1	    'refresh
+416	0	    DoCmd.DoMenuItem acFormBar, acRecordsMenu, 5, , acMenuVer70
+417	0	    
+418	1	    'go to form
+419	0	    stDocName = "Interpret: Unit Sheet"
+420	0	    
+421	0	    stLinkCriteria = "[Unit Number]=" & Me![Unit number]
+422	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+423	0	
+424	0	Exit_interpretation_Click:
+425	0	    Exit Sub
+426	0	
+427	0	Err_interpretation_Click:
+428	0	    MsgBox Err.Description
+429	0	    Resume Exit_interpretation_Click
+430	0	    
+431	0	End Sub
+432	0	Sub Command466_Click()
+433	0	On Error GoTo Err_Command466_Click
+434	0	
+435	0	
+436	0	    DoCmd.DoMenuItem acFormBar, acRecordsMenu, 5, , acMenuVer70
+437	0	
+438	0	Exit_Command466_Click:
+439	0	    Exit Sub
+440	0	
+441	0	Err_Command466_Click:
+442	0	    MsgBox Err.Description
+443	0	    Resume Exit_Command466_Click
+444	0	    
+445	0	End Sub
+446	0	Sub Open_priority_Click()
+447	0	On Error GoTo Err_Open_priority_Click
+448	0	
+449	0	    Dim stDocName As String
+450	0	    Dim stLinkCriteria As String
+451	0	
+452	0	    stDocName = "Exca: Priority Detail"
+453	0	    
+454	0	    stLinkCriteria = "[Unit Number]=" & Me![Unit number]
+455	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+456	0	
+457	0	Exit_Open_priority_Click:
+458	0	    Exit Sub
+459	0	
+460	0	Err_Open_priority_Click:
+461	0	    MsgBox Err.Description
+462	0	    Resume Exit_Open_priority_Click
+463	0	    
+464	0	End Sub
+465	0	Sub go_feature_Click()
+466	0	On Error GoTo Err_go_feature_Click
+467	0	
+468	0	    Dim stDocName As String
+469	0	    Dim stLinkCriteria As String
+470	0	
+471	0	    stDocName = "Exca: Feature Sheet"
+472	0	    
+473	0	    stLinkCriteria = "[Feature Number]=" & Forms![Exca: Unit Sheet]![Exca: subform Features for Units]![In_feature]
+474	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+475	0	
+476	0	Exit_go_feature_Click:
+477	0	    Exit Sub
+478	0	
+479	0	Err_go_feature_Click:
+480	0	    MsgBox Err.Description
+481	0	    Resume Exit_go_feature_Click
+482	0	    
+483	0	End Sub
+484	0	Sub Close_Click()
+485	0	On Error GoTo Err_close_Click
+486	0	
+487	0	
+488	0	    DoCmd.Close
+489	0	
+490	0	Exit_close_Click:
+491	0	    Exit Sub
+492	0	
+493	0	Err_close_Click:
+494	0	    MsgBox Err.Description
+495	0	    Resume Exit_close_Click
+496	0	    
+497	0	End Sub
+498	0	Sub open_copy_details_Click()
+499	0	On Error GoTo Err_open_copy_details_Click
+500	0	
+501	0	    Dim stDocName As String
+502	0	    Dim stLinkCriteria As String
+503	0	
+504	0	    stDocName = "Exca: Copy unit details form"
+505	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+506	0	
+507	0	Exit_open_copy_details_Click:
+508	0	    Exit Sub
+509	0	
+510	0	Err_open_copy_details_Click:
+511	0	    MsgBox Err.Description
+512	0	    Resume Exit_open_copy_details_Click
+513	0	    
+514	0	End Sub
+515	0	
+516	0	Private Sub skell_desc_Click()
+517	0	On Error GoTo Err_skell_desc_Click
+518	0	
+519	0	    Dim stDocName As String
+520	0	    Dim stLinkCriteria As String
+521	0	
+522	0	    stDocName = "Exca: Skeleton Display"
+523	0	    
+524	0	    stLinkCriteria = "[Unit Number]=" & Me![Unit number]
+525	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+526	0	
+527	0	Exit_skell_desc_Click:
+528	0	    Exit Sub
+529	0	
+530	0	Err_skell_desc_Click:
+531	0	    MsgBox Err.Description
+532	0	    Resume Exit_skell_desc_Click
+533	0	    
+534	0	End Sub
+535	0	
+536	0	Private Sub Unit_number_Exit(Cancel As Integer)
+537	0	On Error GoTo Err_Unit_number_Exit
+538	0	
+539	0	    Me.Refresh
+540	1	    'DoCmd.Save acTable, "Exca: Unit Sheet"
+541	0	    
+542	0	Exit_Unit_number_Exit:
+543	0	    Exit Sub
+544	0	
+545	0	Err_Unit_number_Exit:
+546	0	   
+547	1	    'MsgBox Err.Description
+548	0	    
+549	3	    'MsgBox "This unit already exists in the database. Use the 'Find' button to go to it.", vbOKOnly, "duplicate"
+550	0	    DoCmd.DoMenuItem acFormBar, acEditMenu, 0, , acMenuVer70
+551	0	    
+552	0	    Cancel = True
+553	0	        
+554	0	    Resume Exit_Unit_number_Exit
+555	0	End Sub
+556	0	
+557	0	
+558	0	Sub Command497_Click()
+559	0	On Error GoTo Err_Command497_Click
+560	0	
+561	0	    Dim stDocName As String
+562	0	    Dim stLinkCriteria As String
+563	0	
+564	0	    stDocName = "Exca: Skeleton Sheet"
+565	0	    
+566	0	    stLinkCriteria = "[Exca: Unit Sheet.Unit Number]=" & Me![Unit number]
+567	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+568	0	
+569	0	Exit_Command497_Click:
+570	0	    Exit Sub
+571	0	
+572	0	Err_Command497_Click:
+573	0	    MsgBox Err.Description
+574	0	    Resume Exit_Command497_Click
+575	0	    
+576	0	End Sub
+577	0	Sub go_skell_Click()
+578	0	On Error GoTo Err_go_skell_Click
+579	0	
+580	0	    Dim stDocName As String
+581	0	    Dim stLinkCriteria As String
+582	0	
+583	0	    stDocName = "Exca: Skeleton Sheet"
+584	0	    
+585	0	    stLinkCriteria = "[Unit Number]=" & Me![Unit number]
+586	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+587	0	
+588	0	Exit_go_skell_Click:
+589	0	    Exit Sub
+590	0	
+591	0	Err_go_skell_Click:
+592	0	    MsgBox Err.Description
+593	0	    Resume Exit_go_skell_Click
+594	0	    
+595	0	End Sub
+596	0	Private Sub layer_desc_Click()
+597	0	On Error GoTo Err_layer_desc_Click
+598	0	
+599	0	    Dim stDocName As String
+600	0	    Dim stLinkCriteria As String
+601	0	
+602	0	    stDocName = "Exca: Layer Display"
+603	0	    
+604	0	    stLinkCriteria = "[Unit Number]=" & Me![Unit number]
+605	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+606	0	
+607	0	Exit_layer_desc_Click:
+608	0	    Exit Sub
+609	0	
+610	0	Err_layer_desc_Click:
+611	0	    MsgBox Err.Description
+612	0	    Resume Exit_layer_desc_Click
+613	0	    
+614	0	End Sub
+615	0	

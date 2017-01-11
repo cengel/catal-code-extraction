@@ -1,0 +1,94 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	1	Dim Unit, Letter, findnum, currentCrate, idnum 'these vars will come in as openargs
+5	0	
+6	0	Private Sub cmdCancel_Click()
+7	1	'cancel operation - do nothing
+8	0	On Error GoTo err_cancel
+9	0	
+10	0	DoCmd.Close acForm, Me.Name
+11	0	
+12	0	Exit Sub
+13	0	
+14	0	err_cancel:
+15	0	    Call General_Error_Trap
+16	0	    Exit Sub
+17	0	End Sub
+18	0	
+19	0	Private Sub cmdOK_Click()
+20	1	'if user has selected a crate ask for confirmation and movethe object in the Units in Crates register
+21	1	'adding a record for the Finds Officer that this has been done
+22	0	On Error GoTo err_cmdOK
+23	0	
+24	0	    If Me![cboCrateNumber] <> "" Then
+25	0	        Dim Response
+26	0	        Response = MsgBox("Please confirm that the crate register should be updated with the following details: " & Chr(13) & Chr(13) & "Findnumber: " & Me![GID] & " moves from " & Me![txtOldCrate] & " to crate FG" & Me![cboCrateNumber], vbQuestion + vbOKCancel, "Confirm Action")
+27	0	        If Response = vbOK Then
+28	1	            'write to crate register
+29	0	            Dim sql
+30	0	             sql = "INSERT INTO [Store: Crate Movement by Teams] ([OriginalRowID], [Unit Number], [FindSampleLetter], [FindNumber], [MovedFromCrate], [MovedToCrate], [MovedBy], [MovedOn]) "
+31	4	             sql = sql & "SELECT [RowID] as OriginalRowID, [Unit number], [FindSampleLetter], [FindNumber], [CrateLetter] & [CrateNumber] as MovedFromCrate, 'FG" & Me![cboCrateNumber] & "' as MovedToCrate, 'Figurines Team', #" & Now & "# "
+32	0	             sql = sql & " FROM [Store: Units in Crates] "
+33	2	             sql = sql & " WHERE [Unit Number] = " & Unit & " AND [FindSampleLetter] = '" & Letter & "' AND [FindNumber] = " & findnum & ";"
+34	0	            DoCmd.RunSQL sql
+35	0	            
+36	4	            sql = "UPDATE [Store: Units in Crates] SET [CrateNumber] = " & Me![cboCrateNumber] & " WHERE [CrateLetter] = 'FG' AND [CrateNumber] = " & Replace(currentCrate, "FG", "") & " AND [Unit number] = " & Unit & " AND [FindSampleLetter] = '" & Letter & "' AND [FindNumber] = " & findnum & ";"
+37	0	            DoCmd.RunSQL sql
+38	0	            
+39	0	            Forms![Frm_MainData]![frm_subform_location].Requery
+40	0	            Forms![Frm_MainData]![frm_subform_location].Form.Refresh
+41	0	            
+42	0	            DoCmd.Close acForm, Me.Name
+43	0	            
+44	0	        End If
+45	0	    Else
+46	0	        MsgBox "No crate number selected", vbInformation, "Invalid Selection"
+47	0	        
+48	0	    End If
+49	0	
+50	0	Exit Sub
+51	0	
+52	0	err_cmdOK:
+53	0	    Call General_Error_Trap
+54	0	    Exit Sub
+55	0	End Sub
+56	0	
+57	0	Private Sub Form_Open(Cancel As Integer)
+58	1	'get open args. They will take this format
+59	1	'idnumber:currentcrate
+60	0	On Error GoTo err_open
+61	0	
+62	0	    If Not IsNull(Me.OpenArgs) Then
+63	0	        Dim getrest, arg
+64	0	        arg = Me.OpenArgs
+65	0	        Unit = Left(arg, InStr(arg, ".") - 1)
+66	0	        
+67	0	        Letter = Mid(arg, InStr(arg, ".") + 1, 1)
+68	0	        
+69	0	        findnum = Mid(arg, InStr(arg, ".") + 2, InStr(arg, ":") - (InStr(arg, ".") + 2))
+70	0	        
+71	3	        '''findnum = CInt(Right([ID number], Len([ID number]) - (InStr([ID number], ".") + 1)))
+72	1	        'getrest = Right(Me.OpenArgs, Len(Me.OpenArgs) - (InStr(Me.OpenArgs, ":")))
+73	0	        
+74	1	        'Letter = Left(getrest, InStr(getrest, ":") - 1)
+75	0	        
+76	1	        'getrest = Right(getrest, Len(getrest) - (InStr(getrest, ":")))
+77	1	        'findnum = Left(getrest, InStr(getrest, ":") - 1)
+78	1	        'currentCrate = Mid(getrest, InStr(getrest, ":") + 1)
+79	0	        currentCrate = Right(arg, Len(arg) - InStr(arg, ":"))
+80	0	        
+81	0	        Me![GID] = Unit & "." & Letter & findnum
+82	0	        Me![txtOldCrate] = currentCrate
+83	0	    Else
+84	0	        MsgBox "Form opened with incorrect parameters, it will now shut", vbInformation, "Invalid Call"
+85	0	        DoCmd.Close acForm, Me.Name
+86	0	        
+87	0	    End If
+88	0	
+89	0	Exit Sub
+90	0	
+91	0	err_open:
+92	0	    Call General_Error_Trap
+93	0	    Exit Sub
+94	0	End Sub

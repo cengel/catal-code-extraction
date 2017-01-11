@@ -1,0 +1,47 @@
+1	0	Option Compare Database
+2	0	
+3	0	Sub Command5_Click()
+4	0	On Error GoTo Err_Command5_Click
+5	0	
+6	0	Dim ComboBox As Control
+7	0	Set ComboBox = Forms![Bots98: Flot Sheet]![Cultural Context Code]
+8	0	ComboBox.Requery
+9	0	
+10	0	DoCmd.Close
+11	0	
+12	0	Exit_Command5_Click:
+13	0	    Exit Sub
+14	0	
+15	0	Err_Command5_Click:
+16	0	    MsgBox Err.Description
+17	0	    Resume Exit_Command5_Click
+18	0	    
+19	0	End Sub
+20	0	Sub Command6_Click()
+21	0	On Error GoTo Err_Command6_Click
+22	0	
+23	0	
+24	0	    DoCmd.DoMenuItem acFormBar, acRecordsMenu, 5, , acMenuVer70
+25	0	
+26	0	Exit_Command6_Click:
+27	0	    Exit Sub
+28	0	
+29	0	Err_Command6_Click:
+30	0	    MsgBox Err.Description
+31	0	    Resume Exit_Command6_Click
+32	0	    
+33	0	End Sub
+34	0	Sub Command7_Click()
+35	0	On Error GoTo Err_Command7_Click
+36	0	
+37	0	
+38	0	    DoCmd.DoMenuItem acFormBar, acRecordsMenu, 5, , acMenuVer70
+39	0	
+40	0	Exit_Command7_Click:
+41	0	    Exit Sub
+42	0	
+43	0	Err_Command7_Click:
+44	0	    MsgBox Err.Description
+45	0	    Resume Exit_Command7_Click
+46	0	    
+47	0	End Sub

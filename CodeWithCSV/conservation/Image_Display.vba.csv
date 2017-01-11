@@ -1,0 +1,108 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub Form_Current()
+5	1	'**********************************************************************
+6	1	' Display images within the image box - update image control with correct
+7	1	' path of image as user move through records
+8	1	' This will only work for locally networked machines
+9	1	' SAJ
+10	1	'**********************************************************************
+11	0	On Error GoTo err_current
+12	0	
+13	0	Dim newStr, newstr2, zeronum, FileName
+14	0	
+15	1	'path string are coming from Portfolio with : instead of \
+16	1	'obtain from view
+17	0	Dim mydb, rspath
+18	0	Set mydb = CurrentDb
+19	0	Set rspath = mydb.OpenRecordset("view_Portfolio_Preview_Path", dbOpenSnapshot)
+20	0	If rspath.BOF And rspath.EOF Then
+21	1	    'problem getting path this will not work
+22	0	    MsgBox "Path of previews cannot be located. Sorry the images cannot be viewed", vbInformation, "Preview Path Missing"
+23	0	    rspath.Close
+24	0	    Set rspath = Nothing
+25	0	    mydb.Close
+26	0	    Set mydb = Nothing
+27	0	    DoCmd.Close acForm, Me.Name
+28	0	Else
+29	0	    rspath.MoveFirst
+30	0	    If rspath!Path = "" Then
+31	1	        'problem getting path this will not work
+32	0	        MsgBox "Path of previews cannot be located. Sorry the images cannot be viewed", vbInformation, "Preview Path Missing"
+33	0	        rspath.Close
+34	0	        Set rspath = Nothing
+35	0	        mydb.Close
+36	0	        Set mydb = Nothing
+37	0	        DoCmd.Close acForm, Me.Name
+38	0	    Else
+39	0	    
+40	0	        newStr = Replace(rspath![Path], ":", "\")
+41	0	        rspath.Close
+42	0	        Set rspath = Nothing
+43	0	        mydb.Close
+44	0	        Set mydb = Nothing
+45	0	        
+46	1	        'plus the directory structure of the machine they were catalogued on
+47	1	        ' ImageLocationOnSite is global constant set in the module Globals-shared
+48	1	        'newstr2 = Replace(newStr, "besiktas\", ImageLocationOnSite)
+49	3	        ''line below doesn't seem necessary at present, replaced with newstr2 = newstr
+50	2	        ''newstr2 = Replace(newStr, "catal\", ImageLocationOnSite)
+51	0	        newstr2 = newStr
+52	0	
+53	1	        'MsgBox newstr2
+54	1	        '2009 solution now portfolio is putting previews in long tree of subdirectories which
+55	1	        'need unpicking from filename
+56	0	        Dim dirpath, breakid
+57	0	    
+58	0	        zeronum = 10 - (Len(Me![record_id]))
+59	0	        FileName = "p"
+60	1	                'Response.Write zeronum
+61	0	                Do While zeronum > 0
+62	0	                    FileName = FileName & "0"
+63	0	                    zeronum = zeronum - 1
+64	1	                    'Response.Write filename
+65	0	                Loop
+66	0	                        
+67	0	        FileName = FileName & Me![record_id]
+68	0	    
+69	0	        breakid = Left(FileName, 3)
+70	1	        breakid = Mid(FileName, 2, 2) 'chop off leading p
+71	0	        dirpath = breakid & "\"
+72	0	        
+73	0	        breakid = Mid(FileName, 4, 2)
+74	0	        dirpath = dirpath & breakid & "\"
+75	0	        
+76	0	        breakid = Mid(FileName, 6, 2)
+77	0	        dirpath = dirpath & breakid & "\"
+78	0	        
+79	0	        breakid = Mid(FileName, 8, 2)
+80	0	        dirpath = dirpath & breakid & "\"
+81	0	        
+82	1	        'breakid = Mid(FileName, 10, 2)
+83	1	        'dirpath = dirpath & breakid & "\"
+84	0	        newstr2 = newstr2 & "\" & dirpath & FileName & ".jpg"
+85	0	        Me!txtFullPath = newstr2
+86	0	        Me!Image145.Picture = newstr2
+87	0	
+88	0	
+89	1	        'Me!Image145.Picture = newstr2
+90	0	    End If
+91	0	End If
+92	0	Exit Sub
+93	0	err_current:
+94	0	    If Err.Number = 2220 Then
+95	1	        'this is the error thrown if file not found
+96	1	        'first check if dir exists
+97	0	        If Dir(newstr2) = "" Then
+98	1	            'directory not exist
+99	0	            MsgBox "The directory where images are supposed to be stored cannot be found. Please contact the database administrator"
+100	0	        Else
+101	0	            MsgBox "The image file cannot be found - check the file exists"
+102	0	            DoCmd.GoToControl "txtSketch"
+103	0	        End If
+104	0	    Else
+105	0	        Call General_Error_Trap
+106	0	    End If
+107	0	    Exit Sub
+108	0	End Sub

@@ -1,0 +1,132 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Sub first_Click()
+5	0	On Error GoTo Err_first_Click
+6	0	
+7	0	
+8	0	    DoCmd.GoToRecord , , acFirst
+9	0	
+10	0	Exit_first_Click:
+11	0	    Exit Sub
+12	0	
+13	0	Err_first_Click:
+14	0	    MsgBox Err.Description
+15	0	    Resume Exit_first_Click
+16	0	    
+17	0	End Sub
+18	0	
+19	0	Private Sub Form_Current()
+20	0	
+21	0	If Me![Finds: Basic Data.GID] <> "" Then
+22	0	Me![finds].Enabled = True
+23	0	Else
+24	0	Me![finds].Enabled = False
+25	0	End If
+26	0	
+27	0	End Sub
+28	0	
+29	0	Sub prev_Click()
+30	0	On Error GoTo Err_prev_Click
+31	0	
+32	0	
+33	0	    DoCmd.GoToRecord , , acPrevious
+34	0	
+35	0	Exit_prev_Click:
+36	0	    Exit Sub
+37	0	
+38	0	Err_prev_Click:
+39	0	    MsgBox Err.Description
+40	0	    Resume Exit_prev_Click
+41	0	    
+42	0	End Sub
+43	0	Sub find_Click()
+44	0	On Error GoTo Err_find_Click
+45	0	
+46	0	
+47	0	    Screen.PreviousControl.SetFocus
+48	0	    DoCmd.DoMenuItem acFormBar, acEditMenu, 10, , acMenuVer70
+49	0	
+50	0	Exit_find_Click:
+51	0	    Exit Sub
+52	0	
+53	0	Err_find_Click:
+54	0	    MsgBox Err.Description
+55	0	    Resume Exit_find_Click
+56	0	    
+57	0	End Sub
+58	0	Sub next_Click()
+59	0	On Error GoTo Err_next_Click
+60	0	
+61	0	
+62	0	    DoCmd.GoToRecord , , acNext
+63	0	
+64	0	Exit_next_Click:
+65	0	    Exit Sub
+66	0	
+67	0	Err_next_Click:
+68	0	    MsgBox Err.Description
+69	0	    Resume Exit_next_Click
+70	0	    
+71	0	End Sub
+72	0	Sub last_Click()
+73	0	On Error GoTo Err_last_Click
+74	0	
+75	0	
+76	0	    DoCmd.GoToRecord , , acLast
+77	0	
+78	0	Exit_last_Click:
+79	0	    Exit Sub
+80	0	
+81	0	Err_last_Click:
+82	0	    MsgBox Err.Description
+83	0	    Resume Exit_last_Click
+84	0	    
+85	0	End Sub
+86	0	Sub new_Click()
+87	0	On Error GoTo Err_new_Click
+88	0	
+89	0	
+90	0	    DoCmd.GoToRecord , , acNewRec
+91	0	
+92	0	Exit_new_Click:
+93	0	    Exit Sub
+94	0	
+95	0	Err_new_Click:
+96	0	    MsgBox Err.Description
+97	0	    Resume Exit_new_Click
+98	0	    
+99	0	End Sub
+100	0	Sub Close_Click()
+101	0	On Error GoTo Err_close_Click
+102	0	
+103	0	
+104	0	    DoCmd.Close
+105	0	
+106	0	Exit_close_Click:
+107	0	    Exit Sub
+108	0	
+109	0	Err_close_Click:
+110	0	    MsgBox Err.Description
+111	0	    Resume Exit_close_Click
+112	0	    
+113	0	End Sub
+114	0	Sub finds_Click()
+115	0	On Error GoTo Err_finds_Click
+116	0	
+117	0	    Dim stDocName As String
+118	0	    Dim stLinkCriteria As String
+119	0	
+120	0	    stDocName = "Finds: Basic Data"
+121	0	    
+122	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+123	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+124	0	
+125	0	Exit_finds_Click:
+126	0	    Exit Sub
+127	0	
+128	0	Err_finds_Click:
+129	0	    MsgBox Err.Description
+130	0	    Resume Exit_finds_Click
+131	0	    
+132	0	End Sub

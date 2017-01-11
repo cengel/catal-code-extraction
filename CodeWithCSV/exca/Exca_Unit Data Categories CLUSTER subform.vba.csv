@@ -1,0 +1,69 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	
+5	0	
+6	0	Private Sub Form_Current()
+7	0	On Error GoTo err_curr
+8	1	'data category is cluster
+9	1	'location rowsource is defined
+10	1	'location may already be present
+11	0	
+12	0	Select Case Me.Location
+13	0	            Case "cut"
+14	0	            Me.Description.RowSource = " ; burial; ditch; foundation cut; gully; pit; posthole; scoop; stakehole"
+15	0	            Me.Description.Enabled = True
+16	0	            Case "feature"
+17	0	            Me.Description.RowSource = " ; basin; bin; hearth; niche; oven"
+18	0	            Me.Description.Enabled = True
+19	0	            Case Else
+20	0	            Me.Description.RowSource = ""
+21	0	            Me.Description.Enabled = False
+22	0	End Select
+23	0	Exit Sub
+24	0	
+25	0	err_curr:
+26	0	    Call General_Error_Trap
+27	0	    Exit Sub
+28	0	End Sub
+29	0	
+30	0	Private Sub Form_Open(Cancel As Integer)
+31	1	'**********************************************************************
+32	1	' Set up form view depending on permissions
+33	1	' SAJ v9.1
+34	1	'**********************************************************************
+35	0	On Error GoTo err_Form_Open
+36	0	
+37	0	    Dim permiss
+38	0	    permiss = GetGeneralPermissions
+39	0	    If permiss = "ADMIN" Or permiss = "RW" Or permiss = "exsuper" Then
+40	0	        ToggleFormReadOnly Me, False
+41	0	    Else
+42	1	        'set read only form here, just once
+43	0	        ToggleFormReadOnly Me, True
+44	1	        'see subform Skeleton Sheet on open for reason for this line
+45	0	        If Me.AllowAdditions = False Then Me.AllowAdditions = True
+46	0	    End If
+47	0	Exit Sub
+48	0	
+49	0	err_Form_Open:
+50	0	    Call General_Error_Trap
+51	0	    Exit Sub
+52	0	End Sub
+53	0	
+54	0	Private Sub Location_Change()
+55	1	'description blank again, others stay
+56	0	    Me.Description = ""
+57	0	    
+58	0	    Select Case Me.Location
+59	0	        Case "cut"
+60	0	        Me.Description.RowSource = " ; burial; ditch; foundation cut; gully; pit; posthole; scoop; stakehole"
+61	0	        Me.Description.Enabled = True
+62	0	        Case "feature"
+63	0	        Me.Description.RowSource = " ; basin; bin; hearth; niche; oven"
+64	0	        Me.Description.Enabled = True
+65	0	        Case Else
+66	0	        Me.Description.RowSource = ""
+67	0	        Me.Description.Enabled = False
+68	0	    End Select
+69	0	End Sub

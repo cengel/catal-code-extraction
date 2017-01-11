@@ -1,0 +1,136 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	Dim toShow, entitynum
+4	0	
+5	0	
+6	0	
+7	0	
+8	0	
+9	0	
+10	0	Private Sub cmdCancel_Click()
+11	0	On Error GoTo err_cmdCancel
+12	0	    DoCmd.Close acForm, "frm_pop_problemreport"
+13	0	Exit Sub
+14	0	
+15	0	err_cmdCancel:
+16	0	    Call General_Error_Trap
+17	0	    Exit Sub
+18	0	End Sub
+19	0	
+20	0	Private Sub cmdClear_Click()
+21	0	On Error GoTo err_cmdClear
+22	0	    Me![txtToFind] = ""
+23	0	    Me![cboSelect] = ""
+24	0	Exit Sub
+25	0	
+26	0	err_cmdClear:
+27	0	    Call General_Error_Trap
+28	0	    Exit Sub
+29	0	End Sub
+30	0	
+31	0	Private Sub cmdOK_Click()
+32	0	On Error GoTo err_cmdOK
+33	0	    
+34	0	    If (Me![Comment] = "" Or Me![ReportersName] = "") Or (IsNull(Me![Comment]) Or IsNull(Me![ReportersName])) Then
+35	0	        MsgBox "Please enter both your comment and your name, otherwise cancel the report", vbInformation, "Insufficient Info"
+36	0	        Exit Sub
+37	0	    Else
+38	3	        ''2010 allow a comment by anyone even catalhoyuk read only login - as just as valid and don't want to miss them
+39	1	        'insert this info into the table
+40	0	        Dim sql, strcomment
+41	4	        strcomment = Replace(Me![Comment], "'", "''") 'bug fix july 2009 on site
+42	10	        ''sql = "INSERT INTO [Exca: Report_Problem] ([EntityNumber], [EntityType], [Comment], [ReportersName], [ReportedOn]) VALUES (" & entitynum & ", '" & toShow & "', '" & strcomment & "', '" & Me![ReportersName] & "', Format(Date(), 'dd/mm/yyyy'));"
+43	3	        '''MsgBox sql
+44	2	        ''DoCmd.RunSQL sql
+45	0	        
+46	0	        If spString <> "" Then
+47	0	            Dim mydb As DAO.Database
+48	0	            Dim myq1 As QueryDef
+49	0	    
+50	0	            Set mydb = CurrentDb
+51	0	            Set myq1 = mydb.CreateQueryDef("")
+52	0	            myq1.Connect = spString
+53	0	    
+54	0	            myq1.ReturnsRecords = False
+55	9	            'myq1.sql = "sp_Excavation_Add_Problem_Report_Entry " & entitynum & ", '" & toShow & "','" & strcomment & "','" & Me![ReportersName] & "','" & Format(Date, "mm/dd/yyyy") & "'"
+56	1	            '24/07/2011 - the above line was failing on this date as it was reading date as "24/07/2011" and when this was run to stored proc it would fail
+57	1	            'changing to long date solves this even though 24/07/2011 is exactly what is written into the database field. Another US/UK date format issue that only appears in the latter
+58	1	            'part of month.
+59	8	            myq1.sql = "sp_Excavation_Add_Problem_Report_Entry " & entitynum & ", '" & toShow & "','" & strcomment & "','" & Me![ReportersName] & "','" & Format(Date, "Long Date") & "'"
+60	2	            ''dbo.sp_Excavation_Add_Problem_Report_Entry (@entitynum int, @toShow nvarchar(50), @comment nvarchar(1000), @by nvarchar(100), @when datetime) AS
+61	0	            myq1.Execute
+62	0	            
+63	0	            myq1.Close
+64	0	            Set myq1 = Nothing
+65	0	            mydb.Close
+66	0	            Set mydb = Nothing
+67	0	        
+68	0	            MsgBox "Thank you, your report has been saved for the Administrator to check", vbInformation, "Done"
+69	0	        Else
+70	1	            'it failed and this should be handled better than this but I have no time, please fix this - SAJ sept 08
+71	0	            MsgBox "Sorry but this comment cannot be inserted at this time, please restart the database and try again", vbCritical, "Error"
+72	0	        End If
+73	0	
+74	0	        DoCmd.Close acForm, "frm_pop_problemreport"
+75	0	    End If
+76	0	Exit Sub
+77	0	
+78	0	err_cmdOK:
+79	0	    Call General_Error_Trap
+80	0	    Exit Sub
+81	0	End Sub
+82	0	
+83	0	Private Sub Form_Open(Cancel As Integer)
+84	1	'when the form opens it should bring in the entity info: eg whether its a unit, feature, building etc
+85	1	'also it should bring in the number. However in case this is needed where the user needs to enter this info
+86	1	'its left flexible
+87	1	'inputs: entitytype;entitynumber eg: unit;1056
+88	0	On Error GoTo err_open
+89	0	
+90	0	Dim colonpos
+91	0	     If Not IsNull(Me.OpenArgs) Then
+92	0	        Me![cboSelect].Visible = False
+93	0	        
+94	0	        toShow = LCase(Me.OpenArgs)
+95	0	        colonpos = InStr(toShow, ";")
+96	0	        
+97	0	        If colonpos > 0 Then
+98	1	            'if there is a ; then this means there is some existing criteria to extract from openargs
+99	0	            entitynum = right(toShow, Len(toShow) - colonpos)
+100	1	            'MsgBox existing
+101	0	            toShow = Left(toShow, colonpos - 1)
+102	0	        End If
+103	0	        
+104	0	        Select Case toShow
+105	0	        Case "building"
+106	0	            Me![lblTitle].Caption = "Report a Building Record Problem"
+107	0	            Me![cboSelect].RowSource = "Select [Number] from [Exca: Building Details];"
+108	0	            If entitynum <> "" Then Me![lblEntity].Caption = "Building Number: " & entitynum
+109	0	        Case "space"
+110	0	            Me![lblTitle].Caption = "Report a Space Record Problem"
+111	0	            Me![cboSelect].RowSource = "Select [Space Number] from [Exca: Space Sheet];"
+112	0	            If entitynum <> "" Then Me![lblEntity].Caption = "Space Number: " & entitynum
+113	0	        Case "feature number"
+114	0	            Me![lblTitle].Caption = "Report a Feature Record Problem"
+115	0	            Me![cboSelect].RowSource = "Select [Feature Number] from [Exca: Features];"
+116	0	            If entitynum <> "" Then Me![lblEntity].Caption = "Feature Number: " & entitynum
+117	0	        Case "unit number"
+118	0	            Me![lblTitle].Caption = "Report a Unit Record Problem"
+119	0	            Me![cboSelect].RowSource = "Select [unit number] from [Exca: Unit Sheet] ORDER BY [unit number];"
+120	0	            If entitynum <> "" Then Me![lblEntity].Caption = "Unit Number: " & entitynum
+121	0	        End Select
+122	0	        
+123	0	        Me.refresh
+124	0	   
+125	0	Else
+126	0	    Me![lblTitle].Visible = False
+127	0	    Me![lblEntity].Visible = False
+128	0	    Me![cboSelect].Visible = True
+129	0	End If
+130	0	
+131	0	Exit Sub
+132	0	
+133	0	err_open:
+134	0	    Call General_Error_Trap
+135	0	    Exit Sub
+136	0	End Sub

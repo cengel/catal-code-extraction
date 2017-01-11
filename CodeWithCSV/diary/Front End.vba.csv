@@ -1,0 +1,232 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	0	
+3	0	Private Sub Command26_Click()
+4	0	
+5	0	End Sub
+6	0	
+7	0	
+8	0	Private Sub Excavation_Click()
+9	0	On Error GoTo Err_Excavation_Click
+10	0	
+11	0	    Dim stDocName As String
+12	0	    Dim stLinkCriteria As String
+13	0	
+14	0	    stDocName = "Excavation"
+15	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+16	0	    DoCmd.Close acForm, "Diary Form"
+17	0	    
+18	0	Exit_Excavation_Click:
+19	0	    Exit Sub
+20	0	
+21	0	Err_Excavation_Click:
+22	0	    MsgBox Err.Description
+23	0	    Resume Exit_Excavation_Click
+24	0	End Sub
+25	0	
+26	0	Private Sub Master_Control_Click()
+27	0	On Error GoTo Err_Master_Control_Click
+28	0	
+29	0	    Dim stDocName As String
+30	0	    Dim stLinkCriteria As String
+31	0	
+32	0	    stDocName = "Catal Data Entry"
+33	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+34	0	    DoCmd.Close acForm, "Diary Form"
+35	0	    
+36	0	Exit_Master_Control_Click:
+37	0	    Exit Sub
+38	0	
+39	0	Err_Master_Control_Click:
+40	0	    MsgBox Err.Description
+41	0	    Resume Exit_Master_Control_Click
+42	0	End Sub
+43	0	
+44	0	Sub New_Diary_Entry_Click()
+45	0	On Error GoTo Err_New_Diary_Entry_Click
+46	0	
+47	0	    DoCmd.GoToRecord , , acNewRec
+48	0	
+49	0	Exit_New_Diary_Entry_Click:
+50	0	    Exit Sub
+51	0	
+52	0	Err_New_Diary_Entry_Click:
+53	0	    MsgBox Err.Description
+54	0	    Resume Exit_New_Diary_Entry_Click
+55	0	    
+56	0	End Sub
+57	0	Sub Diary_Go_to_New_Click()
+58	0	On Error GoTo Err_Diary_Go_to_New_Click
+59	0	
+60	0	
+61	0	    DoCmd.GoToRecord , , acNewRec
+62	0	
+63	0	Exit_Diary_Go_to_New_Click:
+64	0	    Exit Sub
+65	0	
+66	0	Err_Diary_Go_to_New_Click:
+67	0	    MsgBox Err.Description
+68	0	    Resume Exit_Diary_Go_to_New_Click
+69	0	    
+70	0	End Sub
+71	0	Sub New_Diary_Entry2_Click()
+72	0	On Error GoTo Err_New_Diary_Entry2_Click
+73	0	
+74	0	
+75	0	    New_Diary_Entry_Click
+76	0	
+77	0	Exit_New_Diary_Entry2_Click:
+78	0	    Exit Sub
+79	0	
+80	0	Err_New_Diary_Entry2_Click:
+81	0	    MsgBox Err.Description
+82	0	    Resume Exit_New_Diary_Entry2_Click
+83	0	    
+84	0	End Sub
+85	0	Sub find_Click()
+86	0	On Error GoTo Err_find_Click
+87	0	
+88	0	
+89	0	    Screen.PreviousControl.SetFocus
+90	0	    Me![Diary].SetFocus
+91	0	    DoCmd.DoMenuItem acFormBar, acEditMenu, 10, , acMenuVer70
+92	0	
+93	0	Exit_find_Click:
+94	0	    Exit Sub
+95	0	
+96	0	Err_find_Click:
+97	0	    MsgBox Err.Description
+98	0	    Resume Exit_find_Click
+99	0	    
+100	0	End Sub
+101	0	Sub close_Click()
+102	0	On Error GoTo Err_close_Click
+103	0	
+104	0	
+105	0	    DoCmd.Close
+106	0	
+107	0	Exit_close_Click:
+108	0	    Exit Sub
+109	0	
+110	0	Err_close_Click:
+111	0	    MsgBox Err.Description
+112	0	    Resume Exit_close_Click
+113	0	    
+114	0	End Sub
+115	0	Sub next_Click()
+116	0	On Error GoTo Err_next_Click
+117	0	
+118	0	
+119	0	    DoCmd.GoToRecord , , acNext
+120	0	
+121	0	Exit_next_Click:
+122	0	    Exit Sub
+123	0	
+124	0	Err_next_Click:
+125	0	    MsgBox Err.Description
+126	0	    Resume Exit_next_Click
+127	0	    
+128	0	End Sub
+129	0	Sub last_Click()
+130	0	On Error GoTo Err_last_Click
+131	0	
+132	0	
+133	0	    DoCmd.GoToRecord , , acLast
+134	0	
+135	0	Exit_last_Click:
+136	0	    Exit Sub
+137	0	
+138	0	Err_last_Click:
+139	0	    MsgBox Err.Description
+140	0	    Resume Exit_last_Click
+141	0	    
+142	0	End Sub
+143	0	Sub prev_Click()
+144	0	On Error GoTo Err_prev_Click
+145	0	
+146	0	
+147	0	    DoCmd.GoToRecord , , acPrevious
+148	0	
+149	0	Exit_prev_Click:
+150	0	    Exit Sub
+151	0	
+152	0	Err_prev_Click:
+153	0	    MsgBox Err.Description
+154	0	    Resume Exit_prev_Click
+155	0	    
+156	0	End Sub
+157	0	Sub first_Click()
+158	0	On Error GoTo Err_first_Click
+159	0	
+160	0	
+161	0	    DoCmd.GoToRecord , , acFirst
+162	0	
+163	0	Exit_first_Click:
+164	0	    Exit Sub
+165	0	
+166	0	Err_first_Click:
+167	0	    MsgBox Err.Description
+168	0	    Resume Exit_first_Click
+169	0	    
+170	0	End Sub
+171	0	Private Sub Diary_Entry_Form_Click()
+172	0	On Error GoTo Err_Diary_Entry_Form_Click
+173	0	
+174	0	    Dim stDocName As String
+175	0	    Dim stLinkCriteria As String
+176	0	
+177	0	    stDocName = "Diary Form"
+178	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+179	0	
+180	0	Exit_Diary_Entry_Form_Click:
+181	0	    Exit Sub
+182	0	
+183	0	Err_Diary_Entry_Form_Click:
+184	0	    MsgBox Err.Description
+185	0	    Resume Exit_Diary_Entry_Form_Click
+186	0	    
+187	0	End Sub
+188	0	Private Sub Quit_Diary_System_Click()
+189	0	On Error GoTo Err_Quit_Diary_System_Click
+190	0	
+191	0	
+192	0	    DoCmd.Quit
+193	0	
+194	0	Exit_Quit_Diary_System_Click:
+195	0	    Exit Sub
+196	0	
+197	0	Err_Quit_Diary_System_Click:
+198	0	    MsgBox Err.Description
+199	0	    Resume Exit_Quit_Diary_System_Click
+200	0	    
+201	0	End Sub
+202	0	Private Sub Diary_Reports_Click()
+203	0	On Error GoTo Err_Diary_Reports_Click
+204	0	
+205	0	    Dim stDocName As String
+206	0	    Dim stLinkCriteria As String
+207	0	
+208	0	    stDocName = "Report Selection Form"
+209	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+210	0	
+211	0	Exit_Diary_Reports_Click:
+212	0	    Exit Sub
+213	0	
+214	0	Err_Diary_Reports_Click:
+215	0	    MsgBox Err.Description
+216	0	    Resume Exit_Diary_Reports_Click
+217	0	    
+218	0	End Sub
+219	0	Private Sub Command55_Click()
+220	0	On Error GoTo Err_Command55_Click
+221	0	
+222	0	
+223	0	    DoCmd.GoToRecord , , acLast
+224	0	
+225	0	Exit_Command55_Click:
+226	0	    Exit Sub
+227	0	
+228	0	Err_Command55_Click:
+229	0	    MsgBox Err.Description
+230	0	    Resume Exit_Command55_Click
+231	0	    
+232	0	End Sub

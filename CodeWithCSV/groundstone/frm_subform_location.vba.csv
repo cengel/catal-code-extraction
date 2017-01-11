@@ -1,0 +1,91 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdLocate_Click()
+5	1	'allow user to locate this artefact in  crate
+6	0	On Error GoTo err_locate
+7	0	
+8	1	    'get find number from main form to pass as openargs
+9	0	    Dim current
+10	0	    current = Forms![Frm_Basic_Data]![frm_subform_basic].Form![Unit] & ":" & Forms![Frm_Basic_Data]![frm_subform_basic].Form![Lettercode] & ":" & Forms![Frm_Basic_Data]![frm_subform_basic].Form![FindNumber]
+11	0	    DoCmd.OpenForm "frm_subform_newlocation", acNormal, , , acFormPropertySettings, acDialog, current
+12	0	    
+13	0	Exit Sub
+14	0	
+15	0	err_locate:
+16	0	    Call General_Error_Trap
+17	0	    Exit Sub
+18	0	End Sub
+19	0	
+20	0	Private Sub cmdMove_Click()
+21	1	'moving something is more complicated than a simple locate - if the find is in more than one crate I think
+22	1	'this is an issue that should be raised with the finds officer as is that correct or is that a mistake - so this is the
+23	1	'first check this code carries out
+24	0	On Error GoTo err_move
+25	0	
+26	0	    If Me.RecordsetClone.RecordCount > 1 Then
+27	0	        MsgBox "This particular find is listed as being located in " & Me.RecordsetClone.RecordCount & " crates. This maybe because " & _
+28	0	                "it was comprised of more than one material but this needs to be checked. Please take this issue to the Finds Officer " & _
+29	0	                "straight away who can resolve it and ensure the Crate Register is updated correctly." & Chr(13) & Chr(13) & "The Finds Officer will then deal with " & _
+30	0	                "updating the location for you.", vbExclamation, "Raise with Finds Officer"
+31	0	    Else
+32	1	        'ok only one location so now is it a GS location?
+33	0	        If Me![CrateLetter] <> "GS" Then
+34	0	            MsgBox "This particular find is listed as being located in non Groundstone Crate. This may mean it has been mis-assigned or " & _
+35	0	                "that the find was comprised of more than one material. This needs to be checked. Please take this issue to the Finds Officer " & _
+36	0	                "straight away who can resolve it and ensure the Crate Register is updated correctly." & Chr(13) & Chr(13) & "The Finds Officer will then deal with " & _
+37	0	                "updating the location for you.", vbExclamation, "Raise with Finds Officer"
+38	0	        Else
+39	1	            'ok so allow it to be moved within the GS crates
+40	1	            'get find number from main form to pass as openargs
+41	0	            Dim current
+42	0	            current = Forms![Frm_Basic_Data]![frm_subform_basic_2013].Form![Unit] & ":" & Forms![Frm_Basic_Data]![frm_subform_basic_2013].Form![Lettercode] & ":" & Forms![Frm_Basic_Data]![frm_subform_basic_2013].Form![FindNumber] & ":" & Me![CrateLetter] & Me![CrateNumber]
+43	0	            DoCmd.OpenForm "frm_subform_changelocation", acNormal, , , acFormPropertySettings, acDialog, current
+44	0	        End If
+45	0	    End If
+46	0	
+47	0	Exit Sub
+48	0	
+49	0	err_move:
+50	0	    Call General_Error_Trap
+51	0	    Exit Sub
+52	0	End Sub
+53	0	
+54	0	Private Sub Form_Current()
+55	1	'check if there is any known crate location for the selected record (this form is only opened via frm_sub_basic)
+56	0	On Error GoTo err_current
+57	0	
+58	1	' set this all to false, because moving is now happening in the Finds DB
+59	0	        Me![cmdMove].Visible = False
+60	0	        Me![cmdLocate].Visible = False
+61	0	
+62	2	    ''MsgBox "current:" & Me.RecordsetClone.RecordCount
+63	1	'    If Me.RecordsetClone.RecordCount > 0 Then
+64	1	'        Me![cmdMove].Visible = True
+65	1	'        Me![cmdLocate].Visible = False
+66	1	'    Else
+67	1	'        Me![cmdMove].Visible = False
+68	1	'        Me![cmdLocate].Visible = True
+69	1	'    End If
+70	0	Exit Sub
+71	0	
+72	0	err_current:
+73	0	    Call General_Error_Trap
+74	0	    Exit Sub
+75	0	End Sub
+76	0	
+77	0	Private Sub Form_Open(Cancel As Integer)
+78	1	'check if there is any known crate location for the selected record (this form is only opened via frm_sub_basic)
+79	1	'On Error GoTo err_open
+80	1	'
+81	1	'    MsgBox Me.RecordsetClone.RecordCount
+82	1	'
+83	1	'
+84	1	'Exit Sub
+85	1	'
+86	1	'err_open:
+87	1	'    Call General_Error_Trap
+88	1	'    Exit Sub
+89	0	    
+90	0	End Sub
+91	0	

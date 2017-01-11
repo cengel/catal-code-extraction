@@ -1,0 +1,516 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	1	'module level variable to hold report source
+5	0	Dim g_reportfilter
+6	0	
+7	0	Private Sub Close_Click()
+8	1	'***************************************************
+9	1	' Standard close
+10	1	'***************************************************
+11	0	On Error GoTo err_close_Click
+12	0	     DoCmd.OpenForm "Frm_Menu", , , , acFormPropertySettings
+13	0	    DoCmd.Close acForm, Me.Name
+14	0	    
+15	0	    Exit Sub
+16	0	
+17	0	err_close_Click:
+18	0	    Call General_Error_Trap
+19	0	    Exit Sub
+20	0	End Sub
+21	0	
+22	0	Private Sub cmdBuildSQL_Click()
+23	1	'This takes the criteria entered at the top of the screen and builds the sql string that
+24	1	'will be used as the recordsource for the sub form that displays the results.
+25	0	
+26	0	On Error GoTo err_buildsql
+27	1	'remember to replace * with %%
+28	0	Dim selectsql, wheresql, orderbysql, fullsql
+29	0	
+30	0	selectsql = "SELECT * FROM [view_Fig_MainData_Collated] "
+31	0	
+32	0	wheresql = ""
+33	0	
+34	0	If Me![txtBuildingNumbers] <> "" Then
+35	3	    'wheresql = "[Building] like '%%" & Me![txtBuildingNumbers] & "%%'"
+36	0	    wheresql = wheresql & "(" & Me![txtBuildingNumbers] & ")"
+37	0	End If
+38	0	
+39	0	If Me![txtSpaceNumbers] <> "" Then
+40	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+41	3	    'wheresql = wheresql & "[Space] like '%%" & Me![txtSpaceNumbers] & "%%'"
+42	0	    wheresql = wheresql & "(" & Me![txtSpaceNumbers] & ")"
+43	0	End If
+44	0	
+45	0	If Me![txtFeatureNumbers] <> "" Then
+46	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+47	3	    'wheresql = wheresql & "[Feature] like '%%" & Me![txtFeatureNumbers] & "%%'"
+48	0	    wheresql = wheresql & "(" & Me![txtFeatureNumbers] & ")"
+49	0	End If
+50	0	
+51	0	If Me![txtLevels] <> "" Then
+52	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+53	3	    'wheresql = wheresql & "[Levels] like '%%" & Me![txtLevels] & "%%'"
+54	0	    wheresql = wheresql & "(" & Me![txtLevels] & ")"
+55	0	End If
+56	0	
+57	1	'new 2010
+58	0	If Me![txtHodderLevel] <> "" Then
+59	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+60	3	    'wheresql = wheresql & "[Levels] like '%%" & Me![txtLevels] & "%%'"
+61	0	    wheresql = wheresql & "(" & Me![txtHodderLevel] & ")"
+62	0	End If
+63	0	
+64	0	If Me![txtCategory] <> "" Then
+65	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+66	2	    wheresql = wheresql & "[Category] like '%%" & Me![txtCategory] & "%%'"
+67	0	End If
+68	0	
+69	0	If Me![cboArea] <> "" Then
+70	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+71	2	    wheresql = wheresql & "[Area] = '" & Me![cboArea] & "'"
+72	0	End If
+73	0	
+74	0	If Me![cboYear] <> "" Then
+75	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+76	0	    wheresql = wheresql & "[Year] = " & Me![cboYear]
+77	0	End If
+78	0	
+79	0	If Me![txtUnitNumbers] <> "" Then
+80	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+81	0	    wheresql = wheresql & "(" & Me![txtUnitNumbers] & ")"
+82	0	End If
+83	0	
+84	0	If Me![txtText] <> "" Then
+85	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+86	1	    'actually description is not in unit sheet with relationships
+87	5	    'wheresql = wheresql & "([Description] like '*" & Me![txtText] & "*' OR [Discussion] like '*" & Me![txtText] & "*')"
+88	6	    ''wheresql = wheresql & "([Discussion] like '%%" & Me![txtText] & "%%' OR [Exca: Unit Sheet with Relationships].[Description] like '%%" & Me![txtText] & "%%')"
+89	2	    wheresql = wheresql & "([Description] like '%%" & Me![txtText] & "%%')"
+90	0	End If
+91	0	
+92	0	If Me![cboDataCategory] <> "" Then
+93	1	    'change select statement when a data category has been entered
+94	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+95	2	    wheresql = wheresql & "[Data Category] = '" & Me![cboDataCategory] & "'"
+96	0	End If
+97	0	
+98	0	If Me![txtFigurineID] <> "" Then
+99	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+100	0	    wheresql = wheresql & "(" & Me![txtFigurineID] & ")"
+101	0	End If
+102	0	
+103	0	If Me![txtMellID] <> "" Then
+104	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+105	0	    wheresql = wheresql & "(" & Me![txtMellID] & ")"
+106	0	End If
+107	0	
+108	0	If Me![txtObjectType] <> "" Then
+109	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+110	0	    wheresql = wheresql & "(" & Me![txtObjectType] & ")"
+111	0	End If
+112	0	       
+113	0	If Me![txtObjectForm] <> "" Then
+114	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+115	0	    wheresql = wheresql & "(" & Me![txtObjectForm] & ")"
+116	0	End If
+117	0	        
+118	0	If Me![txtFormType] <> "" Then
+119	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+120	0	    wheresql = wheresql & "(" & Me![txtFormType] & ")"
+121	0	End If
+122	0	        
+123	0	If Me![txtForm] <> "" Then
+124	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+125	0	    wheresql = wheresql & "(" & Me![txtForm] & ")"
+126	0	End If
+127	0	        
+128	0	If Me![txtQuadruped] <> "" Then
+129	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+130	0	    wheresql = wheresql & "(" & Me![txtQuadruped] & ")"
+131	0	End If
+132	0	
+133	1	'end of where clause if it contains info add the where
+134	0	If wheresql <> "" Then selectsql = selectsql & " WHERE "
+135	0	
+136	0	orderbysql = " ORDER BY [view_Fig_MainData_Collated].[UnitNumber];"
+137	0	
+138	1	'create full sql string
+139	0	fullsql = selectsql & wheresql & orderbysql
+140	1	'the where clause will be used as the filter if a report is produced
+141	0	g_reportfilter = wheresql
+142	0	Me!txtSQL = fullsql
+143	1	'make the sql the recordsource for the subform of results
+144	0	Me![frm_subSearch].Form.RecordSource = fullsql
+145	0	If Me![frm_subSearch].Form.RecordsetClone.RecordCount = 0 Then
+146	1	    'if no records returned then tell the user
+147	0	    MsgBox "No records match the criteria you entered.", 48, "No Records Found"
+148	0	    Me![cmdClearSQL].SetFocus
+149	0	End If
+150	0	
+151	0	Exit Sub
+152	0	
+153	0	err_buildsql:
+154	0	    Call General_Error_Trap
+155	0	    Exit Sub
+156	0	End Sub
+157	0	
+158	0	Private Sub cmdClear_Click()
+159	0	On Error GoTo err_clear
+160	0	
+161	0	Me![txtBuildingNumbers] = ""
+162	0	
+163	0	Exit Sub
+164	0	err_clear:
+165	0	    Call General_Error_Trap
+166	0	    Exit Sub
+167	0	End Sub
+168	0	
+169	0	Private Sub cmdClearFeature_Click()
+170	0	On Error GoTo err_feature
+171	0	
+172	0	Me![txtFeatureNumbers] = ""
+173	0	Exit Sub
+174	0	err_feature:
+175	0	    Call General_Error_Trap
+176	0	    Exit Sub
+177	0	End Sub
+178	0	
+179	0	Private Sub cmdClearFigID_Click()
+180	0	On Error GoTo err_figid
+181	0	Me![txtFigurineID] = ""
+182	0	Exit Sub
+183	0	err_figid:
+184	0	    Call General_Error_Trap
+185	0	    Exit Sub
+186	0	End Sub
+187	0	
+188	0	Private Sub cmdClearForm_Click()
+189	0	On Error GoTo err_cmdClearForm
+190	0	Me![txtForm] = ""
+191	0	Exit Sub
+192	0	err_cmdClearForm:
+193	0	    Call General_Error_Trap
+194	0	    Exit Sub
+195	0	End Sub
+196	0	
+197	0	Private Sub cmdClearFormType_Click()
+198	0	On Error GoTo err_cmdClearFormType
+199	0	Me![txtFormType] = ""
+200	0	Exit Sub
+201	0	err_cmdClearFormType:
+202	0	    Call General_Error_Trap
+203	0	    Exit Sub
+204	0	End Sub
+205	0	
+206	0	Private Sub cmdClearHodder_Click()
+207	0	On Error GoTo err_cmdClearHodder
+208	0	Me![txtHodderLevel] = ""
+209	0	Exit Sub
+210	0	err_cmdClearHodder:
+211	0	    Call General_Error_Trap
+212	0	    Exit Sub
+213	0	End Sub
+214	0	
+215	0	Private Sub cmdCLearLevel_Click()
+216	0	On Error GoTo err_level
+217	0	Me![txtLevels] = ""
+218	0	Exit Sub
+219	0	err_level:
+220	0	    Call General_Error_Trap
+221	0	    Exit Sub
+222	0	End Sub
+223	0	
+224	0	Private Sub cmdClearMellID_Click()
+225	0	On Error GoTo err_mellid
+226	0	Me![txtMellID] = ""
+227	0	Exit Sub
+228	0	err_mellid:
+229	0	    Call General_Error_Trap
+230	0	    Exit Sub
+231	0	End Sub
+232	0	
+233	0	Private Sub cmdClearObjectForm_Click()
+234	0	On Error GoTo err_ObjectForm
+235	0	Me![txtObjectForm] = ""
+236	0	Exit Sub
+237	0	err_ObjectForm:
+238	0	    Call General_Error_Trap
+239	0	    Exit Sub
+240	0	End Sub
+241	0	
+242	0	Private Sub cmdClearObjectType_Click()
+243	0	On Error GoTo err_ObjectType
+244	0	Me![txtObjectType] = ""
+245	0	Exit Sub
+246	0	err_ObjectType:
+247	0	    Call General_Error_Trap
+248	0	    Exit Sub
+249	0	End Sub
+250	0	
+251	0	Private Sub cmdClearQuadruped_Click()
+252	0	On Error GoTo err_Quadruped
+253	0	Me![txtQuadruped] = ""
+254	0	Exit Sub
+255	0	err_Quadruped:
+256	0	    Call General_Error_Trap
+257	0	    Exit Sub
+258	0	End Sub
+259	0	
+260	0	Private Sub cmdClearSpace_Click()
+261	0	On Error GoTo err_space
+262	0	Me![txtSpaceNumbers] = ""
+263	0	Exit Sub
+264	0	err_space:
+265	0	    Call General_Error_Trap
+266	0	    Exit Sub
+267	0	End Sub
+268	0	
+269	0	Private Sub cmdClearSQL_Click()
+270	0	On Error GoTo err_clearsql
+271	1	'clear all criteria and reset sql
+272	0	Dim sql
+273	0	
+274	0	Me![txtBuildingNumbers] = ""
+275	0	Me![txtSpaceNumbers] = ""
+276	0	Me![txtFeatureNumbers] = ""
+277	0	Me![txtLevels] = ""
+278	0	Me![txtHodderLevel] = ""
+279	0	Me![txtCategory] = ""
+280	0	Me![cboArea] = ""
+281	0	Me![cboYear] = ""
+282	0	Me![txtUnitNumbers] = ""
+283	0	Me![txtText] = ""
+284	0	Me![cboDataCategory] = ""
+285	0	Me![txtFigurineID] = ""
+286	0	Me![txtMellID] = ""
+287	0	Me![txtObjectType] = ""
+288	0	Me![txtObjectForm] = ""
+289	0	Me![txtForm] = ""
+290	0	Me![txtFormType] = ""
+291	0	Me![txtQuadruped] = ""
+292	0	        
+293	0	
+294	0	sql = "SELECT * FROM [view_Fig_MainData_Collated] ORDER BY [UnitNumber];"
+295	0	Me!txtSQL = sql
+296	0	Me![frm_subSearch].Form.RecordSource = sql
+297	0	Exit Sub
+298	0	err_clearsql:
+299	0	    Call General_Error_Trap
+300	0	    Exit Sub
+301	0	End Sub
+302	0	
+303	0	Private Sub cmdClearUnit_Click()
+304	0	On Error GoTo err_unit
+305	0	Me![txtUnitNumbers] = ""
+306	0	Exit Sub
+307	0	err_unit:
+308	0	    Call General_Error_Trap
+309	0	    Exit Sub
+310	0	End Sub
+311	0	
+312	0	Private Sub cmdEnterBuilding_Click()
+313	0	On Error GoTo err_building
+314	0	Dim openarg
+315	0	openarg = "Building"
+316	0	
+317	0	If Me![txtBuildingNumbers] <> "" Then openarg = "Building;" & Me![txtBuildingNumbers]
+318	0	DoCmd.OpenForm "frm_popsearch", , , , , acDialog, openarg
+319	0	Exit Sub
+320	0	err_building:
+321	0	    Call General_Error_Trap
+322	0	    Exit Sub
+323	0	End Sub
+324	0	
+325	0	Private Sub cmdEnterFeature_Click()
+326	0	On Error GoTo err_enterfeature
+327	0	Dim openarg
+328	0	openarg = "Features"
+329	0	
+330	0	If Me![txtFeatureNumbers] <> "" Then openarg = "Features;" & Me![txtFeatureNumbers]
+331	0	DoCmd.OpenForm "frm_popsearch", , , , , acDialog, openarg
+332	0	Exit Sub
+333	0	err_enterfeature:
+334	0	    Call General_Error_Trap
+335	0	    Exit Sub
+336	0	End Sub
+337	0	
+338	0	Private Sub cmdEnterFigID_Click()
+339	0	On Error GoTo err_figclick
+340	0	Dim openarg
+341	0	openarg = "ID number"
+342	0	
+343	0	If Me![txtFigurineID] <> "" Then openarg = "id number;" & Me![txtFigurineID]
+344	0	DoCmd.OpenForm "frm_popsearch", , , , , acDialog, openarg
+345	0	Exit Sub
+346	0	err_figclick:
+347	0	    Call General_Error_Trap
+348	0	    Exit Sub
+349	0	End Sub
+350	0	
+351	0	Private Sub cmdEnterForm_Click()
+352	0	On Error GoTo err_f
+353	0	Dim openarg
+354	0	openarg = "FigForms"
+355	0	
+356	0	If Me![txtForm] <> "" Then openarg = "FigForms;" & Me![txtForm]
+357	0	DoCmd.OpenForm "frm_popsearch", , , , , acDialog, openarg
+358	0	Exit Sub
+359	0	err_f:
+360	0	    Call General_Error_Trap
+361	0	    Exit Sub
+362	0	End Sub
+363	0	
+364	0	Private Sub cmdEnterFormType_Click()
+365	0	On Error GoTo err_ft
+366	0	Dim openarg
+367	0	openarg = "FormTypes"
+368	0	
+369	0	If Me![txtFormType] <> "" Then openarg = "FormTypes;" & Me![txtFormType]
+370	0	DoCmd.OpenForm "frm_popsearch", , , , , acDialog, openarg
+371	0	Exit Sub
+372	0	err_ft:
+373	0	    Call General_Error_Trap
+374	0	    Exit Sub
+375	0	End Sub
+376	0	
+377	0	Private Sub cmdEnterHodder_Click()
+378	0	On Error GoTo err_enterHlevel
+379	0	Dim openarg
+380	0	openarg = "HodderLevel"
+381	0	
+382	0	If Me![txtHodderLevel] <> "" Then openarg = "HodderLevel;" & Me![txtHodderLevel]
+383	0	DoCmd.OpenForm "frm_popsearch", , , , , acDialog, openarg
+384	0	Exit Sub
+385	0	err_enterHlevel:
+386	0	    Call General_Error_Trap
+387	0	    Exit Sub
+388	0	End Sub
+389	0	
+390	0	Private Sub cmdEnterLevel_Click()
+391	0	On Error GoTo err_enterlevel
+392	0	Dim openarg
+393	0	openarg = "MellaartLevelCertain"
+394	0	
+395	0	If Me![txtLevels] <> "" Then openarg = "MellaartLevelCertain;" & Me![txtLevels]
+396	0	DoCmd.OpenForm "frm_popsearch", , , , , acDialog, openarg
+397	0	Exit Sub
+398	0	err_enterlevel:
+399	0	    Call General_Error_Trap
+400	0	    Exit Sub
+401	0	End Sub
+402	0	
+403	0	Private Sub cmdEnterMellID_Click()
+404	0	On Error GoTo err_figclick
+405	0	Dim openarg
+406	0	openarg = "MellaartID"
+407	0	
+408	0	If Me![txtMellID] <> "" Then openarg = "MellaartID;" & Me![txtMellID]
+409	0	DoCmd.OpenForm "frm_popsearch", , , , , acDialog, openarg
+410	0	Exit Sub
+411	0	err_figclick:
+412	0	    Call General_Error_Trap
+413	0	    Exit Sub
+414	0	
+415	0	End Sub
+416	0	
+417	0	Private Sub cmdEnterObjectForm_Click()
+418	0	On Error GoTo err_of
+419	0	Dim openarg
+420	0	openarg = "Object Form"
+421	0	
+422	0	If Me![txtObjectForm] <> "" Then openarg = "Object Form;" & Me![txtObjectForm]
+423	0	DoCmd.OpenForm "frm_popsearch", , , , , acDialog, openarg
+424	0	Exit Sub
+425	0	err_of:
+426	0	    Call General_Error_Trap
+427	0	    Exit Sub
+428	0	End Sub
+429	0	
+430	0	Private Sub cmdEnterObjectType_Click()
+431	0	On Error GoTo err_ot
+432	0	Dim openarg
+433	0	openarg = "ObjectTypes"
+434	0	
+435	0	If Me![txtObjectType] <> "" Then openarg = "ObjectTypes;" & Me![txtObjectType]
+436	0	DoCmd.OpenForm "frm_popsearch", , , , , acDialog, openarg
+437	0	Exit Sub
+438	0	err_ot:
+439	0	    Call General_Error_Trap
+440	0	    Exit Sub
+441	0	End Sub
+442	0	
+443	0	Private Sub cmdEnterQuadruped_Click()
+444	0	On Error GoTo err_q
+445	0	Dim openarg
+446	0	openarg = "Quadruped"
+447	0	
+448	0	If Me![txtQuadruped] <> "" Then openarg = "Quadruped;" & Me![txtQuadruped]
+449	0	DoCmd.OpenForm "frm_popsearch", , , , , acDialog, openarg
+450	0	Exit Sub
+451	0	err_q:
+452	0	    Call General_Error_Trap
+453	0	    Exit Sub
+454	0	End Sub
+455	0	
+456	0	Private Sub cmdEnterSpace_Click()
+457	0	On Error GoTo err_enterspace
+458	0	Dim openarg
+459	0	openarg = "Spaces"
+460	0	
+461	0	If Me![txtSpaceNumbers] <> "" Then openarg = "Spaces;" & Me![txtSpaceNumbers]
+462	0	DoCmd.OpenForm "frm_popsearch", , , , , acDialog, openarg
+463	0	Exit Sub
+464	0	err_enterspace:
+465	0	    Call General_Error_Trap
+466	0	    Exit Sub
+467	0	End Sub
+468	0	
+469	0	Private Sub cmdPrint_Click()
+470	0	On Error GoTo err_cmdPrint
+471	0	    Call cmdBuildSQL_Click
+472	0	    
+473	0	    If Me![frm_subSearch].Form.RecordsetClone.RecordCount = 0 Then
+474	1	        'MsgBox "No records match the criteria you entered.", 48, "No Records Found"
+475	0	        Me![cmdClearSQL].SetFocus
+476	0	        Exit Sub
+477	0	    Else
+478	0	        DoCmd.OpenReport "R_search_report", acViewPreview
+479	0	        If Not IsNull(g_reportfilter) Then
+480	2	            ''MsgBox g_reportfilter
+481	0	            
+482	0	            Reports![R_search_report].FilterOn = True
+483	0	            Reports![R_search_report].Filter = g_reportfilter
+484	0	        End If
+485	0	    
+486	0	    End If
+487	0	
+488	1	    'g_reportsource = Me![frm_subSearch].Form.RecordSource
+489	1	    'DoCmd.OpenReport "rpt_unit_search_report", acViewPreview
+490	1	    'Reports![rpt_unit_search_report].RecordSource = Me![frm_subSearch].Form.RecordSource
+491	0	
+492	0	Exit Sub
+493	0	
+494	0	err_cmdPrint:
+495	0	    Call General_Error_Trap
+496	0	    Exit Sub
+497	0	End Sub
+498	0	
+499	0	Private Sub cmdUnit_Click()
+500	0	On Error GoTo err_unitclick
+501	0	Dim openarg
+502	0	openarg = "unit number"
+503	0	
+504	0	If Me![txtUnitNumbers] <> "" Then openarg = "unit number;" & Me![txtUnitNumbers]
+505	0	DoCmd.OpenForm "frm_popsearch", , , , , acDialog, openarg
+506	0	Exit Sub
+507	0	err_unitclick:
+508	0	    Call General_Error_Trap
+509	0	    Exit Sub
+510	0	End Sub
+511	0	
+512	0	
+513	0	Private Sub Form_Open(Cancel As Integer)
+514	2	''MsgBox IsNull(Forms![frm_search]![txtUnitNumbers])
+515	0	End Sub
+516	0	

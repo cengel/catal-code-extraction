@@ -1,0 +1,113 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub Form_Current()
+5	1	'**********************************************************************
+6	1	' Display images within the image box - update image control with correct
+7	1	' path of image as user move through records
+8	1	' This will only work for locally networked machines
+9	1	' SAJ v9.1
+10	1	'**********************************************************************
+11	0	On Error GoTo err_Current
+12	0	
+13	0	Dim newStr, newstr2, zeronum, FileName
+14	0	
+15	1	'path string are coming from Portfolio with : instead of \
+16	0	newStr = Replace(Me![Path], ":", "\")
+17	1	'plus the directory structure of the machine they were catalogued on
+18	1	' ImageLocationOnSite is global constant set in the module Globals-shared
+19	1	'newstr2 = Replace(newStr, "besiktas\", ImageLocationOnSite)
+20	3	''line below doesn't seem necessary at present, replaced with newstr2 = newstr
+21	2	''newstr2 = Replace(newStr, "catal\", ImageLocationOnSite)
+22	0	newstr2 = newStr
+23	0	
+24	1	'this was 2008 solution as had to add certain number of zeros to id number to create
+25	1	'the filename eg: 64192 becomes p0000064192.jpg
+26	1	'zeronum = 10 - (Len(Me![Record_ID]))
+27	1	'FileName = "p"
+28	2	'        'Response.Write zeronum
+29	1	'        Do While zeronum > 0
+30	1	'            FileName = FileName & "0"
+31	1	'            zeronum = zeronum - 1
+32	2	'            'Response.Write filename
+33	1	'        Loop
+34	1	'
+35	1	'newstr2 = newstr2 & "\" & FileName & Me![Record_ID] & ".jpg"
+36	0	    
+37	1	'2009 solution now portfolio is putting previews in long tree of subdirectories which
+38	1	'need unpicking from filename
+39	0	Dim dirpath, breakid
+40	0	
+41	0	zeronum = 10 - (Len(Me![Record_ID]))
+42	0	FileName = "p"
+43	1	        'Response.Write zeronum
+44	0	        Do While zeronum > 0
+45	0	            FileName = FileName & "0"
+46	0	            zeronum = zeronum - 1
+47	1	            'Response.Write filename
+48	0	        Loop
+49	0	                    
+50	0	FileName = FileName & Me![Record_ID]
+51	0	
+52	0	breakid = Left(FileName, 3)
+53	1	breakid = Mid(FileName, 2, 2) 'chop off leading p
+54	0	dirpath = breakid & "\"
+55	0	
+56	0	breakid = Mid(FileName, 4, 2)
+57	0	dirpath = dirpath & breakid & "\"
+58	0	
+59	0	breakid = Mid(FileName, 6, 2)
+60	0	dirpath = dirpath & breakid & "\"
+61	0	
+62	0	breakid = Mid(FileName, 8, 2)
+63	0	dirpath = dirpath & breakid & "\"
+64	0	
+65	1	'breakid = Mid(FileName, 10, 2)
+66	1	'dirpath = dirpath & breakid & "\"
+67	0	
+68	1	'MsgBox newstr2
+69	1	'2008
+70	1	'newstr2 = newstr2 & "\" & FileName & Me![Record_ID] & ".jpg"
+71	0	newstr2 = newstr2 & "\" & dirpath & FileName & ".jpg"
+72	0	Me!txtFullPath = newstr2
+73	0	Me!Image145.Picture = newstr2
+74	0	
+75	0	Exit Sub
+76	0	err_Current:
+77	0	    If Err.Number = 2220 Then
+78	1	        'this is the error thrown if file not found
+79	1	        'first check if dir exists
+80	0	        If Dir(newstr2) = "" Then
+81	1	            'directory not exist
+82	0	            MsgBox "The directory where images are supposed to be stored cannot be found. Please contact the database administrator"
+83	0	        Else
+84	0	            MsgBox "The image file cannot be found - check the file exists"
+85	0	            DoCmd.GoToControl "txtSketch"
+86	0	        End If
+87	0	    Else
+88	0	        Call General_Error_Trap
+89	0	    End If
+90	0	    Exit Sub
+91	0	End Sub
+92	0	
+93	0	Private Sub Form_Open(Cancel As Integer)
+94	2	''msgbox Me.OpenArgs
+95	1	'new 2007 - year passed in with openargs determines data source as currently 2007 catalog is seperate
+96	0	If Me.OpenArgs <> "" Then
+97	1	    'If Me.OpenArgs = 2007 Then
+98	1	    '    Me.RecordSource = "Select * from view_Portfolio_2007Previews WHERE " & Me.Filter
+99	1	    'Else
+100	1	    '    Me.RecordSource = "Select * from view_Portfolio_Upto2007Previews WHERE " & Me.Filter
+101	1	    'End If
+102	1	    '2008 one catalog
+103	0	    Me.RecordSource = "Select * from view_Portfolio_Previews_2008 WHERE " & Me.Filter
+104	2	    ''NEW LATE AUGUST 2009 - due to overwork of unit sheet OnCurrent it no longer checks if there
+105	2	    ''are images there  but now allows user to press button and picks up here if any exist
+106	0	    If Me.RecordsetClone.RecordCount <= 0 Then
+107	0	        MsgBox "No images have been found in the Portfolio catalogue for this entity", vbInformation, "No images to display"
+108	0	        DoCmd.Close acForm, Me.Name
+109	0	    End If
+110	0	    
+111	0	End If
+112	0	
+113	0	End Sub

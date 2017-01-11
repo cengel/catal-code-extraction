@@ -1,0 +1,44 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cboFindUnit_AfterUpdate()
+5	0	On Error GoTo err_find
+6	0	
+7	0	If Me!cboFindUnit <> "" Then
+8	0	    DoCmd.GoToControl "UnitNumber"
+9	0	    DoCmd.FindRecord Me!cboFindUnit
+10	0	    Me!cboFindUnit = ""
+11	0	End If
+12	0	
+13	0	Exit Sub
+14	0	
+15	0	err_find:
+16	0	    MsgBox Err.Description
+17	0	    Exit Sub
+18	0	End Sub
+19	0	
+20	0	Private Sub cmdNew_Click()
+21	0	On Error GoTo err_new
+22	0	
+23	0	    DoCmd.RunCommand acCmdRecordsGoToNew
+24	0	    DoCmd.GoToControl "UnitNumber"
+25	0	
+26	0	Exit Sub
+27	0	
+28	0	err_new:
+29	0	    MsgBox Err.Description
+30	0	    Exit Sub
+31	0	End Sub
+32	0	
+33	0	Private Sub cmdPrintPrioritySheet_Click()
+34	0	On Error GoTo err_print
+35	0	
+36	0	        DoCmd.OpenReport "PrintPriorityComments", acViewPreview, , "[UnitNumber] = " & Me![UnitNumber]
+37	0	
+38	0	Exit Sub
+39	0	
+40	0	err_print:
+41	0	    MsgBox "Error: " & Err.Number & " - " & Err.Description
+42	0	    Exit Sub
+43	0	
+44	0	End Sub

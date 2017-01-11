@@ -1,0 +1,17 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub Close_Click()
+5	0	On Error GoTo err_close_Click
+6	0	
+7	0	
+8	0	    DoCmd.Close
+9	0	
+10	0	Exit_close_Click:
+11	0	    Exit Sub
+12	0	
+13	0	err_close_Click:
+14	0	    MsgBox Err.Description
+15	0	    Resume Exit_close_Click
+16	0	    
+17	0	End Sub

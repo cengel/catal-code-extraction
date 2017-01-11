@@ -1,0 +1,192 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	1	Option Explicit 'SAJ
+3	0	
+4	0	Sub button_goto_previousform_Click()
+5	0	On Error GoTo Err_button_goto_previousform_Click
+6	0	
+7	0	    Dim stDocCranial As String
+8	0	    Dim stDocPostCranial As String
+9	0	    Dim stLinkCriteria As String
+10	1	    Dim stElementType 'new by saj as opt explicit
+11	0	    
+12	0	    stDocCranial = "Fauna_Bone_Cranial"
+13	0	    stDocPostCranial = "Fauna_Bone_Postcranial"
+14	1	    'SAJ season 2006 - this depends on the basic form being open so now the
+15	1	    'recordsource of this form is the modification table with the basic table
+16	1	    'joined to get the element value
+17	2	    ''stElementType = Forms![Fauna_Bone_Basic_Faunal_Data]![Field40]
+18	0	    stElementType = Me![Element]
+19	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+20	0	
+21	0	If Me![GID] <> "" Then
+22	1	    'new check for GID entered by saj
+23	1	    'the form is only minimised so must save data manually here - saj
+24	0	    DoCmd.RunCommand acCmdSaveRecord
+25	0	    If stElementType < 24 Then
+26	0	        DoCmd.Minimize
+27	0	        DoCmd.OpenForm stDocCranial, , , stLinkCriteria
+28	0	    Else
+29	0	        DoCmd.Minimize
+30	0	        DoCmd.OpenForm stDocPostCranial, , , stLinkCriteria
+31	0	    End If
+32	0	Else
+33	0	    MsgBox "Please enter the GID fields for this record or select a GID first", vbInformation, "No GID Number"
+34	0	End If
+35	0	
+36	0	Exit_button_goto_previousform_Click:
+37	0	    Exit Sub
+38	0	
+39	0	Err_button_goto_previousform_Click:
+40	0	    Call General_Error_Trap
+41	0	    Resume Exit_button_goto_previousform_Click
+42	0	    
+43	0	End Sub
+44	0	
+45	0	
+46	0	
+47	0	
+48	0	
+49	0	Sub button_goto_bfdgid_Click()
+50	0	On Error GoTo Err_button_goto_bfdgid_Click
+51	0	
+52	0	    Dim stDocName As String
+53	0	    Dim stLinkCriteria As String
+54	0	
+55	0	    stDocName = "Fauna_Bone_Basic_Faunal_Data"
+56	0	
+57	0	If Me![GID] <> "" Then
+58	1	    'new check for GID entered by saj
+59	1	    'the form is only minimised so must save data manually here - saj
+60	0	    DoCmd.RunCommand acCmdSaveRecord
+61	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+62	0	    DoCmd.Minimize
+63	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+64	0	Else
+65	0	    MsgBox "Please enter the GID fields for this record or select a GID first", vbInformation, "No Unit Number"
+66	0	End If
+67	0	
+68	0	Exit_button_goto_bfdgid_Click:
+69	0	    Exit Sub
+70	0	
+71	0	Err_button_goto_bfdgid_Click:
+72	0	    Call General_Error_Trap
+73	0	    Resume Exit_button_goto_bfdgid_Click
+74	0	    
+75	0	End Sub
+76	0	Sub button_goto_artefact_Click()
+77	1	'altered season 2006 - saj
+78	1	'check if artifact record exists and if not ask user to create
+79	0	On Error GoTo Err_button_goto_artefact_Click
+80	0	
+81	0	    Dim stDocName As String
+82	0	    Dim stLinkCriteria As String
+83	0	    Dim checknum, sql, retVal
+84	0	    
+85	0	    stDocName = "Fauna_Bone_Artifacts"
+86	0	    
+87	0	If Me![GID] <> "" Then
+88	1	    'new check for GID entered by saj
+89	1	    'the form is only minimised so must save data manually here - saj
+90	0	    DoCmd.RunCommand acCmdSaveRecord
+91	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+92	0	    
+93	1	    'new for season 2006 - see if the modification record exists if not create it - SAJ
+94	2	    checknum = DLookup("[GID]", "[Fauna_Bone_Artifacts]", "[GID] = '" & Me![GID] & "'")
+95	0	    If IsNull(checknum) Then
+96	1	        'gid not exist there yet
+97	0	        retVal = MsgBox("No Artifact record exists yet for GID " & Me![GID] & ", do you want to create one now?", vbQuestion + vbYesNo, "Create New Modification Record")
+98	0	        If retVal = vbNo Then
+99	1	            'do nothing
+100	0	            Exit Sub
+101	0	        Else
+102	1	            'so create it ready for data entry
+103	4	            sql = "INSERT INTO [Fauna_Bone_Artifacts] ([GID], [Unit number], [Letter code], [Find number]) VALUES ('" & Me![GID] & "'," & Me![Unit number] & ", '" & Me![letter code] & "', " & Me![find number] & ");"
+104	0	            DoCmd.RunSQL sql
+105	0	        End If
+106	0	    End If
+107	0	    
+108	0	    DoCmd.Minimize
+109	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+110	0	    
+111	0	    [Forms]![Fauna_Bone_Artifacts].[Unit number] = [Forms]![Fauna_Bone_Modification].[Unit number]
+112	0	    [Forms]![Fauna_Bone_Artifacts].[letter code] = [Forms]![Fauna_Bone_Modification].[letter code]
+113	0	    [Forms]![Fauna_Bone_Artifacts].[find number] = [Forms]![Fauna_Bone_Modification].[find number]
+114	0	Else
+115	0	    MsgBox "Please enter the GID fields for this record or select a GID first", vbInformation, "No GID Number"
+116	0	End If
+117	0	
+118	0	Exit_button_goto_artefact_Click:
+119	0	    Exit Sub
+120	0	
+121	0	Err_button_goto_artefact_Click:
+122	0	   Call General_Error_Trap
+123	0	    Resume Exit_button_goto_artefact_Click
+124	0	    
+125	0	End Sub
+126	0	
+127	0	Private Sub cboFind_AfterUpdate()
+128	1	'new find combo by SAJ - filter msg removed request from NR 5/7/06
+129	0	On Error GoTo err_cboFind
+130	0	
+131	0	If Me![cboFind] <> "" Then
+132	0	    If Me.Filter <> "" Then
+133	2	            If Me.Filter <> "[GID] = '" & Me![cboFind].Column(1) & "'" Then
+134	1	            '    MsgBox "This form was opened to only show the record " & Me.Filter & ". This action has removed the filter and all records are available to view.", vbInformation, "Filter Removed"
+135	0	                Me.FilterOn = False
+136	0	                Me.Filter = ""
+137	0	            End If
+138	0	        End If
+139	0	    DoCmd.GoToControl "GID"
+140	0	    DoCmd.FindRecord Me![cboFind]
+141	0	
+142	0	End If
+143	0	
+144	0	Exit Sub
+145	0	
+146	0	err_cboFind:
+147	0	    Call General_Error_Trap
+148	0	    Exit Sub
+149	0	End Sub
+150	0	
+151	0	Private Sub cboFind_NotInList(NewData As String, response As Integer)
+152	1	'stop not in list msg loop
+153	0	On Error GoTo err_cbofindNot
+154	0	
+155	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+156	0	    response = acDataErrContinue
+157	0	    
+158	0	    Me![cboFind].Undo
+159	0	Exit Sub
+160	0	
+161	0	err_cbofindNot:
+162	0	    Call General_Error_Trap
+163	0	    Exit Sub
+164	0	End Sub
+165	0	
+166	0	Private Sub cmdMenu_Click()
+167	1	'new menu button
+168	0	On Error GoTo err_cmdMenu
+169	0	
+170	0	    DoCmd.OpenForm "Bone", acNormal
+171	0	    DoCmd.Close acForm, Me.Name
+172	0	Exit Sub
+173	0	
+174	0	err_cmdMenu:
+175	0	    Call General_Error_Trap
+176	0	    Exit Sub
+177	0	End Sub
+178	0	
+179	0	Private Sub Form_Current()
+180	1	'new go to control code
+181	0	On Error GoTo err_current
+182	1	    'causing error, changed. Faunal Wishlist Aug 2008
+183	1	    'DoCmd.GoToControl "Field101"
+184	1	    'DoCmd.GoToControl "cboFind"
+185	1	    'request from claire 18/07/09 please change to first entry field
+186	0	    DoCmd.GoToControl "Field41"
+187	0	Exit Sub
+188	0	
+189	0	err_current:
+190	0	    Call General_Error_Trap
+191	0	    Exit Sub
+192	0	End Sub

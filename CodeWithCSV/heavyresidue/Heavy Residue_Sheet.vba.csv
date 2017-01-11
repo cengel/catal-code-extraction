@@ -1,0 +1,375 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	Private Sub Update_GID()
+4	0	Me![GID] = Me![Unit] & "." & Me![Sample] & "." & Me![Flot Number]
+5	0	End Sub
+6	0	
+7	0	Private Sub cboFilterUnit_AfterUpdate()
+8	1	'filter - new 2011
+9	0	On Error GoTo err_filter
+10	0	
+11	0	    If Me![cboFilterUnit] <> "" Then
+12	0	        Me.Filter = "[Unit] = " & Me![cboFilterUnit]
+13	0	        Me.FilterOn = True
+14	0	        Me![cboFilterUnit] = ""
+15	0	        Me![cmdRemoveFilter].Visible = True
+16	0	    End If
+17	0	
+18	0	Exit Sub
+19	0	
+20	0	err_filter:
+21	0	    Call General_Error_Trap
+22	0	    Exit Sub
+23	0	End Sub
+24	0	
+25	0	Private Sub cboFilterUnit_NotInList(NewData As String, response As Integer)
+26	1	'stop not in list msg loop - new 2011
+27	0	On Error GoTo err_cbofilterNot
+28	0	
+29	0	    MsgBox "Sorry this Unit does not exist in this database yet", vbInformation, "No Match"
+30	0	    response = acDataErrContinue
+31	0	    
+32	0	    Me![cboFilterUnit].Undo
+33	0	Exit Sub
+34	0	
+35	0	err_cbofilterNot:
+36	0	    Call General_Error_Trap
+37	0	    Exit Sub
+38	0	End Sub
+39	0	
+40	0	Private Sub cboFind_AfterUpdate()
+41	1	'new 2011
+42	0	On Error GoTo err_cboFind
+43	0	
+44	0	If Me![cboFind] <> "" Then
+45	0	    DoCmd.GoToControl "GID"
+46	0	    DoCmd.FindRecord Me![cboFind]
+47	2	    ''DoCmd.GoToControl "Analyst"
+48	0	    Me![cboFind] = ""
+49	0	End If
+50	0	
+51	0	
+52	0	Exit Sub
+53	0	
+54	0	err_cboFind:
+55	0	    Call General_Error_Trap
+56	0	    Exit Sub
+57	0	End Sub
+58	0	
+59	0	Private Sub cboFind_NotInList(NewData As String, response As Integer)
+60	1	'stop not in list msg loop - new 2011
+61	0	On Error GoTo err_cbofindNot
+62	0	
+63	0	    MsgBox "Sorry this GID does not exist in the database", vbInformation, "No Match"
+64	0	    response = acDataErrContinue
+65	0	    
+66	0	    Me![cboFind].Undo
+67	0	Exit Sub
+68	0	
+69	0	err_cbofindNot:
+70	0	    Call General_Error_Trap
+71	0	    Exit Sub
+72	0	End Sub
+73	0	
+74	0	Private Sub chkMerged_AfterUpdate()
+75	1	'new 2011
+76	0	On Error GoTo err_chk
+77	0	
+78	0	If Me!chkMerged = True Then
+79	0	    DoCmd.OpenForm "frm_pop_mergedFlot", , , , , , Me![Flot Sample number]
+80	0	    Me!cmdMergeFlot.Visible = True
+81	0	Else
+82	1	    'is false must check if anything exists
+83	0	    Dim checkit
+84	0	    checkit = DLookup("[FlotRecordedInHR]", "[Heavy Residue: Flot Merge Log]", "[FlotRecordedInHR] = " & Me![Flot Sample number])
+85	0	    If checkit <> "" Then
+86	1	        'there are merge records
+87	0	        MsgBox "Flot numbers are recorded as being merged into this one. You cannot uncheck this box until this asociation is removed." & Chr(13) & Chr(13) & "Use the button to the right of the check box and delete the numbers there", vbExclamation, "Action Cancelled"
+88	0	        Me!chkMerged = True
+89	0	    Else
+90	0	        Me!cmdMergeFlot.Visible = False
+91	0	    End If
+92	0	    
+93	0	End If
+94	0	Exit Sub
+95	0	
+96	0	err_chk:
+97	0	    Call General_Error_Trap
+98	0	    Exit Sub
+99	0	
+100	0	End Sub
+101	0	
+102	0	Private Sub cmdAddNew_Click()
+103	1	'********************************************************************
+104	1	' Create new record
+105	1	' SAJ
+106	1	'********************************************************************
+107	0	On Error GoTo Err_cmdgonew_Click
+108	0	
+109	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+110	0	    DoCmd.GoToRecord , , acNewRec
+111	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Form![Analyst].Name
+112	0	    DoCmd.GoToControl Me![Unit].Name
+113	0	    Exit Sub
+114	0	
+115	0	Err_cmdgonew_Click:
+116	0	    Call General_Error_Trap
+117	0	    Exit Sub
+118	0	End Sub
+119	0	
+120	0	Private Sub cmdDelete_Click()
+121	1	'new 2011 - control the delete of a record to ensure both tables are clear
+122	0	On Error GoTo err_del
+123	0	
+124	0	Dim response
+125	0	    response = MsgBox("Do you really want to remove GID " & Me!GID & " and all its related material records from your database?", vbYesNo + vbQuestion, "Remove Record")
+126	0	    If response = vbYes Then
+127	0	        Dim sql
+128	2	        sql = "Delete FROM [Heavy Residue: Basic Details] WHERE [GID] = '" & Me![GID] & "';"
+129	0	        DoCmd.RunSQL sql
+130	0	        
+131	2	        sql = "Delete from [Heavy Residue: Material] WHERE [GID] = '" & Me![GID] & "';"
+132	0	        DoCmd.RunSQL sql
+133	0	        
+134	0	        sql = "Delete from [Heavy Residue: Flot Merge Log] WHERE [FlotRecordedInHr] = " & Me![Flot Sample number] & ";"
+135	0	        DoCmd.RunSQL sql
+136	0	        
+137	0	        Me.Requery
+138	0	        MsgBox "Deletion completed", vbInformation, "Done"
+139	0	        
+140	0	        Me![cboFind].Requery
+141	0	        Me![cboFilterUnit].Requery
+142	0	        
+143	0	    End If
+144	0	Exit Sub
+145	0	
+146	0	err_del:
+147	0	    Call General_Error_Trap
+148	0	    Exit Sub
+149	0	End Sub
+150	0	
+151	0	Private Sub cmdGoFirst_Click()
+152	1	'********************************************************************
+153	1	' Go to first record
+154	1	' SAJ
+155	1	'********************************************************************
+156	0	On Error GoTo Err_cmdgofirst_Click
+157	0	
+158	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+159	0	    DoCmd.GoToRecord , , acFirst
+160	0	
+161	0	    Exit Sub
+162	0	
+163	0	Err_cmdgofirst_Click:
+164	0	    Call General_Error_Trap
+165	0	    Exit Sub
+166	0	End Sub
+167	0	
+168	0	Private Sub cmdGoLast_Click()
+169	1	'********************************************************************
+170	1	' Go to last record
+171	1	' SAJ
+172	1	'********************************************************************
+173	0	On Error GoTo Err_cmdgoLast_Click
+174	0	
+175	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+176	0	    DoCmd.GoToRecord , , acLast
+177	0	
+178	0	    Exit Sub
+179	0	
+180	0	Err_cmdgoLast_Click:
+181	0	    Call General_Error_Trap
+182	0	    Exit Sub
+183	0	End Sub
+184	0	
+185	0	Private Sub cmdGoNext_Click()
+186	1	'********************************************************************
+187	1	' Go to next record
+188	1	' SAJ
+189	1	'********************************************************************
+190	0	On Error GoTo Err_cmdgoNext_Click
+191	0	
+192	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+193	0	    DoCmd.GoToRecord , , acNext
+194	0	
+195	0	    Exit Sub
+196	0	
+197	0	Err_cmdgoNext_Click:
+198	0	    If Err.Number = 2105 Then
+199	0	        MsgBox "No more records to show", vbInformation, "End of records"
+200	0	    Else
+201	0	        Call General_Error_Trap
+202	0	    End If
+203	0	    Exit Sub
+204	0	End Sub
+205	0	
+206	0	Private Sub cmdGoPrev_Click()
+207	1	'********************************************************************
+208	1	' Go to previous record
+209	1	' SAJ
+210	1	'********************************************************************
+211	0	On Error GoTo Err_cmdgoprevious_Click
+212	0	
+213	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+214	0	    DoCmd.GoToRecord , , acPrevious
+215	0	
+216	0	    Exit Sub
+217	0	
+218	0	Err_cmdgoprevious_Click:
+219	0	    If Err.Number = 2105 Then
+220	0	        MsgBox "Already at the begining of the recordset", vbInformation, "Begining of records"
+221	0	    Else
+222	0	        Call General_Error_Trap
+223	0	    End If
+224	0	    Exit Sub
+225	0	End Sub
+226	0	
+227	0	Private Sub cmdMergeFlot_Click()
+228	1	'new 2011
+229	0	On Error GoTo Err_Command62_Click
+230	0	
+231	0	    DoCmd.OpenForm "frm_pop_MergedFlot", , , , , , Me![Flot Sample number]
+232	0	
+233	0	    Exit Sub
+234	0	
+235	0	Err_Command62_Click:
+236	0	    Call General_Error_Trap
+237	0	    Exit Sub
+238	0	    
+239	0	End Sub
+240	0	
+241	0	Private Sub cmdRemoveFilter_Click()
+242	1	'remove unit filter - new 2011
+243	0	On Error GoTo err_Removefilter
+244	0	
+245	0	    Me![cboFilterUnit] = ""
+246	0	    Me.Filter = ""
+247	0	    Me.FilterOn = False
+248	0	    
+249	0	    DoCmd.GoToControl "cboFind"
+250	0	    Me![cmdRemoveFilter].Visible = False
+251	0	   
+252	0	
+253	0	Exit Sub
+254	0	
+255	0	err_Removefilter:
+256	0	    Call General_Error_Trap
+257	0	    Exit Sub
+258	0	End Sub
+259	0	
+260	0	Private Sub Flot_Sample_number_AfterUpdate()
+261	1	'new season 2006 - get soil vol from flot log
+262	0	On Error GoTo err_sample
+263	0	
+264	0	Update_GID
+265	0	
+266	2	'august 2008 check this record exists in Bots - request from Betsa - just a prompt, don't stop entry
+267	1	'NOTE THIS QUERY (Q_Bots_GID)IS HIDDEN IN THE QUERY LIST TO PREVENT ACCIDENTAL DELETION - saj
+268	0	Dim getBots, getBotsUnit, getBotsSample, getBotsFlot
+269	1	'first see if gid matches as a whole in bots db
+270	2	getBots = DLookup("[GID]", "Q_Bots_GID", "[GID] = '" & Me![GID] & "'")
+271	0	If IsNull(getBots) Then
+272	1	    'no exact GID match - so does flot number exist and with what unit?
+273	0	    getBotsFlot = DLookup("[Flot Number]", "view_ArchaeoBotany_Flot_Log", "[Flot Number] = " & Me![Flot Sample number])
+274	0	    If IsNull(getBotsFlot) Then
+275	1	        'flot not present at all in Bots
+276	0	        MsgBox "This flotation number cannot be found in the Botany database. Please check it is correct", vbExclamation, "Data mismatch"
+277	0	    Else
+278	1	        'flot exists so check unit number, see if it matches one entered here
+279	0	        getBotsUnit = DLookup("[Unit Number]", "view_ArchaeoBotany_Flot_Log", "[Flot Number] = " & Me![Flot Sample number])
+280	0	        If getBotsUnit <> Me![Unit] Then
+281	1	            'the unit number here does not match entry in bots db for this flot number
+282	0	            MsgBox "This Flot number is entered into the Bots database for Unit " & getBotsUnit & " not the unit you have entered. Please check it.", vbExclamation, "Data Mismatch"
+283	0	        Else
+284	1	            'the unit number matches for this flot but there is still a problem as the GID did not, this means the sample number must be wrong
+285	0	            MsgBox "This GID does not match a GID in the Bots database, the sample number appears to be incorrect. Please check it.", vbExclamation, "Data Mismatch"
+286	0	        End If
+287	0	    End If
+288	0	    
+289	0	End If
+290	0	
+291	0	Dim getVol
+292	0	getVol = DLookup("[Soil Volume]", "view_ArchaeoBotany_Flot_Log", "[Flot Number] = " & Me![Flot Sample number])
+293	0	If Not IsNull(getVol) Then
+294	0	    Me![Flot Volume] = getVol
+295	0	End If
+296	0	
+297	0	Me![cboFind].Requery
+298	0	Me![cboFilterUnit].Requery
+299	0	
+300	0	Exit Sub
+301	0	
+302	0	err_sample:
+303	0	    Call General_Error_Trap
+304	0	    Exit Sub
+305	0	End Sub
+306	0	
+307	0	Private Sub Flot_Sample_number_Change()
+308	1	'comment out saj
+309	1	'Update_GID
+310	0	End Sub
+311	0	
+312	0	
+313	0	Private Sub Flot_Sample_number_Enter()
+314	1	'SAJ before versioning - this causes sql update error to be returned to user even
+315	1	'they have not tried to edit anything, most confusing and unnecessary so removed
+316	1	' 11/01/05
+317	1	'Update_GID
+318	0	End Sub
+319	0	
+320	0	
+321	0	Private Sub Form_Current()
+322	1	'new 2011
+323	0	On Error GoTo err_current
+324	0	
+325	0	    Me![cboFind].Requery
+326	0	    Me![cboFilterUnit].Requery
+327	0	    
+328	0	    If Me![chkMerged] = True Then
+329	0	        Me!cmdMergeFlot.Visible = True
+330	0	    Else
+331	0	        Me!cmdMergeFlot.Visible = False
+332	0	    End If
+333	0	Exit Sub
+334	0	
+335	0	err_current:
+336	0	    Call General_Error_Trap
+337	0	    Exit Sub
+338	0	End Sub
+339	0	
+340	0	Private Sub Sample_AfterUpdate()
+341	0	Update_GID
+342	0	End Sub
+343	0	
+344	0	Private Sub Sample_Change()
+345	1	'comment out saj
+346	1	'Update_GID
+347	0	End Sub
+348	0	
+349	0	
+350	0	Private Sub Sample_Enter()
+351	1	'SAJ before versioning - this causes sql update error to be returned to user even
+352	1	'they have not tried to edit anything, most confusing and unnecessary so removed
+353	1	' 11/01/05
+354	1	'Update_GID
+355	0	End Sub
+356	0	
+357	0	
+358	0	Private Sub Unit_AfterUpdate()
+359	0	Update_GID
+360	0	End Sub
+361	0	
+362	0	Private Sub Unit_Change()
+363	1	'Update_GID
+364	0	End Sub
+365	0	
+366	0	
+367	0	Private Sub Unit_Enter()
+368	1	'SAJ before versioning - this causes sql update error to be returned to user even
+369	1	'they have not tried to edit anything, most confusing and unnecessary so removed
+370	1	' 11/01/05
+371	1	'Update_GID
+372	0	End Sub
+373	0	
+374	0	
+375	0	

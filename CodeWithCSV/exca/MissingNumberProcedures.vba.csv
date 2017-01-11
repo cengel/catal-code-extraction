@@ -1,0 +1,110 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Function FindMissingNumbers(tbl, fld) As Boolean
+5	1	'*****************************************************************************************
+6	1	' New procedure Feb 09 to aid data cleaning - SAJ
+7	1	' Identifies numbers that are missing in a particular table - for use with units, features etc
+8	1	' It can only know a number is missing at present, it has no master table to compare with
+9	1	' yet so will come up with runs of numbers not used at present.
+10	1	' The code is called from the form: Exca: Admin_Subform_MissingNumbers
+11	1	' Inputs: table to check, field name that contains the number
+12	1	'*****************************************************************************************
+13	0	On Error GoTo err_nums
+14	0	
+15	0	Dim mydb As DAO.Database, myrs As DAO.Recordset
+16	0	Dim sql As String, sql1 As String, val As Field, holdval1 As Long, holdval2 As Long
+17	0	Dim response As Integer
+18	0	MsgBox "The first thing this code must do is retrieve the whole dataset. If your connection is slow it may time out but it will give you a message if this happens. Starting now......", vbInformation, "Start Procedure"
+19	0	Set mydb = CurrentDb
+20	1	'first get the last number in the table - often the end numbers in these tables are mistakes
+21	1	'so the idea here is to show the user the last few numbers so they can decide where the genuine end point it.
+22	1	' eg: in units there is 999999 (the Mellaart number) and all other 900000 should not be listed
+23	0	sql = "SELECT [" & fld & "] FROM [" & tbl & "] ORDER BY [" & fld & "];"
+24	0	Set myrs = mydb.OpenRecordset(sql, dbOpenSnapshot)
+25	0	myrs.MoveLast
+26	0	Set val = myrs.Fields(fld)
+27	0	holdval1 = val
+28	1	'now get the number 2nd from last
+29	0	myrs.MovePrevious
+30	0	holdval2 = val
+31	0	
+32	1	'show the user the last two numbers in the sequence and ask if the last number is the end of the range
+33	0	response = MsgBox("The last two values in the " & fld & " field are: " & holdval1 & " and " & holdval2 & ". Do you want the check to run upto " & holdval1, vbYesNo + vbQuestion, "Run end point")
+34	0	If response = vbNo Then
+35	1	    'if user does not want to use last number as end of range then move back through the recordset asking the same question for
+36	1	    ' four more iterations before giving up - this covers the incorrect numbers identified in the unit sheet whilst writing the code
+37	0	    holdval1 = holdval2
+38	0	    myrs.MovePrevious
+39	0	    holdval2 = val
+40	0	    response = MsgBox("The next two values in the " & fld & " field are: " & holdval1 & " and " & holdval2 & ". Do you want the check to run upto " & holdval1, vbYesNo + vbQuestion, "Run end point")
+41	0	    If response = vbNo Then
+42	0	        holdval1 = holdval2
+43	0	        myrs.MovePrevious
+44	0	        holdval2 = val
+45	0	        response = MsgBox("The next two values in the " & fld & " field are: " & holdval1 & " and " & holdval2 & ". Do you want the check to run upto " & holdval1, vbYesNo + vbQuestion, "Run end point")
+46	0	        If response = vbNo Then
+47	0	            holdval1 = holdval2
+48	0	            myrs.MovePrevious
+49	0	            holdval2 = val
+50	0	            response = MsgBox("The next two values in the " & fld & " field are: " & holdval1 & " and " & holdval2 & ". Do you want the check to run upto " & holdval1, vbYesNo + vbQuestion, "Run end point")
+51	0	            If response = vbNo Then
+52	0	                holdval1 = holdval2
+53	0	                myrs.MovePrevious
+54	0	                holdval2 = val
+55	0	                response = MsgBox("The next two values in the " & fld & " field are: " & holdval1 & " and " & holdval2 & ". Do you want the check to run upto " & holdval1, vbYesNo + vbQuestion, "Run end point")
+56	0	                If response = vbNo Then
+57	0	                    MsgBox "Please clean up the last " & fld & " values and run this procedure again"
+58	0	                    FindMissingNumbers = False
+59	0	                    Exit Function
+60	0	                Else
+61	0	                    GoTo cont
+62	0	                End If
+63	0	            Else
+64	0	                GoTo cont
+65	0	            End If
+66	0	
+67	0	        Else
+68	0	            GoTo cont
+69	0	        End If
+70	0	    Else
+71	0	        GoTo cont
+72	0	    End If
+73	0	
+74	0	
+75	0	Else
+76	0	    GoTo cont
+77	0	End If
+78	0	
+79	0	cont:
+80	0	
+81	0	    MsgBox "The code will now run to compile the list of missinig numbers up to: " & holdval1 & ". It may be quite slow , a report will appear when complete so you know it has finished"
+82	0	    sql1 = "DELETE * FROM LocalMissingNumbers;"
+83	0	    DoCmd.RunSQL sql1
+84	0	    sql1 = ""
+85	0	    myrs.MoveFirst
+86	0	    Dim counter As Long, checknum
+87	0	    counter = 0
+88	0	    Do Until counter = holdval1
+89	0	        checknum = DLookup("[" & fld & "]", "[" & tbl & "]", "[" & fld & "] = " & counter)
+90	0	        If IsNull(checknum) Then
+91	0	            sql1 = "INSERT INTO [LocalMissingNumbers] (MissingNumber) VALUES (" & counter & ");"
+92	0	            DoCmd.RunSQL sql1
+93	0	        End If
+94	2	        ''myrs.MoveNext
+95	0	        counter = counter + 1
+96	0	    Loop
+97	1	'sql1 =
+98	0	
+99	0	myrs.Close
+100	0	Set myrs = Nothing
+101	0	mydb.Close
+102	0	Set mydb = Nothing
+103	0	FindMissingNumbers = True
+104	0	Exit Function
+105	0	
+106	0	err_nums:
+107	0	    Call General_Error_Trap
+108	0	    Exit Function
+109	0	End Function
+110	0	

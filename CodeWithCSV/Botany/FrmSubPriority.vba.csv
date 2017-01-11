@@ -1,0 +1,88 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub Ctl1_mm_fraction_NotInList(NewData As String, Response As Integer)
+5	1	'*************************************************************
+6	1	' Add a new value to the 1mm fraction list - prompting user 1st
+7	1	' SAJ
+8	1	'**************************************************************
+9	0	On Error GoTo err_1mmfraction
+10	0	
+11	0	Dim retVal
+12	0	retVal = MsgBox("This Fraction value has not been used in this field before, are you sure you wish to add it to the list?", vbInformation + vbYesNo, "New Fraction value")
+13	0	If retVal = vbYes Then
+14	1	    'allow value, as this is distinct query based list we must save the record
+15	1	    'first but need to turn off limittolist first to be able to do so an alternative
+16	1	    'way to do this would be to dlookup on entry when not limited
+17	1	    'to list but this method is quicker (but messier) as not require DB lookup 1st
+18	0	    Response = acDataErrContinue
+19	1	    Me![1 mm fraction].LimitToList = False 'turn off limit to list so record can be saved
+20	1	    DoCmd.RunCommand acCmdSaveRecord 'save rec
+21	1	    Me![1 mm fraction].Requery 'requery combo to get new value in list
+22	1	    Me![1 mm fraction].LimitToList = True 'put back on limit to list
+23	0	Else
+24	1	    'no leave it so they can edit it
+25	0	    Response = acDataErrContinue
+26	0	End If
+27	0	Exit Sub
+28	0	
+29	0	err_1mmfraction:
+30	0	    Call General_Error_Trap
+31	0	    Exit Sub
+32	0	End Sub
+33	0	
+34	0	Private Sub Ctl4_mm_fraction_NotInList(NewData As String, Response As Integer)
+35	1	'*************************************************************
+36	1	' Add a new value to the 4mm fraction - prompting user 1st
+37	1	' SAJ
+38	1	'**************************************************************
+39	0	On Error GoTo err_4mmfraction
+40	0	
+41	0	Dim retVal
+42	0	retVal = MsgBox("This Fraction value has not been used in this field before, are you sure you wish to add it to the list?", vbInformation + vbYesNo, "New Fraction value")
+43	0	If retVal = vbYes Then
+44	1	    'allow value, as this is distinct query based list we must save the record
+45	1	    'first but need to turn off limittolist first to be able to do so an alternative
+46	1	    'way to do this would be to dlookup on entry when not limited
+47	1	    'to list but this method is quicker (but messier) as not require DB lookup 1st
+48	0	    Response = acDataErrContinue
+49	1	    Me![4 mm fraction].LimitToList = False 'turn off limit to list so record can be saved
+50	1	    DoCmd.RunCommand acCmdSaveRecord 'save rec
+51	1	    Me![4 mm fraction].Requery 'requery combo to get new value in list
+52	1	    Me![4 mm fraction].LimitToList = True 'put back on limit to list
+53	0	Else
+54	1	    'no leave it so they can edit it
+55	0	    Response = acDataErrContinue
+56	0	End If
+57	0	Exit Sub
+58	0	
+59	0	err_4mmfraction:
+60	0	    Call General_Error_Trap
+61	0	    Exit Sub
+62	0	End Sub
+63	0	
+64	0	Private Sub Form_Current()
+65	1	'*****************************************************************************************
+66	1	'some fields have been replaced after 2004, toggle between fields to hide/show depending
+67	1	'on the year
+68	1	' SAJ
+69	1	'*****************************************************************************************
+70	0	On Error GoTo err_current
+71	0	
+72	1	'new fields for 2006
+73	0	    If Me![YearScanned] >= 2006 Then
+74	0	        Me![1 mm culm nodes].Enabled = False
+75	0	        Me![1 mm reed culm node].Enabled = True
+76	0	        Me![1 mm cereal culm node].Enabled = True
+77	0	    Else
+78	0	        Me![1 mm culm nodes].Enabled = True
+79	0	        Me![1 mm reed culm node].Enabled = False
+80	0	        Me![1 mm cereal culm node].Enabled = False
+81	0	    End If
+82	0	Exit Sub
+83	0	
+84	0	err_current:
+85	0	    Call General_Error_Trap
+86	0	    Exit Sub
+87	0	End Sub
+88	0	

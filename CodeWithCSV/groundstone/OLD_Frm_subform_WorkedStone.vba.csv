@@ -1,0 +1,186 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub Artefact_Class_AfterUpdate()
+5	1	'The artefact class determines which subform appears, and if the user
+6	1	'changes the class any existing data related to the old class must be removed.
+7	1	'if Tool - show subform Frm_subform_Tools
+8	1	'if Core - show subform Frm_subform_Cores/Debitage
+9	1	'if uniden - show no subform
+10	1	'SAJ
+11	0	On Error GoTo err_Artefact
+12	0	
+13	0	Dim retVal, sql
+14	0	
+15	0	If Me![Artefact Class] <> "" And Me![ArtefactClassSubform].SourceObject <> "" Then
+16	0	    
+17	0	    If Not IsNull(Me![ArtefactClassSubform]![GID]) Then
+18	1	        'data for old class exists
+19	0	        
+20	0	        If Me![Artefact Class].OldValue = "Core/Debitage" Then
+21	1	            'was core
+22	0	            retVal = MsgBox("If you change the artefact class you will lose all the Core specific data, are you sure?", vbQuestion + vbYesNo, "Confirm Action")
+23	0	            If retVal = vbNo Then
+24	0	                Me![Artefact Class] = Me![Artefact Class].OldValue
+25	0	                Exit Sub
+26	0	            Else
+27	2	                sql = "DELETE FROM [GroundStone 5: Cores/Debitage] WHERE [GID]='" & Me![GID] & "';"
+28	0	                DoCmd.RunSQL sql
+29	0	            End If
+30	0	        ElseIf Me![Artefact Class].OldValue = "Tool" Then
+31	1	            'was tools
+32	0	            retVal = MsgBox("If you change the artefact class you will lose all the Tool specific data, are you sure?", vbQuestion + vbYesNo, "Confirm Action")
+33	0	            If retVal = vbNo Then
+34	0	                Me![Artefact Class] = Me![Artefact Class].OldValue
+35	0	                Exit Sub
+36	0	            Else
+37	2	                sql = "DELETE FROM [GroundStone 4: Tools] WHERE [GID]='" & Me![GID] & "';"
+38	0	                DoCmd.RunSQL sql
+39	0	            End If
+40	0	        End If
+41	0	    End If
+42	0	End If
+43	0	
+44	0	If Me![Artefact Class] <> "" Then
+45	0	    If Me![Artefact Class].Column(1) = 2 Then
+46	1	        'user has selected TOOL
+47	2	        Me![txtArtefactClassLBL].ControlSource = "='The artefact class is Tool'"
+48	0	        Me![ArtefactClassSubform].SourceObject = "Frm_subform_Tools"
+49	0	        Me![ArtefactClassSubform].Form![txtGID] = Me![txtGID]
+50	0	        Me![ArtefactClassSubform].Height = "4620"
+51	0	        Forms![Frm_GS_Main]![subfrmWorkedOrUnworked].Height = "9800"
+52	0	    ElseIf Me![Artefact Class].Column(1) = 1 Then
+53	1	        'user has selected CORE
+54	2	        Me![txtArtefactClassLBL].ControlSource = "='The artefact class is Cores/Debitage'"
+55	0	        Me![ArtefactClassSubform].SourceObject = "Frm_subform_Cores/Debitage"
+56	0	        Me![ArtefactClassSubform].Form![txtGID] = Me![txtGID]
+57	0	        Me![ArtefactClassSubform].Height = "4620"
+58	0	        Forms![Frm_GS_Main]![subfrmWorkedOrUnworked].Height = "9800"
+59	0	    Else
+60	1	        'user selected unidentifiable
+61	0	        Me![txtArtefactClassLBL].ControlSource = ""
+62	0	        Me![ArtefactClassSubform].SourceObject = ""
+63	0	        Me![ArtefactClassSubform].Height = "0"
+64	0	        Forms![Frm_GS_Main]![subfrmWorkedOrUnworked].Height = "4900"
+65	0	    End If
+66	0	    
+67	1	    'now update the artefact type and subtype lists
+68	0	    Dim rowsrc
+69	0	    Me![Artefact Type] = Null
+70	0	    rowsrc = "SELECT [GroundStone List of Values: Artefact Type].[Tool Types], "
+71	0	    rowsrc = rowsrc & "[GroundStone List of Values: Artefact Type].[Code], "
+72	0	    rowsrc = rowsrc & "[GroundStone List of Values: Artefact Type].[ClassID], "
+73	0	    rowsrc = rowsrc & "[GroundStone List of Values: Artefact Class].Class "
+74	0	    rowsrc = rowsrc & "FROM [GroundStone List of Values: Artefact Type] LEFT JOIN [GroundStone List of Values: Artefact Class] ON [GroundStone List of Values: Artefact Type].ClassID = [GroundStone List of Values: Artefact Class].ClassID "
+75	2	    rowsrc = rowsrc & "WHERE [GroundStone List of Values: Artefact Class].Class = '" & Me![Artefact Class] & "'"
+76	0	    rowsrc = rowsrc & " ORDER BY [GroundStone List of Values: Artefact Type].[Tool Types];"
+77	0	    Me![Artefact Type].RowSource = rowsrc
+78	0	    
+79	0	    Me![Artefact SubType] = Null
+80	0	    rowsrc = "SELECT [Groundstone List of Values: Artefact SubType].[Tool Subtype], "
+81	0	    rowsrc = rowsrc & "[Groundstone List of Values: Artefact SubType].Code, "
+82	0	    rowsrc = rowsrc & "[Groundstone List of Values: Artefact SubType].TypeCode, "
+83	0	    rowsrc = rowsrc & "[GroundStone List of Values: Artefact Type].[Tool Types]  "
+84	0	    rowsrc = rowsrc & " FROM [Groundstone List of Values: Artefact SubType] LEFT JOIN [GroundStone List of Values: Artefact Type] ON [Groundstone List of Values: Artefact SubType].TypeCode = [GroundStone List of Values: Artefact Type].Code"
+85	2	    rowsrc = rowsrc & " WHERE [Tool Types] = '" & Me![Artefact Type] & "'"
+86	0	    rowsrc = rowsrc & " ORDER BY [Groundstone List of Values: Artefact SubType].[Tool Subtype];"
+87	0	    Me![Artefact SubType].RowSource = rowsrc
+88	0	End If
+89	0	Exit Sub
+90	0	
+91	0	err_Artefact:
+92	0	    Call General_Error_Trap
+93	0	    Exit Sub
+94	0	
+95	0	End Sub
+96	0	
+97	0	Private Sub Artefact_Type_AfterUpdate()
+98	1	'
+99	0	On Error GoTo err_arteType
+100	0	
+101	1	    'now update the artefact subtype list
+102	0	
+103	0	    Dim rowsrc
+104	0	    Me![Artefact SubType] = Null
+105	0	    rowsrc = "SELECT [Groundstone List of Values: Artefact SubType].[Tool Subtype], "
+106	0	    rowsrc = rowsrc & "[Groundstone List of Values: Artefact SubType].Code, "
+107	0	    rowsrc = rowsrc & "[Groundstone List of Values: Artefact SubType].TypeCode, "
+108	0	    rowsrc = rowsrc & "[GroundStone List of Values: Artefact Type].[Tool Types]  "
+109	0	    rowsrc = rowsrc & " FROM [Groundstone List of Values: Artefact SubType] LEFT JOIN [GroundStone List of Values: Artefact Type] ON [Groundstone List of Values: Artefact SubType].TypeCode = [GroundStone List of Values: Artefact Type].Code"
+110	2	    rowsrc = rowsrc & " WHERE [Tool Types] = '" & Me![Artefact Type] & "'"
+111	0	    rowsrc = rowsrc & " ORDER BY [Groundstone List of Values: Artefact SubType].[Tool Subtype];"
+112	0	    Me![Artefact SubType].RowSource = rowsrc
+113	0	
+114	0	Exit Sub
+115	0	
+116	0	err_arteType:
+117	0	    Call General_Error_Trap
+118	0	    Exit Sub
+119	0	End Sub
+120	0	
+121	0	Private Sub Form_Current()
+122	0	
+123	0	If Me![Artefact Class].Column(1) = 2 Then
+124	1	    'Me![Form Groundstone: Tools].Visible = True
+125	2	    Me![txtArtefactClassLBL].ControlSource = "='The artefact class is Tool'"
+126	0	    Me![ArtefactClassSubform].SourceObject = "Frm_subform_Tools"
+127	0	    Me![ArtefactClassSubform].Height = "4620"
+128	0	ElseIf Me![Artefact Class].Column(1) = 1 Then
+129	1	    'Me![Form Groundstone: Tools].Visible = False
+130	2	    Me![txtArtefactClassLBL].ControlSource = "='The artefact class is Cores/Debitage'"
+131	0	    Me![ArtefactClassSubform].SourceObject = "Frm_subform_Cores/Debitage"
+132	0	    Me![ArtefactClassSubform].Height = "4620"
+133	0	Else
+134	1	    'unidentifiable
+135	0	    Me![txtArtefactClassLBL].ControlSource = ""
+136	0	    Me![ArtefactClassSubform].SourceObject = ""
+137	0	    Me![ArtefactClassSubform].Height = 0
+138	0	End If
+139	0	    
+140	0	End Sub
+141	0	
+142	0	Private Sub Raw_Material_Group_NotInList(NewData As String, Response As Integer)
+143	1	'Allow more values to be added if necessary
+144	0	On Error GoTo err_Raw_NotInList
+145	0	
+146	0	Dim retVal, sql, inputname
+147	0	
+148	0	retVal = MsgBox("This value is not in the list, are you sure you want to add it?", vbQuestion + vbYesNo, "Value not in list")
+149	0	If retVal = vbYes Then
+150	0	    Response = acDataErrAdded
+151	2	    sql = "INSERT INTO [Groundstone List of Values: RawMaterialGroup]([RawMaterialGroup]) VALUES ('" & NewData & "');"
+152	0	    DoCmd.RunSQL sql
+153	0	Else
+154	0	    Response = acDataErrContinue
+155	0	End If
+156	0	
+157	0	   
+158	0	Exit Sub
+159	0	
+160	0	err_Raw_NotInList:
+161	0	    Call General_Error_Trap
+162	0	    Exit Sub
+163	0	End Sub
+164	0	
+165	0	Private Sub Raw_Material_Texture_NotInList(NewData As String, Response As Integer)
+166	1	'Allow more values to be added if necessary
+167	0	On Error GoTo err_RawText_NotInList
+168	0	
+169	0	Dim retVal, sql, inputname
+170	0	
+171	0	retVal = MsgBox("This value is not in the list, are you sure you want to add it?", vbQuestion + vbYesNo, "Value not in list")
+172	0	If retVal = vbYes Then
+173	0	    Response = acDataErrAdded
+174	2	    sql = "INSERT INTO [Groundstone List of Values: RawMaterialTexture]([RawMaterialTexture]) VALUES ('" & NewData & "');"
+175	0	    DoCmd.RunSQL sql
+176	0	Else
+177	0	    Response = acDataErrContinue
+178	0	End If
+179	0	
+180	0	   
+181	0	Exit Sub
+182	0	
+183	0	err_RawText_NotInList:
+184	0	    Call General_Error_Trap
+185	0	    Exit Sub
+186	0	End Sub

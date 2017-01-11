@@ -1,0 +1,278 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub Command47_Click()
+5	0	
+6	0	Dim s4wt As Single, s2wt As Single, s1wt As Single, s05wt As Single
+7	0	Dim s4ct As Single, s2ct As Single, s1ct As Single, s05ct As Single
+8	0	
+9	0	Dim mydb As Database, Recs As DAO.Recordset
+10	0	Dim strSQL As String
+11	0	
+12	1	    ' Return Database variable pointing to current database.
+13	0	    Set mydb = CurrentDb
+14	0	    strSQL = "SELECT DISTINCTROW [Bots98: Light Ph2 Material].GID, [Bots98: Light Ph2 Material].Material, [Bots98: Basic Flot details].[Vol in Litres], [Bots98: Light Ph2 Material].TotalWeight, [Bots98: Light Ph2 Material].TotalCount, [Bots98: Light Ph2 Material].[4 Weight], [Bots98: Light Ph2 Material].[4 Count], [Bots98: Light Ph2 Material].[4 %% sorted], [Bots98: Light Ph2 Material].[2 Weight], [Bots98: Light Ph2 Material].[2 Count], [Bots98: Light Ph2 Material].[2 %% sorted], [Bots98: Light Ph2 Material].[1 Weight], [Bots98: Light Ph2 Material].[1 Count], [Bots98: Light Ph2 Material].[1 %% sorted], [Bots98: Light Ph2 Material].[0,5 Weight], [Bots98: Light Ph2 Material].[0,5 Count], [Bots98: Light Ph2 Material].[0,5 %% sorted] FROM [Bots98: Light Ph2 Material] INNER JOIN [Bots98: Basic Flot details] ON [Bots98: Light Ph2 Material].GID = [Bots98: Basic Flot details].GID;"
+15	0	    Set Recs = mydb.OpenRecordset(strSQL)
+16	0	    
+17	0	Do Until Recs.EOF
+18	0	With Recs
+19	0	If ![Vol in Litres] > 0 Then
+20	1	    'do WEIGHTS and COUNTS for each fraction
+21	0	    
+22	0	    If ![4 %% sorted] = 0 Then
+23	0	        s4wt = 0
+24	0	        s4ct = 0
+25	0	    Else
+26	0	        s4wt = ![4 Weight]
+27	0	        s4ct = ![4 Count]
+28	0	    End If
+29	0	    Debug.Print "4%%" & s4wt
+30	0	    
+31	0	    If ![2 %% sorted] = 0 Then
+32	0	        s2wt = 0
+33	0	        s2ct = 0
+34	0	    Else
+35	0	        s2wt = ![2 Weight]
+36	0	        s2ct = ![2 Count]
+37	0	    End If
+38	0	    
+39	0	    If ![1 %% sorted] = 0 Then
+40	0	        s1wt = 0
+41	0	        s1ct = 0
+42	0	    Else
+43	0	        s1wt = ![1 Weight]
+44	0	        s1ct = ![1 Count]
+45	0	    End If
+46	0	    
+47	0	    If ![0,5 %% sorted] = 0 Then
+48	0	        s05wt = 0
+49	0	        s05ct = 0
+50	0	    Else
+51	0	        s05wt = ![0,5 Weight]
+52	0	        s05ct = ![0,5 Count]
+53	0	    End If
+54	0	   
+55	1	End If 'litres
+56	0	
+57	0	.Edit
+58	0	![TotalWeight] = s4wt + s2wt + s1wt + s05wt
+59	0	![TotalCount] = s4ct + s2ct + s1ct + s05ct
+60	0	
+61	1	'Forms![Bots98: Light Ph2 Stand pop-up]![TotalWeight] = totwt
+62	1	'Forms![Bots98: Light Ph2 Stand pop-up]![TotalCount] = totct
+63	0	.Update
+64	0	.MoveNext
+65	0	End With
+66	0	
+67	0	Loop
+68	0	Recs.MoveLast
+69	0	Debug.Print Recs.RecordCount
+70	0	Recs.Close
+71	0	
+72	0	End Sub
+73	0	
+74	0	
+75	0	Private Sub Form_Current()
+76	0	Dim s4wt As Single, s2wt As Single, s1wt As Single, s05wt As Single
+77	0	Dim s4ct As Single, s2ct As Single, s1ct As Single, s05ct As Single
+78	0	Dim totwt As Single, totct As Single
+79	0	Dim substring As Object
+80	0	
+81	0	Set substring = Me![Bots98: subform Standardize Heavy3]
+82	1	'Set substring = Forms![Bots98: Light Ph2 Stand pop-up2]
+83	0	
+84	0	If substring![Vol in Litres] > 0 Then
+85	1	    'do WEIGHTS and COUNTS for each fraction
+86	0	    
+87	0	    If substring![4 %% sorted] = 0 Then
+88	0	        s4wt = 0
+89	0	        s4ct = 0
+90	0	    Else
+91	0	        s4wt = substring![stand4wt]
+92	0	        s4ct = substring![Stand4ct]
+93	0	    End If
+94	0	    
+95	0	    If substring![2 %% sorted] = 0 Then
+96	0	        s2wt = 0
+97	0	        s2ct = 0
+98	0	    Else
+99	0	        s2wt = substring![stand2wt]
+100	0	        s2ct = substring![Stand2ct]
+101	0	    End If
+102	0	    
+103	0	    If substring![1 %% sorted] = 0 Then
+104	0	        s1wt = 0
+105	0	        s1ct = 0
+106	0	    Else
+107	0	        s1wt = substring![Stand1wt]
+108	0	        s1ct = substring![Stand1ct]
+109	0	    End If
+110	0	    
+111	0	    If substring![0,5 %% sorted] = 0 Then
+112	0	        s05wt = 0
+113	0	        s05ct = 0
+114	0	    Else
+115	0	        s05wt = substring![Stand05wt]
+116	0	        s05ct = substring![Stand05ct]
+117	0	    End If
+118	1	End If 'litres
+119	0	
+120	0	totwt = s4wt + s2wt + s1wt + s05wt
+121	0	totct = s4ct + s2ct + s1ct + s05ct
+122	0	
+123	0	Me![TotalWeight] = totwt
+124	0	Me![TotalCount] = totct
+125	0	
+126	0	
+127	0	End Sub
+128	0	
+129	0	Sub Close_Click()
+130	0	On Error GoTo Err_close_Click
+131	0	
+132	0	
+133	0	    DoCmd.Close
+134	0	
+135	0	Exit_close_Click:
+136	0	    Exit Sub
+137	0	
+138	0	Err_close_Click:
+139	0	    MsgBox Err.Description
+140	0	    Resume Exit_close_Click
+141	0	    
+142	0	End Sub
+143	0	
+144	0	Sub run_Click()
+145	0	On Error GoTo Err_run_Click
+146	0	
+147	0	
+148	0	Dim s4wt As Single, s2wt As Single, s1wt As Single, s05wt As Single
+149	0	Dim s4ct As Single, s2ct As Single, s1ct As Single, s05ct As Single
+150	0	Dim totwt As Single, totct As Single
+151	0	Dim substring As Object
+152	0	Dim Recs As Recordset
+153	0	
+154	0	Set Recs = Me.RecordsetClone
+155	0	
+156	0	Set substring = Forms![Bots98: Light Ph2 Stand pop-up]![Bots98: Standardize subform1]
+157	1	'Set substring = Forms![Bots98: Light Ph2 Stand pop-up2]
+158	0	Do Until Recs.EOF
+159	0	
+160	0	If substring![Vol in Litres] > 0 Then
+161	1	    'do WEIGHTS and COUNTS for each fraction
+162	0	    
+163	0	    If substring![4 %% sorted] = 0 Then
+164	0	        s4wt = 0
+165	0	        s4ct = 0
+166	0	    Else
+167	0	        s4wt = substring![stand4wt]
+168	0	        s4ct = substring![Stand4ct]
+169	0	    End If
+170	0	    Debug.Print "4%%" & s4wt
+171	0	    
+172	0	    If substring![2 %% sorted] = 0 Then
+173	0	        s2wt = 0
+174	0	        s2ct = 0
+175	0	    Else
+176	0	        s2wt = substring![stand2wt]
+177	0	        s2ct = substring![Stand2ct]
+178	0	    End If
+179	0	    
+180	0	    If substring![1 %% sorted] = 0 Then
+181	0	        s1wt = 0
+182	0	        s1ct = 0
+183	0	    Else
+184	0	        s1wt = substring![Stand1wt]
+185	0	        s1ct = substring![Stand1ct]
+186	0	    End If
+187	0	    
+188	0	    If substring![0,5 %% sorted] = 0 Then
+189	0	        s05wt = 0
+190	0	        s05ct = 0
+191	0	    Else
+192	0	        s05wt = substring![Stand05wt]
+193	0	        s05ct = substring![Stand05ct]
+194	0	    End If
+195	0	   
+196	1	End If 'litres
+197	0	
+198	0	totwt = s4wt + s2wt + s1wt + s05wt
+199	0	totct = s4ct + s2ct + s1ct + s05ct
+200	0	
+201	0	Forms![Bots98: Light Ph2 Stand pop-up]![TotalWeight] = totwt
+202	0	Forms![Bots98: Light Ph2 Stand pop-up]![TotalCount] = totct
+203	0	Recs.Update
+204	0	Recs.MoveNext
+205	0	
+206	0	Loop
+207	0	Recs.Close
+208	1	'If Not Recs.EOF Then
+209	1	'Recs.MoveLast
+210	1	'End If
+211	0	
+212	0	Exit_run_Click:
+213	0	    Exit Sub
+214	0	
+215	0	Err_run_Click:
+216	0	    MsgBox Err.Description
+217	0	    Resume Exit_run_Click
+218	0	    
+219	0	End Sub
+220	0	
+221	0	Private Sub Form_Load()
+222	0	Dim s4wt As Single, s2wt As Single, s1wt As Single, s05wt As Single
+223	0	Dim s4ct As Single, s2ct As Single, s1ct As Single, s05ct As Single
+224	0	Dim totwt As Single, totct As Single
+225	0	Dim substring As Object
+226	0	
+227	0	Set substring = Me![Bots98: subform Standardize Heavy3]
+228	0	
+229	0	If substring![Vol in Litres] > 0 Then
+230	1	    'do WEIGHTS and COUNTS for each fraction
+231	0	    
+232	0	    If substring![4 %% sorted] = 0 Then
+233	0	        s4wt = 0
+234	0	        s4ct = 0
+235	0	    Else
+236	0	        s4wt = substring![stand4wt]
+237	0	        s4ct = substring![Stand4ct]
+238	0	    End If
+239	0	    
+240	0	    If substring![2 %% sorted] = 0 Then
+241	0	        s2wt = 0
+242	0	        s2ct = 0
+243	0	    Else
+244	0	        s2wt = substring![stand2wt]
+245	0	        s2ct = substring![Stand2ct]
+246	0	    End If
+247	0	    
+248	0	    If substring![1 %% sorted] = 0 Then
+249	0	        s1wt = 0
+250	0	        s1ct = 0
+251	0	    Else
+252	0	        s1wt = substring![Stand1wt]
+253	0	        s1ct = substring![Stand1ct]
+254	0	    End If
+255	0	    
+256	0	    If substring![0,5 %% sorted] = 0 Then
+257	0	        s05wt = 0
+258	0	        s05ct = 0
+259	0	    Else
+260	0	        s05wt = substring![Stand05wt]
+261	0	        s05ct = substring![Stand05ct]
+262	0	    End If
+263	0	   
+264	0	    totwt = s4wt + s2wt + s1wt + s05wt
+265	0	    totct = s4ct + s2ct + s1ct + s05ct
+266	1	Else 'no litres
+267	0	    MsgBox "Sample Volume is 0 Litres, no calculation possible. All standardized values for this sample will be set to 0."
+268	0	    totwt = 0
+269	0	    totct = 0
+270	0	
+271	1	End If 'litres
+272	0	
+273	0	Me![TotalWeight] = totwt
+274	0	Me![TotalCount] = totct
+275	0	
+276	0	End Sub
+277	0	
+278	0	

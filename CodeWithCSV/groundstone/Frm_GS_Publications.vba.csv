@@ -1,0 +1,157 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cboFind_AfterUpdate()
+5	1	'find the sample number
+6	0	On Error GoTo err_cboFind
+7	0	
+8	0	    If Me![cboFind] <> "" Then
+9	0	    
+10	0	        If Me.Filter <> "" Then
+11	2	            If Me.Filter <> "[GID] = '" & Me![cboFind].Column(1) & "'" Then
+12	0	                MsgBox "This form was opened to only show publication records relating to " & Me.Filter & ". This action has removed the filter and all records are available to view.", vbInformation, "Filter Removed"
+13	0	                Me.FilterOn = False
+14	0	            End If
+15	0	        End If
+16	0	        DoCmd.GoToControl Me![PublicationID].Name
+17	0	        DoCmd.FindRecord Me![cboFind]
+18	0	   
+19	0	    End If
+20	0	
+21	0	Exit Sub
+22	0	
+23	0	err_cboFind:
+24	0	    Call General_Error_Trap
+25	0	    Exit Sub
+26	0	End Sub
+27	0	
+28	0	Private Sub Close_Click()
+29	0	On Error GoTo err_close
+30	0	
+31	0	    DoCmd.Close acForm, Me.Name
+32	0	
+33	0	Exit Sub
+34	0	
+35	0	err_close:
+36	0	    Call General_Error_Trap
+37	0	    Exit Sub
+38	0	End Sub
+39	0	
+40	0	Private Sub cmdAddNew_Click()
+41	1	'add a new publication record
+42	0	On Error GoTo err_cmdAddNew
+43	0	Dim retVal, getsample, getGID, getUnit, getLetter, getNum, sql
+44	0	
+45	0	If Me![txtGID] <> "" Then
+46	0	    retVal = MsgBox("Do you want to add another publication record for this GID (" & Me![txtGID] & ")?", vbYesNo + vbQuestion, "New sample")
+47	0	    If retVal = vbYes Then
+48	0	            getGID = Me![txtGID]
+49	0	            getUnit = Me![txtUnit]
+50	0	            getLetter = Me![txtLetter]
+51	0	            getNum = Me![txtNum]
+52	0	            Me.AllowAdditions = True
+53	0	            DoCmd.RunCommand acCmdRecordsGoToNew
+54	0	            Me![txtGID] = getGID
+55	0	            Me![txtUnit] = getUnit
+56	0	            Me![txtLetter] = getLetter
+57	0	            Me![txtNum] = getNum
+58	0	            Me.AllowAdditions = False
+59	0	            
+60	1	            'it should be that this basic record is already marked as sampled but just in case mark is so
+61	1	            'as a catchall for any previous mismatches between tables
+62	2	            sql = "UPDATE [GroundStone 1: Basic Data] SET [Published] = True WHERE [GID] = '" & Me![txtGID] & "';"
+63	0	            DoCmd.RunSQL sql
+64	0	            Exit Sub
+65	0	    End If
+66	0	End If
+67	0	
+68	0	MsgBox "You now be asked for the GID fields related to this publication, you must enter them all", vbInformation, "Data Required"
+69	0	
+70	0	getUnit = InputBox("Please enter the Unit number related to the publication:", "Unit number")
+71	0	If getUnit = "" Then
+72	0	    MsgBox "You cannot enter a new record without a Unit number", vbCritical, "Action Cancelled"
+73	0	    Exit Sub
+74	0	End If
+75	0	
+76	0	getLetter = InputBox("Please enter the Letter (X or K) related to the object published:", "Letter")
+77	0	If getLetter = "" Then
+78	0	    MsgBox "You cannot enter a new record without the id letter", vbCritical, "Action Cancelled"
+79	0	    Exit Sub
+80	0	End If
+81	0	
+82	0	getNum = InputBox("Please enter the object number related to the publication:", "Object number")
+83	0	If getNum = "" Then
+84	0	    MsgBox "You cannot enter a new record without a number", vbCritical, "Action Cancelled"
+85	0	    Exit Sub
+86	0	End If
+87	0	
+88	0	Me.AllowAdditions = True
+89	0	DoCmd.RunCommand acCmdRecordsGoToNew
+90	0	Me![txtGID] = getUnit & "." & getLetter & getNum
+91	0	Me![txtUnit] = getUnit
+92	0	Me![txtLetter] = getLetter
+93	0	Me![txtNum] = getNum
+94	0	Me.AllowAdditions = False
+95	0	
+96	1	'now mark the basic record for this GID as sampled
+97	2	sql = "UPDATE [GroundStone 1: Basic Data] SET [Published] = True WHERE [GID] = '" & Me![txtGID] & "';"
+98	0	DoCmd.RunSQL sql
+99	0	Exit Sub
+100	0	
+101	0	err_cmdAddNew:
+102	0	    Call General_Error_Trap
+103	0	    Exit Sub
+104	0	End Sub
+105	0	
+106	0	Private Sub cmdGoFirst_Click()
+107	0	On Error GoTo Err_gofirst_Click
+108	0	
+109	0	
+110	0	    DoCmd.GoToRecord , , acFirst
+111	0	
+112	0	    Exit Sub
+113	0	
+114	0	Err_gofirst_Click:
+115	0	    Call General_Error_Trap
+116	0	    
+117	0	End Sub
+118	0	
+119	0	Private Sub cmdGoLast_Click()
+120	0	On Error GoTo Err_goLast_Click
+121	0	
+122	0	
+123	0	    DoCmd.GoToRecord , , acLast
+124	0	
+125	0	    Exit Sub
+126	0	
+127	0	Err_goLast_Click:
+128	0	    Call General_Error_Trap
+129	0	    
+130	0	End Sub
+131	0	
+132	0	Private Sub cmdGoNext_Click()
+133	0	On Error GoTo Err_goNext_Click
+134	0	
+135	0	
+136	0	    DoCmd.GoToRecord , , acNext
+137	0	
+138	0	    Exit Sub
+139	0	
+140	0	Err_goNext_Click:
+141	0	    Call General_Error_Trap
+142	0	    
+143	0	End Sub
+144	0	
+145	0	Private Sub cmdGoPrev_Click()
+146	0	On Error GoTo Err_goPrev_Click
+147	0	
+148	0	
+149	0	    DoCmd.GoToRecord , , acPrevious
+150	0	
+151	0	    Exit Sub
+152	0	
+153	0	Err_goPrev_Click:
+154	0	    Call General_Error_Trap
+155	0	    
+156	0	End Sub
+157	0	

@@ -1,0 +1,185 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	0	Option Explicit
+3	1	'**************************************************
+4	1	' This form is new in v9.2 - SAJ
+5	1	'**************************************************
+6	0	
+7	0	
+8	0	
+9	0	
+10	0	Private Sub cboClass_AfterUpdate()
+11	1	'the class must be select for a new record, after it has been selected allow Type to be entered
+12	0	On Error GoTo err_cboClass
+13	0	
+14	0	If Me![cboClass] <> "" Then
+15	0	    Me![txtToolTypes].Enabled = True
+16	0	    DoCmd.GoToControl Me![txtToolTypes].Name
+17	0	    Me![cmdEdit].Enabled = True
+18	0	    Me![cmdDelete].Enabled = True
+19	0	    Me![Frm_Admin_Subform_ArtefactSubType].Enabled = True
+20	0	    Me![cboClass].Enabled = False
+21	0	    Me![cboClass].BackStyle = 0
+22	0	    Me![cboClass].Locked = True
+23	0	End If
+24	0	Exit Sub
+25	0	
+26	0	err_cboClass:
+27	0	    Call General_Error_Trap
+28	0	    Exit Sub
+29	0	End Sub
+30	0	
+31	0	Private Sub cboFindFeature_AfterUpdate()
+32	1	'v9.2 saj find a feature from the list
+33	0	On Error GoTo err_find
+34	0	    If Me![cboFindFeature] <> "" Then
+35	0	        DoCmd.GoToControl "txtToolTypes"
+36	0	        DoCmd.FindRecord Me![cboFindFeature]
+37	0	    End If
+38	0	    Me.AllowEdits = False
+39	0	Exit Sub
+40	0	
+41	0	err_find:
+42	0	    Call General_Error_Trap
+43	0	    Exit Sub
+44	0	End Sub
+45	0	
+46	0	
+47	0	
+48	0	
+49	0	
+50	0	
+51	0	
+52	0	Private Sub cboFindFeature_GotFocus()
+53	2	'v9.2 SAJ - as the form does not allow edits the list can't be selected from -
+54	1	'when list gets focus turn on allow edits and off again when loses it
+55	0	Me.AllowEdits = True
+56	0	End Sub
+57	0	
+58	0	Private Sub cboFindFeature_LostFocus()
+59	2	'v9.2 SAJ - as the form does not allow edits the list can't be selected from -
+60	1	'when list gets focus turn on allow edits and off again when loses it
+61	0	Me.AllowEdits = False
+62	0	End Sub
+63	0	
+64	0	Private Sub cmdAddNew_Click()
+65	1	'v9.2 SAJ - add a new record
+66	0	On Error GoTo err_cmdAddNew_Click
+67	0	
+68	0	    DoCmd.RunCommand acCmdRecordsGoToNew
+69	1	    'to ensure that the user enters the artefact class associated with this type
+70	1	    'enable the combo and disable all other controls
+71	0	    Me![cboClass].Visible = True
+72	0	    Me![cboClass].Enabled = True
+73	0	    Me![cboClass].Locked = False
+74	0	    Me![cboClass].BackStyle = 1
+75	0	    DoCmd.GoToControl Me![cboClass].Name
+76	0	    Me![txtToolTypes].Enabled = False
+77	0	    Me![cmdEdit].Enabled = False
+78	0	    Me![cmdDelete].Enabled = False
+79	0	    Me![Frm_Admin_Subform_ArtefactSubType].Enabled = False
+80	0	Exit Sub
+81	0	
+82	0	err_cmdAddNew_Click:
+83	0	    Call General_Error_Trap
+84	0	    Exit Sub
+85	0	End Sub
+86	0	
+87	0	Private Sub Excavation_Click()
+88	1	'v9.2 SAJ - close the form
+89	0	    DoCmd.Close acForm, Me.Name
+90	0	End Sub
+91	0	
+92	0	
+93	0	
+94	0	Private Sub cmdEdit_Click()
+95	1	'v9.2 SAJ - check if user can edit this record
+96	1	' The artefact type value is used on the worked data
+97	1	' so must check all this values to see if this type is used before allow edit
+98	1	' At present not offering global edits - this can be extended to offer this if required
+99	0	
+100	1	'On Error GoTo Err_cmdEdit_Click
+101	1	'
+102	1	'Dim checkValidAction, retVal
+103	1	'
+104	2	'    'check worked Artefact Type field
+105	1	'    checkValidAction = CheckIfLOVValueUsed("GroundStone List of Values: Artefact Type", "Tool Types", Me![txtToolTypes], "GroundStone 3: Worked Stone Basics", "GID", "Artefact Type", "edit", False)
+106	1	'
+107	1	'    If checkValidAction = "ok" Then
+108	2	'        'edit action can go ahead - at present simply offer an input box for this
+109	1	'        retVal = InputBox("No records refer to this Artefact Type (" & Me![txtToolTypes] & ") so an edit is allowed." & Chr(13) & Chr(13) & "Please enter the edited Artefact Type that you wish to replace this entry with:", "Enter edited Artefact Type")
+110	1	'        If retVal <> "" Then
+111	1	'            Me![txtToolTypes] = retVal
+112	1	'        End If
+113	1	'    ElseIf checkValidAction = "fail" Then
+114	1	'        MsgBox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+115	1	'    Else
+116	1	'        MsgBox checkValidAction, vbExclamation, "Action Report"
+117	1	'    End If
+118	1	'
+119	1	'Exit_cmdEdit_Click:
+120	1	'    Exit Sub
+121	1	'
+122	1	'Err_cmdEdit_Click:
+123	1	'    Call General_Error_Trap
+124	1	'    Exit Sub
+125	1	'
+126	0	End Sub
+127	0	
+128	0	Private Sub cmdDelete_Click()
+129	1	'v9.2 SAJ - check if user can delete this record
+130	1	' The feature type value is used on the Feature Sheet
+131	1	' so must check all this values to see if this type is used before allow delete
+132	1	' At present not offering global edits - this can be extended to offer this if required
+133	0	
+134	1	'On Error GoTo Err_cmdDelete_Click
+135	1	'
+136	1	'Dim checkValidAction, retVal
+137	1	'
+138	2	'    'first check if this has any subtypes
+139	1	'    If Not IsNull(Me![Frm_Admin_Subform_ArtefactSubType].Form![Code]) Then
+140	1	'        MsgBox "You must delete the Sub types associated with this Artefact first", vbInformation, "Invalid Action"
+141	1	'    Else
+142	1	'
+143	2	'        'check worked data artefact type field
+144	1	'        checkValidAction = CheckIfLOVValueUsed("GroundStone List of Values: Artefact Type", "Tool Types", Me![txtToolTypes], "GroundStone 3: Worked Stone Basics", "GID", "Artefact Type", "delete", False)
+145	1	'        If checkValidAction = "ok" Then
+146	2	'        'delete action can go ahead - at present simply offer an input box for this
+147	1	'            retVal = MsgBox("No records refer to this Artefact Type (" & Me![txtToolTypes] & ") so deletion is allowed." & Chr(13) & Chr(13) & "Are you sure you want to delete " & Me![txtToolTypes] & " from the list of available Artefact Types?", vbExclamation + vbYesNo, "Confirm Deletion")
+148	1	'            If retVal = vbYes Then
+149	1	'                Me.AllowDeletions = True
+150	1	'                DoCmd.RunCommand acCmdDeleteRecord
+151	1	'                Me.AllowDeletions = False
+152	1	'            End If
+153	1	'
+154	1	'        ElseIf checkValidAction = "fail" Then
+155	1	'            MsgBox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+156	1	'        Else
+157	2	'            'is error occured in CheckIfLOVValueUsed it will come back empty so err already displayed
+158	1	'            If Not IsEmpty(checkValidAction) Then MsgBox checkValidAction, vbExclamation, "Action Report"
+159	1	'        End If
+160	1	'    End If
+161	1	'Exit_cmdDelete_Click:
+162	1	'    Exit Sub
+163	1	'
+164	1	'Err_cmdDelete_Click:
+165	1	'    Call General_Error_Trap
+166	1	'    Exit Sub
+167	0	    
+168	0	End Sub
+169	0	
+170	0	Private Sub Form_Open(Cancel As Integer)
+171	1	'v9.2 SAJ - only adminstrators are allowed in here
+172	0	On Error GoTo err_Form_Open
+173	0	
+174	0	    Dim permiss
+175	0	    permiss = GetGeneralPermissions
+176	0	    If permiss <> "ADMIN" Then
+177	0	        MsgBox "Sorry but only Administrators have access to this form"
+178	0	        DoCmd.Close acForm, Me.Name
+179	0	    End If
+180	0	Exit Sub
+181	0	
+182	0	err_Form_Open:
+183	0	    Call General_Error_Trap
+184	0	    Exit Sub
+185	0	End Sub

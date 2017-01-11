@@ -1,0 +1,46 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	0	Option Explicit
+3	1	'**************************************************
+4	1	' This form is new in v9.2 - SAJ
+5	1	'**************************************************
+6	0	
+7	0	
+8	0	
+9	0	
+10	0	Private Sub cmdAddNew_Click()
+11	1	'v9.2 SAJ - add a new record
+12	0	On Error GoTo err_cmdAddNew_Click
+13	0	
+14	0	    DoCmd.RunCommand acCmdRecordsGoToNew
+15	0	
+16	0	Exit Sub
+17	0	
+18	0	err_cmdAddNew_Click:
+19	0	    Call General_Error_Trap
+20	0	    Exit Sub
+21	0	End Sub
+22	0	
+23	0	Private Sub Excavation_Click()
+24	1	'SAJ - close the form
+25	0	    DoCmd.Close acForm, Me.Name
+26	0	End Sub
+27	0	
+28	0	
+29	0	
+30	0	
+31	0	Private Sub Form_Open(Cancel As Integer)
+32	1	'v9.2 SAJ - only adminstrators are allowed in here
+33	0	On Error GoTo err_Form_Open
+34	0	
+35	0	    Dim permiss
+36	0	    permiss = GetGeneralPermissions
+37	0	    If permiss <> "ADMIN" Then
+38	0	       MsgBox "Sorry but only Administrators have access to this form"
+39	0	        DoCmd.Close acForm, Me.Name
+40	0	   End If
+41	0	Exit Sub
+42	0	
+43	0	err_Form_Open:
+44	0	    Call General_Error_Trap
+45	0	    Exit Sub
+46	0	End Sub

@@ -1,0 +1,109 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdLocate_Click()
+5	1	'allow user to locate this artefact in  crate
+6	0	On Error GoTo err_locate
+7	0	
+8	1	    'get find number from main form to pass as openargs
+9	0	    Dim current
+10	0	    current = "BAG" & Forms![frm_CS_basicdata]![txtBag] & ":" & Forms![frm_CS_basicdata]![Unit] & ":"
+11	0	    DoCmd.OpenForm "frm_subform_newlocation", acNormal, , , acFormPropertySettings, acDialog, current
+12	0	    
+13	0	Exit Sub
+14	0	
+15	0	err_locate:
+16	0	    Call General_Error_Trap
+17	0	    Exit Sub
+18	0	End Sub
+19	0	
+20	0	Private Sub cmdMove_Click()
+21	1	'moving something is more complicated than a simple locate - if the find is in more than one crate I think
+22	1	'this is an issue that should be raised with the finds officer as is that correct or is that a mistake - so this is the
+23	1	'first check this code carries out
+24	0	On Error GoTo err_move
+25	0	    Dim current
+26	0	    
+27	1	    'If Me![GID] <> "" Then
+28	1	    '    If Me.RecordsetClone.RecordCount > 1 Then
+29	1	    '        MsgBox "This particular find is listed as being located in " & Me.RecordsetClone.RecordCount & " crates. This maybe because " & _
+30	1	    '                "it was comprised of more than one material but this needs to be checked. Please take this issue to the Finds Officer " & _
+31	1	    '                "straight away who can resolve it and ensure the Crate Register is updated correctly." & Chr(13) & Chr(13) & "The Finds Officer will then deal with " & _
+32	1	    '                "updating the location for you.", vbExclamation, "Raise with Finds Officer"
+33	1	    '    Else
+34	2	    '        'ok only one location so now is it a GS location?
+35	1	    '        If Me![CrateLetter] <> "GS" Then
+36	1	    '            MsgBox "This particular find is listed as being located in non Groundstone Crate. This may mean it has been mis-assigned or " & _
+37	1	    '                "that the find was comprised of more than one material. This needs to be checked. Please take this issue to the Finds Officer " & _
+38	1	    '                "straight away who can resolve it and ensure the Crate Register is updated correctly." & Chr(13) & Chr(13) & "The Finds Officer will then deal with " & _
+39	1	    '                "updating the location for you.", vbExclamation, "Raise with Finds Officer"
+40	1	    '        Else
+41	2	    '            'ok so allow it to be moved within the GS crates
+42	2	    '            'get find number from main form to pass as openargs
+43	1	    '            current = Forms![Frm_Basic_Data]![frm_subform_basic].Form![Unit] & ":" & Forms![Frm_Basic_Data]![frm_subform_basic].Form![LetterCode] & ":" & Forms![Frm_Basic_Data]![frm_subform_basic].Form![FindNumber] & ":" & Me![CrateLetter] & Me![CrateNumber]
+44	1	    '            DoCmd.OpenForm "frm_subform_changelocation", acNormal, , , acFormPropertySettings, acDialog, current
+45	1	    '        End If
+46	1	    '    End If
+47	1	    'ElseIf Me![txtUnit] <> "" Then
+48	0	        If Me.RecordsetClone.RecordCount > 1 Then
+49	0	            MsgBox "This particular find is listed as being located in " & Me.RecordsetClone.RecordCount & " crates. This maybe because " & _
+50	0	                    "it was comprised of more than one material but this needs to be checked. Please take this issue to the Finds Officer " & _
+51	0	                    "straight away who can resolve it and ensure the Crate Register is updated correctly." & Chr(13) & Chr(13) & "The Finds Officer will then deal with " & _
+52	0	                    "updating the location for you.", vbExclamation, "Raise with Finds Officer"
+53	0	        Else
+54	1	            'ok only one location so now is it a GS location?
+55	0	            If Me![CrateLetter] <> "OB" Then
+56	0	                MsgBox "This particular bag is listed as being located in non ChippedStone Crate. This may mean it has been mis-assigned and " & _
+57	0	                    " needs to be checked. Please take this issue to the Finds Officer " & _
+58	0	                    "straight away who can resolve it and ensure the Crate Register is updated correctly." & Chr(13) & Chr(13) & "The Finds Officer will then deal with " & _
+59	0	                    "updating the location for you.", vbExclamation, "Raise with Finds Officer"
+60	0	            Else
+61	1	                'ok so allow it to be moved within the GS crates
+62	1	                'get find number from main form to pass as openargs
+63	1	                'current = "BAG" & Forms![Frm_CS_BasicData]![txtBag] & ":" & Forms![Frm_CS_BasicData]![Unit]
+64	0	                current = "ROW" & Me![rowID] & ":" & Me![CrateLetter] & Me![CrateNumber]
+65	0	                DoCmd.OpenForm "frm_subform_changelocation", acNormal, , , acFormPropertySettings, acDialog, current
+66	0	            End If
+67	0	        End If
+68	1	    'End If
+69	0	Exit Sub
+70	0	
+71	0	err_move:
+72	0	    Call General_Error_Trap
+73	0	    Exit Sub
+74	0	End Sub
+75	0	
+76	0	Private Sub Form_Current()
+77	1	'check if there is any known crate location for the selected record (this form is only opened via frm_cs_basic_data)
+78	0	On Error GoTo err_current
+79	0	
+80	2	    ''MsgBox "current:" & Me.RecordsetClone.RecordCount
+81	0	    If Me.RecordsetClone.RecordCount > 0 Then
+82	0	        Me![cmdMove].Visible = True
+83	0	        Me![cmdLocate].Visible = False
+84	0	    Else
+85	0	        Me![cmdMove].Visible = False
+86	0	        Me![cmdLocate].Visible = True
+87	0	    End If
+88	0	Exit Sub
+89	0	
+90	0	err_current:
+91	0	    Call General_Error_Trap
+92	0	    Exit Sub
+93	0	End Sub
+94	0	
+95	0	Private Sub Form_Open(Cancel As Integer)
+96	1	'check if there is any known crate location for the selected record (this form is only opened via frm_sub_basic)
+97	1	'On Error GoTo err_open
+98	1	'
+99	1	'    MsgBox Me.RecordsetClone.RecordCount
+100	1	'
+101	1	'
+102	1	'Exit Sub
+103	1	'
+104	1	'err_open:
+105	1	'    Call General_Error_Trap
+106	1	'    Exit Sub
+107	0	    
+108	0	End Sub
+109	0	

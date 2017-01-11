@@ -1,0 +1,87 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	1	Dim Unit, Letter, findnum, currentCrate 'these vars will come in as openargs
+5	0	
+6	0	Private Sub cmdCancel_Click()
+7	1	'cancel operation - do nothing
+8	0	On Error GoTo err_cancel
+9	0	
+10	0	DoCmd.Close acForm, Me.Name
+11	0	
+12	0	Exit Sub
+13	0	
+14	0	err_cancel:
+15	0	    Call General_Error_Trap
+16	0	    Exit Sub
+17	0	End Sub
+18	0	
+19	0	Private Sub cmdOK_Click()
+20	1	'if user has selected a crate ask for confirmation and movethe object in the Units in Crates register
+21	1	'adding a record for the Finds Officer that this has been done
+22	0	On Error GoTo err_cmdOK
+23	0	
+24	0	    If Me![cboCrateNumber] <> "" Then
+25	0	        Dim Response
+26	0	        Response = MsgBox("Please confirm that the crate register should be updated with the following details: " & Chr(13) & Chr(13) & "Findnumber: " & Me![GID] & " moves from " & Me![txtOldCrate] & " to crate GS" & Me![cboCrateNumber], vbQuestion + vbOKCancel, "Confirm Action")
+27	0	        If Response = vbOK Then
+28	1	            'write to crate register
+29	0	            Dim sql
+30	0	             sql = "INSERT INTO [Store: Crate Movement by Teams] ([OriginalRowID], [Unit Number], [FindSampleLetter], [FindNumber], [MovedFromCrate], [MovedToCrate], [MovedBy], [MovedOn]) "
+31	4	             sql = sql & "SELECT [RowID] as OriginalRowID, [Unit number], [FindSampleLetter], [FindNumber], [CrateLetter] & [CrateNumber] as MovedFromCrate, 'GS" & Me![cboCrateNumber] & "' as MovedToCrate, 'Groundstone Team', #" & Now & "# "
+32	0	             sql = sql & " FROM [Store: Units in Crates] "
+33	2	             sql = sql & " WHERE [Unit Number] = " & Unit & " AND [FindSampleLetter] = '" & Letter & "' AND [FindNumber] = " & findnum & ";"
+34	0	            DoCmd.RunSQL sql
+35	0	            
+36	4	            sql = "UPDATE [Store: Units in Crates] SET [CrateNumber] = " & Me![cboCrateNumber] & " WHERE [CrateLetter] = 'GS' AND [CrateNumber] = " & Replace(currentCrate, "GS", "") & " AND [Unit number] = " & Unit & " AND [FindSampleLetter] = '" & Letter & "' AND [FindNumber] = " & findnum & ";"
+37	0	            DoCmd.RunSQL sql
+38	0	            
+39	0	           
+40	0	            
+41	0	            Forms![Frm_Basic_Data]![frm_subform_basic].Requery
+42	0	            
+43	0	            DoCmd.Close acForm, Me.Name
+44	0	            
+45	0	        End If
+46	0	    Else
+47	0	        MsgBox "No crate number selected", vbInformation, "Invalid Selection"
+48	0	        
+49	0	    End If
+50	0	
+51	0	Exit Sub
+52	0	
+53	0	err_cmdOK:
+54	0	    Call General_Error_Trap
+55	0	    Exit Sub
+56	0	End Sub
+57	0	
+58	0	Private Sub Form_Open(Cancel As Integer)
+59	1	'get open args. They will take this format
+60	1	'unit number:lettercode:findnumber:currentcratelocation
+61	0	On Error GoTo err_open
+62	0	
+63	0	    If Not IsNull(Me.OpenArgs) Then
+64	0	        Dim getrest
+65	0	        Unit = Left(Me.OpenArgs, InStr(Me.OpenArgs, ":") - 1)
+66	0	        getrest = Right(Me.OpenArgs, Len(Me.OpenArgs) - (InStr(Me.OpenArgs, ":")))
+67	0	        
+68	0	        Letter = Left(getrest, InStr(getrest, ":") - 1)
+69	0	        
+70	0	        getrest = Right(getrest, Len(getrest) - (InStr(getrest, ":")))
+71	0	        findnum = Left(getrest, InStr(getrest, ":") - 1)
+72	0	        currentCrate = Mid(getrest, InStr(getrest, ":") + 1)
+73	0	        
+74	0	        Me![GID] = Unit & "." & Letter & findnum
+75	0	        Me![txtOldCrate] = currentCrate
+76	0	    Else
+77	0	        MsgBox "Form opened with incorrect parameters, it will now shut", vbInformation, "Invalid Call"
+78	0	        DoCmd.Close acForm, Me.Name
+79	0	        
+80	0	    End If
+81	0	
+82	0	Exit Sub
+83	0	
+84	0	err_open:
+85	0	    Call General_Error_Trap
+86	0	    Exit Sub
+87	0	End Sub

@@ -1,0 +1,17 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Public Const DBName = "Conservation Central Database"
+5	0	
+6	0	Public VersionNumber
+7	0	
+8	0	Public GeneralPermissions
+9	0	
+10	1	'Public Const ImageLocationOnSite = "i:\images\"
+11	2	'on site 2006 this wasn't needed as link simply to \\catal\ worked ok
+12	0	Public Const ImageLocationOnSite = "H:\Catalhoyuk\images\"
+13	0	
+14	1	'Public Const ImageLocationOnWeb = "http://www.catalhoyuk.com/siteimages/getphoto.asp"
+15	0	Public Const ImageLocationOnWeb = "http://www.catalhoyuk.com/database/database_new/test/getphoto.asp"
+16	1	'Public Const ImageLocationOnWeb = "http://localhost/catalweb/getphoto.asp"
+17	0	

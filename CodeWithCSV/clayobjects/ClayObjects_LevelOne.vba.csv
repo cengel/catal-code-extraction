@@ -1,0 +1,192 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	
+5	0	
+6	0	
+7	0	Private Sub cboFilterUnit_AfterUpdate()
+8	1	'filter - new 2011
+9	0	On Error GoTo err_filter
+10	0	
+11	0	    If Me![cboFilterUnit] <> "" Then
+12	0	        Me.Filter = "[Unit] = " & Me![cboFilterUnit]
+13	0	        Me.FilterOn = True
+14	0	        Me![cboFilterUnit] = ""
+15	0	        Me![cmdRemoveFilter].Visible = True
+16	0	    End If
+17	0	
+18	0	Exit Sub
+19	0	
+20	0	err_filter:
+21	0	    Call General_Error_Trap
+22	0	    Exit Sub
+23	0	End Sub
+24	0	
+25	0	Private Sub cboFilterUnit_NotInList(NewData As String, response As Integer)
+26	1	'stop not in list msg loop - new 2011
+27	0	On Error GoTo err_cbofilterNot
+28	0	
+29	0	    MsgBox "Sorry this Unit does not exist in this database yet", vbInformation, "No Match"
+30	0	    response = acDataErrContinue
+31	0	    
+32	0	    Me![cboFilterUnit].Undo
+33	0	Exit Sub
+34	0	
+35	0	err_cbofilterNot:
+36	0	    Call General_Error_Trap
+37	0	    Exit Sub
+38	0	End Sub
+39	0	
+40	0	
+41	0	
+42	0	Private Sub cmdAddNew_Click()
+43	1	'********************************************************************
+44	1	' Create new record
+45	1	' SAJ
+46	1	'********************************************************************
+47	0	On Error GoTo Err_cmdgonew_Click
+48	0	
+49	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+50	0	    DoCmd.GoToRecord , , acNewRec
+51	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Form![Analyst].Name
+52	0	    Me![cbo_year_studied].Value = 6
+53	0	    Me![timestamp].Value = Now()
+54	0	    DoCmd.GoToControl Me![Unit].Name
+55	0	    Exit Sub
+56	0	
+57	0	Err_cmdgonew_Click:
+58	0	    Call General_Error_Trap
+59	0	    Exit Sub
+60	0	End Sub
+61	0	
+62	0	Private Sub cmdDelete_Click()
+63	1	'new 2011 - control the delete of a record to ensure both tables are clear
+64	0	On Error GoTo err_del
+65	0	
+66	0	Dim response
+67	0	    response = MsgBox("Do you really want to remove Unit " & Me!Unit & " and all its related material records from your database?", vbYesNo + vbQuestion, "Remove Record")
+68	0	    If response = vbYes Then
+69	0	        Dim sql
+70	0	        
+71	0	    sql = "Delete FROM [ClayObjects_LevelOne] WHERE [unit] = " & Me![Unit] & ";"
+72	0	        DoCmd.RunSQL sql
+73	0	    sql = "Delete FROM [ClayObjects_LevelOne_quantification] WHERE [unit] = " & Me![Unit] & ";"
+74	0	        DoCmd.RunSQL sql
+75	0	
+76	0	        Me.Requery
+77	0	        MsgBox "Deletion completed", vbInformation, "Done"
+78	0	
+79	0	        Me![cboFilterUnit].Requery
+80	0	        
+81	0	    End If
+82	0	Exit Sub
+83	0	
+84	0	err_del:
+85	0	    Call General_Error_Trap
+86	0	    Exit Sub
+87	0	End Sub
+88	0	
+89	0	Private Sub cmdGoFirst_Click()
+90	1	'********************************************************************
+91	1	' Go to first record
+92	1	' SAJ
+93	1	'********************************************************************
+94	0	On Error GoTo Err_cmdgofirst_Click
+95	0	
+96	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+97	0	    DoCmd.GoToRecord , , acFirst
+98	0	
+99	0	    Exit Sub
+100	0	
+101	0	Err_cmdgofirst_Click:
+102	0	    Call General_Error_Trap
+103	0	    Exit Sub
+104	0	End Sub
+105	0	
+106	0	Private Sub cmdGoLast_Click()
+107	1	'********************************************************************
+108	1	' Go to last record
+109	1	' SAJ
+110	1	'********************************************************************
+111	0	On Error GoTo Err_cmdgoLast_Click
+112	0	
+113	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+114	0	    DoCmd.GoToRecord , , acLast
+115	0	
+116	0	    Exit Sub
+117	0	
+118	0	Err_cmdgoLast_Click:
+119	0	    Call General_Error_Trap
+120	0	    Exit Sub
+121	0	End Sub
+122	0	
+123	0	Private Sub cmdGoNext_Click()
+124	1	'********************************************************************
+125	1	' Go to next record
+126	1	' SAJ
+127	1	'********************************************************************
+128	0	On Error GoTo Err_cmdgoNext_Click
+129	0	
+130	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+131	0	    DoCmd.GoToRecord , , acNext
+132	0	
+133	0	    Exit Sub
+134	0	
+135	0	Err_cmdgoNext_Click:
+136	0	    If Err.Number = 2105 Then
+137	0	        MsgBox "No more records to show", vbInformation, "End of records"
+138	0	    Else
+139	0	        Call General_Error_Trap
+140	0	    End If
+141	0	    Exit Sub
+142	0	End Sub
+143	0	
+144	0	Private Sub cmdGoPrev_Click()
+145	1	'********************************************************************
+146	1	' Go to previous record
+147	1	' SAJ
+148	1	'********************************************************************
+149	0	On Error GoTo Err_cmdgoprevious_Click
+150	0	
+151	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+152	0	    DoCmd.GoToRecord , , acPrevious
+153	0	
+154	0	    Exit Sub
+155	0	
+156	0	Err_cmdgoprevious_Click:
+157	0	    If Err.Number = 2105 Then
+158	0	        MsgBox "Already at the begining of the recordset", vbInformation, "Begining of records"
+159	0	    Else
+160	0	        Call General_Error_Trap
+161	0	    End If
+162	0	    Exit Sub
+163	0	End Sub
+164	0	
+165	0	
+166	0	
+167	0	Private Sub cmdRemoveFilter_Click()
+168	1	'remove unit filter - new 2011
+169	0	On Error GoTo err_Removefilter
+170	0	
+171	0	    Me![cboFilterUnit] = ""
+172	0	    Me.Filter = ""
+173	0	    Me.FilterOn = False
+174	0	
+175	0	    Me![cmdRemoveFilter].Visible = False
+176	0	   
+177	0	
+178	0	Exit Sub
+179	0	
+180	0	err_Removefilter:
+181	0	    Call General_Error_Trap
+182	0	    Exit Sub
+183	0	End Sub
+184	0	
+185	0	
+186	0	
+187	0	
+188	0	
+189	0	
+190	0	
+191	0	
+192	0	

@@ -1,0 +1,129 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdClose_Click()
+5	1	'close this pop up
+6	0	On Error GoTo err_close
+7	0	    
+8	0	    DoCmd.Close acForm, Me.Name
+9	0	    
+10	0	Exit Sub
+11	0	
+12	0	err_close:
+13	0	    If Err.Number = 2450 Then
+14	1	        'cant find form ie: not called from the find form, its not open
+15	0	        Resume Next
+16	0	    Else
+17	0	        Call General_Error_Trap
+18	0	    End If
+19	0	    Exit Sub
+20	0	    
+21	0	End Sub
+22	0	
+23	0	Private Sub cmdReturn_Click()
+24	0	On Error GoTo err_cmdReturn
+25	0	
+26	0	Dim mydb As DAO.Database, firstCrate As DAO.Recordset, SecondCrate As DAO.Recordset
+27	0	Dim sql, sql1, criteria
+28	0	Set mydb = CurrentDb
+29	0	
+30	0	sql1 = "DELETE FROM [Temp_Store: Units in Crates]"
+31	0	DoCmd.RunSQL sql1
+32	0	
+33	3	'sql1 = "SELECT * FROM [Store: Units in Crates] WHERE CrateLetter = 'PG' AND CrateNumber = 1"
+34	2	sql1 = "SELECT * FROM [Store: Units in Crates] WHERE CrateLetter = '" & Me!cboFirstCrate.Column(1) & "' AND CrateNumber = " & Me!cboFirstCrate.Column(2)
+35	0	Set firstCrate = mydb.OpenRecordset(sql1, dbOpenSnapshot)
+36	0	
+37	0	If Not (firstCrate.EOF And firstCrate.BOF) Then
+38	0	    firstCrate.MoveFirst
+39	0	    
+40	0	    Do Until firstCrate.EOF
+41	0	    
+42	0	        sql = "SELECT * FROM [Store: Units in Crates] WHERE "
+43	0	        If Not IsNull(firstCrate![Unit number]) Then
+44	0	            sql = sql & "[Unit number] = " & firstCrate![Unit number]
+45	0	        Else
+46	0	             sql = sql & "([Unit number] is null)"
+47	0	        End If
+48	0	       
+49	0	       If Not IsNull(firstCrate![FindSampleLetter]) Then
+50	2	            sql = sql & " AND [FindSampleLetter] = '" & firstCrate![FindSampleLetter] & "'"
+51	0	        Else
+52	0	            sql = sql & " AND ([FindSampleLetter] is null)"
+53	0	        End If
+54	0	        
+55	0	        If Not IsNull(firstCrate![FindNumber]) Then
+56	0	            sql = sql & " AND [FindNumber] = " & firstCrate![FindNumber]
+57	0	        Else
+58	0	            sql = sql & "AND ([FindNumber] is null)"
+59	0	        End If
+60	0	    
+61	0	        If Not IsNull(firstCrate![SampleNumber]) Then
+62	0	            sql = sql & " AND [SampleNumber] = " & firstCrate![SampleNumber]
+63	0	        Else
+64	0	            sql = sql & " AND ([SampleNumber] is null)"
+65	0	        End If
+66	0	        
+67	3	        'sql = sql & " AND CrateLetter = 'PG' AND CrateNumber = 1001;"
+68	2	        sql = sql & " AND CrateLetter = '" & Me!cboSecondCrate.Column(1) & "' AND CrateNumber = " & Me!cboSecondCrate.Column(2) & ";"
+69	2	        ''Debug.Print sql
+70	0	    
+71	0	        Set SecondCrate = mydb.OpenRecordset(sql, dbOpenSnapshot)
+72	0	            
+73	0	            If SecondCrate.BOF And SecondCrate.EOF Then
+74	1	                'insert temp table
+75	0	                sql = "INSERT INTO [Temp_Store: Units in Crates] "
+76	0	                sql = sql & "SELECT * FROM [Store: Units in Crates] "
+77	0	                sql = sql & " WHERE [RowID] = " & firstCrate![rowID] & ";"
+78	0	                DoCmd.RunSQL sql
+79	0	            
+80	0	            End If
+81	0	        
+82	0	        SecondCrate.Close
+83	0	        Set SecondCrate = Nothing
+84	0	    firstCrate.MoveNext
+85	0	    Loop
+86	0	End If
+87	0	
+88	0	sql = ""
+89	0	
+90	0	firstCrate.Close
+91	0	Set firstCrate = Nothing
+92	0	mydb.Close
+93	0	Set mydb = Nothing
+94	0	
+95	0	Me!frm_subform_crate_comparison.Requery
+96	0	Me!frm_subform_crate_comparison.Visible = True
+97	0	
+98	0	Exit Sub
+99	0	
+100	0	err_cmdReturn:
+101	0	    Call General_Error_Trap
+102	0	    Exit Sub
+103	0	End Sub
+104	0	
+105	0	Private Sub Form_Open(Cancel As Integer)
+106	0	On Error GoTo err_open
+107	0	    Me!frm_subform_crate_comparison.Visible = False
+108	0	    
+109	0	
+110	0	Exit Sub
+111	0	
+112	0	err_open:
+113	0	    Call General_Error_Trap
+114	0	    Exit Sub
+115	0	End Sub
+116	0	Private Sub cmdPrint_Click()
+117	0	On Error GoTo Err_cmdPrint_Click
+118	0	
+119	1	    SecondCrate = Me!cboSecondCrate 'public var declared in globals mod.
+120	0	    DoCmd.OpenReport "R_crate_comparison", acViewPreview, Me!cboSecondCrate
+121	1	    'Reports![R_crate_comparison].SetFocus
+122	0	
+123	0	Exit Sub
+124	0	
+125	0	Err_cmdPrint_Click:
+126	0	    Call General_Error_Trap
+127	0	    Exit Sub
+128	0	  
+129	0	End Sub

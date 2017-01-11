@@ -1,0 +1,203 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	1	'**********************************************************
+4	1	' This subform is new in version 9.2 - as a feature can be
+5	1	' in many Buildings the Building field has been removed from the
+6	1	' Feature tables and normalised out int Exca: Features in Buildings
+7	1	' SAJ v9.2
+8	1	'**********************************************************
+9	0	
+10	0	
+11	0	Private Sub cmdGoToBuilding_Click()
+12	1	'***********************************************************************
+13	1	' Open Building form read only from here.
+14	1	' Also becuase they can enter a Building num that not exist yet (SF requirement)
+15	1	' need to see if the record exists before opening the form (otherwise be blank)
+16	1	'
+17	1	' SAJ v9.2
+18	1	'***********************************************************************
+19	0	On Error GoTo Err_cmdGoToBuilding_Click
+20	0	
+21	0	    Dim stDocName As String
+22	0	    Dim stLinkCriteria As String
+23	0	    Dim checknum, msg, retval, sql, insertArea, permiss
+24	0	    
+25	0	    stDocName = "Exca: Building Sheet"
+26	0	    
+27	0	    If Not IsNull(Me![txtIn_Building]) Or Me![txtIn_Building] <> "" Then
+28	1	        'check that Building num does exist
+29	0	        checknum = DLookup("[Number]", "[Exca: Building Details]", "[Number] = " & Me![txtIn_Building])
+30	0	        If IsNull(checknum) Then
+31	1	            'number not exist - now see what permissions user has
+32	0	            permiss = GetGeneralPermissions
+33	0	            If permiss = "ADMIN" Or permiss = "RW" Then
+34	0	                msg = "This Building Number DOES NOT EXIST in the database."
+35	0	                msg = msg & Chr(13) & Chr(13) & "Would you like to enter it now?"
+36	0	                retval = MsgBox(msg, vbInformation + vbYesNo, "Building Number does not exist")
+37	0	        
+38	0	                If retval = vbNo Then
+39	0	                    MsgBox "No Building record to view, please alert the your team leader about this.", vbExclamation, "Missing Building Record"
+40	0	                Else
+41	1	                    'add new records behind scences
+42	0	                    If Forms![Exca: Feature Sheet]![Combo27] <> "" Then
+43	2	                        insertArea = "'" & Forms![Exca: Feature Sheet]![Combo27] & "'"
+44	0	                    Else
+45	0	                        insertArea = Null
+46	0	                    End If
+47	0	                    sql = "INSERT INTO [Exca: Building Details] ([Number], [Area]) VALUES (" & Me![txtIn_Building] & ", " & insertArea & ");"
+48	0	                    DoCmd.RunSQL sql
+49	0	                    DoCmd.OpenForm "Exca: Building Sheet", acNormal, , "[Number] = " & Me![txtIn_Building], acFormEdit, acDialog
+50	0	                End If
+51	0	            Else
+52	1	                'user is readonly so just tell them record not exist
+53	0	                MsgBox "Sorry but this Building record has not been added to the system yet, there is no record to view.", vbInformation, "Missing Building Record"
+54	0	            End If
+55	0	        Else
+56	1	            'record exists - open it
+57	0	            stLinkCriteria = "[Number]=" & Me![txtIn_Building]
+58	1	            'DoCmd.OpenForm stDocName, , , stLinkCriteria
+59	1	            'DoCmd.OpenForm stDocName, acNormal, , stLinkCriteria, acFormReadOnly, acDialog
+60	1	            'decided against dialog as can open other forms on the feature form and they would appear underneath it
+61	0	            DoCmd.OpenForm stDocName, acNormal, , stLinkCriteria, acFormReadOnly
+62	0	        End If
+63	0	    Else
+64	0	        MsgBox "No Building number to view", vbInformation, "No Building Number"
+65	0	    End If
+66	0	    
+67	0	Exit_cmdGoToBuilding_Click:
+68	0	    Exit Sub
+69	0	
+70	0	
+71	0	Err_cmdGoToBuilding_Click:
+72	0	    Call General_Error_Trap
+73	0	    Resume Exit_cmdGoToBuilding_Click
+74	0	    
+75	0	
+76	0	End Sub
+77	0	
+78	0	Private Sub Form_BeforeUpdate(Cancel As Integer)
+79	0	Me![Date changed] = Now()
+80	0	Forms![Exca: Feature Sheet]![dbo_Exca: FeatureHistory].Form![lastmodify].Value = Now()
+81	0	End Sub
+82	0	
+83	0	
+84	0	Private Sub Form_Current()
+85	1	'v9.2 - enable/disable button depending on contents of Building field
+86	0	On Error GoTo err_Current
+87	0	    
+88	0	    If Me![txtIn_Building] = "" Or IsNull(Me![txtIn_Building]) Then
+89	0	        Me![cmdGoToBuilding].Enabled = False
+90	0	    Else
+91	0	        Me![cmdGoToBuilding].Enabled = True
+92	0	    End If
+93	0	
+94	0	
+95	0	Exit Sub
+96	0	err_Current:
+97	0	    Call General_Error_Trap
+98	0	    Exit Sub
+99	0	End Sub
+100	0	
+101	0	Private Sub Form_Open(Cancel As Integer)
+102	1	'**********************************************************************
+103	1	' Set up form view depending on permissions
+104	1	' SAJ v9.1
+105	1	'**********************************************************************
+106	0	On Error GoTo err_Form_Open
+107	0	
+108	0	    Dim permiss
+109	0	    permiss = GetGeneralPermissions
+110	0	    If permiss = "ADMIN" Or permiss = "RW" Then
+111	0	        ToggleFormReadOnly Me, False
+112	0	    Else
+113	1	        'set read only form here, just once
+114	0	        ToggleFormReadOnly Me, True
+115	0	    End If
+116	0	Exit Sub
+117	0	
+118	0	err_Form_Open:
+119	0	    Call General_Error_Trap
+120	0	    Exit Sub
+121	0	End Sub
+122	0	
+123	0	Private Sub txtIn_Building_AfterUpdate()
+124	1	'***********************************************************************
+125	1	' Validity check to ensure building num entered here is ok
+126	1	' if not tell the user and allow them to enter. SF not want it to restrict
+127	1	' entry and trusts excavators to enter building num when they can
+128	1	'
+129	1	' SAJ v9.2
+130	1	'***********************************************************************
+131	0	On Error GoTo err_txtIn_Space_AfterUpdate
+132	0	
+133	0	Dim checknum, msg, retval, sql, insertArea
+134	0	
+135	0	If Me![txtIn_Building] <> "" Then
+136	1	    'first check its valid
+137	0	    If IsNumeric(Me![txtIn_Building]) Then
+138	0	    
+139	1	        'check that Building num does exist
+140	0	        checknum = DLookup("[Number]", "[Exca: Building Details]", "[Number] = " & Me![txtIn_Building])
+141	0	        If IsNull(checknum) Then
+142	0	            msg = "This Building Number DOES NOT EXIST in the database, you must remember to enter it."
+143	0	            msg = msg & Chr(13) & Chr(13) & "Would you like to enter it now?"
+144	0	            retval = MsgBox(msg, vbInformation + vbYesNo, "Building Number does not exist")
+145	0	        
+146	0	            If retval = vbNo Then
+147	1	                MsgBox "Ok, but you must remember to enter it soon otherwise you'll be chased!", vbExclamation, "Remember!"
+148	0	            Else
+149	1	                'add new records behind scences
+150	0	                If Forms![Exca: Feature Sheet]![Combo27] <> "" Then
+151	2	                    insertArea = "'" & Forms![Exca: Feature Sheet]![Combo27] & "'"
+152	0	                Else
+153	0	                    insertArea = Null
+154	0	                End If
+155	0	                sql = "INSERT INTO [Exca: Building Details] ([Number], [Area]) VALUES (" & Me![txtIn_Building] & ", " & insertArea & ");"
+156	0	                DoCmd.RunSQL sql
+157	0	                DoCmd.OpenForm "Exca: Building Sheet", acNormal, , "[Number] = " & Me![txtIn_Building], acFormEdit, acDialog
+158	2	                ''DoCmd.OpenForm "Exca: Feature Sheet", acNormal, , , acFormAdd, acDialog, "NEW,Num:" & Me![In_feature] & ",Area:" & Forms![Exca: Unit Sheet]![Area]
+159	0	            End If
+160	0	        Else
+161	1	            'valid number, enable view button
+162	0	            Me![cmdGoToBuilding].Enabled = True
+163	0	        End If
+164	0	    
+165	0	    Else
+166	1	        'not a vaild numeric Building number
+167	0	        MsgBox "The Building number is invalid, please enter a numeric value only", vbInformation, "Invalid Entry"
+168	0	    End If
+169	0	End If
+170	0	
+171	0	Exit Sub
+172	0	
+173	0	err_txtIn_Space_AfterUpdate:
+174	0	    Call General_Error_Trap
+175	0	    Exit Sub
+176	0	End Sub
+177	0	
+178	0	Private Sub txtIn_Building_BeforeUpdate(Cancel As Integer)
+179	2	'new 2009 winter - if a user gets number wrong they can't delete it and many then put 0
+180	2	'building 0 keeps appearing and we don't want it so put a check in
+181	0	On Error GoTo err_buildingbefore
+182	0	
+183	0	If Me![txtIn_Building] = 0 Then
+184	0	        MsgBox "Building 0 is invalid, this entry will be removed", vbInformation, "Invalid Entry"
+185	0	      
+186	0	        Cancel = True
+187	1	        'Me![txtIn_Building].Undo
+188	1	        SendKeys "{ESC}" 'seems to need it done 3x
+189	0	        SendKeys "{ESC}"
+190	0	        SendKeys "{ESC}"
+191	0	End If
+192	0	Exit Sub
+193	0	
+194	0	err_buildingbefore:
+195	0	    Call General_Error_Trap
+196	0	    Exit Sub
+197	0	End Sub
+198	0	
+199	0	Private Sub Unit_AfterUpdate()
+200	0	Me.Requery
+201	0	DoCmd.GoToRecord , , acLast
+202	0	End Sub
+203	0	

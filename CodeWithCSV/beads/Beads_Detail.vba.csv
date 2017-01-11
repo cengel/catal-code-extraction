@@ -1,0 +1,170 @@
+1	0	Option Compare Database
+2	0	
+3	0	
+4	0	Private Sub add_description_Change()
+5	0	    Forms![Beads: Sheet]![timestamp] = Now()
+6	0	End Sub
+7	0	
+8	0	Private Sub amount_Change()
+9	0	    Forms![Beads: Sheet]![timestamp] = Now()
+10	0	End Sub
+11	0	
+12	0	Private Sub cbo_geocategory_Change()
+13	0	    Forms![Beads: Sheet]![timestamp] = Now()
+14	0	End Sub
+15	0	
+16	0	Private Sub cbo_material_Change()
+17	0	On Error GoTo err_filter
+18	0	
+19	0	If Me!cbo_material.Value = 2 Then
+20	0	    Me!faunal_element.Visible = True
+21	0	    Me!faunal_element.Enabled = True
+22	0	Else
+23	0	    Me!faunal_element.Visible = False
+24	0	    Me!faunal_element.Enabled = False
+25	0	End If
+26	0	
+27	0	    Forms![Beads: Sheet]![timestamp] = Now()
+28	0	
+29	0	Exit Sub
+30	0	
+31	0	err_filter:
+32	0	    Call General_Error_Trap
+33	0	    Exit Sub
+34	0	    
+35	0	End Sub
+36	0	
+37	0	Private Sub cbo_rawmaterial_Change()
+38	0	    Forms![Beads: Sheet]![timestamp] = Now()
+39	0	End Sub
+40	0	
+41	0	Private Sub colour_detail_Change()
+42	0	    Forms![Beads: Sheet]![timestamp] = Now()
+43	0	End Sub
+44	0	
+45	0	Private Sub count_Change()
+46	0	    Forms![Beads: Sheet]![timestamp] = Now()
+47	0	End Sub
+48	0	
+49	0	Private Sub diameter_Change()
+50	0	    Forms![Beads: Sheet]![timestamp] = Now()
+51	0	End Sub
+52	0	
+53	0	Private Sub faunal_element_Change()
+54	0	    Forms![Beads: Sheet]![timestamp] = Now()
+55	0	End Sub
+56	0	
+57	0	Private Sub Form_Current()
+58	0	On Error GoTo err_filter
+59	0	
+60	0	If Me!cbo_material.Value = 2 Then
+61	0	    Me!faunal_element.Visible = True
+62	0	    Me!faunal_element.Enabled = True
+63	0	Else
+64	0	    Me!faunal_element.Visible = False
+65	0	    Me!faunal_element.Enabled = False
+66	0	End If
+67	0	
+68	0	Exit Sub
+69	0	
+70	0	err_filter:
+71	0	    Call General_Error_Trap
+72	0	    Exit Sub
+73	0	    
+74	0	End Sub
+75	0	
+76	0	Private Sub height_Change()
+77	0	    Forms![Beads: Sheet]![timestamp] = Now()
+78	0	End Sub
+79	0	
+80	0	Private Sub Kombinationsfeld322_Change()
+81	0	    Forms![Beads: Sheet]![timestamp] = Now()
+82	0	End Sub
+83	0	
+84	0	Private Sub Kombinationsfeld324_Change()
+85	0	    Forms![Beads: Sheet]![timestamp] = Now()
+86	0	End Sub
+87	0	
+88	0	Private Sub Kombinationsfeld326_Change()
+89	0	    Forms![Beads: Sheet]![timestamp] = Now()
+90	0	End Sub
+91	0	
+92	0	Private Sub Kombinationsfeld328_Change()
+93	0	    Forms![Beads: Sheet]![timestamp] = Now()
+94	0	End Sub
+95	0	
+96	0	Private Sub Kombinationsfeld330_Change()
+97	0	    Forms![Beads: Sheet]![timestamp] = Now()
+98	0	End Sub
+99	0	
+100	0	Private Sub Kombinationsfeld332_Change()
+101	0	    Forms![Beads: Sheet]![timestamp] = Now()
+102	0	End Sub
+103	0	
+104	0	Private Sub Kombinationsfeld334_Change()
+105	0	    Forms![Beads: Sheet]![timestamp] = Now()
+106	0	End Sub
+107	0	
+108	0	Private Sub Kombinationsfeld336_Change()
+109	0	    Forms![Beads: Sheet]![timestamp] = Now()
+110	0	End Sub
+111	0	
+112	0	Private Sub length_Change()
+113	0	    Forms![Beads: Sheet]![timestamp] = Now()
+114	0	End Sub
+115	0	
+116	0	Private Sub manufacture_body_Change()
+117	0	    Forms![Beads: Sheet]![timestamp] = Now()
+118	0	End Sub
+119	0	
+120	0	Private Sub manufacture_margins_Change()
+121	0	    Forms![Beads: Sheet]![timestamp] = Now()
+122	0	End Sub
+123	0	
+124	0	Private Sub manufacture_useface_Change()
+125	0	    Forms![Beads: Sheet]![timestamp] = Now()
+126	0	End Sub
+127	0	
+128	0	Private Sub micromacro_body_Change()
+129	0	    Forms![Beads: Sheet]![timestamp] = Now()
+130	0	End Sub
+131	0	
+132	0	Private Sub micromacro_margins_Change()
+133	0	    Forms![Beads: Sheet]![timestamp] = Now()
+134	0	End Sub
+135	0	
+136	0	Private Sub micromacro_useface_Change()
+137	0	    Forms![Beads: Sheet]![timestamp] = Now()
+138	0	End Sub
+139	0	
+140	0	Private Sub munsell_Change()
+141	0	    Forms![Beads: Sheet]![timestamp] = Now()
+142	0	End Sub
+143	0	
+144	0	Private Sub ornament_Change()
+145	0	    Forms![Beads: Sheet]![timestamp] = Now()
+146	0	End Sub
+147	0	
+148	0	Private Sub repair_recycle_Change()
+149	0	    Forms![Beads: Sheet]![timestamp] = Now()
+150	0	End Sub
+151	0	
+152	0	Private Sub subtype_Change()
+153	0	    Forms![Beads: Sheet]![timestamp] = Now()
+154	0	End Sub
+155	0	
+156	0	Private Sub weardegree_body_Change()
+157	0	    Forms![Beads: Sheet]![timestamp] = Now()
+158	0	End Sub
+159	0	
+160	0	Private Sub weardegree_margins_Change()
+161	0	    Forms![Beads: Sheet]![timestamp] = Now()
+162	0	End Sub
+163	0	
+164	0	Private Sub weardegree_useface_Change()
+165	0	    Forms![Beads: Sheet]![timestamp] = Now()
+166	0	End Sub
+167	0	
+168	0	Private Sub width_Change()
+169	0	    Forms![Beads: Sheet]![timestamp] = Now()
+170	0	End Sub

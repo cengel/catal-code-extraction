@@ -1,0 +1,131 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdClose_Click()
+5	0	On Error GoTo err_close
+6	0	
+7	0	    DoCmd.Close acForm, Me.Name
+8	0	Exit Sub
+9	0	
+10	0	err_close:
+11	0	    Call General_Error_Trap
+12	0	    Exit Sub
+13	0	End Sub
+14	0	
+15	0	Private Sub cmdAddNew_Click()
+16	1	'v9.2 SAJ - add a new record
+17	0	On Error GoTo err_cmdAddNew_Click
+18	0	
+19	0	    DoCmd.RunCommand acCmdRecordsGoToNew
+20	0	
+21	0	Exit Sub
+22	0	
+23	0	err_cmdAddNew_Click:
+24	0	    Call General_Error_Trap
+25	0	    Exit Sub
+26	0	End Sub
+27	0	
+28	0	Private Sub cmdDelete_Click()
+29	1	' Season 2009 SAJ - check if user can delete this record
+30	1	' The sample type is used in in the Exca: Samples table - so must check all this to see
+31	1	' if this type is used before allow delete
+32	1	' At present not offering global edits - this can be extended to offer this if required
+33	0	
+34	0	On Error GoTo Err_cmdDelete_Click
+35	0	
+36	0	Dim checkValidAction, checkValidAction2, checkValidAction3, retval
+37	0	
+38	1	    'check samples type field
+39	0	    checkValidAction = CheckIfLOVValueUsed("Exca:SampleTypeLOV", "SampleType", Me![txtSampleType], "Exca: Samples", "Unit Number", "Sample Type", "delete")
+40	0	    
+41	0	    If checkValidAction = "ok" Then
+42	0	        
+43	1	                'delete action can go ahead - at present simply offer an input box for this
+44	0	                retval = MsgBox("No records refer to this Type (" & Me![txtSampleType] & ") so deletion is allowed." & Chr(13) & Chr(13) & "Are you sure you want to delete " & Me![txtSampleType] & " from the list of available Types?", vbExclamation + vbYesNo, "Confirm Deletion")
+45	0	                If retval = vbYes Then
+46	0	                    Me.AllowDeletions = True
+47	0	                    DoCmd.RunCommand acCmdDeleteRecord
+48	0	                    Me.AllowDeletions = False
+49	0	                End If
+50	0	                
+51	0	    ElseIf checkValidAction = "fail" Then
+52	0	        MsgBox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+53	0	    Else
+54	0	        MsgBox checkValidAction, vbExclamation, "Action Report"
+55	0	    End If
+56	0	    
+57	0	Exit_cmdDelete_Click:
+58	0	    Exit Sub
+59	0	
+60	0	Err_cmdDelete_Click:
+61	0	    Call General_Error_Trap
+62	0	    Exit Sub
+63	0	End Sub
+64	0	
+65	0	Private Sub cmdEdit_Click()
+66	1	' Season 2009 SAJ - check if user can edit this record
+67	1	' The sample type is used in in the Exca: Samples table - so must check all this to see
+68	1	' if this type is used before allow edit
+69	1	' At present not offering global edits - this can be extended to offer this if required
+70	0	
+71	0	On Error GoTo Err_cmdEdit_Click
+72	0	
+73	0	Dim checkValidAction, checkValidAction2, checkValidAction3, retval
+74	0	
+75	1	    'check samples type field
+76	0	    checkValidAction = CheckIfLOVValueUsed("Exca:SampleTypeLOV", "SampleType", Me![txtSampleType], "Exca: Samples", "Unit Number", "Sample Type", "edit")
+77	0	    
+78	0	    If checkValidAction = "ok" Then
+79	0	        
+80	1	                'edit action can go ahead - at present simply offer an input box for this
+81	0	                retval = InputBox("No records refer to this Sample Type (" & Me![txtSampleType] & ") so an edit is allowed." & Chr(13) & Chr(13) & "Please enter the edited Sample Type that you wish to replace this entry with:", "Enter edited Type")
+82	0	                If retval <> "" Then
+83	0	                    Me![txtSampleType] = retval
+84	0	                
+85	0	                    retval = InputBox("If there a default amount for this Sample Type (" & Me![txtSampleType] & ")." & Chr(13) & Chr(13) & "Leave this blank if there is not and press ok", "Default Amount")
+86	0	                    Me![txtSampleAmount] = retval
+87	0	                End If
+88	0	                
+89	0	    ElseIf checkValidAction = "fail" Then
+90	0	        MsgBox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+91	0	    Else
+92	0	        MsgBox checkValidAction, vbExclamation, "Action Report"
+93	0	    End If
+94	0	    
+95	0	Exit_cmdEdit_Click:
+96	0	    Exit Sub
+97	0	
+98	0	Err_cmdEdit_Click:
+99	0	    Call General_Error_Trap
+100	0	    Exit Sub
+101	0	    
+102	0	End Sub
+103	0	
+104	0	Private Sub Excavation_Click()
+105	0	On Error GoTo err_close
+106	0	    
+107	0	    DoCmd.Close acForm, Me.Name
+108	0	
+109	0	Exit Sub
+110	0	
+111	0	err_close:
+112	0	    Call General_Error_Trap
+113	0	    Exit Sub
+114	0	End Sub
+115	0	
+116	0	Private Sub Form_Open(Cancel As Integer)
+117	1	'v9.2 SAJ - only adminstrators are allowed in here
+118	0	On Error GoTo err_Form_Open
+119	0	
+120	0	    Dim permiss
+121	0	    permiss = GetGeneralPermissions
+122	0	    If permiss <> "ADMIN" Then
+123	0	        MsgBox "Sorry but only Administrators have access to this form"
+124	0	        DoCmd.Close acForm, Me.Name
+125	0	    End If
+126	0	Exit Sub
+127	0	
+128	0	err_Form_Open:
+129	0	    Call General_Error_Trap
+130	0	    Exit Sub
+131	0	End Sub

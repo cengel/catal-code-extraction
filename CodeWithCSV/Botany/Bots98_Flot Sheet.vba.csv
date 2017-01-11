@@ -1,0 +1,365 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	1	'
+5	0	Private Sub Command144_Click()
+6	0	On Error GoTo Err_Command144_Click
+7	0	
+8	0	    Dim stDocName As String
+9	0	    Dim stLinkCriteria As String
+10	1	'refresh data
+11	0	    DoCmd.DoMenuItem acFormBar, acRecordsMenu, 5, , acMenuVer70
+12	1	'go to form
+13	0	    stDocName = "Bots: Heavy Residue Phase II"
+14	0	    
+15	0	    stLinkCriteria = "([Unit]=" & Me![Unit] & " And [Sample]=""" & Me![Sample] & """ And [Flot Number]=" & Me![Flot Number] & ")"
+16	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+17	0	
+18	0	Exit_Command144_Click:
+19	0	    Exit Sub
+20	0	
+21	0	Err_Command144_Click:
+22	0	    MsgBox Err.Description
+23	0	    Resume Exit_Command144_Click
+24	0	
+25	0	End Sub
+26	0	
+27	0	
+28	0	Private Sub Update_GID()
+29	0	Me![GID] = Me![Unit] & "." & Me![Sample] & "." & Me![Flot Number]
+30	0	End Sub
+31	0	
+32	0	
+33	0	Private Sub Flot_Number_AfterUpdate()
+34	0	Update_GID
+35	0	End Sub
+36	0	
+37	0	Private Sub Flot_Number_Change()
+38	0	Update_GID
+39	1	'Forms![Bots: Flot Sheet].Refresh
+40	0	End Sub
+41	0	
+42	0	
+43	0	
+44	0	
+45	0	
+46	0	
+47	0	Sub Open_HR_Phase_II_Click()
+48	0	On Error GoTo Err_Open_HR_Phase_II_Click
+49	0	
+50	0	    Dim stDocName As String
+51	0	    Dim stLinkCriteria As String
+52	1	    ' refresh
+53	0	    DoCmd.DoMenuItem acFormBar, acRecordsMenu, 5, , acMenuVer70
+54	0	    
+55	1	    'go to record:
+56	0	    stDocName = "Bots98: Heavy Residue Phase 2"
+57	0	    
+58	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+59	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+60	0	    
+61	1	    'close this form
+62	0	    DoCmd.Close acForm, "Bots98: Flot Sheet"
+63	0	    
+64	0	Exit_Open_HR_Phase_II_Click:
+65	0	    Exit Sub
+66	0	
+67	0	Err_Open_HR_Phase_II_Click:
+68	0	    MsgBox Err.Description
+69	0	    Resume Exit_Open_HR_Phase_II_Click
+70	0	    
+71	0	End Sub
+72	0	Sub Go_to_button_Click()
+73	0	On Error GoTo Err_Go_to_button_Click
+74	0	
+75	0	
+76	0	    Screen.PreviousControl.SetFocus
+77	0	    Unit.SetFocus
+78	0	    DoCmd.DoMenuItem acFormBar, acEditMenu, 10, , acMenuVer70
+79	0	
+80	0	Exit_Go_to_button_Click:
+81	0	    Exit Sub
+82	0	
+83	0	Err_Go_to_button_Click:
+84	0	    MsgBox Err.Description
+85	0	    Resume Exit_Go_to_button_Click
+86	0	    
+87	0	End Sub
+88	0	Sub refresh_Click()
+89	0	On Error GoTo Err_refresh_Click
+90	0	
+91	0	
+92	0	    DoCmd.DoMenuItem acFormBar, acRecordsMenu, 5, , acMenuVer70
+93	0	
+94	0	Exit_refresh_Click:
+95	0	    Exit Sub
+96	0	
+97	0	Err_refresh_Click:
+98	0	    MsgBox Err.Description
+99	0	    Resume Exit_refresh_Click
+100	0	    
+101	0	End Sub
+102	0	
+103	0	
+104	0	Private Sub Open_LR_Phase_II_Click()
+105	0	On Error GoTo Err_Open_LR_Phase_II_Click
+106	0	
+107	0	    Dim stDocName As String
+108	0	    Dim stLinkCriteria As String
+109	1	' refresh
+110	0	    DoCmd.DoMenuItem acFormBar, acRecordsMenu, 5, , acMenuVer70
+111	0	    stDocName = "Bots98: Light Residue Phase 2"
+112	1	'go to record
+113	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+114	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+115	1	'close this form
+116	0	    DoCmd.Close acForm, "Bots98: Flot Sheet"
+117	0	    
+118	0	Exit_Open_LR_Phase_II_Click:
+119	0	    Exit Sub
+120	0	
+121	0	Err_Open_LR_Phase_II_Click:
+122	0	    MsgBox Err.Description
+123	0	    Resume Exit_Open_LR_Phase_II_Click
+124	0	End Sub
+125	0	
+126	0	
+127	0	Sub go_Next_Click()
+128	0	On Error GoTo Err_go_Next_Click
+129	0	
+130	0	
+131	0	    DoCmd.GoToRecord , , acNext
+132	0	
+133	0	Exit_go_Next_Click:
+134	0	    Exit Sub
+135	0	
+136	0	Err_go_Next_Click:
+137	0	    MsgBox Err.Description
+138	0	    Resume Exit_go_Next_Click
+139	0	    
+140	0	End Sub
+141	0	Sub go_Last_Click()
+142	0	On Error GoTo Err_go_Last_Click
+143	0	
+144	0	
+145	0	    DoCmd.GoToRecord , , acLast
+146	0	
+147	0	Exit_go_Last_Click:
+148	0	    Exit Sub
+149	0	
+150	0	Err_go_Last_Click:
+151	0	    MsgBox Err.Description
+152	0	    Resume Exit_go_Last_Click
+153	0	    
+154	0	End Sub
+155	0	Sub go_to_new_Click()
+156	0	On Error GoTo Err_go_to_new_Click
+157	0	
+158	0	
+159	0	    DoCmd.GoToRecord , , acNewRec
+160	0	
+161	0	Exit_go_to_new_Click:
+162	0	    Exit Sub
+163	0	
+164	0	Err_go_to_new_Click:
+165	0	    MsgBox Err.Description
+166	0	    Resume Exit_go_to_new_Click
+167	0	    
+168	0	End Sub
+169	0	Sub go_previous_Click()
+170	0	On Error GoTo Err_go_previous_Click
+171	0	
+172	0	
+173	0	    DoCmd.GoToRecord , , acPrevious
+174	0	
+175	0	Exit_go_previous_Click:
+176	0	    Exit Sub
+177	0	
+178	0	Err_go_previous_Click:
+179	0	    MsgBox Err.Description
+180	0	    Resume Exit_go_previous_Click
+181	0	    
+182	0	End Sub
+183	0	Sub go_first_Click()
+184	0	On Error GoTo Err_go_first_Click
+185	0	
+186	0	
+187	0	    DoCmd.GoToRecord , , acFirst
+188	0	
+189	0	Exit_go_first_Click:
+190	0	    Exit Sub
+191	0	
+192	0	Err_go_first_Click:
+193	0	    MsgBox Err.Description
+194	0	    Resume Exit_go_first_Click
+195	0	    
+196	0	End Sub
+197	0	
+198	0	Private Sub Sample_AfterUpdate()
+199	0	Update_GID
+200	0	End Sub
+201	0	
+202	0	Private Sub Sample_Change()
+203	0	Update_GID
+204	0	End Sub
+205	0	
+206	0	
+207	0	Private Sub Unit_AfterUpdate()
+208	0	
+209	0	Update_GID
+210	1	'Me![GID] = Me![Unit] & "." & Me![Sample] & "." & Me![Flot Number]
+211	0	
+212	0	End Sub
+213	0	
+214	0	
+215	0	Private Sub Unit_Change()
+216	0	Update_GID
+217	0	End Sub
+218	0	
+219	0	
+220	0	Private Sub Unit_Enter()
+221	1	'SAJ pre version numbers - related to security RO - calling
+222	1	'the update on enter when nothing has changed is causing a SQL update
+223	1	'permissions error which will really confuse the user! taken out
+224	1	'11/01/06
+225	1	'Update_GID
+226	0	End Sub
+227	0	
+228	0	
+229	0	Sub Exit_Click()
+230	0	On Error GoTo Err_Exit_Click
+231	0	
+232	0	
+233	0	    DoCmd.Close
+234	0	
+235	0	Exit_Exit_Click:
+236	0	    Exit Sub
+237	0	
+238	0	Err_Exit_Click:
+239	0	    MsgBox Err.Description
+240	0	    Resume Exit_Exit_Click
+241	0	    
+242	0	End Sub
+243	0	Sub light_sum_Click()
+244	0	On Error GoTo Err_light_sum_Click
+245	0	
+246	0	    Dim stDocName As String
+247	0	    Dim stLinkCriteria As String
+248	1	' refresh
+249	0	    DoCmd.DoMenuItem acFormBar, acRecordsMenu, 5, , acMenuVer70
+250	0	    
+251	0	    stDocName = "Bots98: Light Summary"
+252	0	    
+253	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+254	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+255	0	
+256	0	Exit_light_sum_Click:
+257	0	    Exit Sub
+258	0	
+259	0	Err_light_sum_Click:
+260	0	    MsgBox Err.Description
+261	0	    Resume Exit_light_sum_Click
+262	0	    
+263	0	End Sub
+264	0	Sub Command159_Click()
+265	0	On Error GoTo Err_Command159_Click
+266	0	
+267	0	    Dim stDocName As String
+268	0	    Dim stLinkCriteria As String
+269	0	
+270	0	    stDocName = "Bots: Heavy Residue Summary display"
+271	0	    
+272	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+273	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+274	0	
+275	0	Exit_Command159_Click:
+276	0	    Exit Sub
+277	0	
+278	0	Err_Command159_Click:
+279	0	    MsgBox Err.Description
+280	0	    Resume Exit_Command159_Click
+281	0	    
+282	0	End Sub
+283	0	Sub heavy_sum_Click()
+284	0	On Error GoTo Err_heavy_sum_Click
+285	0	
+286	0	    Dim stDocName As String
+287	0	    Dim stLinkCriteria As String
+288	1	' refresh
+289	0	    DoCmd.DoMenuItem acFormBar, acRecordsMenu, 5, , acMenuVer70
+290	0	    
+291	0	    stDocName = "Bots98: Heavy Summary"
+292	0	    
+293	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+294	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+295	0	
+296	0	Exit_heavy_sum_Click:
+297	0	    Exit Sub
+298	0	
+299	0	Err_heavy_sum_Click:
+300	0	    MsgBox Err.Description
+301	0	    Resume Exit_heavy_sum_Click
+302	0	    
+303	0	End Sub
+304	0	Sub Command180_Click()
+305	0	On Error GoTo Err_Command180_Click
+306	0	
+307	0	    Dim stDocName As String
+308	0	    Dim stLinkCriteria As String
+309	0	
+310	0	    stDocName = "Bots98: Light Residue Phase 2"
+311	0	    
+312	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+313	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+314	0	
+315	0	Exit_Command180_Click:
+316	0	    Exit Sub
+317	0	
+318	0	Err_Command180_Click:
+319	0	    MsgBox Err.Description
+320	0	    Resume Exit_Command180_Click
+321	0	    
+322	0	End Sub
+323	0	Sub Screened_Click()
+324	0	On Error GoTo Err_Screened_Click
+325	0	
+326	0	    Dim stDocName As String
+327	0	    Dim stLinkCriteria As String
+328	0	    
+329	1	    'go to record
+330	0	    stDocName = "Bots98: Screened Bots"
+331	0	    
+332	0	    stLinkCriteria = "[Unit]=" & Me![Unit]
+333	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+334	0	        
+335	1	    'close this form
+336	0	    DoCmd.Close acForm, "Bots98: Flot Sheet"
+337	0	
+338	0	
+339	0	Exit_Screened_Click:
+340	0	    Exit Sub
+341	0	
+342	0	Err_Screened_Click:
+343	0	    MsgBox Err.Description
+344	0	    Resume Exit_Screened_Click
+345	0	    
+346	0	End Sub
+347	0	Sub Screened_Bots_Click()
+348	0	On Error GoTo Err_Screened_Bots_Click
+349	0	
+350	0	    Dim stDocName As String
+351	0	    Dim stLinkCriteria As String
+352	0	
+353	0	    stDocName = "Bots98: Screened Bots"
+354	0	    
+355	0	    stLinkCriteria = "[Unit]=" & Me![Unit]
+356	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+357	0	
+358	0	Exit_Screened_Bots_Click:
+359	0	    Exit Sub
+360	0	
+361	0	Err_Screened_Bots_Click:
+362	0	    MsgBox Err.Description
+363	0	    Resume Exit_Screened_Bots_Click
+364	0	    
+365	0	End Sub

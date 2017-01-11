@@ -1,0 +1,170 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	Dim dbSource As Database
+4	0	Dim rstUnitlist As Recordset
+5	0	
+6	0	Private Sub Command9_Click()
+7	0	
+8	0	Dim stDocName As String
+9	0	    Dim SQLstring, areapart, datepart, unitpart, materialpart, XFpart, excavpart, priopart, caption As String
+10	0	
+11	0	 
+12	1	    'Create SQL statement
+13	0	    
+14	0	    If Me.Area <> "" Then
+15	2	    areapart = " [Area] ='" & Me.[Area] & "'"
+16	0	    Else
+17	2	    areapart = " [Area] Like '*' "
+18	0	    End If
+19	0	    
+20	0	    If Me.Date <> "" Then
+21	0	    datepart = " And [date] =#" & Me.[Date] & "#"
+22	0	    Else
+23	2	    datepart = " And [date] Like '*' "
+24	0	    End If
+25	0	    
+26	0	    
+27	0	    If Me.Unit <> "" And Not Me.unit_ex Then
+28	0	        unitpart = " And [Unit] =" & Me.[Unit]
+29	0	        ElseIf Me.[Unit] <> "" And Me.unit_ex Then
+30	0	        unitpart = " And Not [Unit] =" & Me.[Unit]
+31	0	        Else
+32	0	        unitpart = ""
+33	0	    End If
+34	0	    
+35	0	    If Me.Material <> "" And Not Me.mat_ex Then
+36	2	        materialpart = " And [Material] ='" & Me.[Material] & "'"
+37	0	        ElseIf Me.Material <> "" And Me.mat_ex Then
+38	2	        materialpart = " And Not [Material] ='" & Me.[Material] & "'"
+39	0	        Else
+40	0	        materialpart = ""
+41	0	    End If
+42	0	   
+43	0	    If Me.X_Find <> "" And Not Me.x_ex Then
+44	2	        XFpart = " And [Find no] ='" & Me.[X Find] & "'"
+45	0	        ElseIf Me.[X Find] <> "" And Me.x_ex Then
+46	2	        XFpart = " And Not [Find no] ='" & Me.[X Find] & "'"
+47	0	        Else
+48	0	        XFpart = ""
+49	0	    End If
+50	0	    
+51	0	    If Me.Excav <> "" Then
+52	2	        excavpart = " And [Excavator] ='" & Me.[Excav] & "'"
+53	0	        Else
+54	0	        excavpart = ""
+55	0	    End If
+56	0	    
+57	0	    If Me.Priority Then
+58	0	        priopart = " And [Priority] = -1"
+59	0	        Else
+60	0	        priopart = ""
+61	0	    End If
+62	0	    
+63	0	    
+64	0	    SQLstring = "SELECT * FROM [Log: Details] WHERE " & areapart & datepart & unitpart & materialpart & XFpart & excavpart & priopart
+65	1	    'Debug.Print SQLstring
+66	0	        
+67	1	    'stDocName = "Exca: Unit list"
+68	0	    
+69	0	    DoCmd.OpenForm "Log: Details List", acFormDS
+70	0	    Forms![Log: Details List].caption = "List of units"
+71	1	    '--------format header
+72	0	    caption = "List of units"
+73	0	    
+74	0	    If Me.Area <> "" Then
+75	0	    caption = caption & " [Area] =" & Me.[Area]
+76	0	    End If
+77	0	    If Me.Date <> "" Then
+78	0	    caption = caption & " and [date] =" & Me.[Date]
+79	0	    End If
+80	0	    Forms![Log: Details List].caption = caption
+81	1	    '----------end header
+82	0	    
+83	0	    Forms![Log: Details List].RecordSource = SQLstring
+84	0	
+85	0	
+86	0	End Sub
+87	0	
+88	0	Private Sub Data_Category_BeforeUpdate(Cancel As Integer)
+89	0	
+90	0	End Sub
+91	0	
+92	0	
+93	0	
+94	0	Private Sub Location_BeforeUpdate(Cancel As Integer)
+95	0	
+96	0	End Sub
+97	0	
+98	0	
+99	0	Private Sub Command10_Click()
+100	0	On Error GoTo Err_Command10_Click
+101	0	
+102	0	    Dim stDocName As String
+103	0	    Dim SQLstring, areapart, datepart, situpart, locpart, descripart, matpart, depopart, basalpart As String
+104	0	
+105	0	 
+106	1	    'Create select statement
+107	0	    
+108	1	    'construct SQL statement
+109	0	    If Me.Area <> "" Then
+110	2	    areapart = " [Area] ='" & Me.[Area] & "'"
+111	0	    Else
+112	2	    areapart = " [Area] Like '*' "
+113	0	    End If
+114	0	    
+115	0	    If Me.Date <> "" Then
+116	0	    datepart = " And [date] =#" & Me.[Date] & "#"
+117	0	    Else
+118	2	    datepart = " And [date] Like '*' "
+119	0	    End If
+120	0	    
+121	1	    '---------------------------------------------------------------
+122	0	   
+123	0	        
+124	0	    SQLstring = "SELECT * FROM [Log: Sheets] WHERE " & areapart & datepart
+125	1	    'Debug.Print SQLstring
+126	0	    
+127	0	    stDocName = "Log: Search Results"
+128	0	    DoCmd.OpenForm stDocName
+129	0	    Forms![Log: Search Results].RecordSource = SQLstring
+130	0	
+131	0	Exit_Command10_Click:
+132	0	    Exit Sub
+133	0	
+134	0	Err_Command10_Click:
+135	0	    MsgBox Err.Description
+136	0	    Resume Exit_Command10_Click
+137	0	    
+138	0	End Sub
+139	0	Private Sub Close_Click()
+140	0	On Error GoTo Err_close_Click
+141	0	
+142	0	
+143	0	    DoCmd.Close
+144	0	
+145	0	Exit_close_Click:
+146	0	    Exit Sub
+147	0	
+148	0	Err_close_Click:
+149	0	    MsgBox Err.Description
+150	0	    Resume Exit_close_Click
+151	0	    
+152	0	End Sub
+153	0	
+154	0	Private Sub log_sheet_Click()
+155	0	On Error GoTo Err_log_sheet_Click
+156	0	
+157	0	    Dim stDocName As String
+158	0	    Dim stLinkCriteria As String
+159	0	
+160	0	    stDocName = "Log: Daily Log Sheet"
+161	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+162	0	
+163	0	Exit_log_sheet_Click:
+164	0	    Exit Sub
+165	0	
+166	0	Err_log_sheet_Click:
+167	0	    MsgBox Err.Description
+168	0	    Resume Exit_log_sheet_Click
+169	0	    
+170	0	End Sub

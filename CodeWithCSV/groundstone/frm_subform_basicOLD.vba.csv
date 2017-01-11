@@ -1,0 +1,269 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub Analyst_NotInList(NewData As String, Response As Integer)
+5	1	'Allow more values to be added if necessary
+6	0	On Error GoTo err_GSAnalyst_NotInList
+7	0	
+8	0	Dim retVal, sql, inputname
+9	0	
+10	0	retVal = MsgBox("This value is not in the list, are you sure you want to add it?", vbQuestion + vbYesNo, "Value not in list")
+11	0	If retVal = vbYes Then
+12	0	    Response = acDataErrAdded
+13	0	    inputname = InputBox("Please enter the full name of the analyst to go along with these initials:", "Analyst Name")
+14	0	    If inputname <> "" Then
+15	4	        sql = "INSERT INTO [GroundStone List of Values: GSAnalyst]([GSAnalystInitials], [GSAnalystName]) VALUES ('" & NewData & "', '" & inputname & "');"
+16	0	        DoCmd.RunSQL sql
+17	0	    Else
+18	0	        Response = acDataErrContinue
+19	0	    End If
+20	0	Else
+21	0	    Response = acDataErrContinue
+22	0	End If
+23	0	
+24	0	   
+25	0	Exit Sub
+26	0	
+27	0	err_GSAnalyst_NotInList:
+28	0	    Call General_Error_Trap
+29	0	    Exit Sub
+30	0	
+31	0	End Sub
+32	0	
+33	0	Private Sub Artefact_Class_Code_AfterUpdate()
+34	1	'Artefact Class Text update
+35	0	On Error GoTo err_arte
+36	0	
+37	0	    If Me![Artefact Class Code] <> "" Then
+38	0	    
+39	0	        If Me![Artefact Class Text] = "" Or IsNull(Me![Artefact Class Text]) Then
+40	0	            Me![Artefact Class Text] = Me![Artefact Class Code].Column(1)
+41	0	        ElseIf Me![Artefact Class Text] <> Me![Artefact Class Code].Column(1) Then
+42	0	            Dim resp
+43	0	            resp = MsgBox("The artefact class text for this selection is: " & Me![Artefact Class Code].Column(1) & ", differing from that already filled out in the text field (" & Me![Artefact Class Text] & "). Do you wish to update the value field with : " & Me![Artefact Class Code].Column(1) & "?", vbYesNo + vbQuestion, "Artefact Text Mismatch")
+44	0	            If resp = vbYes Then
+45	0	                Me![Artefact Class Text] = Me![Artefact Class Code].Column(1)
+46	0	            End If
+47	0	        End If
+48	0	    End If
+49	0	
+50	0	    Me![Artefact Type Code].Requery
+51	0	    Me![Subtype 1 Code].Requery
+52	0	    Me![Artefact Class Text].Requery
+53	0	    
+54	0	Exit Sub
+55	0	
+56	0	err_arte:
+57	0	    Call General_Error_Trap
+58	0	    Exit Sub
+59	0	    
+60	0	End Sub
+61	0	
+62	0	Private Sub Artefact_Type_Code_AfterUpdate()
+63	1	'Artefact Type Text update
+64	0	On Error GoTo err_arteType
+65	0	
+66	0	    If Me![Artefact Type Code] <> "" Then
+67	0	    
+68	0	        If Me![Artefact Type Text] = "" Or IsNull(Me![Artefact Type Text]) Then
+69	0	            Me![Artefact Type Text] = Me![Artefact Type Code].Column(1)
+70	0	        ElseIf Me![Artefact Type Text] <> Me![Artefact Type Code].Column(1) Then
+71	0	            Dim resp
+72	0	            resp = MsgBox("The artefact Type text for this selection is: " & Me![Artefact Type Code].Column(1) & ", differing from that already filled out in the text field (" & Me![Artefact Type Text] & "). Do you wish to update the value field with : " & Me![Artefact Type Code].Column(1) & "?", vbYesNo + vbQuestion, "Artefact Type Mismatch")
+73	0	            If resp = vbYes Then
+74	0	                Me![Artefact Type Text] = Me![Artefact Type Code].Column(1)
+75	0	            End If
+76	0	        End If
+77	0	    End If
+78	0	
+79	0	    Me![Subtype 1 Code].Requery
+80	0	Exit Sub
+81	0	
+82	0	err_arteType:
+83	0	    Call General_Error_Trap
+84	0	    Exit Sub
+85	0	End Sub
+86	0	
+87	0	Private Sub Comments_DblClick(Cancel As Integer)
+88	1	'try to replicate zoom box
+89	0	On Error GoTo err_comments
+90	0	
+91	0	    SendKeys "+{F2}", True
+92	0	Exit Sub
+93	0	
+94	0	err_comments:
+95	0	    Call General_Error_Trap
+96	0	    Exit Sub
+97	0	End Sub
+98	0	
+99	0	Private Sub FindNumber_AfterUpdate()
+100	1	'update the GID
+101	0	On Error GoTo err_fn
+102	0	
+103	0	    Me![GID] = Me![Unit] & "." & Me![Lettercode] & Me![FindNumber]
+104	0	
+105	0	Exit Sub
+106	0	
+107	0	err_fn:
+108	0	    Call General_Error_Trap
+109	0	    Exit Sub
+110	0	End Sub
+111	0	
+112	0	Private Sub Form_BeforeUpdate(Cancel As Integer)
+113	1	'*******************************************************************
+114	1	' Update lastupdated field
+115	1	' SAJ
+116	1	'*******************************************************************
+117	0	On Error GoTo err_Form_BeforeUpdate
+118	0	
+119	0	Me![Last updated] = Date
+120	0	
+121	0	Exit Sub
+122	0	
+123	0	err_Form_BeforeUpdate:
+124	0	    Call General_Error_Trap
+125	0	    Exit Sub
+126	0	End Sub
+127	0	
+128	0	Private Sub Form_Current()
+129	1	'events to keep everything up to date for the current record
+130	0	On Error GoTo err_current
+131	0	
+132	1	    'Me![Rock Type].Requery
+133	1	    'Me![Artefact Type Code].Requery
+134	1	    'Me![Subtype 1 Code].Requery
+135	1	    'Me![Artefact Class Text].Requery
+136	1	    'Me![Material].Requery
+137	0	
+138	0	Exit Sub
+139	0	
+140	0	err_current:
+141	0	    Call General_Error_Trap
+142	0	    Exit Sub
+143	0	End Sub
+144	0	
+145	0	Private Sub Lettercode_AfterUpdate()
+146	1	'update the GID
+147	0	On Error GoTo err_lc
+148	0	
+149	0	    Me![GID] = Me![Unit] & "." & Me![Lettercode] & Me![FindNumber]
+150	0	
+151	0	Exit Sub
+152	0	
+153	0	err_lc:
+154	0	    Call General_Error_Trap
+155	0	    Exit Sub
+156	0	End Sub
+157	0	
+158	0	Private Sub Material_Group_AfterUpdate()
+159	1	'make sure rocktype gets requeried
+160	0	On Error GoTo err_mat
+161	0	
+162	0	    Me![Rock Type].Requery
+163	0	
+164	0	Exit Sub
+165	0	
+166	0	err_mat:
+167	0	    Call General_Error_Trap
+168	0	    Exit Sub
+169	0	
+170	0	End Sub
+171	0	
+172	0	Private Sub MaterialComments_DblClick(Cancel As Integer)
+173	1	'try to replicate zoom box
+174	0	On Error GoTo err_Mcomments
+175	0	
+176	0	    SendKeys "+{F2}", True
+177	0	Exit Sub
+178	0	
+179	0	err_Mcomments:
+180	0	    Call General_Error_Trap
+181	0	    Exit Sub
+182	0	End Sub
+183	0	
+184	0	Private Sub Rock_Type_AfterUpdate()
+185	1	'material field appears to hold the rocktypetext value so auto write this in
+186	0	On Error GoTo err_rocktype
+187	0	
+188	0	    If Me![Rock Type] <> "" Then
+189	0	    
+190	0	        If Me![Material] = "" Or IsNull(Me![Material]) Then
+191	0	            Me![Material] = Me![Rock Type].Column(1)
+192	0	        ElseIf Me![Material] <> Me![Rock Type].Column(1) Then
+193	0	            Dim resp
+194	0	            resp = MsgBox("The material for this rock type is: " & Me![Rock Type].Column(1) & ", differing from that already filled out in the Material field (" & Me![Material] & "). Do you wish to update the Material field with : " & Me![Rock Type].Column(1) & "?", vbYesNo + vbQuestion, "Material Mismatch")
+195	0	            If resp = vbYes Then
+196	0	                Me![Material] = Me![Rock Type].Column(1)
+197	0	            End If
+198	0	        End If
+199	0	    End If
+200	0	
+201	0	Exit Sub
+202	0	
+203	0	err_rocktype:
+204	0	    Call General_Error_Trap
+205	0	    Exit Sub
+206	0	    
+207	0	End Sub
+208	0	
+209	0	Private Sub Subtype_1_Code_AfterUpdate()
+210	1	'SubType 1 Text update
+211	0	On Error GoTo err_subType
+212	0	
+213	0	    If Me![Subtype 1 Code] <> "" Then
+214	0	    
+215	0	        If Me![Subtype 1 Text] = "" Or IsNull(Me![Subtype 1 Text]) Then
+216	0	            Me![Subtype 1 Text] = Me![Subtype 1 Code].Column(1)
+217	0	        ElseIf Me![Subtype 1 Text] <> Me![Subtype 1 Code].Column(1) Then
+218	0	            Dim resp
+219	0	            resp = MsgBox("The subtype text for this selection is: " & Me![Subtype 1 Code].Column(1) & ", differing from that already filled out in the text field (" & Me![Subtype 1 Text] & "). Do you wish to update the value field with : " & Me![Subtype 1 Code].Column(1) & "?", vbYesNo + vbQuestion, "Subtype 1 Mismatch")
+220	0	            If resp = vbYes Then
+221	0	                Me![Subtype 1 Text] = Me![Subtype 1 Code].Column(1)
+222	0	            End If
+223	0	        End If
+224	0	    End If
+225	0	
+226	0	    
+227	0	Exit Sub
+228	0	
+229	0	err_subType:
+230	0	    Call General_Error_Trap
+231	0	    Exit Sub
+232	0	End Sub
+233	0	
+234	0	Private Sub Unit_AfterUpdate()
+235	1	'update the GID
+236	0	On Error GoTo err_unit
+237	0	
+238	0	    Me![GID] = Me![Unit] & "." & Me![Lettercode] & Me![FindNumber]
+239	0	
+240	0	Exit Sub
+241	0	
+242	0	err_unit:
+243	0	    Call General_Error_Trap
+244	0	    Exit Sub
+245	0	End Sub
+246	0	
+247	0	Private Sub Unit_DblClick(Cancel As Integer)
+248	0	On Error GoTo Err_cmdUnitDesc_Click
+249	0	
+250	0	If Me![Unit] <> "" Then
+251	1	    'check the unit number is in the unit desc form
+252	0	    Dim checknum, sql
+253	0	    checknum = DLookup("[Unit]", "[Groundstone: Unit Description]", "[Unit] = " & Me![Unit])
+254	0	    If IsNull(checknum) Then
+255	1	        'must add the unit to the table
+256	0	        sql = "INSERT INTo [Groundstone: Unit Description] ([Unit]) VALUES (" & Me![Unit] & ");"
+257	0	        DoCmd.RunSQL sql
+258	0	    End If
+259	0	    
+260	0	    DoCmd.OpenForm "Frm_GS_UnitDescription", acNormal, , "[Unit] = " & Me![Unit], acFormPropertySettings
+261	0	Else
+262	0	    MsgBox "No Unit number is present, cannot open the Unit Description form", vbInformation, "No Unit Number"
+263	0	End If
+264	0	Exit Sub
+265	0	
+266	0	Err_cmdUnitDesc_Click:
+267	0	    Call General_Error_Trap
+268	0	    Exit Sub
+269	0	End Sub

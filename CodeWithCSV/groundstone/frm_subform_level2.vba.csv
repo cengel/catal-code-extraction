@@ -1,0 +1,2833 @@
+1	0	Option Compare Database
+2	0	
+3	0	Private Sub cboBaseDiameterCompleteness_Change()
+4	0	On Error GoTo err_changeBaseDiameterCompleteness
+5	0	Dim strText As String
+6	0	
+7	0	strText = Nz(Me.cboBaseDiameterCompleteness.Text, "")
+8	0	
+9	0	If Len(strText) > 0 Then
+10	0	
+11	4	   Me.cboBaseDiameterCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+12	0	Else
+13	0	    Me.cboBaseDiameterCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+14	0	End If
+15	0	
+16	0	Me.cboBaseDiameterCompleteness.Dropdown
+17	0	
+18	0	Exit Sub
+19	0	
+20	0	err_changeBaseDiameterCompleteness:
+21	0	    Call General_Error_Trap
+22	0	    Exit Sub
+23	0	
+24	0	End Sub
+25	0	
+26	0	Private Sub cboBaseDiameterCompleteness_Enter()
+27	0	On Error GoTo err_EnterBaseDiameterCompleteness
+28	0	    Me.cboBaseDiameterCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+29	0	    Me.cboBaseDiameterCompleteness.Dropdown
+30	0	Exit Sub
+31	0	
+32	0	err_EnterBaseDiameterCompleteness:
+33	0	    Call General_Error_Trap
+34	0	    Exit Sub
+35	0	End Sub
+36	0	
+37	0	Private Sub cboBaseDiameterCompleteness_KeyDown(KeyCode As Integer, Shift As Integer)
+38	0	On Error GoTo err_KeyDownBaseDiameterCompleteness
+39	0	    Me.cboBaseDiameterCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+40	0	    Me.cboBaseDiameterCompleteness.Dropdown
+41	0	Exit Sub
+42	0	
+43	0	err_KeyDownBaseDiameterCompleteness:
+44	0	    Call General_Error_Trap
+45	0	    Exit Sub
+46	0	
+47	0	End Sub
+48	0	
+49	0	Private Sub cboBaseType_Change()
+50	0	On Error GoTo err_changeBaseType
+51	0	Dim strText As String
+52	0	
+53	0	strText = Nz(Me.cboBaseType.Text, "")
+54	0	
+55	0	If Len(strText) > 0 Then
+56	0	
+57	4	   Me.cboBaseType.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Basetype] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+58	0	Else
+59	0	    Me.cboBaseType.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Basetype] ORDER BY ScreenOrder"
+60	0	End If
+61	0	
+62	0	Me.cboBaseType.Dropdown
+63	0	
+64	0	Exit Sub
+65	0	
+66	0	err_changeBaseType:
+67	0	    Call General_Error_Trap
+68	0	    Exit Sub
+69	0	
+70	0	
+71	0	End Sub
+72	0	
+73	0	Private Sub cboBaseType_Enter()
+74	0	On Error GoTo err_EnterBaseType
+75	0	    Me.cboBaseType.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Basetype] ORDER BY ScreenOrder"
+76	0	    Me.cboBaseType.Dropdown
+77	0	Exit Sub
+78	0	
+79	0	err_EnterBaseType:
+80	0	    Call General_Error_Trap
+81	0	    Exit Sub
+82	0	End Sub
+83	0	
+84	0	Private Sub cboBaseType_KeyDown(KeyCode As Integer, Shift As Integer)
+85	0	On Error GoTo err_KeyDownBaseType
+86	0	    Me.cboBaseType.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Basetype] ORDER BY ScreenOrder"
+87	0	    Me.cboBaseType.Dropdown
+88	0	Exit Sub
+89	0	
+90	0	err_KeyDownBaseType:
+91	0	    Call General_Error_Trap
+92	0	    Exit Sub
+93	0	End Sub
+94	0	
+95	0	Private Sub cboBitDamage_Change()
+96	0	On Error GoTo err_changeBitDamage
+97	0	Dim strText As String
+98	0	
+99	0	strText = Nz(Me.cboBitDamage.Text, "")
+100	0	
+101	0	If Len(strText) > 0 Then
+102	0	
+103	4	   Me.cboBitDamage.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Damage] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+104	0	Else
+105	0	    Me.cboBitDamage.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Damage] ORDER BY ScreenOrder"
+106	0	End If
+107	0	
+108	0	Me.cboBitDamage.Dropdown
+109	0	
+110	0	Exit Sub
+111	0	
+112	0	err_changeBitDamage:
+113	0	    Call General_Error_Trap
+114	0	    Exit Sub
+115	0	End Sub
+116	0	
+117	0	Private Sub cboBitDamage_Enter()
+118	0	On Error GoTo err_EnterBitDamage
+119	0	    Me.cboBitDamage.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Damage] ORDER BY ScreenOrder"
+120	0	    Me.cboBitDamage.Dropdown
+121	0	Exit Sub
+122	0	
+123	0	err_EnterBitDamage:
+124	0	    Call General_Error_Trap
+125	0	    Exit Sub
+126	0	End Sub
+127	0	
+128	0	Private Sub cboBitDamage_KeyDown(KeyCode As Integer, Shift As Integer)
+129	0	On Error GoTo err_KeyDownBitDamage
+130	0	    Me.cboBitDamage.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Damage] ORDER BY ScreenOrder"
+131	0	    Me.cboBitDamage.Dropdown
+132	0	Exit Sub
+133	0	
+134	0	err_KeyDownBitDamage:
+135	0	    Call General_Error_Trap
+136	0	    Exit Sub
+137	0	End Sub
+138	0	
+139	0	Private Sub cboButtDamage_Change()
+140	0	On Error GoTo err_changeButtDamage
+141	0	Dim strText As String
+142	0	
+143	0	strText = Nz(Me.cboButtDamage.Text, "")
+144	0	
+145	0	If Len(strText) > 0 Then
+146	0	
+147	4	   Me.cboButtDamage.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Damage] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+148	0	Else
+149	0	    Me.cboButtDamage.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Damage] ORDER BY ScreenOrder"
+150	0	End If
+151	0	
+152	0	Me.cboButtDamage.Dropdown
+153	0	
+154	0	Exit Sub
+155	0	
+156	0	err_changeButtDamage:
+157	0	    Call General_Error_Trap
+158	0	    Exit Sub
+159	0	End Sub
+160	0	
+161	0	Private Sub cboButtDamage_Enter()
+162	0	On Error GoTo err_EnterButtDamage
+163	0	    Me.cboButtDamage.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Damage] ORDER BY ScreenOrder"
+164	0	    Me.cboButtDamage.Dropdown
+165	0	Exit Sub
+166	0	
+167	0	err_EnterButtDamage:
+168	0	    Call General_Error_Trap
+169	0	    Exit Sub
+170	0	End Sub
+171	0	
+172	0	Private Sub cboButtDamage_KeyDown(KeyCode As Integer, Shift As Integer)
+173	0	On Error GoTo err_KeyDownButtDamage
+174	0	    Me.cboButtDamage.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Damage] ORDER BY ScreenOrder"
+175	0	    Me.cboButtDamage.Dropdown
+176	0	Exit Sub
+177	0	
+178	0	err_KeyDownButtDamage:
+179	0	    Call General_Error_Trap
+180	0	    Exit Sub
+181	0	End Sub
+182	0	
+183	0	Private Sub cboButtThicknessCompleteness_Change()
+184	0	On Error GoTo err_changeButtThicknessCompleteness
+185	0	Dim strText As String
+186	0	
+187	0	strText = Nz(Me.cboButtThicknessCompleteness.Text, "")
+188	0	
+189	0	If Len(strText) > 0 Then
+190	0	
+191	4	   Me.cboButtThicknessCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+192	0	Else
+193	0	    Me.cboButtThicknessCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+194	0	End If
+195	0	
+196	0	Me.cboButtThicknessCompleteness.Dropdown
+197	0	
+198	0	Exit Sub
+199	0	
+200	0	err_changeButtThicknessCompleteness:
+201	0	    Call General_Error_Trap
+202	0	    Exit Sub
+203	0	
+204	0	End Sub
+205	0	
+206	0	Private Sub cboButtThicknessCompleteness_Enter()
+207	0	On Error GoTo err_EnterButtThicknessCompleteness
+208	0	    Me.cboButtThicknessCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+209	0	    Me.cboButtThicknessCompleteness.Dropdown
+210	0	Exit Sub
+211	0	
+212	0	err_EnterButtThicknessCompleteness:
+213	0	    Call General_Error_Trap
+214	0	    Exit Sub
+215	0	End Sub
+216	0	
+217	0	Private Sub cboButtThicknessCompleteness_KeyDown(KeyCode As Integer, Shift As Integer)
+218	0	On Error GoTo err_KeyDownButtThicknessCompleteness
+219	0	    Me.cboButtThicknessCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+220	0	    Me.cboButtThicknessCompleteness.Dropdown
+221	0	Exit Sub
+222	0	
+223	0	err_KeyDownButtThicknessCompleteness:
+224	0	    Call General_Error_Trap
+225	0	    Exit Sub
+226	0	
+227	0	End Sub
+228	0	
+229	0	Private Sub cboButtWidthCompleteness_Change()
+230	0	On Error GoTo err_changeButtWidthCompleteness
+231	0	Dim strText As String
+232	0	
+233	0	strText = Nz(Me.cboButtWidthCompleteness.Text, "")
+234	0	
+235	0	If Len(strText) > 0 Then
+236	0	
+237	4	   Me.cboButtWidthCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+238	0	Else
+239	0	    Me.cboButtWidthCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+240	0	End If
+241	0	
+242	0	Me.cboButtWidthCompleteness.Dropdown
+243	0	
+244	0	Exit Sub
+245	0	
+246	0	err_changeButtWidthCompleteness:
+247	0	    Call General_Error_Trap
+248	0	    Exit Sub
+249	0	End Sub
+250	0	
+251	0	Private Sub cboButtWidthCompleteness_Enter()
+252	0	On Error GoTo err_EnterButtWidthCompleteness
+253	0	    Me.cboButtWidthCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+254	0	    Me.cboButtWidthCompleteness.Dropdown
+255	0	Exit Sub
+256	0	
+257	0	err_EnterButtWidthCompleteness:
+258	0	    Call General_Error_Trap
+259	0	    Exit Sub
+260	0	End Sub
+261	0	
+262	0	Private Sub cboButtWidthCompleteness_KeyDown(KeyCode As Integer, Shift As Integer)
+263	0	On Error GoTo err_KeyDownButtWidthCompleteness
+264	0	    Me.cboButtWidthCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+265	0	    Me.cboButtWidthCompleteness.Dropdown
+266	0	Exit Sub
+267	0	
+268	0	err_KeyDownButtWidthCompleteness:
+269	0	    Call General_Error_Trap
+270	0	    Exit Sub
+271	0	
+272	0	End Sub
+273	0	
+274	0	Private Sub cboCortWeath_Change()
+275	0	On Error GoTo err_changeCortWeath
+276	0	Dim strText As String
+277	0	
+278	0	strText = Nz(Me.cboCortWeath.Text, "")
+279	0	
+280	0	If Len(strText) > 0 Then
+281	0	
+282	4	   Me.cboCortWeath.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Weathered Surface] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+283	0	Else
+284	0	    Me.cboCortWeath.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Weathered Surface] ORDER BY ScreenOrder"
+285	0	End If
+286	0	
+287	0	Me.cboCortWeath.Dropdown
+288	0	
+289	0	Exit Sub
+290	0	
+291	0	err_changeCortWeath:
+292	0	    Call General_Error_Trap
+293	0	    Exit Sub
+294	0	
+295	0	End Sub
+296	0	
+297	0	Private Sub cboCortWeath_Enter()
+298	0	On Error GoTo err_EnterCortWeath
+299	0	    Me.cboCortWeath.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Weathered Surface] ORDER BY ScreenOrder"
+300	0	    Me.cboCortWeath.Dropdown
+301	0	Exit Sub
+302	0	
+303	0	err_EnterCortWeath:
+304	0	    Call General_Error_Trap
+305	0	    Exit Sub
+306	0	End Sub
+307	0	
+308	0	Private Sub cboCortWeath_KeyDown(KeyCode As Integer, Shift As Integer)
+309	0	
+310	0	On Error GoTo err_KeyDownCortWeath
+311	0	    Me.cboCortWeath.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Weathered Surface] ORDER BY ScreenOrder"
+312	0	    Me.cboCortWeath.Dropdown
+313	0	Exit Sub
+314	0	
+315	0	err_KeyDownCortWeath:
+316	0	    Call General_Error_Trap
+317	0	    Exit Sub
+318	0	End Sub
+319	0	
+320	0	Private Sub cboDegreeBurning_Change()
+321	0	On Error GoTo err_changeDegreeBurning
+322	0	Dim strText As String
+323	0	
+324	0	strText = Nz(Me.cboDegreeBurning.Text, "")
+325	0	
+326	0	If Len(strText) > 0 Then
+327	0	
+328	4	   Me.cboDegreeBurning.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Degree of Burning] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+329	0	Else
+330	0	    Me.cboDegreeBurning.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Degree of Burning] ORDER BY ScreenOrder"
+331	0	End If
+332	0	
+333	0	Me.cboDegreeBurning.Dropdown
+334	0	
+335	0	Exit Sub
+336	0	
+337	0	err_changeDegreeBurning:
+338	0	    Call General_Error_Trap
+339	0	    Exit Sub
+340	0	
+341	0	End Sub
+342	0	
+343	0	Private Sub cboDegreeBurning_Enter()
+344	0	On Error GoTo err_EnterDegreeBurning
+345	0	    Me.cboDegreeBurning.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Degree of Burning] ORDER BY ScreenOrder"
+346	0	    Me.cboDegreeBurning.Dropdown
+347	0	Exit Sub
+348	0	
+349	0	err_EnterDegreeBurning:
+350	0	    Call General_Error_Trap
+351	0	    Exit Sub
+352	0	End Sub
+353	0	
+354	0	Private Sub cboDegreeBurning_KeyDown(KeyCode As Integer, Shift As Integer)
+355	0	On Error GoTo err_KeyDownDegreeBurning
+356	0	    Me.cboDegreeBurning.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Degree of Burning] ORDER BY ScreenOrder"
+357	0	    Me.cboDegreeBurning.Dropdown
+358	0	Exit Sub
+359	0	
+360	0	err_KeyDownDegreeBurning:
+361	0	    Call General_Error_Trap
+362	0	    Exit Sub
+363	0	End Sub
+364	0	
+365	0	Private Sub cboDegreePolish_Change()
+366	0	On Error GoTo err_changeDegreePolish
+367	0	Dim strText As String
+368	0	
+369	0	strText = Nz(Me.cboDegreePolish.Text, "")
+370	0	
+371	0	If Len(strText) > 0 Then
+372	0	
+373	4	   Me.cboDegreePolish.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Degree Polish] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+374	0	Else
+375	0	    Me.cboDegreePolish.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Degree Polish] ORDER BY ScreenOrder"
+376	0	End If
+377	0	
+378	0	Me.cboDegreePolish.Dropdown
+379	0	
+380	0	Exit Sub
+381	0	
+382	0	err_changeDegreePolish:
+383	0	    Call General_Error_Trap
+384	0	    Exit Sub
+385	0	End Sub
+386	0	
+387	0	Private Sub cboDegreePolish_Enter()
+388	0	
+389	0	On Error GoTo err_EnterDegreePolish
+390	0	    Me.cboDegreePolish.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Degree Polish] ORDER BY ScreenOrder"
+391	0	    Me.cboDegreePolish.Dropdown
+392	0	Exit Sub
+393	0	
+394	0	err_EnterDegreePolish:
+395	0	    Call General_Error_Trap
+396	0	    Exit Sub
+397	0	End Sub
+398	0	
+399	0	Private Sub cboDegreePolish_KeyDown(KeyCode As Integer, Shift As Integer)
+400	0	On Error GoTo err_KeyDownDegreePolish
+401	0	    Me.cboDegreePolish.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Degree Polish] ORDER BY ScreenOrder"
+402	0	    Me.cboDegreePolish.Dropdown
+403	0	Exit Sub
+404	0	
+405	0	err_KeyDownDegreePolish:
+406	0	    Call General_Error_Trap
+407	0	    Exit Sub
+408	0	End Sub
+409	0	
+410	0	Private Sub cboFracturePattern_Change()
+411	0	On Error GoTo err_changeFracturePattern
+412	0	Dim strText As String
+413	0	
+414	0	strText = Nz(Me.cboFracturePattern.Text, "")
+415	0	
+416	0	If Len(strText) > 0 Then
+417	0	
+418	4	   Me.cboFracturePattern.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Fracture Pattern] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+419	0	Else
+420	0	    Me.cboFracturePattern.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Fracture Pattern] ORDER BY ScreenOrder"
+421	0	End If
+422	0	
+423	0	Me.cboFracturePattern.Dropdown
+424	0	
+425	0	Exit Sub
+426	0	
+427	0	err_changeFracturePattern:
+428	0	    Call General_Error_Trap
+429	0	    Exit Sub
+430	0	End Sub
+431	0	
+432	0	Private Sub cboFracturePattern_Enter()
+433	0	On Error GoTo err_EnterFracturePattern
+434	0	    Me.cboFracturePattern.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Fracture Pattern] ORDER BY ScreenOrder"
+435	0	    Me.cboFracturePattern.Dropdown
+436	0	Exit Sub
+437	0	
+438	0	err_EnterFracturePattern:
+439	0	    Call General_Error_Trap
+440	0	    Exit Sub
+441	0	End Sub
+442	0	
+443	0	Private Sub cboFracturePattern_KeyDown(KeyCode As Integer, Shift As Integer)
+444	0	On Error GoTo err_KeyDownFracturePattern
+445	0	    Me.cboFracturePattern.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Fracture Pattern] ORDER BY ScreenOrder"
+446	0	    Me.cboFracturePattern.Dropdown
+447	0	Exit Sub
+448	0	
+449	0	err_KeyDownFracturePattern:
+450	0	    Call General_Error_Trap
+451	0	    Exit Sub
+452	0	End Sub
+453	0	
+454	0	Private Sub cboFragmentation_Change()
+455	0	On Error GoTo err_changeFragmentation
+456	0	Dim strText As String
+457	0	
+458	0	strText = Nz(Me.cboFragmentation.Text, "")
+459	0	
+460	0	If Len(strText) > 0 Then
+461	0	
+462	4	   Me.cboFragmentation.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Fragmentation] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+463	0	Else
+464	0	    Me.cboFragmentation.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Fragmentation] ORDER BY ScreenOrder"
+465	0	End If
+466	0	
+467	0	Me.cboFragmentation.Dropdown
+468	0	
+469	0	Exit Sub
+470	0	
+471	0	err_changeFragmentation:
+472	0	    Call General_Error_Trap
+473	0	    Exit Sub
+474	0	End Sub
+475	0	
+476	0	Private Sub cboFragmentation_Enter()
+477	0	
+478	0	On Error GoTo err_EnterFragmentation
+479	0	    Me.cboFragmentation.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Fragmentation] ORDER BY ScreenOrder"
+480	0	    Me.cboFragmentation.Dropdown
+481	0	Exit Sub
+482	0	
+483	0	err_EnterFragmentation:
+484	0	    Call General_Error_Trap
+485	0	    Exit Sub
+486	0	End Sub
+487	0	
+488	0	Private Sub cboFragmentation_KeyDown(KeyCode As Integer, Shift As Integer)
+489	0	On Error GoTo err_KeyDownFragmentation
+490	0	    Me.cboFragmentation.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Fragmentation] ORDER BY ScreenOrder"
+491	0	    Me.cboFragmentation.Dropdown
+492	0	Exit Sub
+493	0	
+494	0	err_KeyDownFragmentation:
+495	0	    Call General_Error_Trap
+496	0	    Exit Sub
+497	0	End Sub
+498	0	
+499	0	Private Sub cboFragmentationPattern_Change()
+500	0	On Error GoTo err_changeFragmentationPattern
+501	0	Dim strText As String
+502	0	
+503	0	strText = Nz(Me.cboFragmentationPattern.Text, "")
+504	0	
+505	0	If Len(strText) > 0 Then
+506	0	
+507	4	   Me.cboFragmentationPattern.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Fragmentation Pattern] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+508	0	Else
+509	0	    Me.cboFragmentationPattern.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Fragmentation Pattern] ORDER BY ScreenOrder"
+510	0	End If
+511	0	
+512	0	Me.cboFragmentationPattern.Dropdown
+513	0	
+514	0	Exit Sub
+515	0	
+516	0	err_changeFragmentationPattern:
+517	0	    Call General_Error_Trap
+518	0	    Exit Sub
+519	0	End Sub
+520	0	
+521	0	Private Sub cboFragmentationPattern_Enter()
+522	0	
+523	0	On Error GoTo err_EnterFragmentationPattern
+524	0	    Me.cboFragmentationPattern.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Fragmentation Pattern] ORDER BY ScreenOrder"
+525	0	    Me.cboFragmentationPattern.Dropdown
+526	0	Exit Sub
+527	0	
+528	0	err_EnterFragmentationPattern:
+529	0	    Call General_Error_Trap
+530	0	    Exit Sub
+531	0	End Sub
+532	0	
+533	0	Private Sub cboFragmentationPattern_KeyDown(KeyCode As Integer, Shift As Integer)
+534	0	On Error GoTo err_KeyDownFragmentationPattern
+535	0	    Me.cboFragmentationPattern.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Fragmentation Pattern] ORDER BY ScreenOrder"
+536	0	    Me.cboFragmentationPattern.Dropdown
+537	0	Exit Sub
+538	0	
+539	0	err_KeyDownFragmentationPattern:
+540	0	    Call General_Error_Trap
+541	0	    Exit Sub
+542	0	End Sub
+543	0	
+544	0	Private Sub cboGeologicalCategory_Change()
+545	0	On Error GoTo err_changeGeologicalCategory
+546	0	Dim strText As String
+547	0	
+548	0	strText = Nz(Me.cboGeologicalCategory.Text, "")
+549	0	
+550	0	If Len(strText) > 0 Then
+551	0	
+552	4	   Me.cboGeologicalCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Geological Category] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+553	0	Else
+554	0	    Me.cboGeologicalCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Geological Category] ORDER BY ScreenOrder"
+555	0	End If
+556	0	
+557	0	Me.cboGeologicalCategory.Dropdown
+558	0	
+559	0	Exit Sub
+560	0	
+561	0	err_changeGeologicalCategory:
+562	0	    Call General_Error_Trap
+563	0	    Exit Sub
+564	0	
+565	0	End Sub
+566	0	
+567	0	Private Sub cboGeologicalCategory_Enter()
+568	0	
+569	0	On Error GoTo err_EnterGeologicalCategory
+570	0	    Me.cboGeologicalCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Geological Category] ORDER BY ScreenOrder"
+571	0	    Me.cboGeologicalCategory.Dropdown
+572	0	Exit Sub
+573	0	
+574	0	err_EnterGeologicalCategory:
+575	0	    Call General_Error_Trap
+576	0	    Exit Sub
+577	0	
+578	0	End Sub
+579	0	
+580	0	Private Sub cboGeologicalCategory_KeyDown(KeyCode As Integer, Shift As Integer)
+581	0	On Error GoTo err_KeyDownGeologicalCategory
+582	0	    Me.cboGeologicalCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Geological Category] ORDER BY ScreenOrder"
+583	0	    Me.cboGeologicalCategory.Dropdown
+584	0	Exit Sub
+585	0	
+586	0	err_KeyDownGeologicalCategory:
+587	0	    Call General_Error_Trap
+588	0	    Exit Sub
+589	0	End Sub
+590	0	
+591	0	Private Sub cboGrainSize_Change()
+592	0	On Error GoTo err_changeGrainSize
+593	0	Dim strText As String
+594	0	
+595	0	strText = Nz(Me.cboGrainSize.Text, "")
+596	0	
+597	0	If Len(strText) > 0 Then
+598	0	
+599	4	   Me.cboGrainSize.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Grain Size] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+600	0	Else
+601	0	    Me.cboGrainSize.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Grain Size] ORDER BY ScreenOrder"
+602	0	End If
+603	0	
+604	0	Me.cboGrainSize.Dropdown
+605	0	
+606	0	Exit Sub
+607	0	
+608	0	err_changeGrainSize:
+609	0	    Call General_Error_Trap
+610	0	    Exit Sub
+611	0	End Sub
+612	0	
+613	0	Private Sub cboGrainSize_Enter()
+614	0	On Error GoTo err_EnterGrainSize
+615	0	    Me.cboGrainSize.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Grain Size] ORDER BY ScreenOrder"
+616	0	    Me.cboGrainSize.Dropdown
+617	0	Exit Sub
+618	0	
+619	0	err_EnterGrainSize:
+620	0	    Call General_Error_Trap
+621	0	    Exit Sub
+622	0	End Sub
+623	0	
+624	0	Private Sub cboGrainSize_KeyDown(KeyCode As Integer, Shift As Integer)
+625	0	On Error GoTo err_KeyDownGrainSize
+626	0	    Me.cboGrainSize.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Grain Size] ORDER BY ScreenOrder"
+627	0	    Me.cboGrainSize.Dropdown
+628	0	Exit Sub
+629	0	
+630	0	err_KeyDownGrainSize:
+631	0	    Call General_Error_Trap
+632	0	    Exit Sub
+633	0	End Sub
+634	0	
+635	0	Private Sub cboLengthCompleteness_Change()
+636	0	On Error GoTo err_changeLengthCompleteness
+637	0	Dim strText As String
+638	0	
+639	0	strText = Nz(Me.cboLengthCompleteness.Text, "")
+640	0	
+641	0	If Len(strText) > 0 Then
+642	0	
+643	4	   Me.cboLengthCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+644	0	Else
+645	0	    Me.cboLengthCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+646	0	End If
+647	0	
+648	0	Me.cboLengthCompleteness.Dropdown
+649	0	
+650	0	Exit Sub
+651	0	
+652	0	err_changeLengthCompleteness:
+653	0	    Call General_Error_Trap
+654	0	    Exit Sub
+655	0	End Sub
+656	0	
+657	0	Private Sub cboLengthCompleteness_Enter()
+658	0	On Error GoTo err_EnterLengthCompleteness
+659	0	    Me.cboLengthCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+660	0	    Me.cboLengthCompleteness.Dropdown
+661	0	Exit Sub
+662	0	
+663	0	err_EnterLengthCompleteness:
+664	0	    Call General_Error_Trap
+665	0	    Exit Sub
+666	0	End Sub
+667	0	
+668	0	Private Sub cboLengthCompleteness_KeyDown(KeyCode As Integer, Shift As Integer)
+669	0	On Error GoTo err_KeyDownLengthCompleteness
+670	0	    Me.cboLengthCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+671	0	    Me.cboLengthCompleteness.Dropdown
+672	0	Exit Sub
+673	0	
+674	0	err_KeyDownLengthCompleteness:
+675	0	    Call General_Error_Trap
+676	0	    Exit Sub
+677	0	
+678	0	End Sub
+679	0	
+680	0	Private Sub cboLengthCompletenessUseFace1_Change()
+681	0	On Error GoTo err_changeLengthCompletenessUseFace1
+682	0	Dim strText As String
+683	0	
+684	0	strText = Nz(Me.cboLengthCompletenessUseFace1.Text, "")
+685	0	
+686	0	If Len(strText) > 0 Then
+687	0	
+688	4	   Me.cboLengthCompletenessUseFace1.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+689	0	Else
+690	0	    Me.cboLengthCompletenessUseFace1.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+691	0	End If
+692	0	
+693	0	Me.cboLengthCompletenessUseFace1.Dropdown
+694	0	
+695	0	Exit Sub
+696	0	
+697	0	err_changeLengthCompletenessUseFace1:
+698	0	    Call General_Error_Trap
+699	0	    Exit Sub
+700	0	End Sub
+701	0	
+702	0	Private Sub cboLengthCompletenessUseFace1_Enter()
+703	0	On Error GoTo err_EnterLengthCompletenessUseFace1
+704	0	    Me.cboLengthCompletenessUseFace1.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+705	0	    Me.cboLengthCompletenessUseFace1.Dropdown
+706	0	Exit Sub
+707	0	
+708	0	err_EnterLengthCompletenessUseFace1:
+709	0	    Call General_Error_Trap
+710	0	    Exit Sub
+711	0	End Sub
+712	0	
+713	0	Private Sub cboLengthCompletenessUseFace1_KeyDown(KeyCode As Integer, Shift As Integer)
+714	0	On Error GoTo err_KeyDownLengthCompletenessUseFace1
+715	0	    Me.cboLengthCompletenessUseFace1.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+716	0	    Me.cboLengthCompletenessUseFace1.Dropdown
+717	0	Exit Sub
+718	0	
+719	0	err_KeyDownLengthCompletenessUseFace1:
+720	0	    Call General_Error_Trap
+721	0	    Exit Sub
+722	0	
+723	0	End Sub
+724	0	
+725	0	Private Sub cboLengthCompletenessUseFace2_Change()
+726	0	On Error GoTo err_changeLengthCompletenessUseFace2
+727	0	Dim strText As String
+728	0	
+729	0	strText = Nz(Me.cboLengthCompletenessUseFace2.Text, "")
+730	0	
+731	0	If Len(strText) > 0 Then
+732	0	
+733	4	   Me.cboLengthCompletenessUseFace2.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+734	0	Else
+735	0	    Me.cboLengthCompletenessUseFace2.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+736	0	End If
+737	0	
+738	0	Me.cboLengthCompletenessUseFace2.Dropdown
+739	0	
+740	0	Exit Sub
+741	0	
+742	0	err_changeLengthCompletenessUseFace2:
+743	0	    Call General_Error_Trap
+744	0	    Exit Sub
+745	0	
+746	0	End Sub
+747	0	
+748	0	Private Sub cboLengthCompletenessUseFace2_Enter()
+749	0	On Error GoTo err_EnterLengthCompletenessUseFace2
+750	0	    Me.cboLengthCompletenessUseFace2.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+751	0	    Me.cboLengthCompletenessUseFace2.Dropdown
+752	0	Exit Sub
+753	0	
+754	0	err_EnterLengthCompletenessUseFace2:
+755	0	    Call General_Error_Trap
+756	0	    Exit Sub
+757	0	End Sub
+758	0	
+759	0	Private Sub cboLengthCompletenessUseFace2_KeyDown(KeyCode As Integer, Shift As Integer)
+760	0	On Error GoTo err_KeyDownLengthCompletenessUseFace2
+761	0	    Me.cboLengthCompletenessUseFace2.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+762	0	    Me.cboLengthCompletenessUseFace2.Dropdown
+763	0	Exit Sub
+764	0	
+765	0	err_KeyDownLengthCompletenessUseFace2:
+766	0	    Call General_Error_Trap
+767	0	    Exit Sub
+768	0	End Sub
+769	0	
+770	0	Private Sub cboLettercode_AfterUpdate()
+771	0	Dim checkLevel1, checkLevel2, checkOldGST
+772	0	Dim ctl As Control
+773	1	'update the GID
+774	0	On Error GoTo err_lc
+775	0	
+776	0	If Me![Lettercode] <> "K" And Me![Lettercode] <> "X" Then
+777	0	    MsgBox "Are you sure you want to assign the Letter Code " & Me![Lettercode] & "?"
+778	0	End If
+779	0	
+780	0	    Me![GID] = Me![Unit] & "." & Me![Lettercode] & Me![FindNumber]
+781	0	
+782	1	' if GID is complete, check for duplicates in Level1 and Level2
+783	0	If Me![Unit] <> "" And Me![Lettercode] <> "" And Me![FindNumber] <> "" Then
+784	1	    'check that GID not exists
+785	2	    checkLevel1 = DLookup("[GID]", "[dbo_Groundstone Level 1_2014]", "[GID] = '" & Me![GID] & "'")
+786	2	    checkLevel2 = DLookup("[GID]", "[dbo_Groundstone Level 2_2014]", "[GID] = '" & Me![GID] & "'")
+787	2	    checkOldGST = DLookup("[GID]", "[GroundStone: Basic_Data]", "[GID] = '" & Me![GID] & "'")
+788	0	
+789	0	    If Not IsNull(checkLevel1) Then
+790	0	        MsgBox "GID Number " & Me![GID] & " already exists in Level 1 table.", vbExclamation, "Duplicate GID Number"
+791	0	        
+792	0	        If Not IsNull(Me![Lettercode].OldValue) Then
+793	1	            'return field to old value if there was one
+794	0	            Me![Unit] = Me![Lettercode].OldValue
+795	0	        Else
+796	1	            'oh the joys, to keep the focus on unit have to flip to year then back
+797	1	            'otherwise if will ignore you and go straight to year - dont believe me, comment out the gotocontrol year then!
+798	0	            DoCmd.GoToControl "GID"
+799	0	            DoCmd.GoToControl "Unit"
+800	0	            Me![Unit].SetFocus
+801	0	            DoCmd.RunCommand acCmdUndo
+802	0	        End If
+803	0	    ElseIf Not IsNull(checkLevel2) Then
+804	0	    MsgBox "GID Number " & Me![GID] & " already exists in Level 2 table.", vbExclamation, "Duplicate GID Number"
+805	0	        
+806	0	        If Not IsNull(Me![Lettercode].OldValue) Then
+807	1	            'return field to old value if there was one
+808	0	            Me![Unit] = Me![Lettercode].OldValue
+809	0	        Else
+810	1	            'oh the joys, to keep the focus on unit have to flip to year then back
+811	1	            'otherwise if will ignore you and go straight to year - dont believe me, comment out the gotocontrol year then!
+812	0	            DoCmd.GoToControl "GID"
+813	0	            DoCmd.GoToControl "Unit"
+814	0	            Me![Unit].SetFocus
+815	0	            DoCmd.RunCommand acCmdUndo
+816	0	        End If
+817	0	    Else
+818	1	        'the number does not exist so allow rest of data entry (except the fields from Exca)
+819	1	        'unlock all fields - CE June 2014
+820	0	        For Each ctl In Me.Controls
+821	0	            If (ctl.ControlType = acTextBox Or ctl.ControlType = acComboBox) Then
+822	0	                ctl.Locked = False
+823	0	            End If
+824	0	        Next ctl
+825	1	        'if GID is in old Groundstone DB just give a warning, but dont disable entry
+826	0	        If Not IsNull(checkOldGST) Then
+827	0	            MsgBox "GID Number " & Me![GID] & " already exists in the Old Groundstone table. Make sure you know what you are doing.", vbInformation, "Duplicate GID Number"
+828	0	        End If
+829	0	
+830	0	    End If
+831	0	End If
+832	0	
+833	0	Exit Sub
+834	0	
+835	0	err_lc:
+836	0	    Call General_Error_Trap
+837	0	    Exit Sub
+838	0	End Sub
+839	0	
+840	0	Private Sub cboManifactTechniquesBit_Change()
+841	0	On Error GoTo err_changeManifactTechniquesBit
+842	0	Dim strText As String
+843	0	
+844	0	strText = Nz(Me.cboManifactTechniquesBit.Text, "")
+845	0	
+846	0	If Len(strText) > 0 Then
+847	0	
+848	4	   Me.cboManifactTechniquesBit.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Techniques] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+849	0	Else
+850	0	    Me.cboManifactTechniquesBit.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Techniques] ORDER BY ScreenOrder"
+851	0	End If
+852	0	
+853	0	Me.cboManifactTechniquesBit.Dropdown
+854	0	
+855	0	Exit Sub
+856	0	
+857	0	err_changeManifactTechniquesBit:
+858	0	    Call General_Error_Trap
+859	0	    Exit Sub
+860	0	End Sub
+861	0	
+862	0	Private Sub cboManifactTechniquesBit_Enter()
+863	0	On Error GoTo err_EnterManifactTechniquesBit
+864	0	    Me.cboManifactTechniquesBit.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Techniques] ORDER BY ScreenOrder"
+865	0	    Me.cboManifactTechniquesBit.Dropdown
+866	0	Exit Sub
+867	0	
+868	0	err_EnterManifactTechniquesBit:
+869	0	    Call General_Error_Trap
+870	0	    Exit Sub
+871	0	
+872	0	End Sub
+873	0	
+874	0	Private Sub cboManifactTechniquesBit_KeyDown(KeyCode As Integer, Shift As Integer)
+875	0	On Error GoTo err_KeyDownManifactTechniquesBit
+876	0	    Me.cboManifactTechniquesBit.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Techniques] ORDER BY ScreenOrder"
+877	0	    Me.cboManifactTechniquesBit.Dropdown
+878	0	Exit Sub
+879	0	
+880	0	err_KeyDownManifactTechniquesBit:
+881	0	    Call General_Error_Trap
+882	0	    Exit Sub
+883	0	End Sub
+884	0	
+885	0	Private Sub cboManifactTechniquesBody_Change()
+886	0	On Error GoTo err_changeManifactTechniquesBody
+887	0	Dim strText As String
+888	0	
+889	0	strText = Nz(Me.cboManifactTechniquesBody.Text, "")
+890	0	
+891	0	If Len(strText) > 0 Then
+892	0	
+893	4	   Me.cboManifactTechniquesBody.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Techniques] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+894	0	Else
+895	0	    Me.cboManifactTechniquesBody.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Techniques] ORDER BY ScreenOrder"
+896	0	End If
+897	0	
+898	0	Me.cboManifactTechniquesBody.Dropdown
+899	0	
+900	0	Exit Sub
+901	0	
+902	0	err_changeManifactTechniquesBody:
+903	0	    Call General_Error_Trap
+904	0	    Exit Sub
+905	0	End Sub
+906	0	
+907	0	Private Sub cboManifactTechniquesBody_Enter()
+908	0	On Error GoTo err_EnterManifactTechniquesBody
+909	0	    Me.cboManifactTechniquesBody.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Techniques] ORDER BY ScreenOrder"
+910	0	    Me.cboManifactTechniquesBody.Dropdown
+911	0	Exit Sub
+912	0	
+913	0	err_EnterManifactTechniquesBody:
+914	0	    Call General_Error_Trap
+915	0	    Exit Sub
+916	0	End Sub
+917	0	
+918	0	Private Sub cboManifactTechniquesBody_KeyDown(KeyCode As Integer, Shift As Integer)
+919	0	
+920	0	On Error GoTo err_KeyDownManifactTechniquesBody
+921	0	    Me.cboManifactTechniquesBody.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Techniques] ORDER BY ScreenOrder"
+922	0	    Me.cboManifactTechniquesBody.Dropdown
+923	0	Exit Sub
+924	0	
+925	0	err_KeyDownManifactTechniquesBody:
+926	0	    Call General_Error_Trap
+927	0	    Exit Sub
+928	0	End Sub
+929	0	
+930	0	Private Sub cboManifactTechniquesButt_Change()
+931	0	On Error GoTo err_changeManifactTechniquesButt
+932	0	Dim strText As String
+933	0	
+934	0	strText = Nz(Me.cboManifactTechniquesButt.Text, "")
+935	0	
+936	0	If Len(strText) > 0 Then
+937	0	
+938	4	   Me.cboManifactTechniquesButt.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Techniques] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+939	0	Else
+940	0	    Me.cboManifactTechniquesButt.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Techniques] ORDER BY ScreenOrder"
+941	0	End If
+942	0	
+943	0	Me.cboManifactTechniquesButt.Dropdown
+944	0	
+945	0	Exit Sub
+946	0	
+947	0	err_changeManifactTechniquesButt:
+948	0	    Call General_Error_Trap
+949	0	    Exit Sub
+950	0	End Sub
+951	0	
+952	0	Private Sub cboManifactTechniquesButt_Enter()
+953	0	On Error GoTo err_EnterManifactTechniquesButt
+954	0	    Me.cboManifactTechniquesButt.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Techniques] ORDER BY ScreenOrder"
+955	0	    Me.cboManifactTechniquesButt.Dropdown
+956	0	Exit Sub
+957	0	
+958	0	err_EnterManifactTechniquesButt:
+959	0	    Call General_Error_Trap
+960	0	    Exit Sub
+961	0	End Sub
+962	0	
+963	0	Private Sub cboManifactTechniquesButt_KeyDown(KeyCode As Integer, Shift As Integer)
+964	0	On Error GoTo err_KeyDownManifactTechniquesButt
+965	0	    Me.cboManifactTechniquesButt.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Techniques] ORDER BY ScreenOrder"
+966	0	    Me.cboManifactTechniquesButt.Dropdown
+967	0	Exit Sub
+968	0	
+969	0	err_KeyDownManifactTechniquesButt:
+970	0	    Call General_Error_Trap
+971	0	    Exit Sub
+972	0	End Sub
+973	0	
+974	0	Private Sub cboManifactTechniquesMargins_Change()
+975	0	On Error GoTo err_changeManifactTechniquesMargins
+976	0	Dim strText As String
+977	0	
+978	0	strText = Nz(Me.cboManifactTechniquesMargins.Text, "")
+979	0	
+980	0	If Len(strText) > 0 Then
+981	0	
+982	4	   Me.cboManifactTechniquesMargins.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Techniques] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+983	0	Else
+984	0	    Me.cboManifactTechniquesMargins.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Techniques] ORDER BY ScreenOrder"
+985	0	End If
+986	0	
+987	0	Me.cboManifactTechniquesMargins.Dropdown
+988	0	
+989	0	Exit Sub
+990	0	
+991	0	err_changeManifactTechniquesMargins:
+992	0	    Call General_Error_Trap
+993	0	    Exit Sub
+994	0	End Sub
+995	0	
+996	0	Private Sub cboManifactTechniquesMargins_Enter()
+997	0	On Error GoTo err_EnterManifactTechniquesMargins
+998	0	    Me.cboManifactTechniquesMargins.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Techniques] ORDER BY ScreenOrder"
+999	0	    Me.cboManifactTechniquesMargins.Dropdown
+1000	0	Exit Sub
+1001	0	
+1002	0	err_EnterManifactTechniquesMargins:
+1003	0	    Call General_Error_Trap
+1004	0	    Exit Sub
+1005	0	End Sub
+1006	0	
+1007	0	Private Sub cboManifactTechniquesMargins_KeyDown(KeyCode As Integer, Shift As Integer)
+1008	0	On Error GoTo err_KeyDownManifactTechniquesMargins
+1009	0	    Me.cboManifactTechniquesMargins.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Techniques] ORDER BY ScreenOrder"
+1010	0	    Me.cboManifactTechniquesMargins.Dropdown
+1011	0	Exit Sub
+1012	0	
+1013	0	err_KeyDownManifactTechniquesMargins:
+1014	0	    Call General_Error_Trap
+1015	0	    Exit Sub
+1016	0	End Sub
+1017	0	
+1018	0	Private Sub cboManifactTechniquesUseFace1_Change()
+1019	0	On Error GoTo err_changeManifactTechniquesUseFace1
+1020	0	Dim strText As String
+1021	0	
+1022	0	strText = Nz(Me.cboManifactTechniquesUseFace1.Text, "")
+1023	0	
+1024	0	If Len(strText) > 0 Then
+1025	0	
+1026	4	   Me.cboManifactTechniquesUseFace1.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Techniques] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+1027	0	Else
+1028	0	    Me.cboManifactTechniquesUseFace1.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Techniques] ORDER BY ScreenOrder"
+1029	0	End If
+1030	0	
+1031	0	Me.cboManifactTechniquesUseFace1.Dropdown
+1032	0	
+1033	0	Exit Sub
+1034	0	
+1035	0	err_changeManifactTechniquesUseFace1:
+1036	0	    Call General_Error_Trap
+1037	0	    Exit Sub
+1038	0	End Sub
+1039	0	
+1040	0	Private Sub cboManifactTechniquesUseFace1_Enter()
+1041	0	On Error GoTo err_EnterManifactTechniquesUseFace1
+1042	0	    Me.cboManifactTechniquesUseFace1.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Techniques] ORDER BY ScreenOrder"
+1043	0	    Me.cboManifactTechniquesUseFace1.Dropdown
+1044	0	Exit Sub
+1045	0	
+1046	0	err_EnterManifactTechniquesUseFace1:
+1047	0	    Call General_Error_Trap
+1048	0	    Exit Sub
+1049	0	End Sub
+1050	0	
+1051	0	Private Sub cboManifactTechniquesUseFace1_KeyDown(KeyCode As Integer, Shift As Integer)
+1052	0	On Error GoTo err_KeyDownManifactTechniquesUseFace1
+1053	0	    Me.cboManifactTechniquesUseFace1.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Techniques] ORDER BY ScreenOrder"
+1054	0	    Me.cboManifactTechniquesUseFace1.Dropdown
+1055	0	Exit Sub
+1056	0	
+1057	0	err_KeyDownManifactTechniquesUseFace1:
+1058	0	    Call General_Error_Trap
+1059	0	    Exit Sub
+1060	0	End Sub
+1061	0	
+1062	0	Private Sub cboManifactWearBit_Change()
+1063	0	On Error GoTo err_changeManifactWearBit
+1064	0	Dim strText As String
+1065	0	
+1066	0	strText = Nz(Me.cboManifactWearBit.Text, "")
+1067	0	
+1068	0	If Len(strText) > 0 Then
+1069	0	
+1070	4	   Me.cboManifactWearBit.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Wear] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+1071	0	Else
+1072	0	    Me.cboManifactWearBit.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Wear] ORDER BY ScreenOrder"
+1073	0	End If
+1074	0	
+1075	0	Me.cboManifactWearBit.Dropdown
+1076	0	
+1077	0	Exit Sub
+1078	0	
+1079	0	err_changeManifactWearBit:
+1080	0	    Call General_Error_Trap
+1081	0	    Exit Sub
+1082	0	End Sub
+1083	0	
+1084	0	Private Sub cboManifactWearBit_Enter()
+1085	0	On Error GoTo err_EnterManifactWearBit
+1086	0	    Me.cboManifactWearBit.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Wear] ORDER BY ScreenOrder"
+1087	0	    Me.cboManifactWearBit.Dropdown
+1088	0	Exit Sub
+1089	0	
+1090	0	err_EnterManifactWearBit:
+1091	0	    Call General_Error_Trap
+1092	0	    Exit Sub
+1093	0	End Sub
+1094	0	
+1095	0	Private Sub cboManifactWearBit_KeyDown(KeyCode As Integer, Shift As Integer)
+1096	0	On Error GoTo err_KeyDownManifactWearBit
+1097	0	    Me.cboManifactWearBit.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Wear] ORDER BY ScreenOrder"
+1098	0	    Me.cboManifactWearBit.Dropdown
+1099	0	Exit Sub
+1100	0	
+1101	0	err_KeyDownManifactWearBit:
+1102	0	    Call General_Error_Trap
+1103	0	    Exit Sub
+1104	0	End Sub
+1105	0	
+1106	0	Private Sub cboManifactWearBody_Change()
+1107	0	On Error GoTo err_changeManifactWearBody
+1108	0	Dim strText As String
+1109	0	
+1110	0	strText = Nz(Me.cboManifactWearBody.Text, "")
+1111	0	
+1112	0	If Len(strText) > 0 Then
+1113	0	
+1114	4	   Me.cboManifactWearBody.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Wear] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+1115	0	Else
+1116	0	    Me.cboManifactWearBody.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Wear] ORDER BY ScreenOrder"
+1117	0	End If
+1118	0	
+1119	0	Me.cboManifactWearBody.Dropdown
+1120	0	
+1121	0	Exit Sub
+1122	0	
+1123	0	err_changeManifactWearBody:
+1124	0	    Call General_Error_Trap
+1125	0	    Exit Sub
+1126	0	End Sub
+1127	0	
+1128	0	Private Sub cboManifactWearBody_Enter()
+1129	0	On Error GoTo err_EnterManifactWearBody
+1130	0	    Me.cboManifactWearBody.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Wear] ORDER BY ScreenOrder"
+1131	0	    Me.cboManifactWearBody.Dropdown
+1132	0	Exit Sub
+1133	0	
+1134	0	err_EnterManifactWearBody:
+1135	0	    Call General_Error_Trap
+1136	0	    Exit Sub
+1137	0	End Sub
+1138	0	
+1139	0	Private Sub cboManifactWearBody_KeyDown(KeyCode As Integer, Shift As Integer)
+1140	0	On Error GoTo err_KeyDownManifactWearBody
+1141	0	    Me.cboManifactWearBody.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Wear] ORDER BY ScreenOrder"
+1142	0	    Me.cboManifactWearBody.Dropdown
+1143	0	Exit Sub
+1144	0	
+1145	0	err_KeyDownManifactWearBody:
+1146	0	    Call General_Error_Trap
+1147	0	    Exit Sub
+1148	0	End Sub
+1149	0	
+1150	0	Private Sub cboManifactWearButt_Change()
+1151	0	On Error GoTo err_changeManifactWearButt
+1152	0	Dim strText As String
+1153	0	
+1154	0	strText = Nz(Me.cboManifactWearButt.Text, "")
+1155	0	
+1156	0	If Len(strText) > 0 Then
+1157	0	
+1158	4	   Me.cboManifactWearButt.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Wear] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+1159	0	Else
+1160	0	    Me.cboManifactWearButt.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Wear] ORDER BY ScreenOrder"
+1161	0	End If
+1162	0	
+1163	0	Me.cboManifactWearButt.Dropdown
+1164	0	
+1165	0	Exit Sub
+1166	0	
+1167	0	err_changeManifactWearButt:
+1168	0	    Call General_Error_Trap
+1169	0	    Exit Sub
+1170	0	End Sub
+1171	0	
+1172	0	Private Sub cboManifactWearButt_Enter()
+1173	0	On Error GoTo err_EnterManifactWearButt
+1174	0	    Me.cboManifactWearButt.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Wear] ORDER BY ScreenOrder"
+1175	0	    Me.cboManifactWearButt.Dropdown
+1176	0	Exit Sub
+1177	0	
+1178	0	err_EnterManifactWearButt:
+1179	0	    Call General_Error_Trap
+1180	0	    Exit Sub
+1181	0	End Sub
+1182	0	
+1183	0	Private Sub cboManifactWearButt_KeyDown(KeyCode As Integer, Shift As Integer)
+1184	0	On Error GoTo err_KeyDownManifactWearButt
+1185	0	    Me.cboManifactWearButt.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Wear] ORDER BY ScreenOrder"
+1186	0	    Me.cboManifactWearButt.Dropdown
+1187	0	Exit Sub
+1188	0	
+1189	0	err_KeyDownManifactWearButt:
+1190	0	    Call General_Error_Trap
+1191	0	    Exit Sub
+1192	0	End Sub
+1193	0	
+1194	0	Private Sub cboManifactWearMargins_Change()
+1195	0	On Error GoTo err_changeManifactWearMargins
+1196	0	Dim strText As String
+1197	0	
+1198	0	strText = Nz(Me.cboManifactWearMargins.Text, "")
+1199	0	
+1200	0	If Len(strText) > 0 Then
+1201	0	
+1202	4	   Me.cboManifactWearMargins.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Wear] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+1203	0	Else
+1204	0	    Me.cboManifactWearMargins.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Wear] ORDER BY ScreenOrder"
+1205	0	End If
+1206	0	
+1207	0	Me.cboManifactWearMargins.Dropdown
+1208	0	
+1209	0	Exit Sub
+1210	0	
+1211	0	err_changeManifactWearMargins:
+1212	0	    Call General_Error_Trap
+1213	0	    Exit Sub
+1214	0	End Sub
+1215	0	
+1216	0	Private Sub cboManifactWearMargins_Enter()
+1217	0	On Error GoTo err_EnterManifactWearMargins
+1218	0	    Me.cboManifactWearMargins.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Wear] ORDER BY ScreenOrder"
+1219	0	    Me.cboManifactWearMargins.Dropdown
+1220	0	Exit Sub
+1221	0	
+1222	0	err_EnterManifactWearMargins:
+1223	0	    Call General_Error_Trap
+1224	0	    Exit Sub
+1225	0	End Sub
+1226	0	
+1227	0	Private Sub cboManifactWearMargins_KeyDown(KeyCode As Integer, Shift As Integer)
+1228	0	On Error GoTo err_KeyDownManifactWearMargins
+1229	0	    Me.cboManifactWearMargins.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Manufacturing Wear] ORDER BY ScreenOrder"
+1230	0	    Me.cboManifactWearMargins.Dropdown
+1231	0	Exit Sub
+1232	0	
+1233	0	err_KeyDownManifactWearMargins:
+1234	0	    Call General_Error_Trap
+1235	0	    Exit Sub
+1236	0	End Sub
+1237	0	
+1238	0	Private Sub cboObjectCategory_Change()
+1239	0	On Error GoTo err_changeObjectCategory
+1240	0	Dim strText As String
+1241	0	
+1242	0	strText = Nz(Me.cboObjectCategory.Text, "")
+1243	0	
+1244	0	If Len(strText) > 0 Then
+1245	0	
+1246	4	   Me.cboObjectCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Object Category] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+1247	0	Else
+1248	0	    Me.cboObjectCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Object Category] ORDER BY ScreenOrder"
+1249	0	End If
+1250	0	
+1251	0	Me.cboObjectCategory.Dropdown
+1252	0	
+1253	0	Exit Sub
+1254	0	
+1255	0	err_changeObjectCategory:
+1256	0	    Call General_Error_Trap
+1257	0	    Exit Sub
+1258	0	End Sub
+1259	0	
+1260	0	Private Sub cboObjectCategory_Enter()
+1261	0	
+1262	0	On Error GoTo err_EnterObjectCategory
+1263	0	    Me.cboObjectCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Object Category] ORDER BY ScreenOrder"
+1264	0	    Me.cboObjectCategory.Dropdown
+1265	0	Exit Sub
+1266	0	
+1267	0	err_EnterObjectCategory:
+1268	0	    Call General_Error_Trap
+1269	0	    Exit Sub
+1270	0	End Sub
+1271	0	
+1272	0	Private Sub cboObjectCategory_KeyDown(KeyCode As Integer, Shift As Integer)
+1273	0	On Error GoTo err_KeyDownObjectCategory
+1274	0	    Me.cboObjectCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Object Category] ORDER BY ScreenOrder"
+1275	0	    Me.cboObjectCategory.Dropdown
+1276	0	Exit Sub
+1277	0	
+1278	0	err_KeyDownObjectCategory:
+1279	0	    Call General_Error_Trap
+1280	0	    Exit Sub
+1281	0	End Sub
+1282	0	
+1283	0	Private Sub cboObjectCategoryPrimary_Change()
+1284	0	On Error GoTo err_changeObjectCategoryPrimary
+1285	0	Dim strText As String
+1286	0	
+1287	0	strText = Nz(Me.cboObjectCategoryPrimary.Text, "")
+1288	0	
+1289	0	If Len(strText) > 0 Then
+1290	0	
+1291	4	   Me.cboObjectCategoryPrimary.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Object Category Detail] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+1292	0	Else
+1293	0	    Me.cboObjectCategoryPrimary.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Object Category Detail] ORDER BY ScreenOrder"
+1294	0	End If
+1295	0	
+1296	0	Me.cboObjectCategoryPrimary.Dropdown
+1297	0	
+1298	0	Exit Sub
+1299	0	
+1300	0	err_changeObjectCategoryPrimary:
+1301	0	    Call General_Error_Trap
+1302	0	    Exit Sub
+1303	0	End Sub
+1304	0	
+1305	0	Private Sub cboObjectCategoryPrimary_Enter()
+1306	0	On Error GoTo err_EnterObjectCategoryPrimary
+1307	0	    Me.cboObjectCategoryPrimary.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Object Category Detail] ORDER BY ScreenOrder"
+1308	0	    Me.cboObjectCategoryPrimary.Dropdown
+1309	0	Exit Sub
+1310	0	
+1311	0	err_EnterObjectCategoryPrimary:
+1312	0	    Call General_Error_Trap
+1313	0	    Exit Sub
+1314	0	End Sub
+1315	0	
+1316	0	Private Sub cboObjectCategoryPrimary_KeyDown(KeyCode As Integer, Shift As Integer)
+1317	0	
+1318	0	On Error GoTo err_KeyDownObjectCategoryPrimary
+1319	0	    Me.cboObjectCategoryPrimary.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Object Category Detail] ORDER BY ScreenOrder"
+1320	0	    Me.cboObjectCategoryPrimary.Dropdown
+1321	0	Exit Sub
+1322	0	
+1323	0	err_KeyDownObjectCategoryPrimary:
+1324	0	    Call General_Error_Trap
+1325	0	    Exit Sub
+1326	0	End Sub
+1327	0	
+1328	0	Private Sub cboObjectCategorySecondary_Change()
+1329	0	On Error GoTo err_changeObjectCategorySecondary
+1330	0	Dim strText As String
+1331	0	
+1332	0	strText = Nz(Me.cboObjectCategorySecondary.Text, "")
+1333	0	
+1334	0	If Len(strText) > 0 Then
+1335	0	
+1336	4	   Me.cboObjectCategorySecondary.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Object Category Detail] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+1337	0	Else
+1338	0	    Me.cboObjectCategorySecondary.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Object Category Detail] ORDER BY ScreenOrder"
+1339	0	End If
+1340	0	
+1341	0	Me.cboObjectCategorySecondary.Dropdown
+1342	0	
+1343	0	Exit Sub
+1344	0	
+1345	0	err_changeObjectCategorySecondary:
+1346	0	    Call General_Error_Trap
+1347	0	    Exit Sub
+1348	0	End Sub
+1349	0	
+1350	0	Private Sub cboObjectCategorySecondary_Enter()
+1351	0	On Error GoTo err_EnterObjectCategorySecondary
+1352	0	    Me.cboObjectCategorySecondary.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Object Category Detail] ORDER BY ScreenOrder"
+1353	0	    Me.cboObjectCategorySecondary.Dropdown
+1354	0	Exit Sub
+1355	0	
+1356	0	err_EnterObjectCategorySecondary:
+1357	0	    Call General_Error_Trap
+1358	0	    Exit Sub
+1359	0	End Sub
+1360	0	
+1361	0	Private Sub cboObjectCategorySecondary_KeyDown(KeyCode As Integer, Shift As Integer)
+1362	0	On Error GoTo err_KeyDownObjectCategorySecondary
+1363	0	    Me.cboObjectCategorySecondary.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Object Category Detail] ORDER BY ScreenOrder"
+1364	0	    Me.cboObjectCategorySecondary.Dropdown
+1365	0	Exit Sub
+1366	0	
+1367	0	err_KeyDownObjectCategorySecondary:
+1368	0	    Call General_Error_Trap
+1369	0	    Exit Sub
+1370	0	End Sub
+1371	0	
+1372	0	Private Sub cboRawMaterial_Change()
+1373	0	On Error GoTo err_changeRawMaterial
+1374	0	Dim strText As String
+1375	0	
+1376	0	strText = Nz(Me.cboRawMaterial.Text, "")
+1377	0	
+1378	0	If Len(strText) > 0 Then
+1379	0	
+1380	4	   Me.cboRawMaterial.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Raw Material] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+1381	0	Else
+1382	0	    Me.cboRawMaterial.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Raw Material] ORDER BY ScreenOrder"
+1383	0	End If
+1384	0	
+1385	0	Me.cboRawMaterial.Dropdown
+1386	0	
+1387	0	Exit Sub
+1388	0	
+1389	0	err_changeRawMaterial:
+1390	0	    Call General_Error_Trap
+1391	0	    Exit Sub
+1392	0	End Sub
+1393	0	
+1394	0	Private Sub cboRawMaterial_Enter()
+1395	0	On Error GoTo err_RawMat_Enter
+1396	0	    Me.cboRawMaterial.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Raw Material] ORDER BY ScreenOrder"
+1397	0	    Me.cboRawMaterial.Dropdown
+1398	0	Exit Sub
+1399	0	
+1400	0	err_RawMat_Enter:
+1401	0	    Call General_Error_Trap
+1402	0	    Exit Sub
+1403	0	End Sub
+1404	0	
+1405	0	Private Sub cboRawMaterial_KeyDown(KeyCode As Integer, Shift As Integer)
+1406	0	On Error GoTo err_RawMat_KeyDown
+1407	0	    Me.cboRawMaterial.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Raw Material] ORDER BY ScreenOrder"
+1408	0	    Me.cboRawMaterial.Dropdown
+1409	0	Exit Sub
+1410	0	
+1411	0	err_RawMat_KeyDown:
+1412	0	    Call General_Error_Trap
+1413	0	    Exit Sub
+1414	0	End Sub
+1415	0	
+1416	0	Private Sub cboResidue_Change()
+1417	0	On Error GoTo err_changeResidue
+1418	0	Dim strText As String
+1419	0	
+1420	0	strText = Nz(Me.cboResidue.Text, "")
+1421	0	
+1422	0	If Len(strText) > 0 Then
+1423	0	
+1424	4	   Me.cboResidue.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Residue] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder "
+1425	0	Else
+1426	0	    Me.cboResidue.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Residue] ORDER BY ScreenOrder"
+1427	0	End If
+1428	0	
+1429	0	Me.cboResidue.Dropdown
+1430	0	
+1431	0	Exit Sub
+1432	0	
+1433	0	err_changeResidue:
+1434	0	    Call General_Error_Trap
+1435	0	    Exit Sub
+1436	0	
+1437	0	End Sub
+1438	0	
+1439	0	Private Sub cboResidue_Enter()
+1440	0	On Error GoTo err_EnterResidue
+1441	0	    Me.cboResidue.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Residue] ORDER BY ScreenOrder"
+1442	0	    Me.cboResidue.Dropdown
+1443	0	Exit Sub
+1444	0	
+1445	0	err_EnterResidue:
+1446	0	    Call General_Error_Trap
+1447	0	    Exit Sub
+1448	0	End Sub
+1449	0	
+1450	0	Private Sub cboResidue_KeyDown(KeyCode As Integer, Shift As Integer)
+1451	0	On Error GoTo err_KeyDownResidue
+1452	0	    Me.cboResidue.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Residue] ORDER BY ScreenOrder"
+1453	0	    Me.cboResidue.Dropdown
+1454	0	Exit Sub
+1455	0	
+1456	0	err_KeyDownResidue:
+1457	0	    Call General_Error_Trap
+1458	0	    Exit Sub
+1459	0	End Sub
+1460	0	
+1461	0	Private Sub cboResidueType_Change()
+1462	0	On Error GoTo err_changeResidueType
+1463	0	Dim strText As String
+1464	0	
+1465	0	strText = Nz(Me.cboResidueType.Text, "")
+1466	0	
+1467	0	If Len(strText) > 0 Then
+1468	0	
+1469	4	   Me.cboResidueType.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Residue Type] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+1470	0	Else
+1471	0	    Me.cboResidueType.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Residue Type] ORDER BY ScreenOrder"
+1472	0	End If
+1473	0	
+1474	0	Me.cboResidueType.Dropdown
+1475	0	
+1476	0	Exit Sub
+1477	0	
+1478	0	err_changeResidueType:
+1479	0	    Call General_Error_Trap
+1480	0	    Exit Sub
+1481	0	End Sub
+1482	0	
+1483	0	Private Sub cboResidueType_Enter()
+1484	0	On Error GoTo err_EnterResidueType
+1485	0	    Me.cboResidueType.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Residue Type] ORDER BY ScreenOrder"
+1486	0	    Me.cboResidueType.Dropdown
+1487	0	Exit Sub
+1488	0	
+1489	0	err_EnterResidueType:
+1490	0	    Call General_Error_Trap
+1491	0	    Exit Sub
+1492	0	End Sub
+1493	0	
+1494	0	Private Sub cboResidueType_KeyDown(KeyCode As Integer, Shift As Integer)
+1495	0	On Error GoTo err_KeyDownResidueType
+1496	0	    Me.cboResidueType.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Residue Type] ORDER BY ScreenOrder"
+1497	0	    Me.cboResidueType.Dropdown
+1498	0	Exit Sub
+1499	0	
+1500	0	err_KeyDownResidueType:
+1501	0	    Call General_Error_Trap
+1502	0	    Exit Sub
+1503	0	End Sub
+1504	0	
+1505	0	Private Sub cboRimDiameterCompleteness_Change()
+1506	0	On Error GoTo err_changeRimDiameterCompleteness
+1507	0	Dim strText As String
+1508	0	
+1509	0	strText = Nz(Me.cboRimDiameterCompleteness.Text, "")
+1510	0	
+1511	0	If Len(strText) > 0 Then
+1512	0	
+1513	4	   Me.cboRimDiameterCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+1514	0	Else
+1515	0	    Me.cboRimDiameterCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+1516	0	End If
+1517	0	
+1518	0	Me.cboRimDiameterCompleteness.Dropdown
+1519	0	
+1520	0	Exit Sub
+1521	0	
+1522	0	err_changeRimDiameterCompleteness:
+1523	0	    Call General_Error_Trap
+1524	0	    Exit Sub
+1525	0	
+1526	0	End Sub
+1527	0	
+1528	0	Private Sub cboRimDiameterCompleteness_Enter()
+1529	0	On Error GoTo err_EnterRimDiameterCompleteness
+1530	0	    Me.cboRimDiameterCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+1531	0	    Me.cboRimDiameterCompleteness.Dropdown
+1532	0	Exit Sub
+1533	0	
+1534	0	err_EnterRimDiameterCompleteness:
+1535	0	    Call General_Error_Trap
+1536	0	    Exit Sub
+1537	0	End Sub
+1538	0	
+1539	0	Private Sub cboRimDiameterCompleteness_KeyDown(KeyCode As Integer, Shift As Integer)
+1540	0	On Error GoTo err_KeyDownRimDiameterCompleteness
+1541	0	    Me.cboRimDiameterCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+1542	0	    Me.cboRimDiameterCompleteness.Dropdown
+1543	0	Exit Sub
+1544	0	
+1545	0	err_KeyDownRimDiameterCompleteness:
+1546	0	    Call General_Error_Trap
+1547	0	    Exit Sub
+1548	0	
+1549	0	End Sub
+1550	0	
+1551	0	Private Sub cboRimThicknessCompleteteness_Change()
+1552	0	On Error GoTo err_changeRimThicknessCompleteteness
+1553	0	Dim strText As String
+1554	0	
+1555	0	strText = Nz(Me.cboRimThicknessCompleteteness.Text, "")
+1556	0	
+1557	0	If Len(strText) > 0 Then
+1558	0	
+1559	4	   Me.cboRimThicknessCompleteteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+1560	0	Else
+1561	0	    Me.cboRimThicknessCompleteteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+1562	0	End If
+1563	0	
+1564	0	Me.cboRimThicknessCompleteteness.Dropdown
+1565	0	
+1566	0	Exit Sub
+1567	0	
+1568	0	err_changeRimThicknessCompleteteness:
+1569	0	    Call General_Error_Trap
+1570	0	    Exit Sub
+1571	0	
+1572	0	End Sub
+1573	0	
+1574	0	Private Sub cboRimThicknessCompleteteness_Enter()
+1575	0	On Error GoTo err_EnterRimThicknessCompleteteness
+1576	0	    Me.cboRimThicknessCompleteteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+1577	0	    Me.cboRimThicknessCompleteteness.Dropdown
+1578	0	Exit Sub
+1579	0	
+1580	0	err_EnterRimThicknessCompleteteness:
+1581	0	    Call General_Error_Trap
+1582	0	    Exit Sub
+1583	0	
+1584	0	End Sub
+1585	0	
+1586	0	Private Sub cboRimThicknessCompleteteness_KeyDown(KeyCode As Integer, Shift As Integer)
+1587	0	On Error GoTo err_KeyDownRimThicknessCompleteteness
+1588	0	    Me.cboRimThicknessCompleteteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+1589	0	    Me.cboRimThicknessCompleteteness.Dropdown
+1590	0	Exit Sub
+1591	0	
+1592	0	err_KeyDownRimThicknessCompleteteness:
+1593	0	    Call General_Error_Trap
+1594	0	    Exit Sub
+1595	0	
+1596	0	End Sub
+1597	0	
+1598	0	Private Sub cboRimType_Change()
+1599	0	On Error GoTo err_changeRimType
+1600	0	Dim strText As String
+1601	0	
+1602	0	strText = Nz(Me.cboRimType.Text, "")
+1603	0	
+1604	0	If Len(strText) > 0 Then
+1605	0	
+1606	4	   Me.cboRimType.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV RimType] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+1607	0	Else
+1608	0	    Me.cboRimType.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV RimType] ORDER BY ScreenOrder"
+1609	0	End If
+1610	0	
+1611	0	Me.cboRimType.Dropdown
+1612	0	
+1613	0	Exit Sub
+1614	0	
+1615	0	err_changeRimType:
+1616	0	    Call General_Error_Trap
+1617	0	    Exit Sub
+1618	0	End Sub
+1619	0	
+1620	0	Private Sub cboRimType_Enter()
+1621	0	
+1622	0	On Error GoTo err_EnterRimType
+1623	0	    Me.cboRimType.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV RimType] ORDER BY ScreenOrder"
+1624	0	    Me.cboRimType.Dropdown
+1625	0	Exit Sub
+1626	0	
+1627	0	err_EnterRimType:
+1628	0	    Call General_Error_Trap
+1629	0	    Exit Sub
+1630	0	
+1631	0	End Sub
+1632	0	
+1633	0	Private Sub cboRimType_KeyDown(KeyCode As Integer, Shift As Integer)
+1634	0	On Error GoTo err_KeyDownRimType
+1635	0	    Me.cboRimType.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV RimType] ORDER BY ScreenOrder"
+1636	0	    Me.cboRimType.Dropdown
+1637	0	Exit Sub
+1638	0	
+1639	0	err_KeyDownRimType:
+1640	0	    Call General_Error_Trap
+1641	0	    Exit Sub
+1642	0	End Sub
+1643	0	
+1644	0	Private Sub cboSampled_Change()
+1645	0	On Error GoTo err_changeSampled
+1646	0	Dim strText As String
+1647	0	
+1648	0	strText = Nz(Me.cboSampled.Text, "")
+1649	0	
+1650	0	If Len(strText) > 0 Then
+1651	0	
+1652	4	   Me.cboSampled.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Sampled] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder "
+1653	0	Else
+1654	0	    Me.cboSampled.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Sampled] ORDER BY ScreenOrder"
+1655	0	End If
+1656	0	
+1657	0	Me.cboSampled.Dropdown
+1658	0	
+1659	0	Exit Sub
+1660	0	
+1661	0	err_changeSampled:
+1662	0	    Call General_Error_Trap
+1663	0	    Exit Sub
+1664	0	End Sub
+1665	0	
+1666	0	Private Sub cboSampled_Enter()
+1667	0	On Error GoTo err_EnterSampled
+1668	0	    Me.cboSampled.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Sampled] ORDER BY ScreenOrder"
+1669	0	    Me.cboSampled.Dropdown
+1670	0	Exit Sub
+1671	0	
+1672	0	err_EnterSampled:
+1673	0	    Call General_Error_Trap
+1674	0	    Exit Sub
+1675	0	End Sub
+1676	0	
+1677	0	Private Sub cboSampled_KeyDown(KeyCode As Integer, Shift As Integer)
+1678	0	On Error GoTo err_KeyDownSampled
+1679	0	    Me.cboSampled.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Sampled] ORDER BY ScreenOrder"
+1680	0	    Me.cboSampled.Dropdown
+1681	0	Exit Sub
+1682	0	
+1683	0	err_KeyDownSampled:
+1684	0	    Call General_Error_Trap
+1685	0	    Exit Sub
+1686	0	End Sub
+1687	0	
+1688	0	Private Sub cboShapePlan_Change()
+1689	0	On Error GoTo err_changeShapePlan
+1690	0	Dim strText As String
+1691	0	
+1692	0	strText = Nz(Me.cboShapePlan.Text, "")
+1693	0	
+1694	0	If Len(strText) > 0 Then
+1695	0	
+1696	4	   Me.cboShapePlan.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Shape Plan] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+1697	0	Else
+1698	0	    Me.cboShapePlan.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Shape Plan] ORDER BY ScreenOrder"
+1699	0	End If
+1700	0	
+1701	0	Me.cboShapePlan.Dropdown
+1702	0	
+1703	0	Exit Sub
+1704	0	
+1705	0	err_changeShapePlan:
+1706	0	    Call General_Error_Trap
+1707	0	    Exit Sub
+1708	0	End Sub
+1709	0	
+1710	0	Private Sub cboShapePlan_Enter()
+1711	0	On Error GoTo err_EnterShapePlan
+1712	0	    Me.cboShapePlan.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Shape Plan] ORDER BY ScreenOrder"
+1713	0	    Me.cboShapePlan.Dropdown
+1714	0	Exit Sub
+1715	0	
+1716	0	err_EnterShapePlan:
+1717	0	    Call General_Error_Trap
+1718	0	    Exit Sub
+1719	0	End Sub
+1720	0	
+1721	0	Private Sub cboShapePlan_KeyDown(KeyCode As Integer, Shift As Integer)
+1722	0	
+1723	0	On Error GoTo err_KeyDownShapePlan
+1724	0	    Me.cboShapePlan.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Shape Plan] ORDER BY ScreenOrder"
+1725	0	    Me.cboShapePlan.Dropdown
+1726	0	Exit Sub
+1727	0	
+1728	0	err_KeyDownShapePlan:
+1729	0	    Call General_Error_Trap
+1730	0	    Exit Sub
+1731	0	End Sub
+1732	0	
+1733	0	Private Sub cboShapeSection_Change()
+1734	0	On Error GoTo err_changeShapeSection
+1735	0	Dim strText As String
+1736	0	
+1737	0	strText = Nz(Me.cboShapeSection.Text, "")
+1738	0	
+1739	0	If Len(strText) > 0 Then
+1740	0	
+1741	4	   Me.cboShapeSection.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Shape Section] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+1742	0	Else
+1743	0	    Me.cboShapeSection.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Shape Section] ORDER BY ScreenOrder"
+1744	0	End If
+1745	0	
+1746	0	Me.cboShapeSection.Dropdown
+1747	0	
+1748	0	Exit Sub
+1749	0	
+1750	0	err_changeShapeSection:
+1751	0	    Call General_Error_Trap
+1752	0	    Exit Sub
+1753	0	End Sub
+1754	0	
+1755	0	Private Sub cboShapeSection_Enter()
+1756	0	On Error GoTo err_EnterShapeSection
+1757	0	    Me.cboShapeSection.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Shape Section] ORDER BY ScreenOrder"
+1758	0	    Me.cboShapeSection.Dropdown
+1759	0	Exit Sub
+1760	0	
+1761	0	err_EnterShapeSection:
+1762	0	    Call General_Error_Trap
+1763	0	    Exit Sub
+1764	0	End Sub
+1765	0	
+1766	0	Private Sub cboShapeSection_KeyDown(KeyCode As Integer, Shift As Integer)
+1767	0	On Error GoTo err_KeyDownShapeSection
+1768	0	    Me.cboShapeSection.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Shape Section] ORDER BY ScreenOrder"
+1769	0	    Me.cboShapeSection.Dropdown
+1770	0	Exit Sub
+1771	0	
+1772	0	err_KeyDownShapeSection:
+1773	0	    Call General_Error_Trap
+1774	0	    Exit Sub
+1775	0	End Sub
+1776	0	
+1777	0	Private Sub cboShapeUseFace1_Change()
+1778	0	On Error GoTo err_changeShapeUseFace1
+1779	0	Dim strText As String
+1780	0	
+1781	0	strText = Nz(Me.cboShapeUseFace1.Text, "")
+1782	0	
+1783	0	If Len(strText) > 0 Then
+1784	0	
+1785	4	   Me.cboShapeUseFace1.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Shape Use Face] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+1786	0	Else
+1787	0	    Me.cboShapeUseFace1.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Shape Use Face] ORDER BY ScreenOrder"
+1788	0	End If
+1789	0	
+1790	0	Me.cboShapeUseFace1.Dropdown
+1791	0	
+1792	0	Exit Sub
+1793	0	
+1794	0	err_changeShapeUseFace1:
+1795	0	    Call General_Error_Trap
+1796	0	    Exit Sub
+1797	0	End Sub
+1798	0	
+1799	0	Private Sub cboShapeUseFace1_Enter()
+1800	0	On Error GoTo err_EnterShapeUseFace1
+1801	0	    Me.cboShapeUseFace1.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Shape Use Face] ORDER BY ScreenOrder"
+1802	0	    Me.cboShapeUseFace1.Dropdown
+1803	0	Exit Sub
+1804	0	
+1805	0	err_EnterShapeUseFace1:
+1806	0	    Call General_Error_Trap
+1807	0	    Exit Sub
+1808	0	End Sub
+1809	0	
+1810	0	Private Sub cboShapeUseFace1_KeyDown(KeyCode As Integer, Shift As Integer)
+1811	0	On Error GoTo err_KeyDownShapeUseFace1
+1812	0	    Me.cboShapeUseFace1.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Shape Use Face] ORDER BY ScreenOrder"
+1813	0	    Me.cboShapeUseFace1.Dropdown
+1814	0	Exit Sub
+1815	0	
+1816	0	err_KeyDownShapeUseFace1:
+1817	0	    Call General_Error_Trap
+1818	0	    Exit Sub
+1819	0	End Sub
+1820	0	
+1821	0	Private Sub cboShapeUseFace2_Change()
+1822	0	On Error GoTo err_changeShapeUseFace2
+1823	0	Dim strText As String
+1824	0	
+1825	0	strText = Nz(Me.cboShapeUseFace2.Text, "")
+1826	0	
+1827	0	If Len(strText) > 0 Then
+1828	0	
+1829	4	   Me.cboShapeUseFace2.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Shape Use Face] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+1830	0	Else
+1831	0	    Me.cboShapeUseFace2.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Shape Use Face] ORDER BY ScreenOrder"
+1832	0	End If
+1833	0	
+1834	0	Me.cboShapeUseFace2.Dropdown
+1835	0	
+1836	0	Exit Sub
+1837	0	
+1838	0	err_changeShapeUseFace2:
+1839	0	    Call General_Error_Trap
+1840	0	    Exit Sub
+1841	0	End Sub
+1842	0	
+1843	0	Private Sub cboShapeUseFace2_Enter()
+1844	0	
+1845	0	On Error GoTo err_EnterShapeUseFace2
+1846	0	    Me.cboShapeUseFace2.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Shape Use Face] ORDER BY ScreenOrder"
+1847	0	    Me.cboShapeUseFace2.Dropdown
+1848	0	Exit Sub
+1849	0	
+1850	0	err_EnterShapeUseFace2:
+1851	0	    Call General_Error_Trap
+1852	0	    Exit Sub
+1853	0	End Sub
+1854	0	
+1855	0	Private Sub cboShapeUseFace2_KeyDown(KeyCode As Integer, Shift As Integer)
+1856	0	On Error GoTo err_KeyDownShapeUseFace2
+1857	0	    Me.cboShapeUseFace2.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Shape Use Face] ORDER BY ScreenOrder"
+1858	0	    Me.cboShapeUseFace2.Dropdown
+1859	0	Exit Sub
+1860	0	
+1861	0	err_KeyDownShapeUseFace2:
+1862	0	    Call General_Error_Trap
+1863	0	    Exit Sub
+1864	0	End Sub
+1865	0	
+1866	0	Private Sub cboSizeCategory_Change()
+1867	0	On Error GoTo err_changeSizeCategory
+1868	0	Dim strText As String
+1869	0	
+1870	0	strText = Nz(Me.cboSizeCategory.Text, "")
+1871	0	
+1872	0	If Len(strText) > 0 Then
+1873	0	
+1874	4	   Me.cboSizeCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Size Category] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+1875	0	Else
+1876	0	    Me.cboSizeCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Size Category] ORDER BY ScreenOrder"
+1877	0	End If
+1878	0	
+1879	0	Me.cboSizeCategory.Dropdown
+1880	0	
+1881	0	Exit Sub
+1882	0	
+1883	0	err_changeSizeCategory:
+1884	0	    Call General_Error_Trap
+1885	0	    Exit Sub
+1886	0	End Sub
+1887	0	
+1888	0	Private Sub cboSizeCategory_Enter()
+1889	0	On Error GoTo err_EnterSizeCategory
+1890	0	    Me.cboSizeCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Size Category] ORDER BY ScreenOrder"
+1891	0	    Me.cboSizeCategory.Dropdown
+1892	0	Exit Sub
+1893	0	
+1894	0	err_EnterSizeCategory:
+1895	0	    Call General_Error_Trap
+1896	0	    Exit Sub
+1897	0	End Sub
+1898	0	
+1899	0	Private Sub cboSizeCategory_KeyDown(KeyCode As Integer, Shift As Integer)
+1900	0	
+1901	0	On Error GoTo err_KeyDownSizeCategory
+1902	0	    Me.cboSizeCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Size Category] ORDER BY ScreenOrder"
+1903	0	    Me.cboSizeCategory.Dropdown
+1904	0	Exit Sub
+1905	0	
+1906	0	err_KeyDownSizeCategory:
+1907	0	    Call General_Error_Trap
+1908	0	    Exit Sub
+1909	0	End Sub
+1910	0	
+1911	0	Private Sub cboSourceRockSizeCategory_Change()
+1912	0	On Error GoTo err_changeSourceRockSizeCategory
+1913	0	Dim strText As String
+1914	0	
+1915	0	strText = Nz(Me.cboSourceRockSizeCategory.Text, "")
+1916	0	
+1917	0	If Len(strText) > 0 Then
+1918	0	
+1919	4	   Me.cboSourceRockSizeCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Source Rock Size Categories] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+1920	0	Else
+1921	0	    Me.cboSourceRockSizeCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Source Rock Size Categories] ORDER BY ScreenOrder"
+1922	0	End If
+1923	0	
+1924	0	Me.cboSourceRockSizeCategory.Dropdown
+1925	0	
+1926	0	Exit Sub
+1927	0	
+1928	0	err_changeSourceRockSizeCategory:
+1929	0	    Call General_Error_Trap
+1930	0	    Exit Sub
+1931	0	
+1932	0	End Sub
+1933	0	
+1934	0	Private Sub cboSourceRockSizeCategory_Enter()
+1935	0	On Error GoTo err_EnterSourceRockSizeCategory
+1936	0	    Me.cboSourceRockSizeCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Source Rock Size Categories] ORDER BY ScreenOrder"
+1937	0	    Me.cboSourceRockSizeCategory.Dropdown
+1938	0	Exit Sub
+1939	0	
+1940	0	err_EnterSourceRockSizeCategory:
+1941	0	    Call General_Error_Trap
+1942	0	    Exit Sub
+1943	0	End Sub
+1944	0	
+1945	0	Private Sub cboSourceRockSizeCategory_KeyDown(KeyCode As Integer, Shift As Integer)
+1946	0	
+1947	0	On Error GoTo err_KeyDownSourceRockSizeCategory
+1948	0	    Me.cboSourceRockSizeCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Source Rock Size Categories] ORDER BY ScreenOrder"
+1949	0	    Me.cboSourceRockSizeCategory.Dropdown
+1950	0	Exit Sub
+1951	0	
+1952	0	err_KeyDownSourceRockSizeCategory:
+1953	0	    Call General_Error_Trap
+1954	0	    Exit Sub
+1955	0	End Sub
+1956	0	
+1957	0	Private Sub cboSurfaceCondition_Change()
+1958	0	On Error GoTo err_changeSurfaceCondition
+1959	0	Dim strText As String
+1960	0	
+1961	0	strText = Nz(Me.cboSurfaceCondition.Text, "")
+1962	0	
+1963	0	If Len(strText) > 0 Then
+1964	0	
+1965	4	   Me.cboSurfaceCondition.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Surface Condition] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+1966	0	Else
+1967	0	    Me.cboSurfaceCondition.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Surface Condition] ORDER BY ScreenOrder"
+1968	0	End If
+1969	0	
+1970	0	Me.cboSurfaceCondition.Dropdown
+1971	0	
+1972	0	Exit Sub
+1973	0	
+1974	0	err_changeSurfaceCondition:
+1975	0	    Call General_Error_Trap
+1976	0	    Exit Sub
+1977	0	End Sub
+1978	0	
+1979	0	Private Sub cboSurfaceCondition_Enter()
+1980	0	
+1981	0	On Error GoTo err_EnterSurfaceCondition
+1982	0	    Me.cboSurfaceCondition.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Surface Condition] ORDER BY ScreenOrder"
+1983	0	    Me.cboSurfaceCondition.Dropdown
+1984	0	Exit Sub
+1985	0	
+1986	0	err_EnterSurfaceCondition:
+1987	0	    Call General_Error_Trap
+1988	0	    Exit Sub
+1989	0	End Sub
+1990	0	
+1991	0	Private Sub cboSurfaceCondition_KeyDown(KeyCode As Integer, Shift As Integer)
+1992	0	On Error GoTo err_KeyDownSurfaceCondition
+1993	0	    Me.cboSurfaceCondition.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Surface Condition] ORDER BY ScreenOrder"
+1994	0	    Me.cboSurfaceCondition.Dropdown
+1995	0	Exit Sub
+1996	0	
+1997	0	err_KeyDownSurfaceCondition:
+1998	0	    Call General_Error_Trap
+1999	0	End Sub
+2000	0	
+2001	0	Private Sub cboTexture_Change()
+2002	0	On Error GoTo err_changeTexture
+2003	0	Dim strText As String
+2004	0	
+2005	0	strText = Nz(Me.cboTexture.Text, "")
+2006	0	
+2007	0	If Len(strText) > 0 Then
+2008	0	
+2009	4	   Me.cboTexture.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Texture] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+2010	0	Else
+2011	0	    Me.cboTexture.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Texture] ORDER BY ScreenOrder"
+2012	0	End If
+2013	0	
+2014	0	Me.cboTexture.Dropdown
+2015	0	
+2016	0	Exit Sub
+2017	0	
+2018	0	err_changeTexture:
+2019	0	    Call General_Error_Trap
+2020	0	    Exit Sub
+2021	0	End Sub
+2022	0	
+2023	0	Private Sub cboTexture_Enter()
+2024	0	
+2025	0	On Error GoTo err_EnterTexture
+2026	0	    Me.cboTexture.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Texture] ORDER BY ScreenOrder"
+2027	0	    Me.cboTexture.Dropdown
+2028	0	Exit Sub
+2029	0	
+2030	0	err_EnterTexture:
+2031	0	    Call General_Error_Trap
+2032	0	    Exit Sub
+2033	0	End Sub
+2034	0	
+2035	0	Private Sub cboTexture_KeyDown(KeyCode As Integer, Shift As Integer)
+2036	0	On Error GoTo err_KeyDownTexture
+2037	0	    Me.cboTexture.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Texture] ORDER BY ScreenOrder"
+2038	0	    Me.cboTexture.Dropdown
+2039	0	Exit Sub
+2040	0	
+2041	0	err_KeyDownTexture:
+2042	0	    Call General_Error_Trap
+2043	0	    Exit Sub
+2044	0	End Sub
+2045	0	
+2046	0	Private Sub cboThicknessCompleteness_Change()
+2047	0	On Error GoTo err_changeThicknessCompleteness
+2048	0	Dim strText As String
+2049	0	
+2050	0	strText = Nz(Me.cboThicknessCompleteness.Text, "")
+2051	0	
+2052	0	If Len(strText) > 0 Then
+2053	0	
+2054	4	   Me.cboThicknessCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+2055	0	Else
+2056	0	    Me.cboThicknessCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+2057	0	End If
+2058	0	
+2059	0	Me.cboThicknessCompleteness.Dropdown
+2060	0	
+2061	0	Exit Sub
+2062	0	
+2063	0	err_changeThicknessCompleteness:
+2064	0	    Call General_Error_Trap
+2065	0	    Exit Sub
+2066	0	End Sub
+2067	0	
+2068	0	Private Sub cboThicknessCompleteness_Enter()
+2069	0	On Error GoTo err_EnterThicknessCompleteness
+2070	0	    Me.cboThicknessCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+2071	0	    Me.cboThicknessCompleteness.Dropdown
+2072	0	Exit Sub
+2073	0	
+2074	0	err_EnterThicknessCompleteness:
+2075	0	    Call General_Error_Trap
+2076	0	    Exit Sub
+2077	0	End Sub
+2078	0	
+2079	0	Private Sub cboThicknessCompleteness_KeyDown(KeyCode As Integer, Shift As Integer)
+2080	0	On Error GoTo err_KeyDownThicknessCompleteness
+2081	0	    Me.cboThicknessCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+2082	0	    Me.cboThicknessCompleteness.Dropdown
+2083	0	Exit Sub
+2084	0	
+2085	0	err_KeyDownThicknessCompleteness:
+2086	0	    Call General_Error_Trap
+2087	0	    Exit Sub
+2088	0	End Sub
+2089	0	
+2090	0	Private Sub cboToolSurfaceModif_Change()
+2091	0	On Error GoTo err_changeToolSurfaceModif
+2092	0	Dim strText As String
+2093	0	
+2094	0	strText = Nz(Me.cboToolSurfaceModif.Text, "")
+2095	0	
+2096	0	If Len(strText) > 0 Then
+2097	0	
+2098	4	   Me.cboToolSurfaceModif.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Modification Tool Surface] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder "
+2099	0	Else
+2100	0	    Me.cboToolSurfaceModif.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Modification Tool Surface] ORDER BY ScreenOrder"
+2101	0	End If
+2102	0	
+2103	0	Me.cboToolSurfaceModif.Dropdown
+2104	0	
+2105	0	Exit Sub
+2106	0	
+2107	0	err_changeToolSurfaceModif:
+2108	0	    Call General_Error_Trap
+2109	0	    Exit Sub
+2110	0	End Sub
+2111	0	
+2112	0	Private Sub cboToolSurfaceModif_Enter()
+2113	0	On Error GoTo err_EnterToolSurfaceModif
+2114	0	    Me.cboToolSurfaceModif.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Modification Tool Surface] ORDER BY ScreenOrder"
+2115	0	    Me.cboToolSurfaceModif.Dropdown
+2116	0	Exit Sub
+2117	0	
+2118	0	err_EnterToolSurfaceModif:
+2119	0	    Call General_Error_Trap
+2120	0	    Exit Sub
+2121	0	End Sub
+2122	0	
+2123	0	Private Sub cboToolSurfaceModif_KeyDown(KeyCode As Integer, Shift As Integer)
+2124	0	On Error GoTo err_KeyDownToolSurfaceModif
+2125	0	    Me.cboToolSurfaceModif.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Modification Tool Surface] ORDER BY ScreenOrder"
+2126	0	    Me.cboToolSurfaceModif.Dropdown
+2127	0	Exit Sub
+2128	0	
+2129	0	err_KeyDownToolSurfaceModif:
+2130	0	    Call General_Error_Trap
+2131	0	    Exit Sub
+2132	0	End Sub
+2133	0	
+2134	0	Private Sub cboUseFaceNumberLocation_Change()
+2135	0	On Error GoTo err_changeUseFaceNumberLocation
+2136	0	Dim strText As String
+2137	0	
+2138	0	strText = Nz(Me.cboUseFaceNumberLocation.Text, "")
+2139	0	
+2140	0	If Len(strText) > 0 Then
+2141	0	
+2142	4	   Me.cboUseFaceNumberLocation.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Use Faces] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+2143	0	Else
+2144	0	    Me.cboUseFaceNumberLocation.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Use Faces] ORDER BY ScreenOrder"
+2145	0	End If
+2146	0	
+2147	0	Me.cboUseFaceNumberLocation.Dropdown
+2148	0	
+2149	0	Exit Sub
+2150	0	
+2151	0	err_changeUseFaceNumberLocation:
+2152	0	    Call General_Error_Trap
+2153	0	    Exit Sub
+2154	0	
+2155	0	End Sub
+2156	0	
+2157	0	Private Sub cboUseFaceNumberLocation_Enter()
+2158	0	
+2159	0	On Error GoTo err_EnterUseFaceNumberLocation
+2160	0	    Me.cboUseFaceNumberLocation.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Use Faces] ORDER BY ScreenOrder"
+2161	0	    Me.cboUseFaceNumberLocation.Dropdown
+2162	0	Exit Sub
+2163	0	
+2164	0	err_EnterUseFaceNumberLocation:
+2165	0	    Call General_Error_Trap
+2166	0	    Exit Sub
+2167	0	End Sub
+2168	0	
+2169	0	Private Sub cboUseFaceNumberLocation_KeyDown(KeyCode As Integer, Shift As Integer)
+2170	0	On Error GoTo err_KeyDownUseFaceNumberLocation
+2171	0	    Me.cboUseFaceNumberLocation.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Use Faces] ORDER BY ScreenOrder"
+2172	0	    Me.cboUseFaceNumberLocation.Dropdown
+2173	0	Exit Sub
+2174	0	
+2175	0	err_KeyDownUseFaceNumberLocation:
+2176	0	    Call General_Error_Trap
+2177	0	    Exit Sub
+2178	0	End Sub
+2179	0	
+2180	0	Private Sub cboUseWearSecondUse_Change()
+2181	0	On Error GoTo err_changeUseWearSecondUse
+2182	0	Dim strText As String
+2183	0	
+2184	0	strText = Nz(Me.cboUseWearSecondUse.Text, "")
+2185	0	
+2186	0	If Len(strText) > 0 Then
+2187	0	
+2188	4	   Me.cboUseWearSecondUse.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Use Wear] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder "
+2189	0	Else
+2190	0	    Me.cboUseWearSecondUse.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Use Wear] ORDER BY ScreenOrder"
+2191	0	End If
+2192	0	
+2193	0	Me.cboUseWearSecondUse.Dropdown
+2194	0	
+2195	0	Exit Sub
+2196	0	
+2197	0	err_changeUseWearSecondUse:
+2198	0	    Call General_Error_Trap
+2199	0	    Exit Sub
+2200	0	End Sub
+2201	0	
+2202	0	Private Sub cboUseWearSecondUse_Enter()
+2203	0	On Error GoTo err_EnterUseWearSecondUse
+2204	0	    Me.cboUseWearSecondUse.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Use Wear] ORDER BY ScreenOrder"
+2205	0	    Me.cboUseWearSecondUse.Dropdown
+2206	0	Exit Sub
+2207	0	
+2208	0	err_EnterUseWearSecondUse:
+2209	0	    Call General_Error_Trap
+2210	0	    Exit Sub
+2211	0	
+2212	0	
+2213	0	End Sub
+2214	0	
+2215	0	Private Sub cboUseWearSecondUse_KeyDown(KeyCode As Integer, Shift As Integer)
+2216	0	On Error GoTo err_KeyDownUseWearSecondUse
+2217	0	    Me.cboUseWearSecondUse.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Use Wear] ORDER BY ScreenOrder"
+2218	0	    Me.cboUseWearSecondUse.Dropdown
+2219	0	Exit Sub
+2220	0	
+2221	0	err_KeyDownUseWearSecondUse:
+2222	0	    Call General_Error_Trap
+2223	0	    Exit Sub
+2224	0	End Sub
+2225	0	
+2226	0	Private Sub cboUseWearUF1_Change()
+2227	0	On Error GoTo err_changeUseWearUF1
+2228	0	Dim strText As String
+2229	0	
+2230	0	strText = Nz(Me.cboUseWearUF1.Text, "")
+2231	0	
+2232	0	If Len(strText) > 0 Then
+2233	0	
+2234	4	   Me.cboUseWearUF1.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Use Wear] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+2235	0	Else
+2236	0	    Me.cboUseWearUF1.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Use Wear] ORDER BY ScreenOrder"
+2237	0	End If
+2238	0	
+2239	0	Me.cboUseWearUF1.Dropdown
+2240	0	
+2241	0	Exit Sub
+2242	0	
+2243	0	err_changeUseWearUF1:
+2244	0	    Call General_Error_Trap
+2245	0	    Exit Sub
+2246	0	End Sub
+2247	0	
+2248	0	Private Sub cboUseWearUF1_Enter()
+2249	0	On Error GoTo err_EnterUseWearUF1
+2250	0	    Me.cboUseWearUF1.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Use Wear] ORDER BY ScreenOrder"
+2251	0	    Me.cboUseWearUF1.Dropdown
+2252	0	Exit Sub
+2253	0	
+2254	0	err_EnterUseWearUF1:
+2255	0	    Call General_Error_Trap
+2256	0	    Exit Sub
+2257	0	End Sub
+2258	0	
+2259	0	Private Sub cboUseWearUF1_KeyDown(KeyCode As Integer, Shift As Integer)
+2260	0	On Error GoTo err_KeyDownUseWearUF1
+2261	0	    Me.cboUseWearUF1.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Use Wear] ORDER BY ScreenOrder"
+2262	0	    Me.cboUseWearUF1.Dropdown
+2263	0	Exit Sub
+2264	0	
+2265	0	err_KeyDownUseWearUF1:
+2266	0	    Call General_Error_Trap
+2267	0	    Exit Sub
+2268	0	End Sub
+2269	0	
+2270	0	Private Sub cboUseWearUF2_Change()
+2271	0	Dim strText As String
+2272	0	
+2273	0	strText = Nz(Me.cboUseWearUF2.Text, "")
+2274	0	
+2275	0	If Len(strText) > 0 Then
+2276	0	
+2277	4	   Me.cboUseWearUF2.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Use Wear] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+2278	0	Else
+2279	0	    Me.cboUseWearUF2.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Use Wear] ORDER BY ScreenOrder"
+2280	0	End If
+2281	0	
+2282	0	Me.cboUseWearUF2.Dropdown
+2283	0	
+2284	0	Exit Sub
+2285	0	
+2286	0	err_changeUseWearUF2:
+2287	0	    Call General_Error_Trap
+2288	0	    Exit Sub
+2289	0	
+2290	0	End Sub
+2291	0	
+2292	0	Private Sub cboUseWearUF2_Enter()
+2293	0	On Error GoTo err_EnterUseWearUF2
+2294	0	    Me.cboUseWearUF2.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Use Wear] ORDER BY ScreenOrder"
+2295	0	    Me.cboUseWearUF2.Dropdown
+2296	0	Exit Sub
+2297	0	
+2298	0	err_EnterUseWearUF2:
+2299	0	    Call General_Error_Trap
+2300	0	    Exit Sub
+2301	0	End Sub
+2302	0	
+2303	0	Private Sub cboUseWearUF2_KeyDown(KeyCode As Integer, Shift As Integer)
+2304	0	On Error GoTo err_KeyDownUseWearUF2
+2305	0	    Me.cboUseWearUF2.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Use Wear] ORDER BY ScreenOrder"
+2306	0	    Me.cboUseWearUF2.Dropdown
+2307	0	Exit Sub
+2308	0	
+2309	0	err_KeyDownUseWearUF2:
+2310	0	    Call General_Error_Trap
+2311	0	    Exit Sub
+2312	0	End Sub
+2313	0	
+2314	0	Private Sub cboWearDegreePrimUseUF1_Change()
+2315	0	On Error GoTo err_changeWearDegreePrimUseUF1
+2316	0	Dim strText As String
+2317	0	
+2318	0	strText = Nz(Me.cboWearDegreePrimUseUF1.Text, "")
+2319	0	
+2320	0	If Len(strText) > 0 Then
+2321	0	
+2322	4	   Me.cboWearDegreePrimUseUF1.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Degree Wear] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+2323	0	Else
+2324	0	    Me.cboWearDegreePrimUseUF1.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Degree Wear] ORDER BY ScreenOrder"
+2325	0	End If
+2326	0	
+2327	0	Me.cboWearDegreePrimUseUF1.Dropdown
+2328	0	
+2329	0	Exit Sub
+2330	0	
+2331	0	err_changeWearDegreePrimUseUF1:
+2332	0	    Call General_Error_Trap
+2333	0	    Exit Sub
+2334	0	
+2335	0	End Sub
+2336	0	
+2337	0	Private Sub cboWearDegreePrimUseUF1_Enter()
+2338	0	On Error GoTo err_EnterWearDegreePrimUseUF1
+2339	0	    Me.cboWearDegreePrimUseUF1.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Degree Wear] ORDER BY ScreenOrder"
+2340	0	    Me.cboWearDegreePrimUseUF1.Dropdown
+2341	0	Exit Sub
+2342	0	
+2343	0	err_EnterWearDegreePrimUseUF1:
+2344	0	    Call General_Error_Trap
+2345	0	    Exit Sub
+2346	0	End Sub
+2347	0	
+2348	0	Private Sub cboWearDegreePrimUseUF1_KeyDown(KeyCode As Integer, Shift As Integer)
+2349	0	On Error GoTo err_KeyDownWearDegreePrimUseUF1
+2350	0	    Me.cboWearDegreePrimUseUF1.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Degree Wear] ORDER BY ScreenOrder"
+2351	0	    Me.cboWearDegreePrimUseUF1.Dropdown
+2352	0	Exit Sub
+2353	0	
+2354	0	err_KeyDownWearDegreePrimUseUF1:
+2355	0	    Call General_Error_Trap
+2356	0	    Exit Sub
+2357	0	End Sub
+2358	0	
+2359	0	Private Sub cboWearDegreePrimUseUF2_Change()
+2360	0	On Error GoTo err_changeWearDegreePrimUseUF2
+2361	0	Dim strText As String
+2362	0	
+2363	0	strText = Nz(Me.cboWearDegreePrimUseUF2.Text, "")
+2364	0	
+2365	0	If Len(strText) > 0 Then
+2366	0	
+2367	4	   Me.cboWearDegreePrimUseUF2.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Degree Wear] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+2368	0	Else
+2369	0	    Me.cboWearDegreePrimUseUF2.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Degree Wear] ORDER BY ScreenOrder"
+2370	0	End If
+2371	0	
+2372	0	Me.cboWearDegreePrimUseUF2.Dropdown
+2373	0	
+2374	0	Exit Sub
+2375	0	
+2376	0	err_changeWearDegreePrimUseUF2:
+2377	0	    Call General_Error_Trap
+2378	0	    Exit Sub
+2379	0	End Sub
+2380	0	
+2381	0	Private Sub cboWearDegreePrimUseUF2_Enter()
+2382	0	On Error GoTo err_EnterWearDegreePrimUseUF2
+2383	0	    Me.cboWearDegreePrimUseUF2.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Degree Wear] ORDER BY ScreenOrder"
+2384	0	    Me.cboWearDegreePrimUseUF2.Dropdown
+2385	0	Exit Sub
+2386	0	
+2387	0	err_EnterWearDegreePrimUseUF2:
+2388	0	    Call General_Error_Trap
+2389	0	    Exit Sub
+2390	0	End Sub
+2391	0	
+2392	0	Private Sub cboWearDegreePrimUseUF2_KeyDown(KeyCode As Integer, Shift As Integer)
+2393	0	On Error GoTo err_KeyDownWearDegreePrimUseUF2
+2394	0	    Me.cboWearDegreePrimUseUF2.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Degree Wear] ORDER BY ScreenOrder"
+2395	0	    Me.cboWearDegreePrimUseUF2.Dropdown
+2396	0	Exit Sub
+2397	0	
+2398	0	err_KeyDownWearDegreePrimUseUF2:
+2399	0	    Call General_Error_Trap
+2400	0	    Exit Sub
+2401	0	End Sub
+2402	0	
+2403	0	Private Sub cboWearDegreeSecondUse_Change()
+2404	0	On Error GoTo err_changeWearDegreeSecondUse
+2405	0	Dim strText As String
+2406	0	
+2407	0	strText = Nz(Me.cboWearDegreeSecondUse.Text, "")
+2408	0	
+2409	0	If Len(strText) > 0 Then
+2410	0	
+2411	4	   Me.cboWearDegreeSecondUse.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Degree Wear] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+2412	0	Else
+2413	0	    Me.cboWearDegreeSecondUse.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Degree Wear] ORDER BY ScreenOrder"
+2414	0	End If
+2415	0	
+2416	0	Me.cboWearDegreeSecondUse.Dropdown
+2417	0	
+2418	0	Exit Sub
+2419	0	
+2420	0	err_changeWearDegreeSecondUse:
+2421	0	    Call General_Error_Trap
+2422	0	    Exit Sub
+2423	0	End Sub
+2424	0	
+2425	0	Private Sub cboWearDegreeSecondUse_Enter()
+2426	0	On Error GoTo err_EnterWearDegreeSecondUse
+2427	0	    Me.cboWearDegreeSecondUse.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Degree Wear] ORDER BY ScreenOrder"
+2428	0	    Me.cboWearDegreeSecondUse.Dropdown
+2429	0	Exit Sub
+2430	0	
+2431	0	err_EnterWearDegreeSecondUse:
+2432	0	    Call General_Error_Trap
+2433	0	    Exit Sub
+2434	0	End Sub
+2435	0	
+2436	0	Private Sub cboWearDegreeSecondUse_KeyDown(KeyCode As Integer, Shift As Integer)
+2437	0	On Error GoTo err_KeyDownWearDegreeSecondUse
+2438	0	    Me.cboWearDegreeSecondUse.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Degree Wear] ORDER BY ScreenOrder"
+2439	0	    Me.cboWearDegreeSecondUse.Dropdown
+2440	0	Exit Sub
+2441	0	
+2442	0	err_KeyDownWearDegreeSecondUse:
+2443	0	    Call General_Error_Trap
+2444	0	    Exit Sub
+2445	0	End Sub
+2446	0	
+2447	0	Private Sub cboWidthCompleteness_Change()
+2448	0	On Error GoTo err_changeWidthCompleteness
+2449	0	Dim strText As String
+2450	0	
+2451	0	strText = Nz(Me.cboWidthCompleteness.Text, "")
+2452	0	
+2453	0	If Len(strText) > 0 Then
+2454	0	
+2455	4	   Me.cboWidthCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+2456	0	Else
+2457	0	    Me.cboWidthCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+2458	0	End If
+2459	0	
+2460	0	Me.cboWidthCompleteness.Dropdown
+2461	0	
+2462	0	Exit Sub
+2463	0	
+2464	0	err_changeWidthCompleteness:
+2465	0	    Call General_Error_Trap
+2466	0	    Exit Sub
+2467	0	End Sub
+2468	0	
+2469	0	Private Sub cboWidthCompleteness_Enter()
+2470	0	On Error GoTo err_EnterWidthCompleteness
+2471	0	    Me.cboWidthCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+2472	0	    Me.cboWidthCompleteness.Dropdown
+2473	0	Exit Sub
+2474	0	
+2475	0	err_EnterWidthCompleteness:
+2476	0	    Call General_Error_Trap
+2477	0	    Exit Sub
+2478	0	End Sub
+2479	0	
+2480	0	Private Sub cboWidthCompleteness_KeyDown(KeyCode As Integer, Shift As Integer)
+2481	0	On Error GoTo err_KeyDownWidthCompleteness
+2482	0	    Me.cboWidthCompleteness.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+2483	0	    Me.cboWidthCompleteness.Dropdown
+2484	0	Exit Sub
+2485	0	
+2486	0	err_KeyDownWidthCompleteness:
+2487	0	    Call General_Error_Trap
+2488	0	    Exit Sub
+2489	0	End Sub
+2490	0	
+2491	0	Private Sub cboWidthCompletenessUseFace1_Change()
+2492	0	On Error GoTo err_changeWidthCompletenessUseFace1
+2493	0	Dim strText As String
+2494	0	
+2495	0	strText = Nz(Me.cboWidthCompletenessUseFace1.Text, "")
+2496	0	
+2497	0	If Len(strText) > 0 Then
+2498	0	
+2499	4	   Me.cboWidthCompletenessUseFace1.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+2500	0	Else
+2501	0	    Me.cboWidthCompletenessUseFace1.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+2502	0	End If
+2503	0	
+2504	0	Me.cboWidthCompletenessUseFace1.Dropdown
+2505	0	
+2506	0	Exit Sub
+2507	0	
+2508	0	err_changeWidthCompletenessUseFace1:
+2509	0	    Call General_Error_Trap
+2510	0	    Exit Sub
+2511	0	
+2512	0	End Sub
+2513	0	
+2514	0	Private Sub cboWidthCompletenessUseFace1_Enter()
+2515	0	On Error GoTo err_EnterWidthCompletenessUseFace1
+2516	0	    Me.cboWidthCompletenessUseFace1.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+2517	0	    Me.cboWidthCompletenessUseFace1.Dropdown
+2518	0	Exit Sub
+2519	0	
+2520	0	err_EnterWidthCompletenessUseFace1:
+2521	0	    Call General_Error_Trap
+2522	0	    Exit Sub
+2523	0	End Sub
+2524	0	
+2525	0	Private Sub cboWidthCompletenessUseFace1_KeyDown(KeyCode As Integer, Shift As Integer)
+2526	0	On Error GoTo err_KeyDownWidthCompletenessUseFace1
+2527	0	    Me.cboWidthCompletenessUseFace1.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+2528	0	    Me.cboWidthCompletenessUseFace1.Dropdown
+2529	0	Exit Sub
+2530	0	
+2531	0	err_KeyDownWidthCompletenessUseFace1:
+2532	0	    Call General_Error_Trap
+2533	0	    Exit Sub
+2534	0	End Sub
+2535	0	
+2536	0	Private Sub cboWidthCompletenessUseFace2_Change()
+2537	0	On Error GoTo err_changeWidthCompletenessUseFace2
+2538	0	Dim strText As String
+2539	0	
+2540	0	strText = Nz(Me.cboWidthCompletenessUseFace2.Text, "")
+2541	0	
+2542	0	If Len(strText) > 0 Then
+2543	0	
+2544	4	   Me.cboWidthCompletenessUseFace2.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+2545	0	Else
+2546	0	    Me.cboWidthCompletenessUseFace2.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+2547	0	End If
+2548	0	
+2549	0	Me.cboWidthCompletenessUseFace2.Dropdown
+2550	0	
+2551	0	Exit Sub
+2552	0	
+2553	0	err_changeWidthCompletenessUseFace2:
+2554	0	    Call General_Error_Trap
+2555	0	    Exit Sub
+2556	0	
+2557	0	End Sub
+2558	0	
+2559	0	Private Sub cboWidthCompletenessUseFace2_Enter()
+2560	0	On Error GoTo err_EnterWidthCompletenessUseFace2
+2561	0	    Me.cboWidthCompletenessUseFace2.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+2562	0	    Me.cboWidthCompletenessUseFace2.Dropdown
+2563	0	Exit Sub
+2564	0	
+2565	0	err_EnterWidthCompletenessUseFace2:
+2566	0	    Call General_Error_Trap
+2567	0	    Exit Sub
+2568	0	
+2569	0	End Sub
+2570	0	
+2571	0	Private Sub cboWidthCompletenessUseFace2_KeyDown(KeyCode As Integer, Shift As Integer)
+2572	0	On Error GoTo err_KeyDownWidthCompletenessUseFace2
+2573	0	    Me.cboWidthCompletenessUseFace2.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Completeness] ORDER BY ScreenOrder"
+2574	0	    Me.cboWidthCompletenessUseFace2.Dropdown
+2575	0	Exit Sub
+2576	0	
+2577	0	err_KeyDownWidthCompletenessUseFace2:
+2578	0	    Call General_Error_Trap
+2579	0	    Exit Sub
+2580	0	
+2581	0	End Sub
+2582	0	
+2583	0	Private Sub FindNumber_AfterUpdate()
+2584	0	Dim checkLevel1, checkLevel2, checkOldGST
+2585	0	Dim ctl As Control
+2586	0	Dim retVal, inputname, sql
+2587	1	'update the GID
+2588	0	On Error GoTo err_fn
+2589	0	
+2590	0	    Me![GID] = Me![Unit] & "." & Me![Lettercode] & Me![FindNumber]
+2591	1	' if GID is complete, check for duplicates in Level1 and Level2
+2592	0	If Me![Unit] <> "" And Me![Lettercode] <> "" And Me![FindNumber] <> "" Then
+2593	1	    'check that GID not exists
+2594	2	    checkLevel1 = DLookup("[GID]", "[dbo_Groundstone Level 1_2014]", "[GID] = '" & Me![GID] & "'")
+2595	2	    checkLevel2 = DLookup("[GID]", "[dbo_Groundstone Level 2_2014]", "[GID] = '" & Me![GID] & "'")
+2596	2	    checkOldGST = DLookup("[GID]", "[GroundStone: Basic_Data]", "[GID] = '" & Me![GID] & "'")
+2597	0	
+2598	0	    If Not IsNull(checkLevel1) Then
+2599	0	        MsgBox "GID Number " & Me![GID] & " already exists in Level 1 table.", vbExclamation, "Duplicate GID Number"
+2600	0	        
+2601	0	        If Not IsNull(Me![FindNumber].OldValue) Then
+2602	1	            'return field to old value if there was one
+2603	0	            Me![Unit] = Me![FindNumber].OldValue
+2604	0	        Else
+2605	1	            'oh the joys, to keep the focus on unit have to flip to year then back
+2606	1	            'otherwise if will ignore you and go straight to year - dont believe me, comment out the gotocontrol year then!
+2607	0	            DoCmd.GoToControl "GID"
+2608	0	            DoCmd.GoToControl "Unit"
+2609	0	            Me![Unit].SetFocus
+2610	0	            DoCmd.RunCommand acCmdUndo
+2611	0	        End If
+2612	0	    ElseIf Not IsNull(checkLevel2) Then
+2613	0	    MsgBox "GID Number " & Me![GID] & " already exists in Level 2 table.", vbExclamation, "Duplicate GID Number"
+2614	0	        
+2615	0	        If Not IsNull(Me![FindNumber].OldValue) Then
+2616	1	            'return field to old value if there was one
+2617	0	            Me![Unit] = Me![FindNumber].OldValue
+2618	0	        Else
+2619	1	            'oh the joys, to keep the focus on unit have to flip to year then back
+2620	1	            'otherwise if will ignore you and go straight to year - dont believe me, comment out the gotocontrol year then!
+2621	0	            DoCmd.GoToControl "GID"
+2622	0	            DoCmd.GoToControl "Unit"
+2623	0	            Me![Unit].SetFocus
+2624	0	            DoCmd.RunCommand acCmdUndo
+2625	0	        End If
+2626	0	    Else
+2627	1	        'the number does not exist so allow rest of data entry (except the fields from Exca)
+2628	1	        'unlock all fields - CE June 2014
+2629	0	        For Each ctl In Me.Controls
+2630	0	            If (ctl.ControlType = acTextBox Or ctl.ControlType = acComboBox) Then
+2631	0	                ctl.Locked = False
+2632	0	            End If
+2633	0	        Next ctl
+2634	1	        'if GID is in old Groundstone DB just give a warning, but dont disable entry
+2635	1	        'changed 2015 - now the initials of the user who signs an item out of the old groundstone, are fed back there
+2636	0	        If Not IsNull(checkOldGST) Then
+2637	1	            'MsgBox " Make sure you know what you are doing.", vbInformation, "Duplicate GID Number"
+2638	0	            retVal = MsgBox("GID Number " & Me![GID] & " already exists in the Old Groundstone table. Do you want to rerecord it?", vbQuestion + vbYesNo, "GID in old Groundstone")
+2639	0	            If retVal = vbYes Then
+2640	0	                inputname = InputBox("Please enter your initials for singning the item out of the old groundstone DB:", "Analyst Name")
+2641	0	                If inputname <> "" Then
+2642	4	                    sql = "UPDATE [dbo_Groundstone: Basic_Data_Pre2013_WithReRecordingFlag] SET [ReRecorded] = '" & inputname & " " & Date & "' WHERE [GID] = '" & Me![GID] & "';"
+2643	0	                    DoCmd.RunSQL sql
+2644	0	                Else
+2645	0	                End If
+2646	0	            Else
+2647	1	                'SendKeys "{ESC}"
+2648	0	                Me.Undo
+2649	0	            End If
+2650	0	        Else
+2651	0	        End If
+2652	0	    End If
+2653	0	End If
+2654	0	
+2655	0	Exit Sub
+2656	0	
+2657	0	err_fn:
+2658	0	    Call General_Error_Trap
+2659	0	    Exit Sub
+2660	0	End Sub
+2661	0	
+2662	0	Private Sub Form_BeforeInsert(Cancel As Integer)
+2663	1	' added locks to disable entry of other fields until we control for duplicate GID
+2664	1	' in Level 1 and Level 2 tables when new GID is added
+2665	1	' we remove the locks later when we do the check after updating
+2666	1	' the three fields that allow for entry: Unit, Lettercode, Fieldnumber
+2667	1	' CE June 2014
+2668	0	
+2669	0	On Error GoTo err_fbins
+2670	0	
+2671	0	Dim ctl As Control
+2672	1	    'lock all fields except Unit, Letter, FindNo - CE June 2014
+2673	0	    For Each ctl In Me.Controls
+2674	0	        If (ctl.ControlType = acTextBox Or ctl.ControlType = acComboBox) And Not (ctl.Name = "Unit" Or ctl.Name = "cboLettercode" Or ctl.Name = "FindNumber") Then
+2675	0	            ctl.Locked = True
+2676	0	        End If
+2677	1	    '    If (ctl.ControlType = acTextBox Or ctl.Name = "cboAnalyst") And Not (ctl.Name = "Unit" Or ctl.Name = "Lettercode" Or ctl.Name = "FindNumber") Then
+2678	1	    '        ctl.Locked = True
+2679	1	    '    End If
+2680	0	    Next ctl
+2681	0	            
+2682	0	    
+2683	0	    
+2684	0	 Exit Sub
+2685	0	
+2686	0	err_fbins:
+2687	0	    Call General_Error_Trap
+2688	0	    Exit Sub
+2689	0	End Sub
+2690	0	
+2691	0	Private Sub GSNo_AfterUpdate()
+2692	0	Dim checkLevel1, checkLevel2
+2693	0	On Error GoTo err_gsnum
+2694	1	' check if GSno is already in use
+2695	1	' - not clear why the DSlookup for checkLevel1 needs string as argument
+2696	2	' - but if I don't do it this way I get a type mismatch
+2697	0	If Me![GSNo] <> "" Then
+2698	1	    'checkLevel1 = DLookup("[GSno]", "[dbo_Groundstone Level 1_2014]", "[GSno] = " & Me![GSNo])
+2699	2	    checkLevel1 = DLookup("[GSno]", "[dbo_Groundstone Level 1_2014]", "[GSno] = '" & Me![GSNo] & "'")
+2700	0	    checkLevel2 = DLookup("[GSno]", "[dbo_Groundstone Level 2_2014]", "[GSno] = " & Me![GSNo])
+2701	3	    'checkLevel2 = DLookup("[GSno]", "[dbo_Groundstone Level 2_2014]", "[GSno] = '" & Me![GSNo] & "'")
+2702	0	    
+2703	0	    If Not IsNull(checkLevel1) Then
+2704	0	        MsgBox "GST Number " & Me![GSNo] & " already exists in Level 1 table.", vbExclamation, "Duplicate GST Number"
+2705	0	        
+2706	0	        If Not IsNull(Me![GSNo].OldValue) Then
+2707	1	            'return field to old value if there was one
+2708	0	            Me![GSNo] = Me![GSNo].OldValue
+2709	0	        Else
+2710	1	            'oh the joys, to keep the focus on unit have to flip to year then back
+2711	1	            'otherwise if will ignore you and go straight to year - dont believe me, comment out the gotocontrol year then!
+2712	0	            DoCmd.GoToControl "cboAnalyst"
+2713	0	            DoCmd.GoToControl "GSno"
+2714	0	            Me![GSNo].SetFocus
+2715	0	            Me![GSNo] = Null
+2716	0	        End If
+2717	0	    End If
+2718	0	    If Not IsNull(checkLevel2) Then
+2719	0	    MsgBox "GST Number " & Me![GSNo] & " already exists in Level 2 table.", vbExclamation, "Duplicate GST Number"
+2720	0	        
+2721	0	        If Not IsNull(Me![Unit].OldValue) Then
+2722	1	            'return field to old value if there was one
+2723	0	            Me![GSNo] = Me![GSNo].OldValue
+2724	0	        Else
+2725	1	            'oh the joys, to keep the focus on unit have to flip to year then back
+2726	1	            'otherwise if will ignore you and go straight to year - dont believe me, comment out the gotocontrol year then!
+2727	1	            'DoCmd.GoToControl "cboAnalyst"
+2728	0	            DoCmd.GoToControl "GSNo"
+2729	0	            Me![GSNo].SetFocus
+2730	0	            Me![GSNo] = Null
+2731	0	        End If
+2732	0	    End If
+2733	0	End If
+2734	0	Exit Sub
+2735	0	
+2736	0	err_gsnum:
+2737	0	    Call General_Error_Trap
+2738	0	    Exit Sub
+2739	0	End Sub
+2740	0	
+2741	0	
+2742	0	
+2743	0	Private Sub Unit_AfterUpdate()
+2744	0	Dim checkLevel1, checkLevel2, checkOldGST
+2745	0	Dim ctl As Control
+2746	1	'update the GID
+2747	0	On Error GoTo err_unit
+2748	0	
+2749	0	    Me![GID] = Me![Unit] & "." & Me![Lettercode] & Me![FindNumber]
+2750	1	' if GID is complete, check for duplicates in Level1 and Level2
+2751	0	If Me![Unit] <> "" And Me![Lettercode] <> "" And Me![FindNumber] <> "" Then
+2752	1	    'check that GID not exists
+2753	2	    checkLevel1 = DLookup("[GID]", "[dbo_Groundstone Level 1_2014]", "[GID] = '" & Me![GID] & "'")
+2754	2	    checkLevel2 = DLookup("[GID]", "[dbo_Groundstone Level 2_2014]", "[GID] = '" & Me![GID] & "'")
+2755	2	    checkOldGST = DLookup("[GID]", "[GroundStone: Basic_Data]", "[GID] = '" & Me![GID] & "'")
+2756	0	
+2757	0	    If Not IsNull(checkLevel1) Then
+2758	0	        MsgBox "GID Number " & Me![GID] & " already exists in Level 1 table.", vbExclamation, "Duplicate GID Number"
+2759	0	        
+2760	0	        If Not IsNull(Me![Unit].OldValue) Then
+2761	1	            'return field to old value if there was one
+2762	0	            Me![Unit] = Me![Unit].OldValue
+2763	0	        Else
+2764	1	            'oh the joys, to keep the focus on unit have to flip to year then back
+2765	1	            'otherwise if will ignore you and go straight to year - dont believe me, comment out the gotocontrol year then!
+2766	0	            DoCmd.GoToControl "GID"
+2767	0	            DoCmd.GoToControl "Unit"
+2768	0	            Me![Unit].SetFocus
+2769	0	            DoCmd.RunCommand acCmdUndo
+2770	0	        End If
+2771	0	    ElseIf Not IsNull(checkLevel2) Then
+2772	0	    MsgBox "GID Number " & Me![GID] & " already exists in Level 2 table.", vbExclamation, "Duplicate GID Number"
+2773	0	        
+2774	0	        If Not IsNull(Me![Unit].OldValue) Then
+2775	1	            'return field to old value if there was one
+2776	0	            Me![Unit] = Me![Unit].OldValue
+2777	0	        Else
+2778	1	            'oh the joys, to keep the focus on unit have to flip to year then back
+2779	1	            'otherwise if will ignore you and go straight to year - dont believe me, comment out the gotocontrol year then!
+2780	0	            DoCmd.GoToControl "GID"
+2781	0	            DoCmd.GoToControl "Unit"
+2782	0	            Me![Unit].SetFocus
+2783	0	            DoCmd.RunCommand acCmdUndo
+2784	0	        End If
+2785	0	    Else
+2786	1	        'the number does not exist so allow rest of data entry (except the fields from Exca)
+2787	1	        'unlock all fields - CE June 2014
+2788	0	        For Each ctl In Me.Controls
+2789	0	            If (ctl.ControlType = acTextBox Or ctl.ControlType = acComboBox) Then
+2790	0	                ctl.Locked = False
+2791	0	            End If
+2792	0	        Next ctl
+2793	1	        'if GID is in old Groundstone DB just give a warning, but dont disable entry
+2794	0	        If Not IsNull(checkOldGST) Then
+2795	0	            MsgBox "GID Number " & Me![GID] & " already exists in the Old Groundstone table. Make sure you know what you are doing.", vbInformation, "Duplicate GID Number"
+2796	0	        End If
+2797	0	
+2798	0	    End If
+2799	0	End If
+2800	0	
+2801	0	Exit Sub
+2802	0	
+2803	0	err_unit:
+2804	0	    Call General_Error_Trap
+2805	0	    Exit Sub
+2806	0	
+2807	0	End Sub
+2808	0	
+2809	0	Private Sub Unit_DblClick(Cancel As Integer)
+2810	0	
+2811	0	On Error GoTo Err_cmdUnitDesc_Click
+2812	0	
+2813	0	If Me![Unit] <> "" Then
+2814	1	    'check the unit number is in the unit desc form
+2815	0	    Dim checknum, sql
+2816	0	    checknum = DLookup("[Unit]", "[dbo_Groundstone: Unit Description_2014]", "[Unit] = " & Me![Unit])
+2817	0	    If IsNull(checknum) Then
+2818	1	        'must add the unit to the table
+2819	0	        sql = "INSERT INTo [dbo_Groundstone: Unit Description_2014] ([Unit]) VALUES (" & Me![Unit] & ");"
+2820	0	        DoCmd.RunSQL sql
+2821	0	    End If
+2822	0	    
+2823	0	    DoCmd.OpenForm "Frm_GS_UnitDescription_2014", acNormal, , "[Unit] = " & Me![Unit], acFormPropertySettings
+2824	0	Else
+2825	0	    MsgBox "No Unit number is present, cannot open the Unit Description form", vbInformation, "No Unit Number"
+2826	0	End If
+2827	0	Exit Sub
+2828	0	
+2829	0	Err_cmdUnitDesc_Click:
+2830	0	    Call General_Error_Trap
+2831	0	    Exit Sub
+2832	0	
+2833	0	End Sub

@@ -1,0 +1,142 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	1	Dim Unit, Letter, findnum, Bag 'these vars will come in as openargs
+5	0	
+6	0	Private Sub cmdCancel_Click()
+7	1	'cancel operation - do nothing
+8	0	On Error GoTo err_cancel
+9	0	
+10	0	DoCmd.Close acForm, Me.Name
+11	0	
+12	0	Exit Sub
+13	0	
+14	0	err_cancel:
+15	0	    Call General_Error_Trap
+16	0	    Exit Sub
+17	0	End Sub
+18	0	
+19	0	Private Sub cmdOK_Click()
+20	1	'if user has selected a crate ask for confirmation and then place the object in the Units in Crates register
+21	1	'adding a record for the Finds Officer that this has been done
+22	0	On Error GoTo err_cmdOK
+23	0	Dim Response, sql
+24	0	    If Me![cboCrateNumber] <> "" Then
+25	0	        If Me![GID] <> "" Then
+26	0	            Response = MsgBox("Please confirm that the crate register should be updated with the following details:" & Chr(13) & Chr(13) & "Findnumber: " & Me![GID] & " in  crate OB" & Me![cboCrateNumber], vbQuestion + vbOKCancel, "Confirm Action")
+27	0	            If Response = vbOK Then
+28	1	                'write to crate register
+29	0	                sql = "INSERT INTO [Store: Units in Crates] ([CrateLetter], [CrateNumber], [Unit Number], [Year], [Area], [FindSampleLetter], [FindNumber], [Material], [Bag], [LastUpdated], [Description]) "
+30	2	                sql = sql & " VALUES ('OB', " & Me![cboCrateNumber] & ", " & Unit & ","
+31	0	                
+32	0	                Dim getyear, getArea
+33	0	                getyear = DLookup("[Year]", "[Exca: Unit Sheet with Relationships]", "[Unit number] = " & Unit)
+34	0	                If IsNull(getyear) Or getyear = "" Then
+35	0	                    sql = sql & "null,"
+36	0	                Else
+37	0	                    sql = sql & getyear & ", "
+38	0	                End If
+39	0	                getArea = DLookup("[area]", "[Exca: Unit Sheet with Relationships]", "[Unit number] = " & Unit)
+40	0	                If IsNull(getArea) Or getArea = "" Then
+41	0	                    sql = sql & " null,"
+42	0	                Else
+43	2	                    sql = sql & "'" & getArea & "',"
+44	0	                End If
+45	0	                
+46	6	                sql = sql & "'" & Letter & "', " & findnum & ",'" & Forms![frm_CS_stagetwo]![RawMaterial] & "', '" & Forms![frm_CS_stagetwo]![Bag] & "', #" & Now() & "#"
+47	2	                sql = sql & ",'" & Forms![frm_CS_stagetwo]![cboCategory] & "');"
+48	0	                DoCmd.RunSQL sql
+49	0	                
+50	6	                sql = "INSERT INTO [Store: Crate Movement by Teams] ([Unit Number], [FindSampleLetter], [FindNumber], [MovedToCrate], [MovedBy], [MovedOn]) VALUES (" & Unit & ",'" & Letter & "'," & findnum & ",'OB" & Me![cboCrateNumber] & "', 'ChippedStone team', #" & Now() & "#);"
+51	0	                DoCmd.RunSQL sql
+52	0	                
+53	0	                Forms![frm_CS_stagetwo]![frm_subform_location_object].Requery
+54	0	                
+55	0	                DoCmd.Close acForm, Me.Name
+56	0	             End If
+57	0	        ElseIf Me![txtUnit] <> "" Then
+58	0	            Response = MsgBox("Please confirm that the crate register should be updated with the following details:" & Chr(13) & Chr(13) & "Unit: " & Me![txtUnit] & ", Bag: " & Me![txtBag] & " in  crate OB" & Me![cboCrateNumber], vbQuestion + vbOKCancel, "Confirm Action")
+59	0	            If Response = vbOK Then
+60	1	                'write to crate register
+61	0	                sql = "INSERT INTO [Store: Units in Crates] ([CrateLetter], [CrateNumber], [Unit Number], [Year], [Area], [Bag], [Material], [LastUpdated]) "
+62	2	                sql = sql & " VALUES ('OB', " & Me![cboCrateNumber] & ", " & Me!txtUnit & ","
+63	0	                If IsNull(Forms![frm_CS_basicdata]![Frm_subformUnitDetails].Form![Year]) Or Forms![frm_CS_basicdata]![Frm_subformUnitDetails].Form![Year] = "" Then
+64	0	                    sql = sql & "null,"
+65	0	                Else
+66	0	                    sql = sql & Forms![frm_CS_basicdata]![Frm_subformUnitDetails].Form![Year] & ", "
+67	0	                End If
+68	0	                If IsNull(Forms![frm_CS_basicdata]![Frm_subformUnitDetails].Form![Area]) Or Forms![frm_CS_basicdata]![Frm_subformUnitDetails].Form![Area] = "" Then
+69	0	                    sql = sql & " null,"
+70	0	                Else
+71	2	                    sql = sql & "'" & Forms![frm_CS_basicdata]![Frm_subformUnitDetails].Form![Area] & "',"
+72	0	                End If
+73	0	                
+74	4	                sql = sql & "'" & Me![txtBag] & "', '" & Forms![frm_CS_basicdata]![RawMaterial] & "',#" & Now() & "#);"
+75	0	                DoCmd.RunSQL sql
+76	0	                
+77	4	                sql = "INSERT INTO [Store: Crate Movement by Teams] ([Unit Number], [MovedToCrate], [MovedBy], [MovedOn]) VALUES (" & Unit & ",'OB" & Me![cboCrateNumber] & "', 'ChippedStone team', #" & Now() & "#);"
+78	0	                DoCmd.RunSQL sql
+79	0	                
+80	0	                Forms![frm_CS_basicdata]!frm_subform_location.Requery
+81	0	                
+82	0	                DoCmd.Close acForm, Me.Name
+83	0	             End If
+84	0	        
+85	0	        End If
+86	0	    Else
+87	0	        MsgBox "No crate number selected", vbInformation, "Invalid Selection"
+88	0	        
+89	0	    End If
+90	0	
+91	0	Exit Sub
+92	0	
+93	0	err_cmdOK:
+94	0	    Call General_Error_Trap
+95	0	    Exit Sub
+96	0	End Sub
+97	0	
+98	0	Private Sub Form_Open(Cancel As Integer)
+99	1	'get open args. They will take this format
+100	1	'unit number:lettercode:findnumber
+101	0	On Error GoTo err_open
+102	0	
+103	0	    If Not IsNull(Me.OpenArgs) Then
+104	0	        Dim getrest
+105	0	        If InStr(Me.OpenArgs, "BAG") > 0 Then
+106	0	            Me!GID.Visible = False
+107	0	            Me!txtBag.Visible = True
+108	0	            Me!txtUnit.Visible = True
+109	1	            'comes from basic data
+110	0	            Bag = Mid(Me.OpenArgs, 4, InStr(Me.OpenArgs, ":") - 4)
+111	0	            getrest = Right(Me.OpenArgs, Len(Me.OpenArgs) - (InStr(Me.OpenArgs, ":")))
+112	0	        
+113	0	            Unit = Left(getrest, InStr(getrest, ":") - 1)
+114	0	
+115	0	            Me![txtUnit] = Unit
+116	0	            Me![txtBag] = Bag
+117	0	            
+118	0	        Else
+119	0	            Me!GID.Visible = True
+120	0	            Me!txtBag.Visible = False
+121	0	            Me!txtUnit.Visible = False
+122	0	            
+123	0	            Unit = Left(Me.OpenArgs, InStr(Me.OpenArgs, ":") - 1)
+124	0	            getrest = Right(Me.OpenArgs, Len(Me.OpenArgs) - (InStr(Me.OpenArgs, ":")))
+125	0	            
+126	0	            Letter = Left(getrest, InStr(getrest, ":") - 1)
+127	0	            findnum = Right(getrest, Len(getrest) - (InStr(getrest, ":")))
+128	0	            
+129	0	            Me![GID] = Unit & "." & Letter & findnum
+130	0	        End If
+131	0	    Else
+132	0	        MsgBox "Form opened with incorrect parameters, it will now shut", vbInformation, "Invalid Call"
+133	0	        DoCmd.Close acForm, Me.Name
+134	0	        
+135	0	    End If
+136	0	
+137	0	Exit Sub
+138	0	
+139	0	err_open:
+140	0	    Call General_Error_Trap
+141	0	    Exit Sub
+142	0	End Sub

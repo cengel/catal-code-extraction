@@ -1,0 +1,281 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	Private Sub Update_GID()
+4	0	If Not IsNull(Me![Unit]) And Not IsNull(Me![Sample]) And Not IsNull(Me![Flot_Number]) Then
+5	0	    Me![GID] = Me![Unit] & "." & Me![Sample] & "." & Me![Flot_Number]
+6	0	Else
+7	0	    Debug.Print "GID is not valid"
+8	0	End If
+9	0	End Sub
+10	0	
+11	0	Private Sub cboFilterUnit_AfterUpdate()
+12	1	'filter - new 2011
+13	0	On Error GoTo err_filter
+14	0	
+15	0	    If Me![cboFilterUnit] <> "" Then
+16	0	        Me.Filter = "[Unit] = " & Me![cboFilterUnit]
+17	0	        Me.FilterOn = True
+18	0	        Me![cboFilterUnit] = ""
+19	0	        Me![cmdRemoveFilter].Visible = True
+20	0	    End If
+21	0	
+22	0	Exit Sub
+23	0	
+24	0	err_filter:
+25	0	    Call General_Error_Trap
+26	0	    Exit Sub
+27	0	End Sub
+28	0	
+29	0	Private Sub cboFilterUnit_NotInList(NewData As String, response As Integer)
+30	1	'stop not in list msg loop - new 2011
+31	0	On Error GoTo err_cbofilterNot
+32	0	
+33	0	    MsgBox "Sorry this Unit does not exist in this database yet", vbInformation, "No Match"
+34	0	    response = acDataErrContinue
+35	0	    
+36	0	    Me![cboFilterUnit].Undo
+37	0	Exit Sub
+38	0	
+39	0	err_cbofilterNot:
+40	0	    Call General_Error_Trap
+41	0	    Exit Sub
+42	0	End Sub
+43	0	
+44	0	Private Sub cboFind_AfterUpdate()
+45	1	'new 2011
+46	0	On Error GoTo err_cboFind
+47	0	
+48	0	If Me![cboFind] <> "" Then
+49	0	    DoCmd.GoToControl "GID"
+50	0	    DoCmd.FindRecord Me![cboFind]
+51	2	    ''DoCmd.GoToControl "Analyst"
+52	0	    Me![cboFind] = ""
+53	0	End If
+54	0	
+55	0	
+56	0	Exit Sub
+57	0	
+58	0	err_cboFind:
+59	0	    Call General_Error_Trap
+60	0	    Exit Sub
+61	0	End Sub
+62	0	
+63	0	
+64	0	
+65	0	
+66	0	Private Sub cboFind_NotInList(NewData As String, response As Integer)
+67	1	'stop not in list msg loop - new 2011
+68	0	On Error GoTo err_cbofindNot
+69	0	
+70	0	    MsgBox "Sorry this GID does not exist in the database", vbInformation, "No Match"
+71	0	    response = acDataErrContinue
+72	0	    
+73	0	    Me![cboFind].Undo
+74	0	Exit Sub
+75	0	
+76	0	err_cbofindNot:
+77	0	    Call General_Error_Trap
+78	0	    Exit Sub
+79	0	End Sub
+80	0	
+81	0	
+82	0	
+83	0	Private Sub charcoal_weight_AfterUpdate()
+84	0	On Error GoTo err_density
+85	0	
+86	0	If [subfrm_HeavyResidue_FlotVolume].[Form]![Soil Volume].Value <> 0 Then
+87	0	Me![density].Value = Round(Me![charcoal_weight].Value / [subfrm_HeavyResidue_FlotVolume].[Form]![Flot Volume].Value, 2)
+88	0	End If
+89	0	
+90	0	Exit Sub
+91	0	
+92	0	err_density:
+93	0	    Call General_Error_Trap
+94	0	    Exit Sub
+95	0	End Sub
+96	0	
+97	0	Private Sub cmdAddNew_Click()
+98	1	'********************************************************************
+99	1	' Create new record
+100	1	' SAJ
+101	1	'********************************************************************
+102	0	On Error GoTo Err_cmdgonew_Click
+103	0	
+104	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+105	0	    DoCmd.GoToRecord , , acNewRec
+106	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Form![Analyst].Name
+107	0	    DoCmd.GoToControl Me![Unit].Name
+108	0	    Exit Sub
+109	0	
+110	0	Err_cmdgonew_Click:
+111	0	    Call General_Error_Trap
+112	0	    Exit Sub
+113	0	End Sub
+114	0	
+115	0	Private Sub cmdDelete_Click()
+116	1	'new 2011 - control the delete of a record to ensure both tables are clear
+117	0	On Error GoTo err_del
+118	0	
+119	0	Dim response
+120	0	    response = MsgBox("Do you really want to remove GID " & Me!GID & " and all its related material records from your database?", vbYesNo + vbQuestion, "Remove Record")
+121	0	    If response = vbYes Then
+122	0	        Dim sql
+123	2	        sql = "Delete FROM [Anthracology: Basic Details] WHERE [GID] = '" & Me![GID] & "';"
+124	0	        DoCmd.RunSQL sql
+125	0	        
+126	2	        sql = "Delete from [Anthracology: Dendro] WHERE [GID] = '" & Me![GID] & "';"
+127	0	        DoCmd.RunSQL sql
+128	0	        
+129	0	        Me.Requery
+130	0	        MsgBox "Deletion completed", vbInformation, "Done"
+131	0	        
+132	0	        Me![cboFind].Requery
+133	0	        Me![cboFilterUnit].Requery
+134	0	        
+135	0	    End If
+136	0	Exit Sub
+137	0	
+138	0	err_del:
+139	0	    Call General_Error_Trap
+140	0	    Exit Sub
+141	0	End Sub
+142	0	
+143	0	Private Sub cmdGoFirst_Click()
+144	1	'********************************************************************
+145	1	' Go to first record
+146	1	' SAJ
+147	1	'********************************************************************
+148	0	On Error GoTo Err_cmdgofirst_Click
+149	0	
+150	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+151	0	    DoCmd.GoToRecord , , acFirst
+152	0	
+153	0	    Exit Sub
+154	0	
+155	0	Err_cmdgofirst_Click:
+156	0	    Call General_Error_Trap
+157	0	    Exit Sub
+158	0	End Sub
+159	0	
+160	0	Private Sub cmdGoLast_Click()
+161	1	'********************************************************************
+162	1	' Go to last record
+163	1	' SAJ
+164	1	'********************************************************************
+165	0	On Error GoTo Err_cmdgoLast_Click
+166	0	
+167	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+168	0	    DoCmd.GoToRecord , , acLast
+169	0	
+170	0	    Exit Sub
+171	0	
+172	0	Err_cmdgoLast_Click:
+173	0	    Call General_Error_Trap
+174	0	    Exit Sub
+175	0	End Sub
+176	0	
+177	0	Private Sub cmdGoNext_Click()
+178	1	'********************************************************************
+179	1	' Go to next record
+180	1	' SAJ
+181	1	'********************************************************************
+182	0	On Error GoTo Err_cmdgoNext_Click
+183	0	
+184	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+185	0	    DoCmd.GoToRecord , , acNext
+186	0	
+187	0	    Exit Sub
+188	0	
+189	0	Err_cmdgoNext_Click:
+190	0	    If Err.Number = 2105 Then
+191	0	        MsgBox "No more records to show", vbInformation, "End of records"
+192	0	    Else
+193	0	        Call General_Error_Trap
+194	0	    End If
+195	0	    Exit Sub
+196	0	End Sub
+197	0	
+198	0	Private Sub cmdGoPrev_Click()
+199	1	'********************************************************************
+200	1	' Go to previous record
+201	1	' SAJ
+202	1	'********************************************************************
+203	0	On Error GoTo Err_cmdgoprevious_Click
+204	0	
+205	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+206	0	    DoCmd.GoToRecord , , acPrevious
+207	0	
+208	0	    Exit Sub
+209	0	
+210	0	Err_cmdgoprevious_Click:
+211	0	    If Err.Number = 2105 Then
+212	0	        MsgBox "Already at the begining of the recordset", vbInformation, "Begining of records"
+213	0	    Else
+214	0	        Call General_Error_Trap
+215	0	    End If
+216	0	    Exit Sub
+217	0	End Sub
+218	0	
+219	0	
+220	0	
+221	0	Private Sub cmdRemoveFilter_Click()
+222	1	'remove unit filter - new 2011
+223	0	On Error GoTo err_Removefilter
+224	0	
+225	0	    Me![cboFilterUnit] = ""
+226	0	    Me.Filter = ""
+227	0	    Me.FilterOn = False
+228	0	    
+229	0	    DoCmd.GoToControl "cboFind"
+230	0	    Me![cmdRemoveFilter].Visible = False
+231	0	   
+232	0	
+233	0	Exit Sub
+234	0	
+235	0	err_Removefilter:
+236	0	    Call General_Error_Trap
+237	0	    Exit Sub
+238	0	End Sub
+239	0	
+240	0	Private Sub Flot_Sample_number_AfterUpdate()
+241	1	'new season 2006 - get soil vol from flot log
+242	0	On Error GoTo err_sample
+243	0	
+244	0	Update_GID
+245	0	
+246	0	
+247	0	Exit Sub
+248	0	
+249	0	err_sample:
+250	0	    Call General_Error_Trap
+251	0	    Exit Sub
+252	0	End Sub
+253	0	
+254	0	Private Sub Sample_AfterUpdate()
+255	0	Update_GID
+256	0	End Sub
+257	0	
+258	0	Private Sub Sample_Change()
+259	1	'comment out saj
+260	1	'Update_GID
+261	0	End Sub
+262	0	
+263	0	
+264	0	Private Sub Sample_Enter()
+265	1	'SAJ before versioning - this causes sql update error to be returned to user even
+266	1	'they have not tried to edit anything, most confusing and unnecessary so removed
+267	1	' 11/01/05
+268	1	'Update_GID
+269	0	End Sub
+270	0	
+271	0	
+272	0	Private Sub Unit_AfterUpdate()
+273	0	Update_GID
+274	0	End Sub
+275	0	
+276	0	Private Sub Unit_Change()
+277	1	'Update_GID
+278	0	End Sub
+279	0	
+280	0	
+281	0	

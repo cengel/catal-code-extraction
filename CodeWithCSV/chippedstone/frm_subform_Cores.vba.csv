@@ -1,0 +1,63 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	1	'code new 2010
+4	0	
+5	0	Private Sub REjuv_NotInList(NewData As String, Response As Integer)
+6	1	'stop not in list msg loop
+7	0	On Error GoTo err_RejuvNot
+8	0	
+9	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+10	0	    Response = acDataErrContinue
+11	0	    
+12	0	    Me![REjuv].Undo
+13	0	Exit Sub
+14	0	
+15	0	err_RejuvNot:
+16	0	    Call General_Error_Trap
+17	0	    Exit Sub
+18	0	End Sub
+19	0	
+20	0	Private Sub SecondaryUse_NotInList(NewData As String, Response As Integer)
+21	1	'stop not in list msg loop
+22	0	On Error GoTo err_SecUseNot
+23	0	
+24	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+25	0	    Response = acDataErrContinue
+26	0	    
+27	0	    Me![SecondaryUse].Undo
+28	0	Exit Sub
+29	0	
+30	0	err_SecUseNot:
+31	0	    Call General_Error_Trap
+32	0	    Exit Sub
+33	0	End Sub
+34	0	
+35	0	Private Sub Stage_NotInList(NewData As String, Response As Integer)
+36	1	'stop not in list msg loop
+37	0	On Error GoTo err_StageNot
+38	0	
+39	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+40	0	    Response = acDataErrContinue
+41	0	    
+42	0	    Me![Stage].Undo
+43	0	Exit Sub
+44	0	
+45	0	err_StageNot:
+46	0	    Call General_Error_Trap
+47	0	    Exit Sub
+48	0	End Sub
+49	0	
+50	0	Private Sub Type_NotInList(NewData As String, Response As Integer)
+51	1	'stop not in list msg loop
+52	0	On Error GoTo err_TypeNot
+53	0	
+54	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+55	0	    Response = acDataErrContinue
+56	0	    
+57	0	    Me![Type].Undo
+58	0	Exit Sub
+59	0	
+60	0	err_TypeNot:
+61	0	    Call General_Error_Trap
+62	0	    Exit Sub
+63	0	End Sub

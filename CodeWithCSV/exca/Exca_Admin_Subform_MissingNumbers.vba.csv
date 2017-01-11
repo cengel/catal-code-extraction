@@ -1,0 +1,54 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdCancel_Click()
+5	0	On Error GoTo err_cancel
+6	0	
+7	0	    DoCmd.Close acForm, Me.Name
+8	0	    
+9	0	Exit Sub
+10	0	
+11	0	err_cancel:
+12	0	    Call General_Error_Trap
+13	0	    Exit Sub
+14	0	End Sub
+15	0	
+16	0	Private Sub cmdReport_Click()
+17	0	On Error GoTo err_cmdReport
+18	0	
+19	0	    If IsNull(Me![optionFrame]) Then
+20	0	        MsgBox "Select a dataset first"
+21	0	    Else
+22	0	        If Me![optionFrame] < 1 Or Me![optionFrame] > 4 Then
+23	0	            MsgBox "Invalid parameter", vbInformation, "Invalid Operation"
+24	0	        Else
+25	0	            Dim numselect
+26	0	            numselect = Me![optionFrame]
+27	0	            Select Case numselect
+28	0	            Case 1
+29	0	                If FindMissingNumbers("Exca: Building Details", "Number") = True Then
+30	0	                    DoCmd.OpenReport "R_MissingBuildings", acViewPreview
+31	0	                End If
+32	0	            Case 2
+33	0	                If FindMissingNumbers("Exca: Space Sheet", "Space Number") = True Then
+34	0	                    DoCmd.OpenReport "R_MissingSpaces", acViewPreview
+35	0	                End If
+36	0	            Case 3
+37	0	                If FindMissingNumbers("Exca: Features", "Feature Number") = True Then
+38	0	                    DoCmd.OpenReport "R_MissingFeatures", acViewPreview
+39	0	                End If
+40	0	            Case 4
+41	0	                If FindMissingNumbers("Exca: Unit sheet", "unit number") = True Then
+42	0	                    DoCmd.OpenReport "R_MissingUnits", acViewPreview
+43	0	                End If
+44	0	            End Select
+45	0	            
+46	0	        
+47	0	        End If
+48	0	    End If
+49	0	Exit Sub
+50	0	
+51	0	err_cmdReport:
+52	0	    Call General_Error_Trap
+53	0	    Exit Sub
+54	0	End Sub

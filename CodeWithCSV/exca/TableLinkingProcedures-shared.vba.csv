@@ -1,0 +1,342 @@
+1	0	Option Compare Database
+2	0	
+3	0	Option Explicit
+4	0	
+5	1	'******************************************************************************
+6	1	' This module was introduced in version 9 - its checks the table links and
+7	1	' deals with logging the user in so Access connects to SQL Server correctly
+8	1	'
+9	1	' This module is also used in all other interfaces. Only shared improvements
+10	1	' should be held here as it will be imported to other mdbs
+11	1	'******************************************************************************
+12	0	
+13	0	Function LogUserIn_OLD()
+14	1	'******************************************************************************
+15	1	'-->REDUNDANT _ REPLACED BY LOGUSERIN() KEPT FOR REFERENCE BY SAJ
+16	1	' When a user first tries to look at one of the tables SQL Server can throw back
+17	1	' the message "Login Failed for user (null). Reason: not associated with a trusted SQL server connection"
+18	3	' followed by a login box where the 'Use trusted connection' box must be unchecked before the login details
+19	1	' can be entered. This is confusing to users.
+20	1	'
+21	1	' To overcome this Access will obtain the users login details and by refreshing the link
+22	2	' on just one table will enable all table links to work successfully. Its doesn't store the login details
+23	1	' so it will always check on start up to facilitate different users.
+24	1	'
+25	2	' If the user doesn't login successfully the system will quit.
+26	1	'
+27	1	' If the user provides an invalid login via Access the SQL server login box will appear but without any confusing msg
+28	1	'
+29	1	' SAJ v. 9
+30	1	'******************************************************************************
+31	0	On Error GoTo err_LogUserIn_OLD
+32	0	
+33	0	Dim username, pwd, retval
+34	0	
+35	1	'prompt user for login name, two tries with different msgs before either looping to top or quiting
+36	0	getuser:
+37	0	    username = InputBox("Please enter your database LOGIN NAME:", "Login Name")
+38	1	    If username = "" Then 'either the entered blank or pressed Cancel
+39	0	        username = InputBox("The system cannot continue without your database login name. " & Chr(13) & Chr(13) & "Please enter your database LOGIN NAME below:", "Login Name")
+40	1	        If username = "" Then 'again no entry
+41	0	            retval = MsgBox("Sorry but the system cannot continue without a LOGIN NAME. Do you want to try again?", vbCritical + vbYesNo, "Login required")
+42	1	            If retval = vbYes Then 'try again, loop back up
+43	0	                GoTo getuser
+44	2	            Else 'no, don't try again so quit system
+45	0	                MsgBox "The system will now quit", vbCritical + vbOKOnly, "Invalid Login"
+46	0	                DoCmd.Quit acQuitSaveAll
+47	0	            End If
+48	0	        End If
+49	0	    End If
+50	0	    
+51	1	'prompt user for password, two tries with different msgs before either looping to top or quiting
+52	0	getpwd:
+53	0	    pwd = InputBox("Please enter your database PASSWORD:", "Password")
+54	1	    If pwd = "" Then 'either the entered blank or pressed Cancel
+55	0	        pwd = InputBox("The system cannot continue without your database password. " & Chr(13) & Chr(13) & "Please enter your database PASSWORD below:", "Password")
+56	1	        If pwd = "" Then 'again no entry
+57	0	            retval = MsgBox("Sorry but the system cannot continue without a PASSWORD. Do you want to try again?", vbCritical + vbYesNo, "Password required")
+58	1	            If retval = vbYes Then 'try again, loop back up
+59	0	                GoTo getpwd
+60	2	            Else 'no, don't try again so quit system
+61	0	                MsgBox "The system will now quit", vbCritical + vbOKOnly, "Invalid Login"
+62	0	                DoCmd.Quit acQuitSaveAll
+63	0	            End If
+64	0	        End If
+65	0	    End If
+66	0	
+67	0	
+68	1	'user login name and password obtained, now find the first linked table in the tables collection (ignoring local tables)
+69	1	' and refresh the link by adding on the UID and PWD
+70	0	Dim mydb As DAO.Database, I
+71	0	Dim tmptable As TableDef
+72	0	Set mydb = CurrentDb
+73	0	
+74	1	For I = 0 To mydb.TableDefs.Count - 1 'loop the tables collection
+75	0	    Set tmptable = mydb.TableDefs(I)
+76	0	             
+77	0	    If tmptable.Connect <> "" Then
+78	1	        'only deal with a table that is linked (not local)
+79	2	        'tmptable.Connect = ";DATABASE=" & g_datapath 'if its were to a file
+80	2	        'tmptable.Connect = tmptable.Connect & ";UID=" & username 'this will bring up the SQL server login box for pswd - better than previously as at least ready to recieve it
+81	0	        tmptable.Connect = tmptable.Connect & ";UID=" & username & ";PWD=" & pwd
+82	0	        tmptable.RefreshLink
+83	1	        Exit For 'only necessary for one table for Access to set up the correct link to SQL Server
+84	0	    End If
+85	0	            
+86	0	Next I
+87	0	    
+88	0	cleanup:
+89	0	    Set tmptable = Nothing
+90	0	    mydb.Close
+91	0	    Set mydb = Nothing
+92	0	    
+93	0	LogUserIn_OLD = True
+94	0	    
+95	0	Exit Function
+96	0	
+97	0	err_LogUserIn_OLD:
+98	0	    If Err.Number = 3059 Then
+99	1	        'operation cancelled by user - probably as login incorrect, sql server has asked for login as well and user pressed CANCEL
+100	0	        retval = MsgBox("Sorry but the login you have given is incorrect or the database/internet connection is not available. You cannot connect to the database. Do you wish to try logging in again?", vbCritical + vbYesNo, "Login Failure")
+101	0	        If retval = vbYes Then Resume
+102	0	    ElseIf Err.Number = 3151 Then
+103	3	        'ODBC--connection to 'xxxxx' failed.
+104	1	        'odbc name cannot be found on this machine - send off to function to deal with
+105	0	        AlterODBC
+106	0	    Else
+107	0	        MsgBox Err.Description & Chr(13) & Chr(13) & "The system will now quit", vbCritical, "Login Failure"
+108	0	    End If
+109	0	    LogUserIn_OLD = False
+110	0	    DoCmd.Quit
+111	0	End Function
+112	0	Function AlterODBC()
+113	0	Dim startstr, endstr, namestr
+114	1	    'simply tell the user and quit
+115	0	    If Err.Number = 3151 Then
+116	1	        'odbc connection failed
+117	0	        
+118	1	        startstr = InStr(Err.Description, "'")
+119	1	        endstr = InStr(startstr + 1, Err.Description, "'")
+120	0	        namestr = Mid(Err.Description, startstr + 1, endstr - startstr)
+121	0	        MsgBox "This system requires the ODBC connection: " & namestr & Chr(13) & Chr(13) & _
+122	0	                        "The error returned is: " & Err.Description & Chr(13) & Chr(13) & "Instructions of how " & _
+123	0	                        "to setup ths DSN can be found on the Web at http://catalsql.arch.cam.ac.uk/database/odbc.html" & _
+124	0	                        "", vbCritical, "The system cannot start"
+125	0	    End If
+126	0	Exit Function
+127	0	
+128	1	'OR deal with it!!
+129	0	Dim username, pwd, tblName, rstemp
+130	0	
+131	0	Dim mydb As DAO.Database, I
+132	0	Dim tmptable As TableDef
+133	0	Set mydb = CurrentDb
+134	0	
+135	0	
+136	1	For I = 0 To mydb.TableDefs.Count - 1 'loop the tables collection
+137	0	    Set tmptable = mydb.TableDefs(I)
+138	0	             
+139	0	    If tmptable.Connect <> "" Then
+140	1	        'only deal with a table that is linked (not local)
+141	2	        'tmptable.Connect = ";DATABASE=" & g_datapath 'if its were to a file
+142	2	        'tmptable.Connect = tmptable.Connect & ";UID=" & username 'this will bring up the SQL server login box for pswd - better than previously as at least ready to recieve it
+143	0	        tmptable.Connect = tmptable.Connect & ";UID=" & username & ";PWD=" & pwd
+144	0	        tmptable.RefreshLink
+145	1	        Exit For 'only necessary for one table for Access to set up the correct link to SQL Server
+146	0	    End If
+147	0	            
+148	0	Next I
+149	2	'For i = 0 To mydb.TableDefs.count - 1 'loop the tables collection
+150	1	'    Set tmptable = mydb.TableDefs(i)
+151	1	'
+152	1	'    If tmptable.Connect <> "" Then
+153	1	'        tblName = tmptable.Name
+154	1	'        On Error Resume Next
+155	1	'        Set rstemp = mydb.OpenRecordset(tblName)
+156	1	'        If Err <> 0 Then
+157	1	'            If Err.Number = 3151 Then
+158	2	'                'odbc connection failed
+159	2	'                startstr = InStr(Err.Description, "'")
+160	2	'                endstr = InStr(startstr + 1, Err.Description, "'")
+161	1	'                namestr = Mid(Err.Description, startstr + 1, endstr - startstr)
+162	1	'                MsgBox "This system requires the ODBC connection: " & namestr & Chr(13) & Chr(13) & _
+163	1	'                        "The error returned is: " & Err.Description & Chr(13) & Chr(13) & "Instructions of how " & _
+164	1	'                        "to setup ths DSN can be found on the Web at http://catalsql.arch.cam.ac.uk/database/odbc.html" & _
+165	1	'                        "", vbCritical, "The system cannot start"
+166	1	'                Exit For
+167	1	'            End If
+168	3	''            'wasp -> gcnox in upgr
+169	3	''            'Result = reattachtables(gcnox, "NOXDATA.MDB")
+170	3	''            ' Added this line as gcnox is no longer used due to the removal of the archive system.
+171	2	''            Result = reattachtables("NOXDATA.MDB")
+172	2	''            CheckTableAttachments = Result
+173	1	'        Else
+174	2	''            CheckTableAttachments = True
+175	1	'            rstemp.close
+176	1	'        End If
+177	1	'End If
+178	1	'Next i
+179	0	cleanup:
+180	0	    Set tmptable = Nothing
+181	0	    mydb.Close
+182	0	    Set mydb = Nothing
+183	0	End Function
+184	0	
+185	0	Function LogUserIn(username As String, pwd As String)
+186	1	'******************************************************************************
+187	1	' When a user first tries to look at one of the tables SQL Server can throw back
+188	1	' the message "Login Failed for user (null). Reason: not associated with a trusted SQL server connection"
+189	3	' followed by a login box where the 'Use trusted connection' box must be unchecked before the login details
+190	1	' can be entered. This is confusing to users.
+191	1	'
+192	1	' To overcome this Access will obtain the users login details and by refreshing the link
+193	2	' on just one table will enable all table links to work successfully. Its doesn't store the login details
+194	1	' so it will always check on start up to facilitate different users.
+195	1	'
+196	2	' If the user doesn't login successfully the system will quit.
+197	1	'
+198	1	' SAJ v. 9
+199	1	'******************************************************************************
+200	0	On Error GoTo err_LogUserIn
+201	0	
+202	0	Dim retval
+203	0	
+204	0	If username <> "" And pwd <> "" Then
+205	1	    'user login name and password obtained
+206	0	    Dim mydb As DAO.Database, I, errmsg, connStr
+207	0	    Dim tmptable As TableDef
+208	0	    Set mydb = CurrentDb
+209	0	    
+210	0	    Dim myq As QueryDef
+211	0	    Set myq = mydb.CreateQueryDef("")
+212	0	    connStr = ""
+213	0	    
+214	1	    'now find the first linked table in the tables collection (ignoring local tables)
+215	1	    'to get the connection string to the sql server DB
+216	1	    For I = 0 To mydb.TableDefs.Count - 1 'loop the tables collection
+217	0	         Set tmptable = mydb.TableDefs(I)
+218	0	             
+219	0	        If tmptable.Connect <> "" Then
+220	1	            'only deal with a table that is linked (not local)
+221	1	            'first check if the user login is valid -
+222	1	            'this querydef check comes from MSDN KB
+223	1	            'it will ensure the user details are valid and return a trappable error. This overcomes
+224	1	            'the problem with the refresh link that would make sql server bring up its own login if
+225	1	            'the refresh was done with invalid user details. By entering the login into the sql server
+226	1	            'login box the connection between what the user had entered into the access form
+227	1	            'and what sql server was using would be broken.
+228	0	            
+229	0	            If connStr = "" Then connStr = tmptable.Connect
+230	0	            
+231	1	            'new 2010
+232	0	            Forms![Excavation_Login]![lblMsg] = "System is contacting the server"
+233	0	            On Error Resume Next
+234	0	                myq.Connect = tmptable.Connect & ";UID=" & username & ";PWD=" & pwd
+235	2	                myq.ReturnsRecords = False 'don't waste resources bringing back records
+236	2	                myq.sql = "select [Unit Number] from [Exca: Unit Sheet] WHERE [Unit Number] = 1" 'this is a shared and core table so should always be avail, the record doesn't have to exist
+237	0	                myq.Execute
+238	0	            
+239	1	            If Err <> 0 Then 'the login deails are incorrect
+240	0	                GoTo err_LogUserIn
+241	0	            Else
+242	1	                'reset error trap
+243	0	                On Error GoTo err_LogUserIn:
+244	1	                ' the login is ok, so now try to refresh the link by adding on the UID and PWD
+245	2	                'tmptable.Connect = ";DATABASE=" & g_datapath 'if its were to a file
+246	2	                'tmptable.Connect = tmptable.Connect & ";UID=" & username 'this will bring up the SQL server login box for pswd - better than previously as at least ready to recieve it
+247	0	                
+248	1	                'new 2010
+249	0	                Forms![Excavation_Login]![lblMsg] = "System is refreshing the link to the server"
+250	0	                
+251	0	                tmptable.Connect = tmptable.Connect & ";UID=" & username & ";PWD=" & pwd
+252	0	                tmptable.RefreshLink
+253	0	                
+254	1	                'new 2010
+255	0	                Forms![Excavation_Login]![lblMsg] = "Refresh Complete"
+256	0	            End If
+257	0	            
+258	1	            Exit For 'only necessary for one table for Access to set up the correct link to SQL Server
+259	0	        End If
+260	0	            
+261	0	    Next I
+262	0	    
+263	0	Else
+264	1	    'somehow got here without username and pwd - catchall
+265	0	    MsgBox "Both a username and password are required to operate the system correctly. Please quit and restart the application.", vbCritical, "Login problem encountered"
+266	0	End If
+267	0	
+268	0	Forms![Excavation_Login]![lblMsg] = "Defing permissions"
+269	1	SetGeneralPermissions username, pwd, connStr 'requires more thought
+270	1	'if user enters invalid login sql server will ask for proper one and if its ok connect on that
+271	1	'and the link between the sql login and the access one is completely lost -****the querydef conn
+272	1	'intro above should mean they always enter valid logon
+273	0	LogUserIn = True
+274	0	
+275	0	cleanup:
+276	0	    myq.Close
+277	0	    Set myq = Nothing
+278	0	    Set tmptable = Nothing
+279	0	    mydb.Close
+280	0	    Set mydb = Nothing
+281	0	        
+282	0	Exit Function
+283	0	
+284	0	err_LogUserIn:
+285	0	    If Err.Number = 3059 Or Err.Number = 3151 Then
+286	1	        '3059 = operation cancelled by user - probably as login incorrect, sql server has asked for login as well and user pressed CANCEL
+287	1	        '3151 = covers all the errors that could happen if user login incorrect, odbc not exist or internet conn not on
+288	0	        errmsg = "Sorry but the system cannot log you into the database. There are three reasons this may have occurred:" & Chr(13) & Chr(13)
+289	0	        errmsg = errmsg & "1. Your login details have been entered incorrectly" & Chr(13) & Chr(13)
+290	0	        errmsg = errmsg & "2. There is no ODBC connection to the database setup on this computer." & Chr(13) & "    See http://www.catalhoyuk.com/database/odbc.html for details." & Chr(13) & Chr(13)
+291	0	        errmsg = errmsg & "3. Your computer is not connected to the Internet at this time." & Chr(13) & Chr(13)
+292	0	        errmsg = errmsg & "Do you wish to try logging in again?"
+293	0	        retval = MsgBox(errmsg, vbCritical + vbYesNo, "Login Failure")
+294	0	        If retval = vbYes Then
+295	1	            GoTo cleanup 'used to be resume before querydef intro, now just cleanup and leave so user can try again
+296	0	        Else
+297	2	            'user says they dont want to try logging in again, double check in case they didn't understand so tell them we are quitting!
+298	0	            retval = MsgBox("Are you really sure you want to quit and close the system?", vbCritical + vbYesNo, "Confirm System Closure")
+299	0	            If retval = vbNo Then
+300	2	                GoTo cleanup 'on 2nd thoughts the user doesn't want to quit so now just cleanup and leave so user can try again
+301	0	            Else
+302	0	                MsgBox "The system will now quit" & Chr(13) & Chr(13) & "The error reported was: " & Err.Description, vbCritical, "Login Failure"
+303	0	            End If
+304	0	        End If
+305	1	    'ElseIf Err.Number = 3151 Then
+306	4	    '    'ODBC--connection to 'xxxxx' failed.
+307	2	    '    'odbc name cannot be found on this machine - send off to function to deal with
+308	1	    '    AlterODBC
+309	0	    Else
+310	0	        MsgBox Err.Description & Chr(13) & Chr(13) & "The system will now quit", vbCritical, "Login Failure"
+311	0	    End If
+312	0	    LogUserIn = False
+313	0	    DoCmd.Quit acQuitSaveAll
+314	0	End Function
+315	0	Sub WriteOutTableNames()
+316	1	'*****************************************************************
+317	1	' this is an admin bit of code and not related to the functioning
+318	1	' of the system. It allows all the table names used by this DB to
+319	1	' be printed to the immediate win
+320	1	' SAJ
+321	1	'*****************************************************************
+322	0	Dim mydb As DAO.Database, I
+323	0	Dim tmptable As TableDef
+324	0	Set mydb = CurrentDb
+325	0	
+326	1	For I = 0 To mydb.TableDefs.Count - 1 'loop the tables collection
+327	0	    Set tmptable = mydb.TableDefs(I)
+328	0	    If InStr(tmptable.Name, "MSys") = 0 Then
+329	0	        Debug.Print tmptable.Name
+330	0	        If tmptable.Connect <> "" Then
+331	0	            Debug.Print "Linked"
+332	0	        Else
+333	0	            Debug.Print "Local"
+334	0	        End If
+335	0	    End If
+336	0	Next I
+337	0	cleanup:
+338	0	    Set tmptable = Nothing
+339	0	    mydb.Close
+340	0	    Set mydb = Nothing
+341	0	End Sub
+342	0	

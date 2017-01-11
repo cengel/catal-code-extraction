@@ -1,0 +1,125 @@
+1	0	Option Compare Database
+2	0	Sub adjust_and_standardize(original As Object, adjust As Object, standard As Object, PERCENT As Object, litres As Object)
+3	0	
+4	0	If Not IsNull(PERCENT) Then adjust = original * (100 / PERCENT)
+5	0	If Not IsNull(litres) Then standard = adjust / litres
+6	0	
+7	0	End Sub
+8	0	Sub back_to_main_Click()
+9	0	On Error GoTo Err_back_to_main_Click
+10	0	
+11	0	
+12	0	Exit_back_to_main_Click:
+13	0	    Exit Sub
+14	0	
+15	0	Err_back_to_main_Click:
+16	0	    MsgBox Err.Description
+17	0	    Resume Exit_back_to_main_Click
+18	0	    
+19	0	End Sub
+20	0	Sub adj_and_stand_4_mm_Click()
+21	0	On Error GoTo Err_adj_and_stand_4_mm_Click
+22	0	
+23	0	Dim litres1 As Object, adjusted As Object, standard As Object
+24	0	Dim detail_form As Object, standard_form As Object
+25	0	
+26	0	Set litres1 = Me![Vol in Litres]
+27	0	Set detail_form = Forms![Bots: Heavy Residue Phase II]![Bots: Heavy Residue II subform]
+28	0	Set standard_form = Forms![Bots: Heavy Residue Phase II]![Bots: Heavy Residue II standardized subform]
+29	0	
+30	0	adjust_and_standardize detail_form![4 wood wt], standard_form![4 wood adj wt], standard_form![4 wood stand wt], detail_form![4 wood perc sort], litres1
+31	0	adjust_and_standardize detail_form![4 cereal wt], standard_form![4 cereal adj wt], standard_form![4 cereal stand wt], detail_form![4 cereal perc sort], litres1
+32	0	adjust_and_standardize detail_form![4 chaff wt], standard_form![4 CHAFF adj wt], standard_form![4 chaff stand wt], detail_form![4 CHAFF perc sort], litres1
+33	0	
+34	0	Exit_adj_and_stand_4_mm_Click:
+35	0	    Exit Sub
+36	0	
+37	0	Err_adj_and_stand_4_mm_Click:
+38	0	    MsgBox Err.Description
+39	0	    Resume Exit_adj_and_stand_4_mm_Click
+40	0	    
+41	0	End Sub
+42	0	
+43	0	
+44	0	Sub calc_Click()
+45	0	On Error GoTo Err_calc_Click
+46	0	
+47	0	    Dim stDocName As String
+48	0	    Dim stLinkCriteria As String
+49	0	
+50	0	    stDocName = "Bots98: Light Ph2 Standardize pop-up"
+51	0	    
+52	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+53	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+54	0	
+55	0	Exit_calc_Click:
+56	0	    Exit Sub
+57	0	
+58	0	Err_calc_Click:
+59	0	    MsgBox Err.Description
+60	0	    Resume Exit_calc_Click
+61	0	    
+62	0	End Sub
+63	0	Sub calculate2_Click()
+64	0	On Error GoTo Err_calculate2_Click
+65	0	
+66	0	    Dim stDocName As String
+67	0	    Dim stLinkCriteria As String
+68	0	
+69	0	    stDocName = "Bots98: Light Ph2 Stand pop-up"
+70	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+71	0	
+72	0	Exit_calculate2_Click:
+73	0	    Exit Sub
+74	0	
+75	0	Err_calculate2_Click:
+76	0	    MsgBox Err.Description
+77	0	    Resume Exit_calculate2_Click
+78	0	    
+79	0	End Sub
+80	0	
+81	0	Private Sub Command127_Click()
+82	0	
+83	0	End Sub
+84	0	
+85	0	
+86	0	Sub Calculate_Sums_Click()
+87	0	On Error GoTo Err_Calculate_Sums_Click
+88	0	
+89	0	    Dim stDocName As String
+90	0	    Dim stLinkCriteria As String
+91	0	
+92	0	    stDocName = "Bots98: Light Ph3 Standardize Pop-up"
+93	0	    
+94	4	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "' AND [Material]=" & "'" & Me![Material] & "'"
+95	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+96	0	
+97	0	Exit_Calculate_Sums_Click:
+98	0	    Exit Sub
+99	0	
+100	0	Err_Calculate_Sums_Click:
+101	0	    MsgBox Err.Description
+102	0	    Resume Exit_Calculate_Sums_Click
+103	0	    
+104	0	End Sub
+105	0	Sub back_Click()
+106	0	On Error GoTo Err_back_Click
+107	0	
+108	0	    Dim stDocName As String
+109	0	    Dim stLinkCriteria As String, findmatch As String
+110	0	
+111	0	    stDocName = "Bots98: Light Residue Phase 2"
+112	0	    
+113	3	    'stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+114	0	    findmatch = Me![GID]
+115	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+116	0	    DoCmd.FindRecord findmatch, , True, , True
+117	0	    
+118	0	Exit_back_Click:
+119	0	    Exit Sub
+120	0	
+121	0	Err_back_Click:
+122	0	    MsgBox Err.Description
+123	0	    Resume Exit_back_Click
+124	0	    
+125	0	End Sub

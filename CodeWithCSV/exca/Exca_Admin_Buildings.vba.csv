@@ -1,0 +1,192 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	0	Option Explicit
+3	1	'**************************************************
+4	1	' This form is new in v9.2 - SAJ
+5	1	'**************************************************
+6	0	
+7	0	
+8	0	
+9	0	
+10	0	Private Sub cmdAddNew_Click()
+11	1	'v9.2 SAJ - add a new record
+12	0	On Error GoTo err_cmdAddNew_Click
+13	0	
+14	0	    DoCmd.RunCommand acCmdRecordsGoToNew
+15	0	
+16	0	Exit Sub
+17	0	
+18	0	err_cmdAddNew_Click:
+19	0	    Call General_Error_Trap
+20	0	    Exit Sub
+21	0	End Sub
+22	0	
+23	0	Private Sub cboFind_Click()
+24	0	On Error GoTo err_cboFind
+25	0	    
+26	0	    If Me![cboFind] <> "" Then
+27	0	        DoCmd.GoToControl "txtBuildingNumber"
+28	0	        DoCmd.FindRecord Me![cboFind]
+29	0	   
+30	0	    End If
+31	0	Exit Sub
+32	0	
+33	0	err_cboFind:
+34	0	    Call General_Error_Trap
+35	0	    Exit Sub
+36	0	End Sub
+37	0	
+38	0	Private Sub Excavation_Click()
+39	1	'v9.2 SAJ - close the form
+40	0	    DoCmd.Close acForm, Me.Name
+41	0	End Sub
+42	0	
+43	0	
+44	0	
+45	0	Private Sub cmdEdit_Click()
+46	1	'v9.2 SAJ - check if user can edit this record
+47	1	' The level value is used in 3 potential places on the Space Sheet - certain level
+48	1	' Uncertain level start and uncertain level end so must check all these values to see
+49	1	' if this level is used before allow edit
+50	1	' At present not offering global edits - this can be extended to offer this if required
+51	0	
+52	0	On Error GoTo Err_cmdEdit_Click
+53	0	
+54	0	Dim checkValidAction, checkValidAction2, checkValidAction3, retval
+55	0	
+56	1	    'check space sheet level field
+57	0	    checkValidAction = CheckIfLOVValueUsed("Exca:LevelLOV", "Level", Me![txtLevel], "Exca: Space Sheet", "Space Number", "Level", "edit")
+58	0	    
+59	0	    If checkValidAction = "ok" Then
+60	2	        ''check space sheet uncertain level start field
+61	0	        checkValidAction2 = CheckIfLOVValueUsed("Exca:LevelLOV", "Level", Me![txtLevel], "Exca: Space Sheet", "Space Number", "UncertainLevelStart", "edit")
+62	0	        
+63	0	        If checkValidAction2 = "ok" Then
+64	1	        'check space sheet uncertain level end field
+65	0	            checkValidAction3 = CheckIfLOVValueUsed("Exca:LevelLOV", "Level", Me![txtLevel], "Exca: Space Sheet", "Space Number", "UncertainLevelEnd", "edit")
+66	0	        
+67	0	            If checkValidAction3 = "ok" Then
+68	1	                'edit action can go ahead - at present simply offer an input box for this
+69	0	                retval = InputBox("No records refer to this Level (" & Me![txtLevel] & ") so an edit is allowed." & Chr(13) & Chr(13) & "Please enter the edited Level that you wish to replace this entry with:", "Enter edited Level")
+70	0	                If retval <> "" Then
+71	0	                    Me![txtLevel] = retval
+72	0	                End If
+73	0	                
+74	0	            ElseIf checkValidAction3 = "fail" Then
+75	0	                MsgBox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+76	0	            Else
+77	0	                MsgBox checkValidAction3, vbExclamation, "Action Report"
+78	0	            End If
+79	0	        ElseIf checkValidAction2 = "fail" Then
+80	0	            MsgBox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+81	0	        Else
+82	0	            MsgBox checkValidAction2, vbExclamation, "Action Report"
+83	0	        End If
+84	0	        
+85	0	    ElseIf checkValidAction = "fail" Then
+86	0	        MsgBox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+87	0	    Else
+88	0	        MsgBox checkValidAction, vbExclamation, "Action Report"
+89	0	    End If
+90	0	    
+91	0	Exit_cmdEdit_Click:
+92	0	    Exit Sub
+93	0	
+94	0	Err_cmdEdit_Click:
+95	0	    Call General_Error_Trap
+96	0	    Exit Sub
+97	0	    
+98	0	End Sub
+99	0	
+100	0	Private Sub cmdDelete_Click()
+101	1	'v9.2 SAJ - allow deletion of record with warning
+102	0	
+103	0	On Error GoTo Err_cmdDelete_Click
+104	0	
+105	0	Dim BUnit, BFeature
+106	0	Dim retval, msg, msg1
+107	0	
+108	0	retval = MsgBox("You have selected to delete Building number: " & Me![txtBuildingNumber] & ". The system will now check what additional data exists for this Building and will prompt you again before deleting it." & Chr(13) & Chr(13) & "Are you sure you want to continue?", vbCritical + vbYesNo, "Confirm Action")
+109	0	If retval = vbYes Then
+110	0	    
+111	1	    'check  feature to units
+112	0	    BUnit = AdminDeletionCheck("Exca: Units in Buildings", "In_Building", Me![txtBuildingNumber], "Related to Unit", "Unit")
+113	0	    
+114	1	    'check Feature in spaces
+115	0	    BFeature = AdminDeletionCheck("Exca: Features in Buildings", "In_Building", Me![txtBuildingNumber], "Related to Feature", "Feature")
+116	0	    
+117	0	    If BUnit <> "" Then msg = msg & BUnit & "; "
+118	0	    If BFeature <> "" Then msg = msg & BFeature & "; "
+119	0	    
+120	0	    If msg = "" Then
+121	0	        msg = "This Building can safely be deleted."
+122	0	    Else
+123	0	        msg1 = "This Building has the following relationships that will also be removed by the deletion - " & Chr(13) & Chr(13)
+124	0	        msg = msg1 & msg
+125	0	    End If
+126	0	    
+127	0	    msg = msg & Chr(13) & Chr(13) & "Are you quite sure that you want to permanently delete Building " & Me![txtBuildingNumber] & "?"
+128	0	    retval = MsgBox(msg, vbCritical + vbYesNoCancel, "Confirm Permanent Deletion")
+129	0	    If retval = vbYes Then
+130	0	        On Error Resume Next
+131	0	        Dim mydb As DAO.Database, wrkdefault As Workspace
+132	0	        Set wrkdefault = DBEngine.Workspaces(0)
+133	0	        Set mydb = CurrentDb
+134	0	        
+135	1	        ' Start of outer transaction.
+136	0	        wrkdefault.BeginTrans
+137	0	        
+138	0	        If BUnit <> "" Then Call DeleteARecord("Exca: Units in Buildings", "In_Building", Me![txtBuildingNumber], False, mydb)
+139	0	        If BFeature <> "" Then Call DeleteARecord("Exca: Features in Buildings", "In_Building", Me![txtBuildingNumber], False, mydb)
+140	0	        
+141	0	        Call DeleteARecord("Exca: Building Details", "Number", Me![txtBuildingNumber], False, mydb)
+142	0	    
+143	0	        If Err.Number = 0 Then
+144	0	            wrkdefault.CommitTrans
+145	0	            MsgBox "Deletion has been successful"
+146	0	            Me.Requery
+147	0	            Me![cboFind].Requery
+148	0	        Else
+149	0	            wrkdefault.Rollback
+150	0	            MsgBox "A problem has occured and the deletion has been cancelled. The error message is: " & Err.Description
+151	0	        End If
+152	0	
+153	0	        mydb.Close
+154	0	        Set mydb = Nothing
+155	0	        wrkdefault.Close
+156	0	        Set wrkdefault = Nothing
+157	0	    Else
+158	0	        MsgBox "Deletion cancelled", vbInformation, "Action Cancelled"
+159	0	    
+160	0	    End If
+161	0	End If
+162	0	    
+163	0	    
+164	0	Exit_cmdDelete_Click:
+165	0	    Exit Sub
+166	0	
+167	0	Err_cmdDelete_Click:
+168	0	    Call General_Error_Trap
+169	0	    Exit Sub
+170	0	    
+171	0	End Sub
+172	0	
+173	0	Private Sub Form_Delete(Cancel As Integer)
+174	0	Call cmdDelete_Click
+175	0	End Sub
+176	0	
+177	0	Private Sub Form_Open(Cancel As Integer)
+178	1	'v9.2 SAJ - only adminstrators are allowed in here
+179	0	On Error GoTo err_Form_Open
+180	0	
+181	0	    Dim permiss
+182	0	    permiss = GetGeneralPermissions
+183	0	    If permiss <> "ADMIN" Then
+184	0	        MsgBox "Sorry but only Administrators have access to this form"
+185	0	        DoCmd.Close acForm, Me.Name
+186	0	    End If
+187	0	Exit Sub
+188	0	
+189	0	err_Form_Open:
+190	0	    Call General_Error_Trap
+191	0	    Exit Sub
+192	0	End Sub

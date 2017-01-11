@@ -1,0 +1,187 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	Dim toShow
+4	0	
+5	0	
+6	0	Private Sub cboSelect_AfterUpdate()
+7	0	On Error GoTo err_cboSelect
+8	0	
+9	0	If toShow = "unit number" Then
+10	0	    If Me![txtToFind] <> "" And Not IsNull(Me![txtToFind]) Then
+11	0	        Me![txtToFind] = Me![txtToFind] & " OR "
+12	0	    End If
+13	0	
+14	1	    'Me![txtToFind] = Me![txtToFind] & "[Exca: Unit sheet with Relationships].[Unit Number] = " & Me!cboSelect
+15	0	    Me![txtToFind] = Me![txtToFind] & "[unitnumber] = " & Me!cboSelect
+16	0	ElseIf toShow = "MellaartID" Or toShow = "ID Number" Or toShow = "Object Form" Then
+17	0	    If Me![txtToFind] <> "" And Not IsNull(Me![txtToFind]) Then
+18	0	        Me![txtToFind] = Me![txtToFind] & " OR "
+19	0	    End If
+20	0	
+21	1	    'Me![txtToFind] = Me![txtToFind] & "[Exca: Unit sheet with Relationships].[Unit Number] = " & Me!cboSelect
+22	2	    Me![txtToFind] = Me![txtToFind] & "[" & toShow & "] = '" & Me!cboSelect & "'"
+23	0	
+24	0	Else
+25	1	    'If Me!cboSelect <> "" Then
+26	1	    '    If Me![txtToFind] = "" Or IsNull(Me![txtToFind]) Then Me![txtToFind] = ","
+27	1	    '    Me![txtToFind] = Me![txtToFind] & Me!cboSelect & ","
+28	1	    'End If
+29	0	    If Me!cboSelect <> "" Then
+30	0	        If Me![txtToFind] <> "" And Not IsNull(Me![txtToFind]) Then Me![txtToFind] = Me![txtToFind] & " OR"
+31	2	        Me![txtToFind] = Me![txtToFind] & "[" & toShow & "] LIKE '%%," & Me!cboSelect & ",%%'"
+32	0	    End If
+33	0	End If
+34	0	Me![cboSelect] = ""
+35	0	DoCmd.GoToControl "cmdOK"
+36	0	Exit Sub
+37	0	
+38	0	err_cboSelect:
+39	0	    Call General_Error_Trap
+40	0	    Exit Sub
+41	0	End Sub
+42	0	
+43	0	
+44	0	
+45	0	Private Sub cmdCancel_Click()
+46	0	On Error GoTo err_cmdCancel
+47	0	    DoCmd.Close acForm, "frm_popsearch"
+48	0	Exit Sub
+49	0	
+50	0	err_cmdCancel:
+51	0	    Call General_Error_Trap
+52	0	    Exit Sub
+53	0	End Sub
+54	0	
+55	0	Private Sub cmdClear_Click()
+56	0	On Error GoTo err_cmdClear
+57	0	    Me![txtToFind] = ""
+58	0	    Me![cboSelect] = ""
+59	0	Exit Sub
+60	0	
+61	0	err_cmdClear:
+62	0	    Call General_Error_Trap
+63	0	    Exit Sub
+64	0	End Sub
+65	0	
+66	0	Private Sub cmdOK_Click()
+67	0	On Error GoTo err_cmdOK
+68	1	    Select Case toShow 'toshow is a module level variable that is set in on Open depending on the openargs
+69	0	        Case "building"
+70	0	            Forms![Frm_Search]![txtBuildingNumbers] = Me![txtToFind]
+71	0	        Case "spaces"
+72	0	            Forms![Frm_Search]![txtSpaceNumbers] = Me![txtToFind]
+73	0	        Case "features"
+74	0	            Forms![Frm_Search]![txtFeatureNumbers] = Me![txtToFind]
+75	0	        Case "MellaartLevelCertain"
+76	0	            Forms![Frm_Search]![txtLevels] = Me![txtToFind]
+77	0	        Case "HodderLevel"
+78	0	            Forms![Frm_Search]![txtHodderLevel] = Me![txtToFind]
+79	0	        Case "unit number"
+80	0	            Forms![Frm_Search]![txtUnitNumbers] = Me![txtToFind]
+81	0	         Case "ID number"
+82	0	            Forms![Frm_Search]![txtFigurineID] = Me![txtToFind]
+83	0	        Case "MellaartID"
+84	0	            Forms![Frm_Search]![txtMellID] = Me![txtToFind]
+85	0	        Case "ObjectTypes"
+86	0	             Forms![Frm_Search]![txtObjectType] = Me![txtToFind]
+87	0	        Case "Object Form"
+88	0	             Forms![Frm_Search]![txtObjectForm] = Me![txtToFind]
+89	0	        Case "FigForms"
+90	0	             Forms![Frm_Search]![txtForm] = Me![txtToFind]
+91	0	        Case "FormTypes"
+92	0	             Forms![Frm_Search]![txtFormType] = Me![txtToFind]
+93	0	        Case "Quadruped"
+94	0	             Forms![Frm_Search]![txtQuadruped] = Me![txtToFind]
+95	0	        End Select
+96	0	
+97	0	DoCmd.Close acForm, "frm_popsearch"
+98	0	Exit Sub
+99	0	
+100	0	err_cmdOK:
+101	0	    Call General_Error_Trap
+102	0	    Exit Sub
+103	0	End Sub
+104	0	
+105	0	Private Sub Form_Open(Cancel As Integer)
+106	0	On Error GoTo err_open
+107	0	Dim existing, colonpos
+108	0	    If Not IsNull(Me.OpenArgs) Then
+109	1	        'MsgBox Me.OpenArgs
+110	0	        toShow = LCase(Me.OpenArgs)
+111	0	        colonpos = InStr(toShow, ";")
+112	0	        
+113	0	        If colonpos > 0 Then
+114	1	            'if there is a ; then this means there is some existing criteria to extract from openargs
+115	0	            existing = Right(toShow, Len(toShow) - colonpos)
+116	1	            'MsgBox existing
+117	0	            toShow = Left(toShow, colonpos - 1)
+118	0	        End If
+119	0	        
+120	0	        Select Case toShow
+121	0	        Case "building"
+122	0	            Me![lblTitle].Caption = "Select Building Number"
+123	0	            Me![cboSelect].RowSource = "Select [Number] from [Exca: Building Details];"
+124	0	            If existing <> "" Then Me![txtToFind] = existing
+125	0	        Case "spaces"
+126	0	            Me![lblTitle].Caption = "Select Space Number"
+127	0	            Me![cboSelect].RowSource = "Select [Space Number] from [Exca: Space Sheet];"
+128	0	            If existing <> "" Then Me![txtToFind] = existing
+129	0	        Case "features"
+130	0	            Me![lblTitle].Caption = "Select Feature Number"
+131	0	            Me![cboSelect].RowSource = "Select [Feature Number] from [Exca: Features];"
+132	0	            If existing <> "" Then Me![txtToFind] = existing
+133	0	        Case "MellaartlevelCertain"
+134	0	            Me![lblTitle].Caption = "Select Mellaart Level"
+135	0	            Me![cboSelect].RowSource = "Select [Level] from [Exca:LevelLOV];"
+136	0	            If existing <> "" Then Me![txtToFind] = existing
+137	0	        Case "Hodderlevel"
+138	0	            Me![lblTitle].Caption = "Select Hodder Level"
+139	2	            Me![cboSelect].RowSource = "SELECT DISTINCT [Exca: Space Sheet].HodderLevel FROM [Exca: Space Sheet] WHERE ((([Exca: Space Sheet].HodderLevel) <> '')) ORDER BY [Exca: Space Sheet].HodderLevel;"
+140	0	            If existing <> "" Then Me![txtToFind] = existing
+141	0	        Case "unit number"
+142	0	            Me![lblTitle].Caption = "Select Unit Number"
+143	0	            Me![cboSelect].RowSource = "Select DISTINCT [unitnumber] from [fig_maindata] WHERE [unitnumber] <> null ORDER BY [unitnumber];"
+144	0	            If existing <> "" Then Me![txtToFind] = existing
+145	0	         Case "ID number"
+146	0	            Me![lblTitle].Caption = "Select Figurine ID"
+147	0	            Me![cboSelect].RowSource = "Select DISTINCT [id number] from [fig_maindata] WHERE [id number] <> null ORDER BY [id number];"
+148	0	            If existing <> "" Then Me![txtToFind] = existing
+149	0	        Case "MellaartID"
+150	0	            Me![lblTitle].Caption = "Select Mellaart ID"
+151	0	            Me![cboSelect].RowSource = "Select DISTINCT [Mellaartid] from [fig_maindata] WHERE [Mellaartid] <> null ORDER BY [mellaartid];"
+152	0	            If existing <> "" Then Me![txtToFind] = existing
+153	0	        Case "ObjectTypes"
+154	0	            Me![lblTitle].Caption = "Select Object Type"
+155	0	            Me![cboSelect].RowSource = "Select DISTINCT [ObjectType] from [fig_objecttypes] ORDER BY [ObjectType];"
+156	0	            If existing <> "" Then Me![txtToFind] = existing
+157	0	        Case "Object Form"
+158	0	            Me![lblTitle].Caption = "Select Object Form"
+159	0	            Me![cboSelect].RowSource = "Select DISTINCT [Object Form] from [fig_maindata] ORDER BY [Object form];"
+160	0	            If existing <> "" Then Me![txtToFind] = existing
+161	0	        Case "FigForms"
+162	0	            Me![lblTitle].Caption = "Select Form"
+163	0	            Me![cboSelect].RowSource = "Select DISTINCT [Form] from [fig_forms] ORDER BY [Form];"
+164	0	            If existing <> "" Then Me![txtToFind] = existing
+165	0	        Case "FormTypes"
+166	0	            Me![lblTitle].Caption = "Select Form Type"
+167	0	            Me![cboSelect].RowSource = "Select DISTINCT [FormType] from [fig_formtypes] ORDER BY [FormType];"
+168	0	            If existing <> "" Then Me![txtToFind] = existing
+169	0	        Case "Quadruped"
+170	0	            Me![lblTitle].Caption = "Select Quadruped"
+171	0	            Me![cboSelect].RowSource = "Select DISTINCT [Quadruped] from [fig_quadruped] ORDER BY [Quadruped];"
+172	0	            If existing <> "" Then Me![txtToFind] = existing
+173	0	        End Select
+174	0	        
+175	0	        Me.Refresh
+176	0	    End If
+177	0	
+178	0	
+179	0	
+180	0	Exit Sub
+181	0	
+182	0	err_open:
+183	0	    Call General_Error_Trap
+184	0	    Exit Sub
+185	0	End Sub
+186	0	
+187	0	

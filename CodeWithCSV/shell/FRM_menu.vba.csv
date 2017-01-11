@@ -1,0 +1,59 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdAdmin_Click()
+5	0	On Error GoTo err_cmdAdmin
+6	0	    DoCmd.OpenForm "FRM_ADMIN_SPECIES_LOV", acNormal
+7	0	Exit Sub
+8	0	
+9	0	err_cmdAdmin:
+10	0	    MsgBox "An error has occured: " & Err.DESCRIPTION
+11	0	    Exit Sub
+12	0	End Sub
+13	0	
+14	0	Private Sub cmdClose_Click()
+15	0	On Error GoTo err_close
+16	0	    DoCmd.Quit acQuitSaveAll
+17	0	Exit Sub
+18	0	
+19	0	err_close:
+20	0	    MsgBox "An error has occured: " & Err.DESCRIPTION
+21	0	    Exit Sub
+22	0	End Sub
+23	0	
+24	0	Private Sub cmdData_Click()
+25	0	On Error GoTo err_data
+26	0	
+27	0	    DoCmd.OpenForm "FRM_SHELL_LEVEL_ONE", acNormal
+28	0	Exit Sub
+29	0	
+30	0	err_data:
+31	0	    Call General_Error_Trap
+32	0	    Exit Sub
+33	0	End Sub
+34	0	
+35	0	
+36	0	Private Sub cmdField_Click()
+37	1	'open data entry form
+38	0	On Error GoTo err_cmdField
+39	0	
+40	0	    DoCmd.OpenForm "FRM_SHELL_LEVEL_ONE"
+41	0	    DoCmd.Close acForm, Me.Name
+42	0	Exit Sub
+43	0	
+44	0	err_cmdField:
+45	0	    Call General_Error_Trap
+46	0	    Exit Sub
+47	0	
+48	0	End Sub
+49	0	
+50	0	Private Sub cmdTypeLetter_Click()
+51	0	On Error GoTo err_tl
+52	0	
+53	0	    DoCmd.OpenForm "FRM_ADMIN_Type_Letter", acNormal
+54	0	Exit Sub
+55	0	
+56	0	err_tl:
+57	0	    Call General_Error_Trap
+58	0	    Exit Sub
+59	0	End Sub

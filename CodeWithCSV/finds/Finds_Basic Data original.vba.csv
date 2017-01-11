@@ -1,0 +1,182 @@
+1	0	Option Compare Database
+2	0	
+3	0	
+4	0	Private Sub Update_GID()
+5	0	Me![GID] = Me![Unit] & "." & Me![Find Number]
+6	1	'Me.Refresh
+7	0	End Sub
+8	0	
+9	0	Private Sub Find_Number_AfterUpdate()
+10	0	Update_GID
+11	0	Forms![Finds: Basic Data].Refresh
+12	0	End Sub
+13	0	
+14	0	Private Sub Find_Number_Change()
+15	0	Update_GID
+16	0	End Sub
+17	0	
+18	0	Private Sub Form_Current()
+19	0	
+20	0	If Me![Conservation Ref] <> nil Then
+21	0	 Me![conservation].Enabled = True
+22	0	 Else
+23	0	 Me![conservation].Enabled = False
+24	0	End If
+25	0	 
+26	0	
+27	0	End Sub
+28	0	
+29	0	Private Sub Unit_AfterUpdate()
+30	0	Update_GID
+31	0	Forms![Finds: Basic Data].Refresh
+32	0	End Sub
+33	0	
+34	0	
+35	0	Private Sub Unit_Change()
+36	0	Update_GID
+37	0	End Sub
+38	0	
+39	0	
+40	0	Private Sub Unit_Enter()
+41	0	Update_GID
+42	0	End Sub
+43	0	
+44	0	
+45	0	Sub first_Click()
+46	0	On Error GoTo Err_first_Click
+47	0	
+48	0	
+49	0	    DoCmd.GoToRecord , , acFirst
+50	0	
+51	0	Exit_first_Click:
+52	0	    Exit Sub
+53	0	
+54	0	Err_first_Click:
+55	0	    MsgBox Err.Description
+56	0	    Resume Exit_first_Click
+57	0	    
+58	0	End Sub
+59	0	Sub prev_Click()
+60	0	On Error GoTo Err_prev_Click
+61	0	
+62	0	
+63	0	    DoCmd.GoToRecord , , acPrevious
+64	0	
+65	0	Exit_prev_Click:
+66	0	    Exit Sub
+67	0	
+68	0	Err_prev_Click:
+69	0	    MsgBox Err.Description
+70	0	    Resume Exit_prev_Click
+71	0	    
+72	0	End Sub
+73	0	Sub next_Click()
+74	0	On Error GoTo Err_next_Click
+75	0	
+76	0	
+77	0	    DoCmd.GoToRecord , , acNext
+78	0	
+79	0	Exit_next_Click:
+80	0	    Exit Sub
+81	0	
+82	0	Err_next_Click:
+83	0	    MsgBox Err.Description
+84	0	    Resume Exit_next_Click
+85	0	    
+86	0	End Sub
+87	0	Sub last_Click()
+88	0	On Error GoTo Err_last_Click
+89	0	
+90	0	
+91	0	    DoCmd.GoToRecord , , acLast
+92	0	
+93	0	Exit_last_Click:
+94	0	    Exit Sub
+95	0	
+96	0	Err_last_Click:
+97	0	    MsgBox Err.Description
+98	0	    Resume Exit_last_Click
+99	0	    
+100	0	End Sub
+101	0	Sub new_Click()
+102	0	On Error GoTo Err_new_Click
+103	0	
+104	0	
+105	0	    DoCmd.GoToRecord , , acNewRec
+106	0	
+107	0	Exit_new_Click:
+108	0	    Exit Sub
+109	0	
+110	0	Err_new_Click:
+111	0	    MsgBox Err.Description
+112	0	    Resume Exit_new_Click
+113	0	    
+114	0	End Sub
+115	0	Sub closeCommand45_Click()
+116	0	On Error GoTo Err_closeCommand45_Click
+117	0	
+118	0	
+119	0	    DoCmd.Close
+120	0	
+121	0	Exit_closeCommand45_Click:
+122	0	    Exit Sub
+123	0	
+124	0	Err_closeCommand45_Click:
+125	0	    MsgBox Err.Description
+126	0	    Resume Exit_closeCommand45_Click
+127	0	    
+128	0	End Sub
+129	0	Sub find_Click()
+130	0	On Error GoTo Err_find_Click
+131	0	
+132	0	
+133	0	    Screen.PreviousControl.SetFocus
+134	0	    GID.SetFocus
+135	0	    DoCmd.DoMenuItem acFormBar, acEditMenu, 10, , acMenuVer70
+136	0	
+137	0	Exit_find_Click:
+138	0	    Exit Sub
+139	0	
+140	0	Err_find_Click:
+141	0	    MsgBox Err.Description
+142	0	    Resume Exit_find_Click
+143	0	    
+144	0	End Sub
+145	0	Sub cons_Click()
+146	0	On Error GoTo Err_cons_Click
+147	0	
+148	0	    Dim stDocName As String
+149	0	    Dim stLinkCriteria As String
+150	0	
+151	0	    stDocName = "Conserv: Basic Record"
+152	0	    
+153	2	    stLinkCriteria = "[Conserv: Basic Record.GID]=" & "'" & Me![GID] & "'"
+154	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+155	0	
+156	0	Exit_cons_Click:
+157	0	    Exit Sub
+158	0	
+159	0	Err_cons_Click:
+160	0	    MsgBox Err.Description
+161	0	    Resume Exit_cons_Click
+162	0	    
+163	0	End Sub
+164	0	Sub conservation_Click()
+165	0	On Error GoTo Err_conservation_Click
+166	0	
+167	0	    Dim stDocName As String
+168	0	    Dim stLinkCriteria As String
+169	0	
+170	0	    stDocName = "Conserv: Basic Record"
+171	0	    
+172	2	    stLinkCriteria = "[GID1]=" & "'" & Me![GID] & "'"
+173	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+174	0	
+175	0	Exit_conservation_Click:
+176	0	    Exit Sub
+177	0	
+178	0	Err_conservation_Click:
+179	0	    MsgBox Err.Description
+180	0	    Resume Exit_conservation_Click
+181	0	    
+182	0	End Sub

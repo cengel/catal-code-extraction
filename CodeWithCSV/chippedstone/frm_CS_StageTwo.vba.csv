@@ -1,0 +1,669 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	Private Sub UpdateGID()
+4	1	'this is called by this form to update the GID field if either the
+5	1	'Unit, find letter or number fields are altered
+6	1	' SAJ
+7	0	On Error GoTo err_UpdateGID
+8	0	
+9	1	'get old GID before update
+10	0	Dim oldGID
+11	0	oldGID = Me![GID]
+12	0	
+13	1	'update GID to new values
+14	0	 Me![GID] = [Forms]![frm_CS_stagetwo]![Unit] & "." & [Forms]![frm_CS_stagetwo]![Letter] & [Forms]![frm_CS_stagetwo]![Number]
+15	0	    
+16	2	 '2010 - this wasn't updating the subtable! Now make sure all fields in subtable updated
+17	0	Me![frm_subform_category].Form![GID] = Me![GID]
+18	0	If Not IsNull(Me![Unit]) Then Me![frm_subform_category].Form![Unit] = Me![Unit]
+19	0	If Not IsNull(Me![LetterCode]) Then Me![frm_subform_category].Form![LetterCode] = Me![LetterCode]
+20	0	If Not IsNull(Me![FindNumber]) Then Me![frm_subform_category].Form![FindNumber] = Me![FindNumber]
+21	0	
+22	1	'and make sure new 2010 flint detail sub table also update
+23	0	 Dim flintdetail, sql
+24	2	flintdetail = DLookup("[GID]", "[ChippedStone_StageTwo_Data_FlintDetail]", "[GID] = '" & oldGID & "'")
+25	0	    If Not IsNull(flintdetail) Then
+26	1	        'present so must update values
+27	6	        sql = "UPDATE [ChippedStone_StageTwo_Data_FlintDetail] SET [Unit] = " & [Forms]![frm_CS_stagetwo]![Unit] & ", [Lettercode] ='" & [Forms]![frm_CS_stagetwo]![Letter] & "', [FindNumber] =" & [Forms]![frm_CS_stagetwo]![Number] & ", [GID] ='" & Me![GID] & "' WHERE [GID] = '" & oldGID & "';"
+28	0	        
+29	0	        DoCmd.RunSQL sql
+30	0	    End If
+31	0	
+32	0	Exit Sub
+33	0	
+34	0	err_UpdateGID:
+35	0	    Call General_Error_Trap
+36	0	    Exit Sub
+37	0	
+38	0	End Sub
+39	0	Private Sub cboCategory_AfterUpdate()
+40	0	On Error GoTo err_cbocategory
+41	0	
+42	0	Dim retVal, checknum, sql
+43	0	Me![frm_subform_category].Visible = True
+44	0	If IsNull(Me![frm_subform_category]![GID]) Then
+45	1	    'this record has no blade or core specific data so can allow alteration without a problem
+46	0	    
+47	0	    If Me![cboCategory] = "Blade/Flake" Then
+48	0	        Me![frm_subform_category].SourceObject = "Frm_subform_BladeFlake"
+49	0	        Me![frm_subform_category].Height = "4400"
+50	0	        Me![lblsubform].Caption = "Blade/Flake"
+51	0	        Me![frm_subform_category].Form![GID] = Me![GID]
+52	0	    Else
+53	0	        Me![frm_subform_category].SourceObject = "Frm_subform_Cores"
+54	1	        'Me![frm_subform_category].Height = "1250"
+55	1	        'made same height in 2010 as team wanted fields after subforms
+56	0	        Me![frm_subform_category].Height = "4400"
+57	0	        Me![lblsubform].Caption = "Core"
+58	0	        Me![frm_subform_category].Form![GID] = Me![GID]
+59	0	    End If
+60	0	Else
+61	0	    If Me![cboCategory] = "Blade/Flake" Then
+62	1	        'was core
+63	2	        checknum = DLookup("[GID]", "[ChippedStone_Core]", "[GID] = '" & Me![GID] & "'")
+64	0	        If Not IsNull(checknum) Then
+65	0	            retVal = MsgBox("This action means you will lose all of the information entered into the Core fields below. Are you sure?", vbQuestion + vbYesNo, "Confirm Action")
+66	0	            If retVal = vbNo Then
+67	0	                Me![cboCategory] = "Core"
+68	0	                Exit Sub
+69	0	            Else
+70	2	                sql = "DELETE FROM [ChippedStone_Core] WHERE [GID] = '" & Me![GID] & "';"
+71	0	                DoCmd.RunSQL sql
+72	0	            End If
+73	0	        End If
+74	0	        Me![frm_subform_category].SourceObject = "Frm_subform_BladeFlake"
+75	0	        Me![frm_subform_category].Height = "4400"
+76	0	        Me![lblsubform].Caption = "Blade/Flake"
+77	0	        Me![frm_subform_category].Form![GID] = Me![GID]
+78	0	    Else
+79	1	        'was blade flake
+80	2	        checknum = DLookup("[GID]", "[ChippedStone_BladeFlake]", "[GID] = '" & Me![GID] & "'")
+81	0	        If Not IsNull(checknum) Then
+82	0	            retVal = MsgBox("This action means you will lose all of the information entered into the Blade/Flake fields below. Are you sure?", vbQuestion + vbYesNo, "Confirm Action")
+83	0	            If retVal = vbNo Then
+84	0	                Me![cboCategory] = "Blade/Flake"
+85	0	                Exit Sub
+86	0	            Else
+87	2	                sql = "DELETE FROM [ChippedStone_BladeFlake] WHERE [GID] = '" & Me![GID] & "';"
+88	0	                DoCmd.RunSQL sql
+89	0	            End If
+90	0	        End If
+91	0	        Me![frm_subform_category].SourceObject = "Frm_subform_Cores"
+92	1	        'Me![frm_subform_category].Height = "1250"
+93	1	        'made same height in 2010 as team wanted fields after subforms
+94	0	        Me![frm_subform_category].Height = "4400"
+95	0	        Me![lblsubform].Caption = "Core"
+96	0	        Me![frm_subform_category].Form![GID] = Me![GID]
+97	0	    End If
+98	0	End If
+99	0	
+100	1	'new 2010 - ultimately when debitage category is clean this should become the driver for what is bladeFlake OR core but
+101	1	'until that is is this category field will remain and filter down debitage category according to the selection:
+102	0	If Me![cboCategory] = "Blade/Flake" Then
+103	2	    Me![cboDebitageCat].RowSource = "SELECT [ChippedStoneLOV_DebitageCat].[DebitageCategory] FROM ChippedStoneLOV_DebitageCat WHERE DebitageCategory <> 'Core' ORDER BY [ChippedStoneLOV_DebitageCat].[DebitageCategory]; "
+104	0	Else
+105	2	    Me![cboDebitageCat].RowSource = "SELECT [ChippedStoneLOV_DebitageCat].[DebitageCategory] FROM ChippedStoneLOV_DebitageCat WHERE DebitageCategory = 'Core' ORDER BY [ChippedStoneLOV_DebitageCat].[DebitageCategory]; "
+106	0	End If
+107	0	
+108	0	Exit Sub
+109	0	
+110	0	err_cbocategory:
+111	0	    Call General_Error_Trap
+112	0	    Exit Sub
+113	0	End Sub
+114	0	
+115	0	Private Sub cboDebitageCat_NotInList(NewData As String, Response As Integer)
+116	1	'stop not in list msg loop
+117	0	On Error GoTo err_cboDeb
+118	0	
+119	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+120	0	    Response = acDataErrContinue
+121	0	    
+122	0	    Me![cboDebitageCat].Undo
+123	0	Exit Sub
+124	0	
+125	0	err_cboDeb:
+126	0	    Call General_Error_Trap
+127	0	    Exit Sub
+128	0	End Sub
+129	0	
+130	0	Private Sub cboFind_AfterUpdate()
+131	0	On Error GoTo err_cboFind
+132	0	
+133	0	If Me![cboFind] <> "" Then
+134	0	    Me![GID].Enabled = True
+135	0	    DoCmd.GoToControl Me![GID].Name
+136	0	    DoCmd.FindRecord Me![cboFind]
+137	0	    DoCmd.GoToControl Me![txtBag].Name
+138	0	    Me![GID].Enabled = False
+139	0	End If
+140	0	
+141	0	Exit Sub
+142	0	
+143	0	err_cboFind:
+144	0	    Call General_Error_Trap
+145	0	    Exit Sub
+146	0	End Sub
+147	0	
+148	0	
+149	0	Private Sub cboFind_NotInList(NewData As String, Response As Integer)
+150	1	'stop not in list msg loop
+151	0	On Error GoTo err_cbofindNot
+152	0	
+153	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+154	0	    Response = acDataErrContinue
+155	0	    
+156	0	    Me![cboFind].Undo
+157	0	Exit Sub
+158	0	
+159	0	err_cbofindNot:
+160	0	    Call General_Error_Trap
+161	0	    Exit Sub
+162	0	End Sub
+163	0	
+164	0	Private Sub cboRawMaterialType_AfterUpdate()
+165	1	'raw material type is linked to source from this list
+166	1	'new 2010
+167	0	On Error GoTo err_cboRawMT
+168	0	
+169	0	    If Me![cboRawMaterialType].Column(1) <> "" Then
+170	0	        If Me![cboSource] = "" Or IsNull(Me![cboSource]) Then
+171	0	            Me![cboSource] = Me![cboRawMaterialType].Column(1)
+172	0	        ElseIf Me![cboSource] <> Me![cboRawMaterialType].Column(1) Then
+173	0	            MsgBox "The old source field value of: " & Me![cboSource] & " will now be updated with the new source associated with this Raw Material: " & Me![cboRawMaterialType].Column(1), vbInformation, "Source Update"
+174	0	            Me![cboSource] = Me![cboRawMaterialType].Column(1)
+175	0	        End If
+176	0	    End If
+177	0	Exit Sub
+178	0	
+179	0	err_cboRawMT:
+180	0	    Call General_Error_Trap
+181	0	    Exit Sub
+182	0	
+183	0	End Sub
+184	0	
+185	0	Private Sub cboTechnology_NotInList(NewData As String, Response As Integer)
+186	1	'stop not in list msg loop
+187	0	On Error GoTo err_TechNot
+188	0	
+189	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+190	0	    Response = acDataErrContinue
+191	0	    
+192	0	    Me![cboTechnology].Undo
+193	0	Exit Sub
+194	0	
+195	0	err_TechNot:
+196	0	    Call General_Error_Trap
+197	0	    Exit Sub
+198	0	End Sub
+199	0	
+200	0	Private Sub Close_Click()
+201	0	On Error GoTo err_close
+202	0	
+203	0	    DoCmd.Close acForm, Me.Name
+204	0	
+205	0	Exit Sub
+206	0	
+207	0	err_close:
+208	0	    Call General_Error_Trap
+209	0	    Exit Sub
+210	0	End Sub
+211	0	
+212	0	Private Sub cmdAddNew_Click()
+213	0	On Error GoTo err_cmdAddNew_Click
+214	0	
+215	0	    DoCmd.GoToRecord acActiveDataObject, , acNewRec
+216	0	    DoCmd.GoToControl "txtBag"
+217	0	Exit Sub
+218	0	
+219	0	err_cmdAddNew_Click:
+220	0	    Call General_Error_Trap
+221	0	    Exit Sub
+222	0	End Sub
+223	0	
+224	0	Private Sub cmdGoFirst_Click()
+225	0	On Error GoTo Err_gofirst_Click
+226	0	
+227	0	
+228	0	    DoCmd.GoToRecord , , acFirst
+229	0	
+230	0	    Exit Sub
+231	0	
+232	0	Err_gofirst_Click:
+233	0	    Call General_Error_Trap
+234	0	    
+235	0	End Sub
+236	0	
+237	0	Private Sub cmdGoLast_Click()
+238	0	On Error GoTo Err_goLast_Click
+239	0	
+240	0	
+241	0	    DoCmd.GoToRecord , , acLast
+242	0	
+243	0	    Exit Sub
+244	0	
+245	0	Err_goLast_Click:
+246	0	    Call General_Error_Trap
+247	0	    
+248	0	End Sub
+249	0	
+250	0	Private Sub cmdGoNext_Click()
+251	0	On Error GoTo Err_goNext_Click
+252	0	
+253	0	
+254	0	    DoCmd.GoToRecord , , acNext
+255	0	
+256	0	    Exit Sub
+257	0	
+258	0	Err_goNext_Click:
+259	0	    Call General_Error_Trap
+260	0	    
+261	0	End Sub
+262	0	
+263	0	Private Sub cmdGoPrev_Click()
+264	0	On Error GoTo Err_goPrev_Click
+265	0	
+266	0	
+267	0	    DoCmd.GoToRecord , , acPrevious
+268	0	
+269	0	    Exit Sub
+270	0	
+271	0	Err_goPrev_Click:
+272	0	    Call General_Error_Trap
+273	0	    
+274	0	End Sub
+275	0	Private Sub cmdGoToFlint_Click()
+276	1	'new 2010
+277	1	'check if record exists in stage two FLINT table and if not put it there ready for data entry
+278	1	'saj
+279	0	On Error GoTo err_stagetwo_flint
+280	0	
+281	0	If Me![GID] <> "" Then
+282	0	    Dim stagetwo, sql, LetterCode, findnum
+283	2	    stagetwo = DLookup("[GID]", "[ChippedStone_StageTwo_Data_FlintDetail]", "[GID] = '" & Me![GID] & "'")
+284	0	    If IsNull(stagetwo) Then
+285	1	        'not there yet
+286	4	        sql = "INSERT INTO [ChippedStone_StageTwo_Data_FlintDetail] ([Unit], [LetterCode], [FindNumber], [GID]) VALUES (" & Me![Unit] & ", '" & Me!Letter & "'," & Me![Number] & ",'" & Me![Unit] & "." & Me![Letter] & Me![Number] & "');"
+287	0	        DoCmd.RunSQL sql
+288	0	           
+289	0	    End If
+290	2	    DoCmd.OpenForm "Frm_pop_StageTwo_FlintDetail", acNormal, , "[GID] = '" & Me![GID] & "'"
+291	0	    
+292	0	Else
+293	0	    MsgBox "Please enter the bag number and the unit number first", vbExclamation, "Insufficient Data"
+294	0	End If
+295	0	Exit Sub
+296	0	
+297	0	err_stagetwo_flint:
+298	0	    Call General_Error_Trap
+299	0	    Exit Sub
+300	0	
+301	0	End Sub
+302	0	
+303	0	Private Sub cmdOutput_Click()
+304	1	'open output options pop up
+305	0	On Error GoTo err_Output
+306	0	
+307	0	    If Me![txtGID] <> "" Then
+308	0	        DoCmd.OpenForm "Frm_Pop_DataOutputOptions", acNormal, , , , acDialog, Me![txtGID] & ";" & Me![worked?]
+309	0	    Else
+310	0	        MsgBox "The output options form cannot be shown when there is no GID on screen", vbInformation, "Action Cancelled"
+311	0	    End If
+312	0	
+313	0	Exit Sub
+314	0	
+315	0	err_Output:
+316	0	    Call General_Error_Trap
+317	0	    Exit Sub
+318	0	End Sub
+319	0	
+320	0	
+321	0	
+322	0	Private Sub Condition_NotInList(NewData As String, Response As Integer)
+323	1	'stop not in list msg loop
+324	0	On Error GoTo err_ConditionNot
+325	0	
+326	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+327	0	    Response = acDataErrContinue
+328	0	    
+329	0	    Me![Condition].Undo
+330	0	Exit Sub
+331	0	
+332	0	err_ConditionNot:
+333	0	    Call General_Error_Trap
+334	0	    Exit Sub
+335	0	End Sub
+336	0	
+337	0	Private Sub Form_Current()
+338	1	'Set up form display
+339	0	On Error GoTo err_current
+340	0	
+341	0	If Me![cboCategory] = "Blade/Flake" Then
+342	0	    Me![frm_subform_category].SourceObject = "frm_subform_BladeFlake"
+343	0	    Me![frm_subform_category].Height = "4400"
+344	0	    Me![lblsubform].Caption = "Blade/Flake"
+345	0	    Me![frm_subform_category].Visible = True
+346	0	ElseIf Me![cboCategory] = "Core" Then
+347	0	    Me![frm_subform_category].SourceObject = "frm_subform_Cores"
+348	1	    'Me![frm_subform_category].Height = "1250"
+349	1	    'made same height in 2010 as team wanted fields after subforms
+350	0	    Me![frm_subform_category].Height = "4400"
+351	0	    Me![lblsubform].Caption = "Core"
+352	0	    Me![frm_subform_category].Visible = True
+353	0	Else
+354	0	    Me![frm_subform_category].Visible = False
+355	0	End If
+356	0	
+357	1	'new 2010 - ultimately when debitage category is clean this should become the driver for what is bladeFlake OR core but
+358	1	'until that is is this category field will remain and filter down debitage category according to the selection:
+359	0	If Me![cboCategory] = "Blade/Flake" Then
+360	2	    Me![cboDebitageCat].RowSource = "SELECT [ChippedStoneLOV_DebitageCat].[DebitageCategory] FROM ChippedStoneLOV_DebitageCat WHERE DebitageCategory <> 'Core' ORDER BY [ChippedStoneLOV_DebitageCat].[DebitageCategory]; "
+361	0	Else
+362	2	    Me![cboDebitageCat].RowSource = "SELECT [ChippedStoneLOV_DebitageCat].[DebitageCategory] FROM ChippedStoneLOV_DebitageCat WHERE DebitageCategory = 'Core' ORDER BY [ChippedStoneLOV_DebitageCat].[DebitageCategory]; "
+363	0	End If
+364	0	
+365	0	
+366	1	'NEW 2010 FOR Adam - and extending stage 2
+367	1	'when piece of flint is raw material of current record then show Go to Flint button
+368	0	If Me![RawMaterial] = "Flint" Then
+369	0	    Me![cmdGoToFlint].Visible = True
+370	0	    Me![cboRawMaterialType].RowSource = "SELECT [ChippedStoneLOV_RawMaterialType].[RawMaterialType], [ChippedStoneLOV_RawMaterialType].[Source] FROM ChippedStoneLOV_RawMaterialType ORDER BY [ChippedStoneLOV_RawMaterialType].[RawMaterialType];"
+371	0	    Me![cboRawMaterialType].LimitToList = False
+372	0	    Me![cboSource].Locked = False
+373	0	    Me![cboSource].Enabled = True
+374	0	    Me![cboSource].BackStyle = 1
+375	0	Else
+376	0	    Me![cmdGoToFlint].Visible = False
+377	0	    Me![cboRawMaterialType].RowSource = "SELECT [ChippedStoneLOV_RawMaterialType].[RawMaterialType], [ChippedStoneLOV_RawMaterialType].[Source] FROM ChippedStoneLOV_RawMaterialType WHERE [RawMaterialType] BETWEEN 1 AND 22 ORDER BY [ChippedStoneLOV_RawMaterialType].[RawMaterialType]; "
+378	0	    Me![cboRawMaterialType].LimitToList = True
+379	0	    Me![cboSource].Locked = True
+380	0	    Me![cboSource].Enabled = False
+381	0	    Me![cboSource].BackStyle = 0
+382	0	End If
+383	0	
+384	0	Exit Sub
+385	0	
+386	0	err_current:
+387	0	    Call General_Error_Trap
+388	0	    Exit Sub
+389	0	End Sub
+390	0	
+391	0	
+392	0	
+393	0	
+394	0	
+395	0	Private Sub Form_Open(Cancel As Integer)
+396	1	'new 2011 - safer to take focus to find combo
+397	0	On Error GoTo err_open
+398	0	
+399	2	    ''DoCmd.GoToControl Me![cboFind].Name
+400	0	
+401	0	Exit Sub
+402	0	
+403	0	err_open:
+404	0	    Call General_Error_Trap
+405	0	    Exit Sub
+406	0	End Sub
+407	0	
+408	0	Private Sub Letter_AfterUpdate()
+409	0	Call UpdateGID
+410	0	
+411	1	'Dim retVal
+412	1	'If Me![Letter] <> "" Then
+413	1	'    If Me![Letter].OldValue <> "" And Me![Unit] <> "" And Me![Number] <> "" Then
+414	1	'        retVal = MsgBox("Altering the Letter effects the GID, are you sure you want to do this?", vbQuestion + vbYesNo, "Confirm Action")
+415	1	'        If retVal = vbYes Then
+416	1	'            Me![txtGID] = Me![Unit] & "." & Me![Letter] & Me![Number]
+417	1	'        Else
+418	1	'            Me![Letter] = Me![Letter].OldValue
+419	1	'        End If
+420	1	'    Else
+421	1	'        Me![txtGID] = Me![Unit] & "." & Me![Letter] & Me![Number]
+422	1	'    End If
+423	1	'
+424	1	'End If
+425	0	End Sub
+426	0	
+427	0	Private Sub Letter_NotInList(NewData As String, Response As Integer)
+428	1	'Allow more values to be added if necessary
+429	0	On Error GoTo err_Letter_NotInList
+430	0	
+431	0	Dim retVal, sql
+432	0	
+433	0	retVal = MsgBox("This value is not in the list, are you sure you want to add it?", vbQuestion + vbYesNo, "Value not in list")
+434	0	If retVal = vbYes Then
+435	0	    Response = acDataErrAdded
+436	2	    sql = "INSERT INTO [ChippedStoneLOV_Letter]([GIDLetter]) VALUES ('" & NewData & "');"
+437	0	    DoCmd.RunSQL sql
+438	1	    'DoCmd.RunCommand acCmdSaveRecord
+439	1	    'Me![Letter].Requery
+440	0	Else
+441	0	    Response = acDataErrContinue
+442	0	End If
+443	0	
+444	0	   
+445	0	Exit Sub
+446	0	
+447	0	err_Letter_NotInList:
+448	0	    Call General_Error_Trap
+449	0	    Exit Sub
+450	0	End Sub
+451	0	
+452	0	Private Sub Lip_NotInList(NewData As String, Response As Integer)
+453	1	'stop not in list msg loop
+454	0	On Error GoTo err_LipNot
+455	0	
+456	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+457	0	    Response = acDataErrContinue
+458	0	    
+459	0	    Me![Lip].Undo
+460	0	Exit Sub
+461	0	
+462	0	err_LipNot:
+463	0	    Call General_Error_Trap
+464	0	    Exit Sub
+465	0	End Sub
+466	0	
+467	0	Private Sub Number_AfterUpdate()
+468	0	On Error GoTo err_num
+469	0	
+470	0	Call UpdateGID
+471	0	
+472	1	'if all gid there triger a save on the record - 2010
+473	0	If Me![Unit] <> "" And Me![Letter] <> "" And Me![Number] <> "" Then
+474	0	    DoCmd.RunCommand acCmdSaveRecord
+475	0	    Me!cboFind.Requery
+476	0	End If
+477	0	
+478	0	
+479	1	'Dim retVal
+480	1	'If Me![Number] <> "" Then
+481	1	'    If Me![Number].OldValue <> "" And Me![Unit] <> "" And Me![Letter] <> "" Then
+482	1	'        retVal = MsgBox("Altering the Number effects the GID, are you sure you want to do this?", vbQuestion + vbYesNo, "Confirm Action")
+483	1	'        If retVal = vbYes Then
+484	1	'            Me![txtGID] = Me![Unit] & "." & Me![Letter] & Me![Number]
+485	1	'        Else
+486	1	'            Me![Number] = Me![Number].OldValue
+487	1	'        End If
+488	1	'    Else
+489	1	'        Me![txtGID] = Me![Unit] & "." & Me![Letter] & Me![Number]
+490	1	'    End If
+491	1	'
+492	1	'End If
+493	0	Exit Sub
+494	0	
+495	0	err_num:
+496	1	    'new 2011
+497	0	    If Err.Number = 3146 Then
+498	0	        MsgBox "This GID already exists, please enter another", vbExclamation, "Duplicate GID"
+499	0	        Me![Number].Undo
+500	0	        DoCmd.GoToControl Me!Number.Name
+501	0	        DoCmd.GoToControl Me!RawMaterial.Name
+502	0	        
+503	0	        Me!Number.SetFocus
+504	0	        
+505	0	        
+506	0	    Else
+507	0	        Call General_Error_Trap
+508	0	    End If
+509	0	    Exit Sub
+510	0	End Sub
+511	0	
+512	0	
+513	0	
+514	0	
+515	0	
+516	0	Private Sub PortionRepresented_NotInList(NewData As String, Response As Integer)
+517	1	'stop not in list msg loop
+518	0	On Error GoTo err_cboport
+519	0	
+520	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+521	0	    Response = acDataErrContinue
+522	0	    
+523	0	    Me![PortionRepresented].Undo
+524	0	Exit Sub
+525	0	
+526	0	err_cboport:
+527	0	    Call General_Error_Trap
+528	0	    Exit Sub
+529	0	End Sub
+530	0	
+531	0	Private Sub RawMaterial_AfterUpdate()
+532	1	'new 2010 to make go to flint button visible for Adam
+533	0	On Error GoTo err_rawmat
+534	0	
+535	0	    If Me![RawMaterial] = "Flint" Then
+536	0	        Me![cmdGoToFlint].Visible = True
+537	0	        Me![cboRawMaterialType].RowSource = "SELECT [ChippedStoneLOV_RawMaterialType].[RawMaterialType], [ChippedStoneLOV_RawMaterialType].[Source] FROM ChippedStoneLOV_RawMaterialType ORDER BY [ChippedStoneLOV_RawMaterialType].[RawMaterialType];"
+538	0	        Me![cboRawMaterialType].LimitToList = False
+539	0	        Me![cboSource].Locked = False
+540	0	        Me![cboSource].Enabled = True
+541	0	        Me![cboSource].BackStyle = 1
+542	0	    Else
+543	0	        Me![cmdGoToFlint].Visible = False
+544	0	        Me![cboRawMaterialType].RowSource = "SELECT [ChippedStoneLOV_RawMaterialType].[RawMaterialType], [ChippedStoneLOV_RawMaterialType].[Source] FROM ChippedStoneLOV_RawMaterialType WHERE [RawMaterialType] BETWEEN 1 AND 22 ORDER BY [ChippedStoneLOV_RawMaterialType].[RawMaterialType]; "
+545	0	        Me![cboRawMaterialType].LimitToList = True
+546	0	        Me![cboSource].Locked = True
+547	0	        Me![cboSource].Enabled = False
+548	0	        Me![cboSource].BackStyle = 0
+549	0	    End If
+550	0	
+551	0	Exit Sub
+552	0	
+553	0	err_rawmat:
+554	0	    Call General_Error_Trap
+555	0	    Exit Sub
+556	0	End Sub
+557	0	
+558	0	Private Sub RawMaterial_NotInList(NewData As String, Response As Integer)
+559	1	'Allow more values to be added if necessary
+560	2	''On Error GoTo err_RawMat_NotInList
+561	2	''
+562	2	''Dim retVal, sql, inputname
+563	2	''
+564	2	''retVal = MsgBox("This value is not in the list, are you sure you want to add it?", vbQuestion + vbYesNo, "Value not in list")
+565	2	''If retVal = vbYes Then
+566	2	''    Response = acDataErrAdded
+567	4	''    sql = "INSERT INTO [ChippedStoneLOV_RawMaterials]([Material]) VALUES ('" & NewData & "');"
+568	2	''    DoCmd.RunSQL sql
+569	2	''Else
+570	2	''    Response = acDataErrContinue
+571	2	''End If
+572	2	''
+573	2	''
+574	2	''Exit Sub
+575	2	''
+576	2	''err_RawMat_NotInList:
+577	2	''    Call General_Error_Trap
+578	2	''    Exit Sub
+579	0	
+580	2	''ALTERATION IN 2010 - only allow whats in list
+581	1	'stop not in list msg loop
+582	0	On Error GoTo err_RawMaterialNot
+583	0	
+584	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+585	0	    Response = acDataErrContinue
+586	0	    
+587	0	    Me![RawMaterial].Undo
+588	0	Exit Sub
+589	0	
+590	0	err_RawMaterialNot:
+591	0	    Call General_Error_Trap
+592	0	    Exit Sub
+593	0	End Sub
+594	0	
+595	0	Private Sub ScarPattern_NotInList(NewData As String, Response As Integer)
+596	1	'stop not in list msg loop
+597	0	On Error GoTo err_ScarPatternNot
+598	0	
+599	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+600	0	    Response = acDataErrContinue
+601	0	    
+602	0	    Me![ScarPattern].Undo
+603	0	Exit Sub
+604	0	
+605	0	err_ScarPatternNot:
+606	0	    Call General_Error_Trap
+607	0	    Exit Sub
+608	0	End Sub
+609	0	
+610	0	Private Sub txtBag_AfterUpdate()
+611	1	'link bag number to unit number from basic data
+612	0	On Error GoTo err_txtbag
+613	0	Dim retVal
+614	0	
+615	0	If Me![Unit] <> "" Then
+616	1	    'there is already a unit number check it against the unit related to this bag on basic data
+617	0	    If Me![txtBag].Column(1) <> "" Then
+618	0	        If (CInt(Me![Unit]) <> CInt(Me![txtBag].Column(1))) Then
+619	0	            retVal = MsgBox("The Unit shown here (" & Me![Unit] & ") does not match the Unit assigned to this Bag on the Basic Data screen (" & Me![txtBag].Column(1) & "). This operation will overwrite the Unit number " & Me![Unit] & " on this screen, continue anyway?", vbCritical + vbYesNo, "Data Error")
+620	0	            If retVal = vbYes Then
+621	0	                Me![Unit] = Me![txtBag].Column(1)
+622	0	            Else
+623	0	                Me![txtBag] = Me![txtBag].OldValue
+624	0	            End If
+625	0	        End If
+626	0	    End If
+627	0	Else
+628	0	    Me![Unit] = Me![txtBag].Column(1)
+629	0	End If
+630	0	Exit Sub
+631	0	
+632	0	err_txtbag:
+633	0	    Call General_Error_Trap
+634	0	    Exit Sub
+635	0	End Sub
+636	0	
+637	0	Private Sub Unit_AfterUpdate()
+638	0	Call UpdateGID
+639	0	
+640	1	'Dim retVal
+641	1	'If Me![Unit] <> "" Then
+642	1	'    If Me![Unit].OldValue <> "" And Me![Letter] <> "" And Me![Number] <> "" Then
+643	1	'        retVal = MsgBox("Altering the Unit effects the GID, are you sure you want to do this?", vbQuestion + vbYesNo, "Confirm Action")
+644	1	'        If retVal = vbYes Then
+645	1	'            Me![txtGID] = Me![Unit] & "." & Me![Letter] & Me![Number]
+646	1	'        Else
+647	1	'            Me![Unit] = Me![Unit].OldValue
+648	1	'        End If
+649	1	'    Else
+650	1	'        Me![txtGID] = Me![Unit] & "." & Me![Letter] & Me![Number]
+651	1	'    End If
+652	1	'
+653	1	'End If
+654	0	End Sub
+655	0	
+656	0	Private Sub Use_NotInList(NewData As String, Response As Integer)
+657	1	'stop not in list msg loop
+658	0	On Error GoTo err_UseNot
+659	0	
+660	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+661	0	    Response = acDataErrContinue
+662	0	    
+663	0	    Me![Use].Undo
+664	0	Exit Sub
+665	0	
+666	0	err_UseNot:
+667	0	    Call General_Error_Trap
+668	0	    Exit Sub
+669	0	End Sub

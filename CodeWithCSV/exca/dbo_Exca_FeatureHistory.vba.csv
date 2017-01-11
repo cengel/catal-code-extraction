@@ -1,0 +1,36 @@
+1	0	
+2	0	
+3	0	Private Sub cmdChangeStatus_Click()
+4	0	On Error GoTo err_cmdAddNew_Click
+5	0	    Me![combostatus].Locked = False
+6	0	    Me![statusdate].Locked = False
+7	0	    Me![statuswho].Locked = False
+8	0	    
+9	0	    DoCmd.GoToRecord acActiveDataObject, , acNewRec
+10	0	    
+11	0	    Me![combostatus].Locked = False
+12	0	    Me![statusdate].Locked = False
+13	0	    Me![statuswho].Locked = False
+14	0	    
+15	0	    Me![statusdate].Value = Now()
+16	0	    DoCmd.GoToControl Me![featurestatus_determination]
+17	0	Exit Sub
+18	0	
+19	0	err_cmdAddNew_Click:
+20	0	    If Err.Number = 2498 Then
+21	0	        Resume Next
+22	0	    Else
+23	0	    Call General_Error_Trap
+24	0	    End If
+25	0	    Exit Sub
+26	0	End Sub
+27	0	
+28	0	Private Sub Form_Current()
+29	0	If Me![status].Value <> "" Then
+30	0	    Debug.Print okay
+31	0	    Me![combostatus].Locked = True
+32	0	    Me![statusdate].Locked = True
+33	0	    Me![statuswho].Locked = True
+34	0	Else
+35	0	End If
+36	0	End Sub

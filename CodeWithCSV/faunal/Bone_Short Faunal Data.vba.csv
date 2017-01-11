@@ -1,0 +1,104 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	1	Option Explicit 'saj
+3	0	
+4	0	Sub button_goto_unitdescription_Click()
+5	0	On Error GoTo Err_button_goto_unitdescription_Click
+6	0	
+7	0	    Dim stDocName As String
+8	0	    Dim stLinkCriteria As String
+9	0	
+10	0	    stDocName = "Fauna_Bone_Faunal_Unit_Description"
+11	0	    
+12	0	    stLinkCriteria = "[Unit number]=" & Me![Unit number]
+13	0	    
+14	0	If Me![Unit number] <> "" Then
+15	1	    'new check for Unit entered by saj
+16	1	    'the form is only minimised so must save data manually here - saj
+17	0	    DoCmd.RunCommand acCmdSaveRecord
+18	0	    
+19	0	    DoCmd.Minimize
+20	0	
+21	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+22	0	Else
+23	0	        MsgBox "Please enter select a Unit first", vbInformation, "No Unit Number"
+24	0	End If
+25	0	
+26	0	Exit_button_goto_unitdescription_Click:
+27	0	    Exit Sub
+28	0	
+29	0	Err_button_goto_unitdescription_Click:
+30	0	    MsgBox Err.Description
+31	0	    Resume Exit_button_goto_unitdescription_Click
+32	0	    
+33	0	End Sub
+34	0	Sub button_goto_cran_postcran_Click()
+35	0	On Error GoTo Err_button_goto_cran_postcran_Click
+36	0	
+37	0	    Dim stDocName As String
+38	0	    Dim stLinkCriteria As String
+39	0	
+40	0	    stDocName = "Fauna_Bone_Basic_Faunal_Data"
+41	0	    
+42	0	    stLinkCriteria = "[Unit number]=" & Me![Unit number]
+43	0	    
+44	0	If Me![Unit number] <> "" Then
+45	1	    'new check for Unit entered by saj
+46	1	    'the form is only minimised so must save data manually here - saj
+47	0	    DoCmd.RunCommand acCmdSaveRecord
+48	0	            
+49	0	    DoCmd.Minimize
+50	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+51	0	    
+52	2	    'If [Forms]![Fauna_Bone_Basic_Faunal_Data].[Unit number] = 0 Then 'there is a 0 unit in this system
+53	0	    If IsNull([Forms]![Fauna_Bone_Basic_Faunal_Data].[Unit number]) Then
+54	0	    [Forms]![Fauna_Bone_Basic_Faunal_Data].[Unit number] = [Forms]![Bone: Short Faunal Data].[Unit number]
+55	0	    End If
+56	0	Else
+57	0	        MsgBox "Please enter select a Unit first", vbInformation, "No Unit Number"
+58	0	End If
+59	0	
+60	0	Exit_button_goto_cran_postcran_Click:
+61	0	    Exit Sub
+62	0	
+63	0	Err_button_goto_cran_postcran_Click:
+64	0	    Call General_Error_Trap
+65	0	    Resume Exit_button_goto_cran_postcran_Click
+66	0	    
+67	0	End Sub
+68	0	
+69	0	Private Sub cboFind_AfterUpdate()
+70	1	'new find combo by SAJ
+71	0	On Error GoTo err_cboFind
+72	0	
+73	0	If Me![cboFind] <> "" Then
+74	0	    If Me.Filter <> "" Then
+75	0	            If Me.Filter <> "[Unit] = " & Me![cboFind] Then
+76	0	                MsgBox "This form was opened to only show the record " & Me.Filter & ". This action has removed the filter and all records are available to view.", vbInformation, "Filter Removed"
+77	0	                Me.FilterOn = False
+78	0	                Me.Filter = ""
+79	0	            End If
+80	0	        End If
+81	0	    DoCmd.GoToControl "Unit Number"
+82	0	    DoCmd.FindRecord Me![cboFind]
+83	0	
+84	0	End If
+85	0	
+86	0	Exit Sub
+87	0	
+88	0	err_cboFind:
+89	0	    Call General_Error_Trap
+90	0	    Exit Sub
+91	0	End Sub
+92	0	
+93	0	Private Sub cmdMenu_Click()
+94	1	'new menu button
+95	0	On Error GoTo err_cmdMenu
+96	0	
+97	0	    DoCmd.OpenForm "Bone", acNormal
+98	0	    DoCmd.Close acForm, Me.Name
+99	0	Exit Sub
+100	0	
+101	0	err_cmdMenu:
+102	0	    Call General_Error_Trap
+103	0	    Exit Sub
+104	0	End Sub

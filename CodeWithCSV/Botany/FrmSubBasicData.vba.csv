@@ -1,0 +1,406 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	1	'saj july 2007, carry the last date input for all subsequent records
+5	0	Dim dateTouse
+6	0	
+7	0	
+8	0	
+9	0	
+10	0	Private Sub cboOptions_AfterUpdate()
+11	1	'*******************************************
+12	1	' The form is datasheet view which means no buttons
+13	1	' are available, so the action list takes their place.
+14	1	' This replicates the actions of the buttons that are shown
+15	1	' in form view
+16	1	' SAJ
+17	1	'*******************************************
+18	1	' Something very odd is going on in this procedure - it replicates the code
+19	1	' used by cmdAddPriority where this form is then closed. However if you try
+20	1	' to close the form here it quits the whole application. I have no idea why
+21	1	' so here this form is left open.
+22	1	'*******************************************
+23	0	On Error GoTo err_cboOptions_click
+24	0	    If Me![cboOptions] = "Put record in Priority" Then
+25	0	        If AddRecordToPriorityTable(Me) = True Then
+26	3	            ''DoCmd.Close acForm, Forms![frmBasicData].Name 'do not do this will quit app
+27	0	        End If
+28	0	    ElseIf Me![cboOptions] = "View Priority Record" Then
+29	0	        If ViewPriorityRecord(Me) = True Then
+30	3	            ''DoCmd.Close acForm, Forms![frmBasicData].Name 'do not do this will quit app
+31	0	        End If
+32	0	    ElseIf Me![cboOptions] = "View Scanning" Then
+33	0	        If ViewScanRecord(Me) = True Then
+34	3	            ''DoCmd.Close acForm, Forms![frmBasicData].Name 'do not do this will quit app
+35	0	        End If
+36	0	    ElseIf Me![cboOptions] = "Put record in Scanning" Then
+37	0	        If AddRecordToScanTable(Me) = True Then
+38	2	            ''DoCmd.Close acForm, Forms![frmBasicData].Name
+39	0	        End If
+40	0	    ElseIf Me![cboOptions] = "View Sieve Scanning" Then
+41	0	        If ViewSieveScanRecord(Me) = True Then
+42	3	            ''DoCmd.Close acForm, Forms![frmBasicData].Name 'do not do this will quit app
+43	0	        End If
+44	0	    ElseIf Me![cboOptions] = "Put record in Sieve Scanning" Then
+45	0	        If AddRecordToSieveScanTable(Me) = True Then
+46	2	            ''DoCmd.Close acForm, Forms![frmBasicData].Name
+47	0	        End If
+48	0	    Else
+49	0	        MsgBox "Action not known to the system", vbCritical, "Unknown Action"
+50	0	    End If
+51	0	    
+52	0	Exit Sub
+53	0	
+54	0	err_cboOptions_click:
+55	0	    Call General_Error_Trap
+56	0	    Exit Sub
+57	0	End Sub
+58	0	
+59	0	Private Sub cmdAddPriority_Click()
+60	1	'*******************************************
+61	1	' Add the flot record to the priority table
+62	1	' SAJ
+63	1	'*******************************************
+64	0	On Error GoTo err_Priority_click
+65	0	
+66	0	If AddRecordToPriorityTable(Me) = True Then
+67	1	    'closing form here causes no problem (see cboOptions_AfterUpdate for more info)
+68	0	    DoCmd.Close acForm, Forms![FrmBasicData].Name
+69	0	End If
+70	0	
+71	0	Exit Sub
+72	0	err_Priority_click:
+73	0	    Call General_Error_Trap
+74	0	    Exit Sub
+75	0	End Sub
+76	0	
+77	0	Private Sub cmdAddScan_Click()
+78	1	'*******************************************
+79	1	' Add the flot record to the scanning table
+80	1	' SAJ
+81	1	'*******************************************
+82	0	On Error GoTo err_Scan_click
+83	0	
+84	0	If AddRecordToScanTable(Me) = True Then
+85	1	    'closing form here causes no problem (see cboOptions_AfterUpdate for more info)
+86	0	    DoCmd.Close acForm, Forms![FrmBasicData].Name
+87	0	End If
+88	0	
+89	0	Exit Sub
+90	0	err_Scan_click:
+91	0	    Call General_Error_Trap
+92	0	    Exit Sub
+93	0	
+94	0	
+95	0	End Sub
+96	0	
+97	0	Private Sub cmdAddSieveScan_Click()
+98	1	'*******************************************
+99	1	' Add the flot record to the scanning table
+100	1	' SAJ
+101	1	'*******************************************
+102	0	On Error GoTo err_Scan_click
+103	0	
+104	0	If AddRecordToSieveScanTable(Me) = True Then
+105	1	    'closing form here causes no problem (see cboOptions_AfterUpdate for more info)
+106	0	    DoCmd.Close acForm, Forms![FrmBasicData].Name
+107	0	End If
+108	0	
+109	0	Exit Sub
+110	0	err_Scan_click:
+111	0	    Call General_Error_Trap
+112	0	    Exit Sub
+113	0	
+114	0	End Sub
+115	0	
+116	0	Private Sub cmdExportBasicOnly_Click()
+117	1	'export record withOUT unit data as this is faster
+118	1	'functionality replace by cmdOutput on FrmBasicData
+119	0	On Error GoTo err_ExportRec
+120	1	    'DoCmd.OutputTo acOutputQuery, "Q_ExportBasicData_FormRecord", acFormatXLS, , True
+121	1	    'DoCmd.OutputTo acOutputQuery, "Q_ExportBasicData_FormRecord", acFormatXLS, , True
+122	0	    DoCmd.OutputTo acOutputForm, Me, acFormatXLS, , True
+123	0	Exit Sub
+124	0	
+125	0	err_ExportRec:
+126	0	    If Err.Number = 2302 Then
+127	0	        MsgBox "The data cannot be exported at present. Please close all Excel files you may have open and try again", vbInformation, "Error"
+128	0	    Else
+129	0	        MsgBox "An error has occured trying to export the record to Excel,  the message is as follows: " & Err.Description
+130	0	    End If
+131	0	Exit Sub
+132	0	
+133	0	End Sub
+134	0	
+135	0	Private Sub cmdExportRecToExcel_Click()
+136	1	'export record with unit data as well - can be quite slow
+137	1	'functionality replace by cmdOutput on FrmBasicData
+138	0	On Error GoTo err_ExportRec
+139	1	    'DoCmd.OutputTo acOutputQuery, "Q_ExportBasicData_FormRecord", acFormatXLS, , True
+140	0	    DoCmd.OutputTo acOutputQuery, "Q_ExportBasicData_FormRecord_withUnit", acFormatXLS, , True
+141	0	Exit Sub
+142	0	
+143	0	err_ExportRec:
+144	0	    If Err.Number = 2302 Then
+145	0	        MsgBox "The data cannot be exported at present. Please close all Excel files you may have open and try again", vbInformation, "Error"
+146	0	    Else
+147	0	        MsgBox "An error has occured trying to export the record to Excel,  the message is as follows: " & Err.Description
+148	0	    End If
+149	0	Exit Sub
+150	0	End Sub
+151	0	
+152	0	Private Sub cmdGotoPriority_Click()
+153	1	'*******************************************
+154	1	' Open the priority record for this the flot num
+155	1	' SAJ
+156	1	'*******************************************
+157	0	On Error GoTo err_GoToPriority_click
+158	0	
+159	0	
+160	0	If ViewPriorityRecord(Me) = True Then
+161	1	    'closing form here causes no problem (see cboOptions_AfterUpdate for more info)
+162	0	    DoCmd.Close acForm, Forms![FrmBasicData].Name
+163	0	End If
+164	0	
+165	0	Exit Sub
+166	0	err_GoToPriority_click:
+167	0	    Call General_Error_Trap
+168	0	    Exit Sub
+169	0	
+170	0	End Sub
+171	0	
+172	0	Private Sub cmdGoToScanning_Click()
+173	1	'*******************************************
+174	1	' Open the sample scan record for this the flot num
+175	1	' SAJ
+176	1	'*******************************************
+177	0	On Error GoTo err_GoToScanning_click
+178	0	
+179	0	If ViewScanRecord(Me) = True Then
+180	1	    'closing form here causes no problem (see cboOptions_AfterUpdate for more info)
+181	0	    DoCmd.Close acForm, Forms![FrmBasicData].Name
+182	0	End If
+183	0	
+184	0	Exit Sub
+185	0	err_GoToScanning_click:
+186	0	    Call General_Error_Trap
+187	0	    Exit Sub
+188	0	
+189	0	
+190	0	End Sub
+191	0	
+192	0	Private Sub cmdGoToSieveScanning_Click()
+193	1	'*******************************************
+194	1	' Open the sample scan record for this the flot num
+195	1	' SAJ
+196	1	'*******************************************
+197	0	On Error GoTo err_GoToSieveScanning_click
+198	0	
+199	0	If ViewSieveScanRecord(Me) = True Then
+200	1	    'closing form here causes no problem (see cboOptions_AfterUpdate for more info)
+201	0	    DoCmd.Close acForm, Forms![FrmBasicData].Name
+202	0	End If
+203	0	
+204	0	Exit Sub
+205	0	err_GoToSieveScanning_click:
+206	0	    Call General_Error_Trap
+207	0	    Exit Sub
+208	0	End Sub
+209	0	
+210	0	Private Sub Float_date_AfterUpdate()
+211	1	'saj july 2007 - grab the date entered and allow it to be used for next record
+212	0	On Error GoTo err_floatdate
+213	0	
+214	0	    
+215	0	    dateTouse = Me![Float Date]
+216	0	    
+217	0	
+218	0	Exit Sub
+219	0	
+220	0	err_floatdate:
+221	0	    Call General_Error_Trap
+222	0	    Exit Sub
+223	0	End Sub
+224	0	
+225	0	Private Sub Floater_NotInList(NewData As String, Response As Integer)
+226	1	'*******************************************
+227	1	' allow new floater names to be added after a prompt
+228	1	' SAJ
+229	1	'*******************************************
+230	0	On Error GoTo err_floater
+231	0	Dim retVal
+232	0	retVal = MsgBox("This floater name has not been used on this screen before, are you sure you wish to add it to the list?", vbInformation + vbYesNo, "New floater name")
+233	0	If retVal = vbYes Then
+234	1	    'allow value, as this is distinct query based list we must save the record
+235	1	    'first but need to turn off limittolist first to be able to do so an alternative
+236	1	    'way to do this would be to dlookup on entry when not limited
+237	1	    'to list but this method is quicker (but messier) as not require DB lookup 1st
+238	0	    Response = acDataErrContinue
+239	1	    Me![Floater].LimitToList = False 'turn off limit to list so record can be saved
+240	1	    DoCmd.RunCommand acCmdSaveRecord 'save rec
+241	1	    Me![Floater].Requery 'requery combo to get new value in list
+242	1	    Me![Floater].LimitToList = True 'put back on limit to list
+243	0	Else
+244	1	    'no leave it so they can edit it
+245	0	    Response = acDataErrContinue
+246	0	End If
+247	0	Exit Sub
+248	0	err_floater:
+249	0	    Call General_Error_Trap
+250	0	    Exit Sub
+251	0	
+252	0	End Sub
+253	0	
+254	0	Private Sub Form_Current()
+255	1	'**********************************************************************************
+256	1	' Set up display of the form based on whether the flot number has related records
+257	1	' in the priority and sample tables. The command buttons appear on the form view and
+258	1	' the combo cboOptions appears on the datasheet view to offer the same functionality as
+259	1	' the buttons in this view.
+260	1	' NB - the optionrowsource values are referred to in cboOptions_Afterupdate and form_open
+261	1	' so any changes must be reflected there as well
+262	1	' SAJ
+263	1	'***********************************************************************************
+264	0	On Error GoTo err_current
+265	0	
+266	0	Dim checkFlotInPriority, checkFlotInScan, checkFlotInSieveScan
+267	0	Dim OptionRowSource
+268	0	
+269	0	If Not IsNull(Me![Flot Number]) Then
+270	0	    checkFlotInPriority = DLookup("[Flot Number]", "Bot: Priority Sample", "[Flot Number] = " & Me![Flot Number])
+271	0	    If IsNull(checkFlotInPriority) Then
+272	1	    '    Me![chkInPriority] = False
+273	0	        OptionRowSource = OptionRowSource & "Put record in Priority;"
+274	0	        Me![cmdAddPriority].Visible = True
+275	0	        Me![cmdGotoPriority].Visible = False
+276	0	    Else
+277	1	    '    Me![chkInPriority] = True
+278	0	        OptionRowSource = OptionRowSource & "View Priority Record;"
+279	0	        Me![cmdGotoPriority].Visible = True
+280	0	        Me![cmdAddPriority].Visible = False
+281	0	    End If
+282	0	
+283	0	    checkFlotInScan = DLookup("[Flot Number]", "Bot: Sample Scanning", "[Flot Number] = " & Me![Flot Number])
+284	0	    If IsNull(checkFlotInScan) Then
+285	1	    '    Me![chkInScanning] = False
+286	0	        OptionRowSource = OptionRowSource & "Put record in Scanning;"
+287	0	        Me![cmdAddScan].Visible = True
+288	0	        Me![cmdGoToScanning].Visible = False
+289	0	    Else
+290	1	    '    Me![chkInScanning] = True
+291	0	        OptionRowSource = OptionRowSource & "View Scanning;"
+292	0	        Me![cmdAddScan].Visible = False
+293	0	        Me![cmdGoToScanning].Visible = True
+294	0	    End If
+295	0	    
+296	0	    checkFlotInSieveScan = DLookup("[Flot Number]", "Bot: SieveScanning", "[Flot Number] = " & Me![Flot Number])
+297	0	    If IsNull(checkFlotInSieveScan) Then
+298	1	    '    Me![chkInSieveScanning] = False
+299	0	        OptionRowSource = OptionRowSource & "Put record in Sieve Scanning;"
+300	0	        Me![cmdAddSieveScan].Visible = True
+301	0	        Me![cmdGoToSieveScanning].Visible = False
+302	0	    Else
+303	1	    '    Me![chkInSieveScanning] = True
+304	0	        OptionRowSource = OptionRowSource & "View Sieve Scanning;"
+305	0	        Me![cmdAddSieveScan].Visible = False
+306	0	        Me![cmdGoToSieveScanning].Visible = True
+307	0	    End If
+308	0	    Me!cboOptions.RowSource = OptionRowSource
+309	0	    
+310	1	    'check for historic data for this flot number
+311	0	    Dim checknum
+312	0	    checknum = DLookup("[Flot Number]", "Bots98: Basic Flot Details", "[Flot Number] = " & Me![Flot Number])
+313	0	    If Not IsNull(checknum) Then
+314	0	        Forms![FrmBasicData]![cmdHistoric].Enabled = True
+315	0	    Else
+316	0	        Forms![FrmBasicData]![cmdHistoric].Enabled = False
+317	0	    End If
+318	0	
+319	0	Else
+320	1	    'no flot number - new record
+321	0	    Me![cmdAddPriority].Visible = True
+322	0	    Me![cmdGotoPriority].Visible = False
+323	0	    Me![cmdAddScan].Visible = True
+324	0	    Me![cmdGoToScanning].Visible = False
+325	0	    Me![cmdAddSieveScan].Visible = True
+326	0	    Me![cmdGoToSieveScanning].Visible = False
+327	0	    OptionRowSource = OptionRowSource & "Put record in Priority;"
+328	0	    OptionRowSource = OptionRowSource & "Put record in Scanning;"
+329	0	    OptionRowSource = OptionRowSource & "Put record in Sieve Scanning;"
+330	0	    Me!cboOptions.RowSource = OptionRowSource
+331	0	    
+332	0	    Forms![FrmBasicData]![cmdHistoric].Enabled = False
+333	0	    
+334	1	    'saj july 2007 - if a float date was altered in a previous record then carry it across here
+335	0	    If dateTouse <> "" Then
+336	0	        Me![Float Date] = dateTouse
+337	0	    End If
+338	0	End If
+339	0	Exit Sub
+340	0	err_current:
+341	0	    Call General_Error_Trap
+342	0	    Exit Sub
+343	0	End Sub
+344	0	
+345	0	
+346	0	Private Sub Form_Open(Cancel As Integer)
+347	1	'**********************************************************************************
+348	1	' Set up display of the form based on whether the flot number has related records
+349	1	' in the priority and sample tables. The command buttons appear on the form view and
+350	1	' the combo cboOptions appears on the datasheet view to offer the same functionality as
+351	1	' the buttons in this view.
+352	1	' NB - the optionrowsource values are referred to in cboOptions_Afterupdate and form_open
+353	1	' so any changes must be reflected there as well
+354	1	' SAJ
+355	1	'***********************************************************************************
+356	0	On Error GoTo err_open
+357	0	Dim OptionRowSource
+358	0	
+359	1	'new on site - goto last record on open
+360	0	DoCmd.GoToRecord acActiveDataObject, , acLast
+361	0	
+362	0	If Me![chkInPriority] = False Then
+363	0	    OptionRowSource = OptionRowSource & "Put record in Priority;"
+364	0	    Me![cmdAddPriority].Visible = True
+365	0	    Me![cmdGotoPriority].Visible = False
+366	0	Else
+367	1	'    Me![chkInPriority] = True
+368	0	    OptionRowSource = OptionRowSource & "View Priority Record;"
+369	0	    Me![cmdGotoPriority].Visible = True
+370	0	    Me![cmdAddPriority].Visible = False
+371	0	End If
+372	0	
+373	0	If Me![chkInScanning] = False Then
+374	1	'    Me![chkInScanning] = False
+375	0	    OptionRowSource = OptionRowSource & "Put record in Scanning;"
+376	0	    Me![cmdAddScan].Visible = True
+377	0	    Me![cmdGoToScanning].Visible = False
+378	0	Else
+379	1	'    Me![chkInScanning] = True
+380	0	    OptionRowSource = OptionRowSource & "View Scanning;"
+381	0	    Me![cmdAddScan].Visible = False
+382	0	    Me![cmdGoToScanning].Visible = True
+383	0	End If
+384	0	
+385	0	If Me![chkinsievescanning] = False Then
+386	1	'    Me![chkInSieveScanning] = False
+387	0	    OptionRowSource = OptionRowSource & "Put record in Sieve Scanning;"
+388	0	    Me![cmdAddSieveScan].Visible = True
+389	0	    Me![cmdGoToSieveScanning].Visible = False
+390	0	Else
+391	1	'    Me![chkInSieveScanning] = True
+392	0	    OptionRowSource = OptionRowSource & "View Sieve Scanning;"
+393	0	    Me![cmdAddSieveScan].Visible = False
+394	0	    Me![cmdGoToSieveScanning].Visible = True
+395	0	End If
+396	0	Me!cboOptions.RowSource = OptionRowSource
+397	0	
+398	1	'saj july 2007 dateTouse alows the last date input to be used as the default for the net record, set it to "" to begin with
+399	0	dateTouse = ""
+400	0	Exit Sub
+401	0	
+402	0	err_open:
+403	0	    Call General_Error_Trap
+404	0	    Exit Sub
+405	0	
+406	0	End Sub

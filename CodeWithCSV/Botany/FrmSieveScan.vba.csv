@@ -1,0 +1,251 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdGoFirst_Click()
+5	1	'********************************************************************
+6	1	' Go to first record
+7	1	' SAJ
+8	1	'********************************************************************
+9	0	On Error GoTo Err_cmdgofirst_Click
+10	0	
+11	0	    DoCmd.GoToControl Forms![frmSieveScan]![FrmSubSieveScanning].Name
+12	0	    DoCmd.GoToRecord , , acFirst
+13	0	
+14	0	    Exit Sub
+15	0	
+16	0	Err_cmdgofirst_Click:
+17	0	    Call General_Error_Trap
+18	0	    Exit Sub
+19	0	End Sub
+20	0	
+21	0	Private Sub cmdGoLast_Click()
+22	1	'********************************************************************
+23	1	' Go to last record
+24	1	' SAJ
+25	1	'********************************************************************
+26	0	On Error GoTo Err_cmdgoLast_Click
+27	0	
+28	0	    DoCmd.GoToControl Forms![frmSieveScan]![FrmSubSieveScanning].Name
+29	0	    DoCmd.GoToRecord , , acLast
+30	0	
+31	0	    Exit Sub
+32	0	
+33	0	Err_cmdgoLast_Click:
+34	0	    Call General_Error_Trap
+35	0	    Exit Sub
+36	0	End Sub
+37	0	
+38	0	Private Sub cmdGoNext_Click()
+39	1	'********************************************************************
+40	1	' Go to next record
+41	1	' SAJ
+42	1	'********************************************************************
+43	0	On Error GoTo Err_cmdgoNext_Click
+44	0	
+45	0	    DoCmd.GoToControl Forms![frmSieveScan]![FrmSubSieveScanning].Name
+46	0	    DoCmd.GoToRecord , , acNext
+47	0	
+48	0	    Exit Sub
+49	0	
+50	0	Err_cmdgoNext_Click:
+51	0	    If Err.Number = 2105 Then
+52	0	        MsgBox "No more records to show", vbInformation, "End of records"
+53	0	    Else
+54	0	        Call General_Error_Trap
+55	0	    End If
+56	0	    Exit Sub
+57	0	End Sub
+58	0	
+59	0	Private Sub cmdgoprevious_Click()
+60	1	'********************************************************************
+61	1	' Go to previous record
+62	1	' SAJ
+63	1	'********************************************************************
+64	0	On Error GoTo Err_cmdgoprevious_Click
+65	0	
+66	0	    DoCmd.GoToControl Forms![frmSieveScan]![FrmSubSieveScanning].Name
+67	0	    DoCmd.GoToRecord , , acPrevious
+68	0	
+69	0	    Exit Sub
+70	0	
+71	0	Err_cmdgoprevious_Click:
+72	0	   If Err.Number = 2105 Then
+73	0	        MsgBox "Already at the begining of the recordset", vbInformation, "Begining of records"
+74	0	    Else
+75	0	        Call General_Error_Trap
+76	0	    End If
+77	0	    Exit Sub
+78	0	End Sub
+79	0	
+80	0	Private Sub cmdGoToBasic_Click()
+81	1	'*******************************************************************
+82	1	' Open Basic data screen at selected flot number
+83	1	' SAJ
+84	1	'*******************************************************************
+85	0	On Error GoTo err_gotoBasic
+86	0	Dim openarg
+87	0	
+88	0	If Me![FrmSubSieveScanning].Form![Flot Number] <> "" Then
+89	0	    openarg = Me![FrmSubSieveScanning].Form![Flot Number]
+90	0	Else
+91	0	    openarg = Null
+92	0	End If
+93	0	
+94	0	DoCmd.OpenForm "FrmBasicData", acNormal, , , , , openarg
+95	0	DoCmd.Close acForm, "FrmSieveScan"
+96	0	Exit Sub
+97	0	
+98	0	err_gotoBasic:
+99	0	    Call General_Error_Trap
+100	0	    Exit Sub
+101	0	
+102	0	End Sub
+103	0	
+104	0	Private Sub cmdgotonew_Click()
+105	1	'********************************************************************
+106	1	' Create new record
+107	1	' SAJ
+108	1	'********************************************************************
+109	0	On Error GoTo Err_cmdgonew_Click
+110	0	
+111	0	    DoCmd.GoToControl Forms![frmSieveScan]![FrmSubSieveScanning].Name
+112	0	    DoCmd.GoToRecord , , acNewRec
+113	0	    DoCmd.GoToControl Forms![frmSieveScan]![FrmSubSieveScanning].Form![Flot Number].Name
+114	0	
+115	0	    Exit Sub
+116	0	
+117	0	Err_cmdgonew_Click:
+118	0	    Call General_Error_Trap
+119	0	    Exit Sub
+120	0	End Sub
+121	0	
+122	0	Private Sub cboFindFlot_AfterUpdate()
+123	1	'******************************************************************
+124	1	' Search for a flot number from the list
+125	1	' SAJ
+126	1	'******************************************************************
+127	0	On Error GoTo err_FindFlot
+128	0	
+129	0	If Me![cboFindFlot] <> "" Then
+130	0	    DoCmd.GoToControl "FrmSubSieveScanning"
+131	0	    DoCmd.GoToControl "Flot Number"
+132	1	    'DoCmd.GoToControl Me!FrmSubBasicData.Form![Flot Number].Name
+133	0	    DoCmd.FindRecord Me![cboFindFlot]
+134	0	    DoCmd.GoToControl "txt4mmFLotVol"
+135	0	End If
+136	0	
+137	0	Exit Sub
+138	0	
+139	0	err_FindFlot:
+140	0	    Call General_Error_Trap
+141	0	    Exit Sub
+142	0	End Sub
+143	0	
+144	0	Private Sub cmdClose_Click()
+145	1	'********************************************************************
+146	1	' Close form and return to main menu
+147	1	' SAJ
+148	1	'********************************************************************
+149	0	On Error GoTo err_close
+150	0	    DoCmd.OpenForm "FrmMainMenu"
+151	0	    DoCmd.Close acForm, "FrmSieveScan"
+152	0	
+153	0	Exit Sub
+154	0	err_close:
+155	0	    Call General_Error_Trap
+156	0	    Exit Sub
+157	0	End Sub
+158	0	
+159	0	Private Sub cmdOutput_Click()
+160	1	'open output options pop up
+161	0	On Error GoTo err_Output
+162	0	
+163	0	    If Me![FrmSubSieveScanning].Form![Flot Number] <> "" Then
+164	0	        DoCmd.OpenForm "FrmPopDataOutputOptions", acNormal, , , , acDialog, "Bot: SieveScanning;" & Me![FrmSubSieveScanning].Form![Flot Number]
+165	0	    Else
+166	0	        MsgBox "The output options form cannot be shown when there is no Flot Number on screen", vbInformation, "Action Cancelled"
+167	0	    End If
+168	0	
+169	0	Exit Sub
+170	0	
+171	0	err_Output:
+172	0	    Call General_Error_Trap
+173	0	    Exit Sub
+174	0	End Sub
+175	0	
+176	0	Private Sub Form_Open(Cancel As Integer)
+177	1	'*****************************************************************************
+178	1	' Check for any open args to set record to focus on and set up view of form
+179	1	'
+180	1	' SAJ
+181	1	'*****************************************************************************
+182	0	On Error GoTo err_open
+183	0	
+184	0	If Not IsNull(Me.OpenArgs) Then
+185	1	    'flot number passed in must find it
+186	0	    DoCmd.GoToControl "FrmSubSieveScanning"
+187	0	    DoCmd.GoToControl "Flot Number"
+188	0	    DoCmd.FindRecord Me.OpenArgs
+189	0	    DoCmd.GoToControl "txt4mmFLotVol"
+190	0	End If
+191	0	
+192	0	If Me!FrmSubSieveScanning.Form.DefaultView = 2 Then
+193	0	    Me!tglDataSheet = True
+194	0	    Me!tglFormV = False
+195	1	    'Me!FrmSubBasicData.Form!cboOptions.Visible = True
+196	0	Else
+197	0	    Me!tglDataSheet = False
+198	0	    Me!tglFormV = True
+199	1	    'Me!FrmSubBasicData.Form!cboOptions.Visible = False
+200	0	End If
+201	0	    
+202	0	Exit Sub
+203	0	
+204	0	err_open:
+205	0	    Call General_Error_Trap
+206	0	    Exit Sub
+207	0	
+208	0	End Sub
+209	0	
+210	0	Private Sub tglDataSheet_Click()
+211	1	'********************************************************************
+212	1	' The user wants to see the basic data in datasheet view
+213	1	' SAJ
+214	1	'********************************************************************
+215	0	On Error GoTo Err_tglDataSheet
+216	0	
+217	0	If Me!tglDataSheet = True Then
+218	0	    Me!FrmSubSieveScanning.SetFocus
+219	1	    'Me!FrmSubBasicData.Form![cboOptions].Visible = True
+220	0	    DoCmd.RunCommand acCmdSubformDatasheet
+221	0	    Me!tglFormV = False
+222	0	End If
+223	0	Exit Sub
+224	0	
+225	0	Err_tglDataSheet:
+226	0	    Call General_Error_Trap
+227	0	    Exit Sub
+228	0	
+229	0	End Sub
+230	0	
+231	0	Private Sub tglFormV_Click()
+232	1	'********************************************************************
+233	1	' The user wants to see the basic data in form view
+234	1	' SAJ
+235	1	'********************************************************************
+236	0	On Error GoTo Err_tglFormV
+237	0	
+238	0	If Me!tglFormV = True Then
+239	0	    
+240	0	    Me!FrmSubSieveScanning.SetFocus
+241	0	    DoCmd.RunCommand acCmdSubformDatasheet
+242	0	
+243	0	    Me!tglDataSheet = False
+244	0	    
+245	0	End If
+246	0	Exit Sub
+247	0	
+248	0	Err_tglFormV:
+249	0	    Call General_Error_Trap
+250	0	    Exit Sub
+251	0	End Sub

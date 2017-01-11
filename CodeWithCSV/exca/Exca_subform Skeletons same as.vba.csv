@@ -1,0 +1,120 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub Form_BeforeUpdate(Cancel As Integer)
+5	0	Me![Date changed] = Now()
+6	0	End Sub
+7	0	
+8	0	
+9	0	Private Sub Form_Open(Cancel As Integer)
+10	1	'**********************************************************************
+11	1	' Set up form view depending on permissions
+12	1	' SAJ v9.1
+13	1	'**********************************************************************
+14	0	On Error GoTo err_Form_Open
+15	0	
+16	0	    Dim permiss
+17	0	    permiss = GetGeneralPermissions
+18	0	    If permiss = "ADMIN" Or permiss = "RW" Or permiss = "exsuper" Then
+19	0	        ToggleFormReadOnly Me, False
+20	0	    Else
+21	1	        'set read only form here, just once
+22	0	        ToggleFormReadOnly Me, True
+23	0	    End If
+24	0	Exit Sub
+25	0	
+26	0	err_Form_Open:
+27	0	    Call General_Error_Trap
+28	0	    Exit Sub
+29	0	End Sub
+30	0	
+31	0	Sub open_skell_Click()
+32	1	'****************************************************************************
+33	1	' This button triggers a parametre box to appear for a feature number  - its predates
+34	1	' the time features were normalised and pulled out of the Unit table. Then it leads
+35	1	' off to a skeleton recording sheet.
+36	1	' SF said to hide this button as everything is now recorded on the main Unit form
+37	1	' SAJ v9.1
+38	1	'****************************************************************************
+39	0	On Error GoTo Err_open_skell_Click
+40	0	
+41	0	    Dim stDocName As String
+42	0	    Dim stLinkCriteria As String
+43	0	
+44	0	    stDocName = "Exca: Skeleton Sheet"
+45	0	    
+46	0	    stLinkCriteria = "[Unit Number]=" & Me![To_Unit]
+47	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+48	0	
+49	0	Exit_open_skell_Click:
+50	0	    Exit Sub
+51	0	
+52	0	Err_open_skell_Click:
+53	0	    MsgBox Err.Description
+54	0	    Resume Exit_open_skell_Click
+55	0	    
+56	0	End Sub
+57	0	
+58	0	Private Sub To_Unit_AfterUpdate()
+59	1	'***********************************************************************
+60	1	' Intro of a validity check to ensure unit num entered here is exists
+61	1	' that it is a skeleton
+62	1	'
+63	1	' SAJ v9.1
+64	1	'***********************************************************************
+65	0	On Error GoTo err_To_Unit_AfterUpdate
+66	0	
+67	0	Dim checknum, msg, retval, checknum2
+68	0	
+69	0	If Me![To_Unit] <> "" Then
+70	1	    'first check its valid
+71	0	    If IsNumeric(Me![To_Unit]) Then
+72	0	    
+73	1	        'check that Unit num does exist
+74	0	        checknum = DLookup("[Unit Number]", "[Exca: Unit Sheet]", "[Unit Number] = " & Me![To_Unit])
+75	0	        If IsNull(checknum) Then
+76	0	            msg = "This Unit Number DOES NOT EXIST in the database yet, please ensure it is entered soon."
+77	0	            MsgBox msg, vbInformation, "Unit Number does not exist yet"
+78	0	           DoCmd.GoToControl "To_Unit"
+79	0	            
+80	0	        Else
+81	1	            'valid number, now check its  category
+82	0	            checknum2 = DLookup("[Category]", "[Exca: Unit Sheet]", "[Unit Number] = " & Me![To_Unit])
+83	1	                If Not IsNull(checknum2) Then 'category found this unit
+84	0	                    If UCase(checknum2) <> "SKELETON" Then
+85	1	                        'do not allow entry if units category is not skeleton
+86	0	                        msg = "This entry is not allowed:  Unit (" & Me![To_Unit] & ")"
+87	2	                        msg = msg & " has the category " & checknum2 & ", only Units with the category 'Skeleton' are valid here."
+88	0	                        msg = msg & Chr(13) & Chr(13) & "This entry cannot be allowed. Please double check this issue with your Supervisor."
+89	0	                        MsgBox msg, vbExclamation, "Category problem"
+90	0	                        
+91	1	                        'reset val to previous val if is one or else remove it completely
+92	0	                        If Not IsNull(Me![To_Unit].OldValue) Then
+93	0	                            Me![To_Unit] = Me![To_Unit].OldValue
+94	0	                        Else
+95	0	                            Me.Undo
+96	0	                        End If
+97	0	                        DoCmd.GoToControl "To_Unit"
+98	0	                    End If
+99	0	                Else
+100	1	                    'the category for this unit has not been filled out yet, SF says allow link
+101	0	                    msg = "The Unit (" & Me![To_Unit] & ")"
+102	0	                    msg = msg & " has no category entered yet. Please correct this as soon as possible"
+103	0	                    MsgBox msg, vbInformation, "Category Missing"
+104	1	                    'but do nothign
+105	0	                    DoCmd.GoToControl "To_Unit"
+106	0	                End If
+107	0	        End If
+108	0	    
+109	0	    Else
+110	1	        'not a vaild numeric unit number
+111	0	        MsgBox "The Unit number is invalid, please enter a numeric value only", vbInformation, "Invalid Entry"
+112	0	    End If
+113	0	End If
+114	0	
+115	0	Exit Sub
+116	0	
+117	0	err_To_Unit_AfterUpdate:
+118	0	    Call General_Error_Trap
+119	0	    Exit Sub
+120	0	End Sub

@@ -1,0 +1,117 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdDelete_Click()
+5	1	'SAJ - check if user can delete this record
+6	1	' The subtype value is used in the worked data table
+7	1	' so must check all this to see if is used before allow delete
+8	1	' At present not offering global edits - this can be extended to offer this if required
+9	0	
+10	1	'On Error GoTo Err_cmdDelete_Click
+11	1	'
+12	1	'Dim checkValidAction, retVal
+13	1	'
+14	2	'    'check basic data for fraction field
+15	1	'    checkValidAction = CheckIfLOVValueUsed("Groundstone List of Values: Artefact SubType", "Tool SubType", Me![txtSubType], "GroundStone 3: Worked Stone Basics", "GID", "Artefact SubType", "delete", False)
+16	1	'
+17	1	'    If checkValidAction = "ok" Then
+18	2	'                'delete action can go ahead - at present simply offer an input box for this
+19	1	'                retVal = MsgBox("No records refer to this Sub Type (" & Me![txtSubType] & ") so deletion is allowed." & Chr(13) & Chr(13) & "Are you sure you want to delete " & Me![txtSubType] & " from the list of available SubTypes?", vbExclamation + vbYesNo, "Confirm Deletion")
+20	1	'                If retVal = vbYes Then
+21	1	'                    Me.AllowDeletions = True
+22	1	'                    DoCmd.RunCommand acCmdDeleteRecord
+23	1	'                    Me.AllowDeletions = False
+24	1	'                End If
+25	1	'
+26	1	'    ElseIf checkValidAction = "fail" Then
+27	1	'        MsgBox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+28	1	'    Else
+29	1	'        MsgBox checkValidAction, vbExclamation, "Action Report"
+30	1	'    End If
+31	1	'
+32	1	'Exit_cmdDelete_Click:
+33	1	'    Exit Sub
+34	1	'
+35	1	'Err_cmdDelete_Click:
+36	1	'    Call General_Error_Trap
+37	1	'    Exit Sub
+38	0	    
+39	0	End Sub
+40	0	
+41	0	Private Sub cmdEdit_Click()
+42	1	'v9.2 SAJ - check if user can edit this record
+43	1	' The percent value is used in the basic data table
+44	1	' so must check all this to see if is used before allow edit
+45	1	' At present not offering global edits - this can be extended to offer this if required
+46	0	
+47	1	'On Error GoTo Err_cmdEdit_Click
+48	1	'
+49	1	'Dim checkValidAction, checkValidAction2, checkValidAction3, retVal
+50	1	'
+51	2	'    'check basic data for fraction field
+52	1	'    checkValidAction = CheckIfLOVValueUsed("Groundstone List of Values: Artefact SubType", "Tool SubType", Me![txtSubType], "GroundStone 3: Worked Stone Basics", "GID", "Artefact SubType", "edit", False)
+53	1	'
+54	1	'    If checkValidAction = "ok" Then
+55	2	'        'edit action can go ahead - at present simply offer an input box for this
+56	1	'        retVal = InputBox("No records refer to this SubType (" & Me![txtSubType] & ") so an edit is allowed." & Chr(13) & Chr(13) & "Please enter the edited Percent that you wish to replace this entry with:", "Enter edited SubType")
+57	1	'        If retVal <> "" Then
+58	1	'             Me![txtSubType] = retVal
+59	1	'        End If
+60	1	'
+61	1	'    ElseIf checkValidAction = "fail" Then
+62	1	'        MsgBox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+63	1	'    Else
+64	1	'        MsgBox checkValidAction, vbExclamation, "Action Report"
+65	1	'    End If
+66	1	'
+67	1	'Exit_cmdEdit_Click:
+68	1	'    Exit Sub
+69	1	'
+70	1	'Err_cmdEdit_Click:
+71	1	'    Call General_Error_Trap
+72	1	'    Exit Sub
+73	0	    
+74	0	End Sub
+75	0	
+76	1	'******************************************************
+77	1	' This subform is new with v9.2
+78	1	' SAJ v9.2
+79	1	'******************************************************
+80	0	Private Sub cmdNewSubType_Click()
+81	1	'v9.2 - allow new subtype to be added
+82	0	On Error GoTo err_cmdNewSubType_Click
+83	0	
+84	0	    If Forms![Frm_Admin_ArtefactTypeSubTypeLOV]![Code] <> "" Then
+85	0	        Dim sql, retVal
+86	2	        retVal = InputBox("Please enter the new subtype for the artefact type '" & Forms![Frm_Admin_ArtefactTypeSubTypeLOV]![Tool Types] & "': ", "Enter new subtype")
+87	0	        If retVal <> "" Then
+88	2	            sql = "INSERT INTO [Groundstone List of Values: Artefact SubType] ([TypeCode], [Tool SubType]) VALUES (" & Forms![Frm_Admin_ArtefactTypeSubTypeLOV]![Code] & ", '" & retVal & "');"
+89	0	            DoCmd.RunSQL sql
+90	0	            Me.Requery
+91	0	        End If
+92	0	    Else
+93	0	        MsgBox "Sorry not all the data necessary to make a new subtype is available.", vbExclamation, "Invalid Action"
+94	0	    End If
+95	0	Exit Sub
+96	0	
+97	0	err_cmdNewSubType_Click:
+98	0	    Call General_Error_Trap
+99	0	    Exit Sub
+100	0	End Sub
+101	0	
+102	0	Private Sub Form_Open(Cancel As Integer)
+103	1	'v9.2 SAJ - only adminstrators are allowed in here
+104	0	On Error GoTo err_Form_Open
+105	0	
+106	0	    Dim permiss
+107	0	    permiss = GetGeneralPermissions
+108	0	    If permiss <> "ADMIN" Then
+109	0	        MsgBox "Sorry but only Administrators have access to this form"
+110	0	        DoCmd.Close acForm, Me.Name
+111	0	    End If
+112	0	Exit Sub
+113	0	
+114	0	err_Form_Open:
+115	0	    Call General_Error_Trap
+116	0	    Exit Sub
+117	0	End Sub

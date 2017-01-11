@@ -1,0 +1,52 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdAdmin_Click()
+5	1	'open the pub data screen
+6	0	On Error GoTo err_Admin
+7	0	
+8	0	    DoCmd.OpenForm "Frm_Photo_AdminMenu", acNormal
+9	0	    DoCmd.Close acForm, Me.Name
+10	0	    
+11	0	Exit Sub
+12	0	
+13	0	err_Admin:
+14	0	    Call General_Error_Trap
+15	0	    Exit Sub
+16	0	End Sub
+17	0	
+18	0	Private Sub cmdOpenData_Click()
+19	1	'open the main data screen
+20	0	On Error GoTo err_OpenData
+21	0	
+22	0	    Dim stDocName
+23	0	    stDocName = "photo_sheet"
+24	0	    DoCmd.OpenForm stDocName, acNormal
+25	0	    DoCmd.Close acForm, Me.Name
+26	0	    
+27	0	Exit Sub
+28	0	
+29	0	err_OpenData:
+30	0	    Call General_Error_Trap
+31	0	    Exit Sub
+32	0	End Sub
+33	0	
+34	0	
+35	0	
+36	0	Private Sub cmdQuit_Click()
+37	1	'quit system
+38	0	On Error GoTo err_Quit
+39	0	
+40	0	    DoCmd.Quit acQuitSaveAll
+41	0	    
+42	0	
+43	0	Exit Sub
+44	0	
+45	0	err_Quit:
+46	0	    Call General_Error_Trap
+47	0	    Exit Sub
+48	0	End Sub
+49	0	
+50	0	
+51	0	
+52	0	

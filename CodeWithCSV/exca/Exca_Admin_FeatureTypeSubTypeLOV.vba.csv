@@ -1,0 +1,154 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	0	Option Explicit
+3	1	'**************************************************
+4	1	' This form is new in v9.2 - SAJ
+5	1	'**************************************************
+6	0	
+7	0	
+8	0	
+9	0	
+10	0	Private Sub cboFindFeature_AfterUpdate()
+11	1	'v9.2 saj find a feature from the list
+12	0	On Error GoTo err_find
+13	0	    If Me![cboFindFeature] <> "" Then
+14	0	        DoCmd.GoToControl "txtFeatureType"
+15	0	        DoCmd.FindRecord Me![cboFindFeature]
+16	0	    End If
+17	0	    Me.AllowEdits = False
+18	0	Exit Sub
+19	0	
+20	0	err_find:
+21	0	    Call General_Error_Trap
+22	0	    Exit Sub
+23	0	End Sub
+24	0	
+25	0	
+26	0	
+27	0	
+28	0	
+29	0	
+30	0	
+31	0	Private Sub cboFindFeature_GotFocus()
+32	2	'v9.2 SAJ - as the form does not allow edits the list can't be selected from -
+33	1	'when list gets focus turn on allow edits and off again when loses it
+34	0	Me.AllowEdits = True
+35	0	End Sub
+36	0	
+37	0	Private Sub cboFindFeature_LostFocus()
+38	2	'v9.2 SAJ - as the form does not allow edits the list can't be selected from -
+39	1	'when list gets focus turn on allow edits and off again when loses it
+40	0	Me.AllowEdits = False
+41	0	End Sub
+42	0	
+43	0	Private Sub cmdAddNew_Click()
+44	1	'v9.2 SAJ - add a new record
+45	0	On Error GoTo err_cmdAddNew_Click
+46	0	
+47	0	    DoCmd.RunCommand acCmdRecordsGoToNew
+48	0	
+49	0	Exit Sub
+50	0	
+51	0	err_cmdAddNew_Click:
+52	0	    Call General_Error_Trap
+53	0	    Exit Sub
+54	0	End Sub
+55	0	
+56	0	Private Sub Excavation_Click()
+57	1	'v9.2 SAJ - close the form
+58	0	    DoCmd.Close acForm, Me.Name
+59	0	End Sub
+60	0	
+61	0	
+62	0	
+63	0	Private Sub cmdEdit_Click()
+64	1	'v9.2 SAJ - check if user can edit this record
+65	1	' The feature type value is used on the Feature Sheet
+66	1	' so must check all this values to see if this type is used before allow edit
+67	1	' At present not offering global edits - this can be extended to offer this if required
+68	0	
+69	0	On Error GoTo Err_cmdEdit_Click
+70	0	
+71	0	Dim checkValidAction, retval
+72	0	
+73	1	    'check space sheet level field
+74	0	    checkValidAction = CheckIfLOVValueUsed("Exca:FeatureTypeLOV", "FeatureType", Me![txtFeatureType], "Exca: Features", "Feature Number", "Feature Type", "edit")
+75	0	    
+76	0	    If checkValidAction = "ok" Then
+77	1	        'edit action can go ahead - at present simply offer an input box for this
+78	0	        retval = InputBox("No records refer to this Feature Type (" & Me![txtFeatureType] & ") so an edit is allowed." & Chr(13) & Chr(13) & "Please enter the edited Feature Type that you wish to replace this entry with:", "Enter edited Feature Type")
+79	0	        If retval <> "" Then
+80	0	            Me![txtFeatureType] = retval
+81	0	        End If
+82	0	    ElseIf checkValidAction = "fail" Then
+83	0	        MsgBox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+84	0	    Else
+85	0	        MsgBox checkValidAction, vbExclamation, "Action Report"
+86	0	    End If
+87	0	    
+88	0	Exit_cmdEdit_Click:
+89	0	    Exit Sub
+90	0	
+91	0	Err_cmdEdit_Click:
+92	0	    Call General_Error_Trap
+93	0	    Exit Sub
+94	0	    
+95	0	End Sub
+96	0	
+97	0	Private Sub cmdDelete_Click()
+98	1	'v9.2 SAJ - check if user can delete this record
+99	1	' The feature type value is used on the Feature Sheet
+100	1	' so must check all this values to see if this type is used before allow delete
+101	1	' At present not offering global edits - this can be extended to offer this if required
+102	0	
+103	0	On Error GoTo Err_cmdDelete_Click
+104	0	
+105	0	Dim checkValidAction, retval
+106	0	
+107	1	    'first check if this has any subtypes
+108	0	    If Not IsNull(Me![Exca: Admin_Subform_FeatureSubType].Form![FeatureTypeID]) Then
+109	0	        MsgBox "You must delete the Sub types associated with this feature first", vbInformation, "Invalid Action"
+110	0	    Else
+111	0	
+112	1	        'check FEATURE sheet feature type field
+113	0	        checkValidAction = CheckIfLOVValueUsed("Exca:FeatureTypeLOV", "FeatureType", Me![txtFeatureType], "Exca: Features", "Feature Number", "Feature Type", "delete")
+114	0	        If checkValidAction = "ok" Then
+115	1	        'delete action can go ahead - at present simply offer an input box for this
+116	0	            retval = MsgBox("No records refer to this Feature Type (" & Me![txtFeatureType] & ") so deletion is allowed." & Chr(13) & Chr(13) & "Are you sure you want to delete " & Me![txtFeatureType] & " from the list of available Feature Types?", vbExclamation + vbYesNo, "Confirm Deletion")
+117	0	            If retval = vbYes Then
+118	0	                Me.AllowDeletions = True
+119	0	                DoCmd.RunCommand acCmdDeleteRecord
+120	0	                Me.AllowDeletions = False
+121	0	            End If
+122	0	        
+123	0	        ElseIf checkValidAction = "fail" Then
+124	0	            MsgBox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+125	0	        Else
+126	1	            'is error occured in CheckIfLOVValueUsed it will come back empty so err already displayed
+127	0	            If Not IsEmpty(checkValidAction) Then MsgBox checkValidAction, vbExclamation, "Action Report"
+128	0	        End If
+129	0	    End If
+130	0	Exit_cmdDelete_Click:
+131	0	    Exit Sub
+132	0	
+133	0	Err_cmdDelete_Click:
+134	0	    Call General_Error_Trap
+135	0	    Exit Sub
+136	0	    
+137	0	End Sub
+138	0	
+139	0	Private Sub Form_Open(Cancel As Integer)
+140	1	'v9.2 SAJ - only adminstrators are allowed in here
+141	0	On Error GoTo err_Form_Open
+142	0	
+143	0	    Dim permiss
+144	0	    permiss = GetGeneralPermissions
+145	0	    If permiss <> "ADMIN" Then
+146	0	        MsgBox "Sorry but only Administrators have access to this form"
+147	0	        DoCmd.Close acForm, Me.Name
+148	0	    End If
+149	0	Exit Sub
+150	0	
+151	0	err_Form_Open:
+152	0	    Call General_Error_Trap
+153	0	    Exit Sub
+154	0	End Sub

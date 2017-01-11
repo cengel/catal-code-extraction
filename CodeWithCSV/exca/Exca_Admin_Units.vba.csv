@@ -1,0 +1,396 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	0	Option Explicit
+3	1	'**************************************************
+4	1	' This form is new in v9.2 - SAJ
+5	1	'**************************************************
+6	0	
+7	0	
+8	0	
+9	0	
+10	0	Private Sub cmdAddNew_Click()
+11	1	'v9.2 SAJ - add a new record
+12	0	On Error GoTo err_cmdAddNew_Click
+13	0	
+14	0	    DoCmd.RunCommand acCmdRecordsGoToNew
+15	0	
+16	0	Exit Sub
+17	0	
+18	0	err_cmdAddNew_Click:
+19	0	    Call General_Error_Trap
+20	0	    Exit Sub
+21	0	End Sub
+22	0	
+23	0	Private Sub cboFind_Click()
+24	0	On Error GoTo err_cboFind
+25	0	    
+26	0	    If Me![cboFind] <> "" Then
+27	0	        DoCmd.GoToControl "txtUnitNumber"
+28	0	        DoCmd.FindRecord Me![cboFind]
+29	0	   
+30	0	    End If
+31	0	Exit Sub
+32	0	
+33	0	err_cboFind:
+34	0	    Call General_Error_Trap
+35	0	    Exit Sub
+36	0	End Sub
+37	0	
+38	0	Private Sub cmdReNumber_Click()
+39	1	'new season 2007 - saj
+40	1	'auto re-num of a unit in all of its sub tables
+41	2	'PROBLEMS with transactions so set up all keys (couldn't check on creation so is some
+42	1	'data cleaning required) - only couple of tables must be done manually
+43	0	On Error GoTo err_cmdReNumber
+44	0	
+45	0	    Dim retval, findUnit, sql, response, msg
+46	0	    retval = InputBox("Please enter the new number for Unit " & Me![txtUnitNumber] & "?", "Enter new unit number")
+47	0	    If retval <> "" Then
+48	1	        'check valid entry
+49	0	        If Not IsNumeric(retval) Then
+50	0	            MsgBox "Invalid Unit number, please try again", vbExclamation, "Action Cancelled"
+51	0	            Exit Sub
+52	0	        End If
+53	0	        
+54	1	        'now check if new unit already exists
+55	0	        findUnit = DLookup("[Unit Number]", "[Exca: Unit Sheet]", "[Unit number] = " & retval)
+56	0	        If Not IsNull(findUnit) Then
+57	0	            MsgBox "Sorry but the unit number " & retval & " already exists. You must delete it first before you can alter " & Me![txtUnitNumber], vbExclamation, "Unit already exists"
+58	0	            Exit Sub
+59	0	        Else
+60	1	            'new unit number does not exist so allow alteration
+61	0	            msg = "Are you quite sure that you want to renumber Unit " & Me![txtUnitNumber] & " to " & retval & "?"
+62	0	            response = MsgBox(msg, vbCritical + vbYesNoCancel, "Confirm Unit Re-Number")
+63	0	            If response = vbYes Then
+64	1	                'TRANSACTION FAILING AS TWO CALLS TO SAME TABLE _ SECOND FAILS - TRIED TRANS IN TRANS BUT FAIL
+65	0	                
+66	1	                'On Error Resume Next
+67	0	                Dim mydb As DAO.Database, wrkdefault As Workspace, wrkdefault1 As Workspace
+68	1	                'Dim mydb1 As DAO.Database
+69	1	                'Set wrkdefault = DBEngine.Workspaces(0)
+70	0	                Set mydb = CurrentDb
+71	1	                'Set mydb1 = CurrentDb
+72	0	        
+73	2	                '' Start of outer transaction.
+74	1	                'wrkdefault.BeginTrans
+75	0	        
+76	1	                'change unit number
+77	1	                'sql = "UPDATE [Exca: Unit Sheet] SET [Exca: Unit Sheet].[Unit Number] = " & retVal & " WHERE [Exca: Unit Sheet].[Unit Number]=" & Me![txtUnitNumber] & ";"
+78	0	                Call RenumARecord("Exca: Unit Sheet", "Unit Number", retval, Me![txtUnitNumber], False, mydb)
+79	1	                'these should all be done by cascade - but do here to
+80	0	                Call RenumARecord("Exca: Units in Features", "Unit", retval, Me![txtUnitNumber], False, mydb)
+81	0	                Call RenumARecord("Exca: Units in Spaces", "Unit", retval, Me![txtUnitNumber], False, mydb)
+82	1	                ' no longer a table 2009 Call RenumARecord("Exca: Units in Buildings", "Unit", retVal, Me![txtUnitNumber], False, mydb)
+83	0	                Call RenumARecord("Exca: Unit Interpretive Categories", "Unit Number", retval, Me![txtUnitNumber], False, mydb)
+84	0	                Call RenumARecord("Exca: Unit Data Categories", "Unit Number", retval, Me![txtUnitNumber], False, mydb)
+85	0	                Call RenumARecord("Exca: Dimensions", "Unit Number", retval, Me![txtUnitNumber], False, mydb)
+86	0	            
+87	0	                If LCase(Me![txtCategory]) = "skeleton" Then
+88	1	     'begin begin trans1
+89	1	     '
+90	1	     '              Set wrkdefault1 = DBEngine.Workspaces(0)
+91	1	     '               wrkdefault1.BeginTrans
+92	1	     '
+93	1	     '               Call RenumARecord("Exca: skeletons same as", "skell_unit", retVal, Me![txtUnitNumber], False, mydb1)
+94	1	     '
+95	1	     '               If Err.Number = 0 Then
+96	1	     '
+97	1	     '                   wrkdefault1.CommitTrans
+98	1	     '                   MsgBox "Renumbering has been successful"
+99	1	     '
+100	1	     '               Else
+101	1	     '                   wrkdefault1.Rollback
+102	1	     '                   MsgBox "A problem has occured and the re-numbering has been cancelled. The error message is: " & Err.Description
+103	1	     '               End If
+104	0	              
+105	0	                    Call RenumARecord("Exca: Skeleton data", "Unit Number", retval, Me![txtUnitNumber], False, mydb)
+106	1	     ' end begin trans1
+107	0	                    Call RenumARecord("Exca: skeletons same as", "skell_unit", retval, Me![txtUnitNumber], False, mydb)
+108	0	                    Call RenumARecord("Exca: skeletons same as", "to_unit", retval, Me![txtUnitNumber], False, mydb)
+109	0	
+110	0	
+111	0	                ElseIf LCase(Me![txtCategory]) = "cut" Then
+112	0	                    Call RenumARecord("Exca: descriptions cut", "Unit Number", retval, Me![txtUnitNumber], False, mydb)
+113	0	                Else
+114	0	                    Call RenumARecord("Exca: descriptions layer", "Unit Number", retval, Me![txtUnitNumber], False, mydb)
+115	0	                End If
+116	0	           
+117	0	               Call RenumARecord("Exca: stratigraphy", "Unit", retval, Me![txtUnitNumber], False, mydb)
+118	0	               Call RenumARecord("Exca: stratigraphy", "to_Units", retval, Me![txtUnitNumber], True, mydb)
+119	0	       
+120	0	                Call RenumARecord("Exca: graphics list", "Unit", retval, Me![txtUnitNumber], False, mydb)
+121	0	                Call RenumARecord("Exca: samples", "Unit Number", retval, Me![txtUnitNumber], False, mydb)
+122	0	                Call RenumARecord("Exca: X-Finds: Basic data", "Unit Number", retval, Me![txtUnitNumber], False, mydb)
+123	0	        
+124	2	                ''Call RenumARecord("Exca: Unit Sheet", "Unit Number", retVal, Me![txtUnitNumber], False, mydb)
+125	0	    
+126	1	                'If Err.Number = 0 Then
+127	1	                '    wrkdefault.CommitTrans
+128	1	                '    MsgBox "Renumbering has been successful"
+129	1	                '    Me.Requery
+130	1	                '    Me![cboFind].Requery
+131	1	                'Else
+132	1	                '    wrkdefault.Rollback
+133	1	                '    MsgBox "A problem has occured and the re-numbering has been cancelled. The error message is: " & Err.Description
+134	1	                'End If
+135	1	                'mydb1.close
+136	1	                'Set mydb1 = Nothing
+137	0	                mydb.Close
+138	0	                Set mydb = Nothing
+139	1	                'wrkdefault1.close
+140	1	                'Set wrkdefault1 = Nothing
+141	1	                'wrkdefault.close
+142	1	                'Set wrkdefault = Nothing
+143	0	                MsgBox "Renumbering has been successful"
+144	0	            Else
+145	0	                MsgBox "Re-numbering cancelled", vbInformation, "Action Cancelled"
+146	0	    
+147	0	            End If
+148	0	        End If
+149	0	
+150	0	    Else
+151	0	        MsgBox "No unit number entered, action cancelled"
+152	0	    End If
+153	0	
+154	0	Exit Sub
+155	0	
+156	0	err_cmdReNumber:
+157	0	    Call General_Error_Trap
+158	0	    Exit Sub
+159	0	End Sub
+160	0	
+161	0	Private Sub Excavation_Click()
+162	1	'v9.2 SAJ - close the form
+163	0	    DoCmd.Close acForm, Me.Name
+164	0	End Sub
+165	0	
+166	0	
+167	0	
+168	0	Private Sub cmdEdit_Click()
+169	1	'v9.2 SAJ - check if user can edit this record
+170	1	' The level value is used in 3 potential places on the Space Sheet - certain level
+171	1	' Uncertain level start and uncertain level end so must check all these values to see
+172	1	' if this level is used before allow edit
+173	1	' At present not offering global edits - this can be extended to offer this if required
+174	0	
+175	0	On Error GoTo Err_cmdEdit_Click
+176	0	
+177	0	Dim checkValidAction, checkValidAction2, checkValidAction3, retval
+178	0	
+179	1	    'check space sheet level field
+180	0	    checkValidAction = CheckIfLOVValueUsed("Exca:LevelLOV", "Level", Me![txtLevel], "Exca: Space Sheet", "Space Number", "Level", "edit")
+181	0	    
+182	0	    If checkValidAction = "ok" Then
+183	2	        ''check space sheet uncertain level start field
+184	0	        checkValidAction2 = CheckIfLOVValueUsed("Exca:LevelLOV", "Level", Me![txtLevel], "Exca: Space Sheet", "Space Number", "UncertainLevelStart", "edit")
+185	0	        
+186	0	        If checkValidAction2 = "ok" Then
+187	1	        'check space sheet uncertain level end field
+188	0	            checkValidAction3 = CheckIfLOVValueUsed("Exca:LevelLOV", "Level", Me![txtLevel], "Exca: Space Sheet", "Space Number", "UncertainLevelEnd", "edit")
+189	0	        
+190	0	            If checkValidAction3 = "ok" Then
+191	1	                'edit action can go ahead - at present simply offer an input box for this
+192	0	                retval = InputBox("No records refer to this Level (" & Me![txtLevel] & ") so an edit is allowed." & Chr(13) & Chr(13) & "Please enter the edited Level that you wish to replace this entry with:", "Enter edited Level")
+193	0	                If retval <> "" Then
+194	0	                    Me![txtLevel] = retval
+195	0	                End If
+196	0	                
+197	0	            ElseIf checkValidAction3 = "fail" Then
+198	0	                MsgBox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+199	0	            Else
+200	0	                MsgBox checkValidAction3, vbExclamation, "Action Report"
+201	0	            End If
+202	0	        ElseIf checkValidAction2 = "fail" Then
+203	0	            MsgBox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+204	0	        Else
+205	0	            MsgBox checkValidAction2, vbExclamation, "Action Report"
+206	0	        End If
+207	0	        
+208	0	    ElseIf checkValidAction = "fail" Then
+209	0	        MsgBox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+210	0	    Else
+211	0	        MsgBox checkValidAction, vbExclamation, "Action Report"
+212	0	    End If
+213	0	    
+214	0	Exit_cmdEdit_Click:
+215	0	    Exit Sub
+216	0	
+217	0	Err_cmdEdit_Click:
+218	0	    Call General_Error_Trap
+219	0	    Exit Sub
+220	0	    
+221	0	End Sub
+222	0	
+223	0	Private Sub cmdDelete_Click()
+224	1	'v9.2 SAJ - allow deletion of record with warning
+225	0	
+226	0	On Error GoTo Err_cmdDelete_Click
+227	0	
+228	0	Dim UFeature, USpace, UBuilding, UIntCat, UDataCat, UDim, UCatSpecific, UStrat, USkelSame, UGrap, USamp, UXfind
+229	0	Dim retval, msg, msg1
+230	0	
+231	0	retval = MsgBox("You have selected to delete Unit number: " & Me![txtUnitNumber] & ". The system will now check what additional data exists for this Unit and will prompt you again before deleting it." & Chr(13) & Chr(13) & "Are you sure you want to continue?", vbCritical + vbYesNo, "Confirm Action")
+232	0	If retval = vbYes Then
+233	0	    
+234	1	    'check units in feature
+235	0	    UFeature = AdminDeletionCheck("Exca: Units in Features", "Unit", Me![txtUnitNumber], "Related to Feature", "In_Feature")
+236	0	    
+237	1	    'check units in spaces
+238	0	    USpace = AdminDeletionCheck("Exca: Units in Spaces", "Unit", Me![txtUnitNumber], "Related to Space", "In_Space")
+239	0	    
+240	1	    'check units in building
+241	0	    UBuilding = AdminDeletionCheck("Exca: Units in Buildings", "Unit", Me![txtUnitNumber], "Related to Building", "In_Building")
+242	0	    
+243	1	    'check interp cats
+244	0	    UIntCat = AdminDeletionCheck("Exca: Unit Interpretive Categories", "Unit Number", Me![txtUnitNumber], "Interpretive Categories", "Interpretive Category")
+245	0	    
+246	1	    'check data cats
+247	0	    UDataCat = AdminDeletionCheck("Exca: Unit Data Categories", "Unit Number", Me![txtUnitNumber], "Data Categories", "Data Category")
+248	0	    
+249	1	    'check dimensions
+250	0	    UDim = AdminDeletionCheck("Exca: Dimensions", "Unit Number", Me![txtUnitNumber], "Dimensions", "Length")
+251	0	    
+252	0	    If LCase(Me![txtCategory]) = "skeleton" Then
+253	1	        'check dimensions
+254	0	        UCatSpecific = AdminDeletionCheck("Exca: skeleton data", "Unit Number", Me![txtUnitNumber], "Skeleton", "Target A - X")
+255	0	        USkelSame = AdminDeletionCheck("Exca: skeletons same as", "skell_unit", Me![txtUnitNumber], "Skeleton", "To_Unit")
+256	0	        USkelSame = USkelSame & AdminDeletionCheck("Exca: skeletons same as", "to_unit", Me![txtUnitNumber], "Skeleton related", "To_Unit")
+257	0	
+258	0	    ElseIf LCase(Me![txtCategory]) = "cut" Then
+259	0	        UCatSpecific = AdminDeletionCheck("Exca: descriptions cut", "Unit Number", Me![txtUnitNumber], "Cut Description", "Shape")
+260	0	    Else
+261	0	        UCatSpecific = AdminDeletionCheck("Exca: descriptions layer", "Unit Number", Me![txtUnitNumber], "Description", "Consistency")
+262	0	    End If
+263	0	    
+264	1	    'check stratigraphy
+265	0	    UStrat = AdminDeletionCheck("Exca: stratigraphy", "Unit", Me![txtUnitNumber], "Stratigraphy", "To_Units")
+266	0	    UStrat = UStrat & AdminDeletionCheck("Exca: stratigraphy", "To_Units", Me![txtUnitNumber], "Stratigraphy", "Unit")
+267	0	    
+268	0	    
+269	0	    UGrap = AdminDeletionCheck("Exca: graphics list", "Unit", Me![txtUnitNumber], "Graphics", "Type")
+270	0	    USamp = AdminDeletionCheck("Exca: samples", "Unit number", Me![txtUnitNumber], "Samples", "Sample Number")
+271	0	    UXfind = AdminDeletionCheck("Exca: X-Finds: Basic data", "Unit number", Me![txtUnitNumber], "X Finds", "GID Number")
+272	0	
+273	0	    If UFeature <> "" Then msg = msg & UFeature & "; "
+274	0	    If USpace <> "" Then msg = msg & USpace & "; "
+275	0	    If UBuilding <> "" Then msg = msg & UBuilding & "; "
+276	0	    If UIntCat <> "" Then msg = msg & UIntCat & "; "
+277	0	    If UDataCat <> "" Then msg = msg & UDataCat & "; "
+278	0	    If UDim <> "" Then msg = msg & UDim & "; "
+279	0	    If UCatSpecific <> "" Then msg = msg & UCatSpecific & "; "
+280	0	    If UStrat <> "" Then msg = msg & UStrat & "; "
+281	0	    
+282	0	    If LCase(Me![txtCategory]) = "skeleton" Then
+283	0	        If USkelSame <> "" Then msg = msg & USkelSame & "; "
+284	0	    End If
+285	0	    If UGrap <> "" Then msg = msg & UGrap & "; "
+286	0	    If USamp <> "" Then msg = msg & USamp & "; "
+287	0	    If UXfind <> "" Then msg = msg & UXfind & "; "
+288	0	    
+289	0	    If msg = "" Then
+290	0	        msg = "This Unit can safely be deleted."
+291	0	    Else
+292	0	        msg1 = "This Unit has the following relationships that will also be removed by the deletion - " & Chr(13) & Chr(13)
+293	0	        msg = msg1 & msg
+294	0	    End If
+295	0	    
+296	0	    msg = msg & Chr(13) & Chr(13) & "Are you quite sure that you want to permanently delete Unit " & Me![txtUnitNumber] & "?"
+297	0	    retval = MsgBox(msg, vbCritical + vbYesNoCancel, "Confirm Permanent Deletion")
+298	0	    If retval = vbYes Then
+299	0	        MsgBox "This can take a while and looks like it has hung, just let it run until a msg comes up"
+300	0	        On Error Resume Next
+301	0	        Dim mydb As DAO.Database, wrkdefault As Workspace
+302	0	        Set wrkdefault = DBEngine.Workspaces(0)
+303	0	        Set mydb = CurrentDb
+304	0	        
+305	1	        ' Start of outer transaction.
+306	0	        wrkdefault.BeginTrans
+307	0	        
+308	0	        If UFeature <> "" Then Call DeleteARecord("Exca: Units in Features", "Unit", Me![txtUnitNumber], False, mydb)
+309	0	        If USpace <> "" Then Call DeleteARecord("Exca: Units in Spaces", "Unit", Me![txtUnitNumber], False, mydb)
+310	1	        ' no longer a table 2009 If UBuilding <> "" Then Call DeleteARecord("Exca: Units in Buildings", "Unit", Me![txtUnitNumber], False, mydb)
+311	0	        If UIntCat <> "" Then Call DeleteARecord("Exca: Unit Interpretive Categories", "Unit Number", Me![txtUnitNumber], False, mydb)
+312	0	        If UDataCat <> "" Then Call DeleteARecord("Exca: Unit Data Categories", "Unit Number", Me![txtUnitNumber], False, mydb)
+313	0	        If UDim <> "" Then Call DeleteARecord("Exca: Dimensions", "Unit Number", Me![txtUnitNumber], False, mydb)
+314	0	        If UCatSpecific <> "" Then
+315	0	            
+316	0	            If LCase(Me![txtCategory]) = "skeleton" Then
+317	0	                Call DeleteARecord("Exca: Skeleton data", "Unit Number", Me![txtUnitNumber], False, mydb)
+318	0	                Call DeleteARecord("Exca: skeletons same as", "skell_unit", Me![txtUnitNumber], False, mydb)
+319	0	                Call DeleteARecord("Exca: skeletons same as", "to_unit", Me![txtUnitNumber], False, mydb)
+320	0	
+321	0	            ElseIf LCase(Me![txtCategory]) = "cut" Then
+322	0	                Call DeleteARecord("Exca: descriptions cut", "Unit Number", Me![txtUnitNumber], False, mydb)
+323	0	            Else
+324	0	                Call DeleteARecord("Exca: descriptions layer", "Unit Number", Me![txtUnitNumber], False, mydb)
+325	0	            End If
+326	0	        End If
+327	0	        
+328	0	        If UStrat <> "" Then
+329	0	            Call DeleteARecord("Exca: stratigraphy", "Unit", Me![txtUnitNumber], False, mydb)
+330	0	            Call DeleteARecord("Exca: stratigraphy", "to_Units", Me![txtUnitNumber], True, mydb)
+331	0	        End If
+332	0	    
+333	0	        If UGrap <> "" Then Call DeleteARecord("Exca: graphics list", "Unit", Me![txtUnitNumber], False, mydb)
+334	0	        If USamp <> "" Then Call DeleteARecord("Exca: samples", "Unit Number", Me![txtUnitNumber], False, mydb)
+335	0	        If UXfind <> "" Then Call DeleteARecord("Exca: X-Finds: Basic data", "Unit Number", Me![txtUnitNumber], False, mydb)
+336	0	        
+337	0	        Call DeleteARecord("Exca: Unit Sheet", "Unit Number", Me![txtUnitNumber], False, mydb)
+338	0	    
+339	0	        If Err.Number = 0 Then
+340	0	            wrkdefault.CommitTrans
+341	0	            MsgBox "Deletion has been successful"
+342	0	            Me.Requery
+343	0	            Me![cboFind].Requery
+344	0	        Else
+345	0	            wrkdefault.Rollback
+346	1	            'MsgBox "A problem has occured and the deletion has been cancelled. The error message is: " & Err.Description
+347	0	
+348	0	            msg = "A problem has occured and the deletion has been cancelled. " & Chr(13) & Chr(13)
+349	0	            msg = msg & "SHAHINA this often fails if there is Plan/Section info, Skeleton Sameas data and Stratigraphy data present. You have delete from these tables manually first:"
+350	0	            msg = msg & Chr(13) & Chr(13) & "Exca: Graphics list - all references to this unit in unit/feature number field" & Chr(13)
+351	0	            msg = msg & Chr(13) & Chr(13) & "Exca: Stratigraphy - all references to this unit in both unit and to_units fields" & Chr(13)
+352	0	            msg = msg & Chr(13) & Chr(13) & "(if it is a skeleton) Exca: Skeleton same as  - all references to this unit in skell_unit and to_unit fields" & Chr(13)
+353	0	            msg = msg & Chr(13) & Chr(13) & "then come back here and try again...sorry...system error follows: " & Err.Description
+354	0	            MsgBox msg
+355	0	        End If
+356	0	
+357	0	        mydb.Close
+358	0	        Set mydb = Nothing
+359	0	        wrkdefault.Close
+360	0	        Set wrkdefault = Nothing
+361	0	    Else
+362	0	        MsgBox "Deletion cancelled", vbInformation, "Action Cancelled"
+363	0	    
+364	0	    End If
+365	0	End If
+366	0	    
+367	0	    
+368	0	Exit_cmdDelete_Click:
+369	0	    Exit Sub
+370	0	
+371	0	Err_cmdDelete_Click:
+372	0	    Call General_Error_Trap
+373	0	    Exit Sub
+374	0	    
+375	0	End Sub
+376	0	
+377	0	Private Sub Form_Delete(Cancel As Integer)
+378	0	Call cmdDelete_Click
+379	0	End Sub
+380	0	
+381	0	Private Sub Form_Open(Cancel As Integer)
+382	1	'v9.2 SAJ - only adminstrators are allowed in here
+383	0	On Error GoTo err_Form_Open
+384	0	
+385	0	    Dim permiss
+386	0	    permiss = GetGeneralPermissions
+387	0	    If permiss <> "ADMIN" Then
+388	0	        MsgBox "Sorry but only Administrators have access to this form"
+389	0	        DoCmd.Close acForm, Me.Name
+390	0	    End If
+391	0	Exit Sub
+392	0	
+393	0	err_Form_Open:
+394	0	    Call General_Error_Trap
+395	0	    Exit Sub
+396	0	End Sub

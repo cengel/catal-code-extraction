@@ -1,0 +1,1011 @@
+1	0	Option Compare Database
+2	0	
+3	0	
+4	0	
+5	0	
+6	0	Private Sub Close_Click()
+7	0	On Error GoTo err_close
+8	0	
+9	0	    DoCmd.OpenForm "Frm_Photo_MainMenu", acNormal, , , acFormPropertySettings
+10	0	    DoCmd.Close acForm, Me.Name
+11	0	    
+12	0	
+13	0	Exit Sub
+14	0	
+15	0	err_close:
+16	0	    Call General_Error_Trap
+17	0	    Exit Sub
+18	0	End Sub
+19	0	
+20	0	Private Sub cmbtechnical_AfterUpdate()
+21	0	On Error GoTo err_cmbtechnical_AfterUpdate
+22	0	
+23	0	If Trim(Me![technical]) = "3D Model" Then
+24	0	    Me!Building.Enabled = True
+25	0	    Me!Space.Enabled = True
+26	0	    Me!Building.Visible = True
+27	0	    Me!Space.Visible = True
+28	0	    Me!buildingtitle.Visible = True
+29	0	    Me!spacetitle.Visible = True
+30	0	Else
+31	0	    Me!Building.Enabled = False
+32	0	    Me!Space.Enabled = False
+33	0	    Me!Building.Visible = False
+34	0	    Me!Space.Visible = False
+35	0	    Me!buildingtitle.Visible = False
+36	0	    Me!spacetitle.Visible = False
+37	0	End If
+38	0	Exit Sub
+39	0	
+40	0	err_cmbtechnical_AfterUpdate:
+41	0	    Call General_Error_Trap
+42	0	    Exit Sub
+43	0	
+44	0	End Sub
+45	0	
+46	0	Private Sub cmbtechnical_Change()
+47	0	    If (Me!technical.Value = "3D Model") Then
+48	0	        Me!modelname.Enabled = True
+49	0	    Else
+50	0	        Me!modelname.Enabled = False
+51	0	    End If
+52	0	End Sub
+53	0	
+54	0	Private Sub cmdAddNew_Click()
+55	1	'********************************************
+56	1	'Add a new record
+57	1	'
+58	1	'taken from SAJ v9.1 - DL 2015
+59	1	'********************************************
+60	0	On Error GoTo err_cmdAddNew_Click
+61	0	
+62	0	    DoCmd.GoToRecord acActiveDataObject, , acNewRec
+63	0	    DoCmd.GoToControl "photographer"
+64	0	Exit Sub
+65	0	
+66	0	err_cmdAddNew_Click:
+67	0	    Call General_Error_Trap
+68	0	    Exit Sub
+69	0	End Sub
+70	0	
+71	0	
+72	0	
+73	0	
+74	0	
+75	0	Private Sub cmdRemoveFilter_Click()
+76	0	On Error GoTo err_Removefilter
+77	0	
+78	0	    Me![filterDSCN] = ""
+79	0	    Me![filterPhotographer] = ""
+80	0	    Me.Filter = ""
+81	0	    Me.FilterOn = False
+82	0	    
+83	0	    Me![cmdRemoveFilter].Visible = False
+84	0	   
+85	0	
+86	0	Exit Sub
+87	0	
+88	0	err_Removefilter:
+89	0	    Call General_Error_Trap
+90	0	    Exit Sub
+91	0	End Sub
+92	0	
+93	0	
+94	0	Private Sub description_AfterUpdate()
+95	0	On Error GoTo err_description_AfterUpdate
+96	0	
+97	0	Dim searchndestroy As String
+98	0	
+99	1	searchndestroy = Replace(Me!Description.Value, "'", "´")
+100	0	Me!Description.Value = searchndestroy
+101	0	
+102	0	Exit Sub
+103	0	
+104	0	err_description_AfterUpdate:
+105	0	    Call General_Error_Trap
+106	0	    Exit Sub
+107	0	End Sub
+108	0	
+109	0	Private Sub dscn_number_AfterUpdate()
+110	0	Dim cleandscn
+111	0	
+112	0	cleandscn = Trim(Me![dscn_number])
+113	0	Me![dscn_number] = cleandscn
+114	0	
+115	0	End Sub
+116	0	
+117	0	Private Sub findDSCN_AfterUpdate()
+118	1	'new 2016 - DL
+119	0	On Error GoTo err_findDSCN
+120	0	
+121	0	If Me![findDSCN] <> "" Then
+122	0	    DoCmd.GoToControl "dscn_number"
+123	0	    DoCmd.FindRecord Me![findDSCN]
+124	0	    Me![findDSCN] = ""
+125	0	End If
+126	0	
+127	0	
+128	0	Exit Sub
+129	0	
+130	0	err_findDSCN:
+131	0	    Call General_Error_Trap
+132	0	    Exit Sub
+133	0	End Sub
+134	0	
+135	0	
+136	0	
+137	0	
+138	0	Private Sub filterDSCN_AfterUpdate()
+139	0	On Error GoTo err_filterDSCN
+140	0	
+141	0	    If Me![filterDSCN] <> "" Then
+142	2	        Me.Filter = "[dscn_number] = '" & Me![filterDSCN] & "'"
+143	0	        Me.FilterOn = True
+144	0	        Me![filterDSCN] = ""
+145	0	        Me![cmdRemoveFilter].Visible = True
+146	0	    End If
+147	0	
+148	0	Exit Sub
+149	0	
+150	0	err_filterDSCN:
+151	0	    Call General_Error_Trap
+152	0	    Exit Sub
+153	0	End Sub
+154	0	
+155	0	Private Sub filterPhotographer_AfterUpdate()
+156	0	On Error GoTo err_filterPhotographer
+157	0	
+158	0	    If Me![filterPhotographer] <> "" Then
+159	2	        Me.Filter = "[photographer] = '" & Me![filterPhotographer] & "'"
+160	0	        Me.FilterOn = True
+161	0	        Me![filterPhotographer] = ""
+162	0	        Me![cmdRemoveFilter].Visible = True
+163	0	    End If
+164	0	
+165	0	Exit Sub
+166	0	
+167	0	err_filterPhotographer:
+168	0	    Call General_Error_Trap
+169	0	    Exit Sub
+170	0	End Sub
+171	0	
+172	0	Private Sub Form_Current()
+173	0	On Error GoTo err_Form_Current
+174	0	
+175	0	Dim splittedbulk
+176	0	
+177	0	If (Me!technical.Value = "3D Model") Then
+178	0	    Me!modelname.Enabled = True
+179	0	Else
+180	0	    Me!modelname.Enabled = False
+181	0	End If
+182	0	
+183	0	If Me![dscn_number] <> "" And [dscn_number] <> "-" Then
+184	0	    splittedbulk = Split(Me![dscn_number], "-")
+185	0	    Debug.Print splittedbulk(0)
+186	0	    If (splittedbulk(0) = "" And splittedbulk(1) <> "") Or (splittedbulk(0) <> "" And splittedbulk(1) = "") Or (splittedbulk(0) = splittedbulk(1)) Then
+187	0	        Me!pushunique.Enabled = False
+188	0	    Else
+189	0	        Me!pushunique.Enabled = True
+190	0	    End If
+191	0	Else
+192	0	End If
+193	0	
+194	0	If Trim(Me![photographer] = "Jason Quinlan") Or (Me!technical.Value = "3D Model") Then
+195	0	    Me!Building.Enabled = True
+196	0	    Me!Space.Enabled = True
+197	0	    Me!Building.Visible = True
+198	0	    Me!Space.Visible = True
+199	0	    Me!buildingtitle.Visible = True
+200	0	    Me!spacetitle.Visible = True
+201	0	Else
+202	0	    Me!Building.Enabled = False
+203	0	    Me!Space.Enabled = False
+204	0	    Me!Building.Visible = False
+205	0	    Me!Space.Visible = False
+206	0	    Me!buildingtitle.Visible = False
+207	0	    Me!spacetitle.Visible = False
+208	0	End If
+209	0	
+210	0	
+211	0	
+212	0	Exit Sub
+213	0	
+214	0	err_Form_Current:
+215	0	    Call General_Error_Trap
+216	0	    Exit Sub
+217	0	End Sub
+218	0	
+219	0	Private Sub Form_Open(Cancel As Integer)
+220	0	On Error GoTo err_Form_Open
+221	0	
+222	0	Dim permiss
+223	0	    permiss = GetGeneralPermissions
+224	0	    If permiss <> "ADMIN" Then
+225	0	            Me![sync_portfolio].Enabled = False
+226	0	    Else
+227	0	            Me![sync_portfolio].Enabled = True
+228	0	    End If
+229	0	    
+230	0	Exit Sub
+231	0	
+232	0	err_Form_Open:
+233	0	    Call General_Error_Trap
+234	0	    Exit Sub
+235	0	End Sub
+236	0	
+237	0	
+238	0	Private Sub go_next_Click()
+239	0	On Error GoTo Err_go_next_Click
+240	0	
+241	0	    DoCmd.GoToRecord , , acNext
+242	0	
+243	0	Exit_go_next_Click:
+244	0	    Exit Sub
+245	0	
+246	0	Err_go_next_Click:
+247	0	    MsgBox Err.Description
+248	0	    Resume Exit_go_next_Click
+249	0	End Sub
+250	0	
+251	0	Private Sub go_previous2_Click()
+252	0	On Error GoTo Err_go_previous2_Click
+253	0	
+254	0	    DoCmd.GoToRecord , , acPrevious
+255	0	
+256	0	Exit_go_previous2_Click:
+257	0	    Exit Sub
+258	0	
+259	0	Err_go_previous2_Click:
+260	0	    MsgBox Err.Description
+261	0	    Resume Exit_go_previous2_Click
+262	0	End Sub
+263	0	
+264	0	Private Sub go_to_first_Click()
+265	0	On Error GoTo Err_go_to_first_Click
+266	0	
+267	0	    DoCmd.GoToRecord , , acFirst
+268	0	
+269	0	Exit_go_to_first_Click:
+270	0	    Exit Sub
+271	0	
+272	0	Err_go_to_first_Click:
+273	0	    MsgBox Err.Description
+274	0	    Resume Exit_go_to_first_Click
+275	0	End Sub
+276	0	
+277	0	Private Sub go_to_last_Click()
+278	0	
+279	0	On Error GoTo Err_go_to_last_Click
+280	0	
+281	0	    DoCmd.GoToRecord , , acLast
+282	0	
+283	0	Exit_go_to_last_Click:
+284	0	    Exit Sub
+285	0	
+286	0	Err_go_to_last_Click:
+287	0	    MsgBox Err.Description
+288	0	    Resume Exit_go_to_last_Click
+289	0	End Sub
+290	0	
+291	0	Private Sub photographer_AfterUpdate()
+292	0	On Error GoTo err_photographer_AfterUpdate
+293	0	
+294	0	If Trim(Me![photographer]) = "Jason Quinlan" Then
+295	0	    Me!Building.Enabled = True
+296	0	    Me!Space.Enabled = True
+297	0	    Me!Building.Visible = True
+298	0	    Me!Space.Visible = True
+299	0	    Me!buildingtitle.Visible = True
+300	0	    Me!spacetitle.Visible = True
+301	0	Else
+302	0	    Me!Building.Enabled = False
+303	0	    Me!Space.Enabled = False
+304	0	    Me!Building.Visible = False
+305	0	    Me!Space.Visible = False
+306	0	    Me!buildingtitle.Visible = False
+307	0	    Me!spacetitle.Visible = False
+308	0	End If
+309	0	Exit Sub
+310	0	
+311	0	err_photographer_AfterUpdate:
+312	0	    Call General_Error_Trap
+313	0	    Exit Sub
+314	0	
+315	0	End Sub
+316	0	
+317	0	Private Sub photographer_NotInList(NewData As String, Response As Integer)
+318	0	
+319	0	Dim strTmp As String
+320	0	
+321	2	strTmp = "Add '" & NewData & "' as a new photographer?"
+322	0	If MsgBox(strTmp, vbYesNo + vbDefaultButton2 + vbQuestion, "Not in List") = vbYes Then
+323	0	
+324	2	    strTmp = "INSERT INTO [photographer] ([phototographer]) VALUES ('" & NewData & "');"
+325	0	    DoCmd.RunSQL strTmp
+326	0	
+327	0	    Response = acDataErrAdded
+328	0	End If
+329	0	
+330	0	End Sub
+331	0	
+332	0	Private Sub pushunique_Click()
+333	0	On Error GoTo err_pushunique_Click
+334	0	
+335	0	Dim splittedbulk
+336	0	Dim generateuniques
+337	0	Dim dscn, dashdscn, sqlstr, sqlstrunits, sqlstrfeatures, sqlstrkeywords
+338	0	Dim newid As Object
+339	0	Dim doubles
+340	0	Dim rst, rstfeatures, rstunits, rstkeywords, rstsetsexists As DAO.Recordset
+341	0	Dim dateformatted, newdateform, datecreated, newdatecreate As String
+342	0	Dim I
+343	0	
+344	0	If Me![dscn_number] <> "" And [dscn_number] <> "-" Then
+345	0	    splittedbulk = Split(Me![dscn_number], "-")
+346	0	    If (splittedbulk(0) = "" And splittedbulk(1) <> "") Or (splittedbulk(0) <> "" And splittedbulk(1) = "") Or (splittedbulk(0) = splittedbulk(1)) Then
+347	0	    ElseIf (splittedbulk(0) <> "" And splittedbulk(1) <> "") Then
+348	0	        generateuniques = MsgBox("You have entered an interval of DSCN numbers. Unique Datasets will be generated and aggregate dataset will be deleted. Continue?", vbOKCancel)
+349	0	        If generateuniques = vbOK Then
+350	0	        
+351	1	        'Preparing the data for being fed into the interval dnsc datasets
+352	0	        
+353	0	        Set rst = CurrentDb.OpenRecordset("query_photo_features", dbOpenSnapshot, dbSeeChanges)
+354	0	        With rst
+355	0	            rst.Filter = "[photo_id]=" & Me.[photocentral_id]
+356	0	            Set rstfeatures = rst.OpenRecordset
+357	0	        End With
+358	0	        Debug.Print rstfeatures.RecordCount
+359	0	        Set rst = CurrentDb.OpenRecordset("query_photo_units", dbOpenSnapshot, dbSeeChanges)
+360	0	        With rst
+361	0	            rst.Filter = "[photo_id]=" & Me.[photocentral_id]
+362	0	            Set rstunits = rst.OpenRecordset
+363	0	        End With
+364	0	        Debug.Print rstunits.RecordCount
+365	0	        Set rst = CurrentDb.OpenRecordset("query_photo_keyword", dbOpenSnapshot, dbSeeChanges)
+366	0	        With rst
+367	0	            rst.Filter = "[photo_id]=" & Me.[photocentral_id]
+368	0	            Set rstkeywords = rst.OpenRecordset
+369	0	        End With
+370	0	        
+371	0	        For dscn = splittedbulk(0) To splittedbulk(1)
+372	0	            If dscn < 0 Then
+373	0	            Else
+374	0	                If dscn < 10 Then
+375	0	                dashdscn = dscn
+376	0	                dashdscn = "-000" & dashdscn
+377	0	                ElseIf dscn < 100 Then
+378	0	                dashdscn = dscn
+379	0	                dashdscn = "-00" & dashdscn
+380	0	                ElseIf dscn < 1000 Then
+381	0	                dashdscn = dscn
+382	0	                dashdscn = "-0" & dashdscn
+383	0	                Else
+384	0	                dashdscn = dscn * -1
+385	0	                End If
+386	0	            End If
+387	0	            dateformatted = Format(Me!date_taken, "yyyy-mm-dd hh:mm:ss")
+388	0	            datecreated = Replace(dateformatted, ".", "-")
+389	4	            sqlstr = "Select [photocentral_id] FROM [photo_id_by_date] WHERE [datecreated] = '" & datecreated & "' AND [dscn_number] = '" & dashdscn & "'"
+390	0	            Set rstsetexists = CurrentDb.OpenRecordset(sqlstr, dbOpenSnapshot, dbSeeChanges)
+391	0	
+392	0	            If Not (rstsetexists.BOF And rstsetexists.EOF) Then
+393	0	                rstsetexists.MoveFirst
+394	0	                doubles = doubles & dashdscn & ", "
+395	0	            Else
+396	0	                news = news & dashdscn & ", "
+397	0	                               
+398	18	                sqlstr = "INSERT INTO [photo_central] ([date_taken],[dscn_number],[area],[space],[building],[assocbuilding],[assocspace],[description],[direction],[rating],[photoview],[technical],[modelname],[photographer]) VALUES ('" & Me!date_taken & "','" & Trim(dashdscn) & "'," & Me!Area.Value & "," & IIf(IsNull(Me!Space.Value), "Null", Me!Space.Value) & "," & IIf(IsNull(Me!Building.Value), "Null", Me!Building.Value) & "," & IIf(IsNull(Me!assocbuilding.Value), "Null", Me!assocbuilding.Value) & "," & IIf(IsNull(Me!assocspace.Value), "Null", Me!assocspace.Value) & ",'" & Me!Description.Value & "','" & Me!direction.Value & "','" & Me!rating.Value & "','" & Me!photoview.Value & "','" & Me!technical.Value & "','" & Me!modelname.Value & "','" & Me!photographer.Value & "');"
+399	0	                DoCmd.RunSQL sqlstr
+400	0	                
+401	0	                newdateform = Format(Me!date_taken, "yyyy-mm-dd hh:mm:ss")
+402	0	                newdatecreate = Replace(newdateform, ".", "-")
+403	4	                sqlstr = "Select [photocentral_id] FROM [photo_id_by_date] WHERE [datecreated] = '" & newdatecreate & "' AND [dscn_number] = '" & dashdscn & "'"
+404	0	                Debug.Print sqlstr
+405	0	                Set newid = CurrentDb.OpenRecordset(sqlstr, dbOpenSnapshot, dbSeeChanges)
+406	0	                
+407	0	                If Not (newid.BOF And newid.EOF) Then
+408	0	                    I = 0
+409	0	                    newid.MoveFirst
+410	0	                    If Not (rstfeatures.BOF And rstfeatures.EOF) Then
+411	0	                    rstfeatures.MoveLast
+412	0	                    rstfeatures.MoveFirst
+413	0	                    For I = 1 To rstfeatures.RecordCount
+414	0	                        sqlstrfeatures = "INSERT INTO [photo_features]([photo_id],[Feature]) VALUES (" & newid.[photocentral_id] & "," & rstfeatures.[Feature] & ")"
+415	0	                        DoCmd.RunSQL sqlstrfeatures
+416	0	                        rstfeatures.MoveNext
+417	0	                    Next I
+418	0	                    Else
+419	0	                    End If
+420	0	                    I = 0
+421	0	                    If Not (rstunits.BOF And rstunits.EOF) Then
+422	0	                    rstunits.MoveLast
+423	0	                    rstunits.MoveFirst
+424	0	                    For I = 1 To rstunits.RecordCount
+425	0	                        sqlstrunits = "INSERT INTO [photo_units]([photo_id],[Unit Number]) VALUES (" & newid.[photocentral_id] & "," & rstunits.[Unit Number] & ")"
+426	0	                        DoCmd.RunSQL sqlstrunits
+427	0	                        rstunits.MoveNext
+428	0	                    Next I
+429	0	                    Else
+430	0	                    End If
+431	0	                    I = 0
+432	0	                    If Not (rstkeywords.BOF And rstkeywords.EOF) Then
+433	0	                    rstkeywords.MoveLast
+434	0	                    rstkeywords.MoveFirst
+435	0	                    For I = 1 To rstkeywords.RecordCount
+436	0	                        sqlstrkeywords = "INSERT INTO [photo_keywords]([photo_id],[keyword_id]) VALUES (" & newid.[photocentral_id] & "," & rstkeywords.[keyword_id] & ")"
+437	0	                        DoCmd.RunSQL sqlstrkeywords
+438	0	                        rstkeywords.MoveNext
+439	0	                    Next I
+440	0	                    Else
+441	0	                    End If
+442	0	                Else
+443	0	
+444	0	
+445	0	                End If
+446	0	                
+447	0	            End If
+448	0	        Next dscn
+449	0	        
+450	0	        MsgBox "Datasets inserted: " & news & Chr(13) & "Already existing datasets: " & doubles
+451	0	        sqlstr = "DELETE FROM [photo_central] WHERE [photocentral_id]= " & Me!photocentral_id
+452	0	        Debug.Print sqlstr
+453	0	        DoCmd.RunSQL sqlstr
+454	0	        Else
+455	0	        End If
+456	0	        
+457	0	        
+458	0	    Else
+459	0	    
+460	0	    End If
+461	0	    
+462	0	Else
+463	0	End If
+464	0	
+465	0	Me.Requery
+466	0	
+467	0	Exit Sub
+468	0	
+469	0	err_pushunique_Click:
+470	0	    Dim errX As DAO.Error
+471	0	    
+472	0	    If Errors.Count > 1 Then
+473	0	    For Each errX In DAO.Errors
+474	0	        Debug.Print "ODBC Error: " & errX.Number
+475	0	        Debug.Print errX.Description
+476	0	    Next errX
+477	0	    Else
+478	0	        Debug.Print "VBA Error: " & Err.Number
+479	0	        Debug.Print Err.Description
+480	0	    End If
+481	0	    Exit Sub
+482	0	End Sub
+483	0	
+484	0	Private Sub sync_portfolio_Click()
+485	0	On Error GoTo err_sync_portfolio_Click
+486	0	
+487	0	Dim dateformated, datecreated, datecreatedreduced, dateclean
+488	0	Dim flag3d, flaginitials, sqlstr, sqlupitem, Area, dscnclean, photofile, stringvalue, longstring, sqlflag, flaggederase As String
+489	0	Dim report_success, report_nonsync, syncstatus
+490	0	Dim rst, rstnm, rstarea, rstnamedarea, rsp, rstrecord, rstupitem, rstincustom, rstfeatures, rstunits, rstkeywords, rstcheckrecord As DAO.Recordset
+491	0	Dim qdf, qdfupitem, qdfincustom As QueryDef
+492	0	Dim fieldid, integervalue, valueorder As Integer
+493	0	Dim decimalvalue As Double
+494	0	
+495	0	DoCmd.OpenForm "status_portfoliosync", acNormal
+496	0	Forms![status_portfoliosync].Form![statuswindow] = "Start Syncing on " & Now() & Chr(13) & Chr(10)
+497	0	
+498	0	
+499	0	Set rst = CurrentDb.OpenRecordset("photo_flaggedphoto", dbOpenSnapshot, dbSeeChanges)
+500	0	Set rstarea = CurrentDb.OpenRecordset("dbo_Exca: Area Sheet", dbOpenSnapshot, dbSeeChanges)
+501	0	
+502	0	If Not (rst.BOF And rst.EOF) Then
+503	0	    rst.MoveLast
+504	0	    rst.MoveFirst
+505	0	    
+506	0	    Forms![status_portfoliosync].Form![statuswindow] = Forms![status_portfoliosync].Form![statuswindow] & "Opening " & rst.RecordCount & " records from central register" & Chr(13) & Chr(10) & Chr(13) & Chr(10)
+507	0	    
+508	0	    For I = 1 To rst.RecordCount
+509	0	        If (Trim(rst![technical]) = "3D Model") Then
+510	0	            flag3d = "3d"
+511	0	        Else
+512	0	            flag3d = ""
+513	0	        End If
+514	0	        
+515	0	        If Trim(rst![photographer]) = "Jason Quinlan" Then
+516	0	            flaginitials = "_jpq_"
+517	0	        Else
+518	0	            flaginitials = "_"
+519	0	        End If
+520	0	        
+521	0	        datecreated = Format(rst![date_taken], "yyyy/mm/dd")
+522	0	        If InStr(datecreated, ".") > 0 Then
+523	0	            datecreatedreduced = Replace(datecreated, ".", "")
+524	0	            dateformated = datecreatedreduced
+525	0	        Else
+526	0	            datecreatedreduced = Replace(datecreated, "/", "")
+527	0	            dateformated = datecreatedreduced
+528	0	        End If
+529	0	        
+530	0	        Debug.Print dateformated
+531	0	        
+532	0	        With rstarea
+533	0	            rstarea.Filter = "[area number]=" & rst![Area]
+534	0	            Set rstnamedarea = rstarea.OpenRecordset
+535	0	        End With
+536	0	        dscnclean = Trim(Replace(rst![dscn_number], "-", ""))
+537	0	        
+538	0	        If flaginitials = "_jpq_" And flag3d = "" Then
+539	0	            photofile = dateformated & flaginitials & dscnclean & ".jpg"
+540	0	        Else
+541	0	            photofile = dateformated & "_" & rstnamedarea![area name] & flaginitials & dscnclean & ".jpg"
+542	0	        End If
+543	0	                
+544	0	        Debug.Print photofile
+545	0	        
+546	0	        Set qdf = CurrentDb.CreateQueryDef("")
+547	0	        qdf.Connect = CurrentDb.TableDefs("[photo_central]").Connect
+548	0	        qdf.ReturnsRecords = True
+549	0	
+550	2	        qdf.sql = "sp_" & flag3d & "photo_get_portfoliorecord '" & photofile & "'"
+551	0	        Debug.Print qdf.sql
+552	0	        
+553	0	        Set rstrecord = qdf.OpenRecordset
+554	0	
+555	0	        If Not (rstrecord.BOF And rstrecord.EOF) Then
+556	0	    
+557	0	            rstrecord.MoveLast
+558	0	            rstrecord.MoveFirst
+559	0	            
+560	0	            Forms![status_portfoliosync].Form![statuswindow] = Forms![status_portfoliosync].Form![statuswindow] & I & ": " & photofile & " -> RecordID " & rstrecord![record_id] & " [Images" & flag3d & "]" & Chr(13) & Chr(10)
+561	0	            
+562	0	            Set qdfupitem = CurrentDb.CreateQueryDef("")
+563	0	            With qdfupitem
+564	0	                .Connect = CurrentDb.TableDefs("[photo_central]").Connect
+565	0	                .ReturnsRecords = True
+566	2	                .sql = "exec sp_photo_check_itemtable @recordid=" & rstrecord![record_id] & ", @filename ='" & photofile & "'"
+567	2	                Debug.Print "exec sp_photo_check_itemtable @recordid=" & rstrecord![record_id] & ", @filename ='" & photofile & "'"
+568	0	                Set rstcheckrecord = qdfupitem.OpenRecordset
+569	0	                    
+570	0	                If Not (rstcheckrecord.BOF And rstcheckrecord.EOF) Then
+571	0	                    .ReturnsRecords = False
+572	0	                    If rstcheckrecord![File_Description] <> "" Then
+573	6	                        .sql = "exec sp_" & flag3d & "photo_update_item_table @recordid=" & rstrecord![record_id] & ", @filename='" & photofile & "', @updatedby='" & "photoadmin" & "', @filedescription='" & rstcheckrecord![File_Description] & "'"
+574	0	                    Else
+575	6	                        .sql = "exec sp_" & flag3d & "photo_update_item_table @recordid=" & rstrecord![record_id] & ", @filename='" & photofile & "', @updatedby='" & "photoadmin" & "', @filedescription='" & rst![Description] & "'"
+576	0	                    End If
+577	0	                    .Execute
+578	0	                Else
+579	0	                    Debug.Print "Item does not exist? Really?"
+580	0	                End If
+581	0	            End With
+582	0	            
+583	1	            'Populating custom data fields for 1:1 datasets related to photo item
+584	0	
+585	0	            If rst![Area] <> "" Then
+586	0	                fieldid = 10087
+587	0	                
+588	1	                'Work around for areaname DigHouse being Dig House (with a space) in Portfolio - DAL 2016
+589	0	                    If rstnamedarea![area name] = "DigHouse" Then
+590	0	                        stringvalue = "Dig House"
+591	0	                    Else
+592	0	                        stringvalue = rstnamedarea![area name]
+593	0	                    End If
+594	0	                    
+595	0	                Set qdfincustom = CurrentDb.CreateQueryDef("")
+596	0	                With qdfincustom
+597	0	                    .Connect = CurrentDb.TableDefs("[photo_central]").Connect
+598	0	                    .ReturnsRecords = True
+599	4	                    .sql = "exec sp_" & flag3d & "photo_check_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & IIf(fieldid = 10087, "Null", "Null") & ", @decimal=" & decimalvalue & ""
+600	4	                    Debug.Print "exec sp_" & flag3d & "photo_check_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & IIf(fieldid = 10087, "Null", "Null") & ", @decimal=" & decimalvalue & ""
+601	0	                    Set rstcheckrecord = qdfincustom.OpenRecordset
+602	0	                    
+603	0	                    If Not (rstcheckrecord.BOF And rstcheckrecord.EOF) Then
+604	0	                        Debug.Print "area exists already"
+605	0	                    Else
+606	0	                        .ReturnsRecords = False
+607	4	                        .sql = "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & IIf(fieldid = 10087, "Null", "Null") & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+608	0	                        .Execute
+609	0	                    End If
+610	0	                End With
+611	4	                Debug.Print "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & IIf(fieldid = 10087, "Null", "Null") & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+612	0	            Else
+613	0	                Forms![status_portfoliosync].Form![statuswindow] = Forms![status_portfoliosync].Form![statuswindow] & "no area (?)" & Chr(13) & Chr(10)
+614	0	            End If
+615	0	            If rst![Space] <> "" Then
+616	0	                fieldid = 10098
+617	0	                stringvalue = ""
+618	0	                integervalue = rst![Space]
+619	0	                Set qdfincustom = CurrentDb.CreateQueryDef("")
+620	0	                With qdfincustom
+621	0	                    .Connect = CurrentDb.TableDefs("[photo_central]").Connect
+622	0	                    .ReturnsRecords = True
+623	4	                    .sql = "exec sp_" & flag3d & "photo_check_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & integervalue & ", @decimal=" & decimalvalue & ""
+624	0	                    Set rstcheckrecord = qdfincustom.OpenRecordset
+625	0	                    
+626	0	                    If Not (rstcheckrecord.BOF And rstcheckrecord.EOF) Then
+627	0	                        Debug.Print "space exists already"
+628	0	                    Else
+629	0	                        .ReturnsRecords = False
+630	4	                        .sql = "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & integervalue & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+631	0	                        .Execute
+632	0	                    End If
+633	0	                End With
+634	4	                Debug.Print "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & integervalue & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+635	0	            Else
+636	0	                Forms![status_portfoliosync].Form![statuswindow] = Forms![status_portfoliosync].Form![statuswindow] & "no space" & Chr(13) & Chr(10)
+637	0	            End If
+638	0	            If rst![Building] <> "" Then
+639	0	                fieldid = 10088
+640	0	                stringvalue = ""
+641	0	                integervalue = rst![Building]
+642	0	                Set qdfincustom = CurrentDb.CreateQueryDef("")
+643	0	                With qdfincustom
+644	0	                    .Connect = CurrentDb.TableDefs("[photo_central]").Connect
+645	0	                    .ReturnsRecords = True
+646	4	                    .sql = "exec sp_" & flag3d & "photo_check_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & integervalue & ", @decimal=" & decimalvalue & ""
+647	0	                    Set rstcheckrecord = qdfincustom.OpenRecordset
+648	0	                    
+649	0	                    If Not (rstcheckrecord.BOF And rstcheckrecord.EOF) Then
+650	0	                        Debug.Print "building exists already"
+651	0	                    Else
+652	0	                        .ReturnsRecords = False
+653	4	                        .sql = "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & integervalue & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+654	0	                        .Execute
+655	0	                    End If
+656	0	                End With
+657	4	                Debug.Print "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & integervalue & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+658	0	            Else
+659	0	                Forms![status_portfoliosync].Form![statuswindow] = Forms![status_portfoliosync].Form![statuswindow] & "no building" & Chr(13) & Chr(10)
+660	0	            End If
+661	0	            If rst![assocbuilding] <> "" Then
+662	0	                fieldid = 10116
+663	0	                stringvalue = ""
+664	0	                integervalue = rst![assocbuilding]
+665	0	                Set qdfincustom = CurrentDb.CreateQueryDef("")
+666	0	                With qdfincustom
+667	0	                    .Connect = CurrentDb.TableDefs("[photo_central]").Connect
+668	0	                    .ReturnsRecords = True
+669	4	                    .sql = "exec sp_" & flag3d & "photo_check_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & integervalue & ", @decimal=" & decimalvalue & ""
+670	0	                    Set rstcheckrecord = qdfincustom.OpenRecordset
+671	0	                    
+672	0	                    If Not (rstcheckrecord.BOF And rstcheckrecord.EOF) Then
+673	0	                        Debug.Print "associated building exists already"
+674	0	                    Else
+675	0	                        .ReturnsRecords = False
+676	4	                        .sql = "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & integervalue & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+677	0	                        .Execute
+678	0	                    End If
+679	0	                End With
+680	4	                Debug.Print "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & integervalue & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+681	0	            Else
+682	0	                Forms![status_portfoliosync].Form![statuswindow] = Forms![status_portfoliosync].Form![statuswindow] & "no associated building" & Chr(13) & Chr(10)
+683	0	            End If
+684	0	            If rst![assocspace] <> "" Then
+685	0	                fieldid = 10118
+686	0	                stringvalue = ""
+687	0	                integervalue = rst![assocspace]
+688	0	                Set qdfincustom = CurrentDb.CreateQueryDef("")
+689	0	                With qdfincustom
+690	0	                    .Connect = CurrentDb.TableDefs("[photo_central]").Connect
+691	0	                    .ReturnsRecords = True
+692	4	                    .sql = "exec sp_" & flag3d & "photo_check_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & integervalue & ", @decimal=" & decimalvalue & ""
+693	0	                    Set rstcheckrecord = qdfincustom.OpenRecordset
+694	0	                    
+695	0	                    If Not (rstcheckrecord.BOF And rstcheckrecord.EOF) Then
+696	0	                        Debug.Print "associated space exists already"
+697	0	                    Else
+698	0	                        .ReturnsRecords = False
+699	4	                        .sql = "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & integervalue & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+700	0	                        .Execute
+701	0	                    End If
+702	0	                End With
+703	4	                Debug.Print "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & integervalue & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+704	0	            Else
+705	0	                Forms![status_portfoliosync].Form![statuswindow] = Forms![status_portfoliosync].Form![statuswindow] & "no associated space" & Chr(13) & Chr(10)
+706	0	            End If
+707	0	            If Trim(rst![direction]) <> "" Then
+708	0	                fieldid = 10089
+709	0	                stringvalue = Trim(rst![direction])
+710	0	                Set qdfincustom = CurrentDb.CreateQueryDef("")
+711	0	                With qdfincustom
+712	0	                    .Connect = CurrentDb.TableDefs("[photo_central]").Connect
+713	0	                    .ReturnsRecords = True
+714	4	                    .sql = "exec sp_" & flag3d & "photo_check_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & IIf(fieldid = 10089, "Null", "Null") & ", @decimal=" & decimalvalue & ""
+715	0	                    Set rstcheckrecord = qdfincustom.OpenRecordset
+716	0	                    
+717	0	                    If Not (rstcheckrecord.BOF And rstcheckrecord.EOF) Then
+718	0	                        Debug.Print "direction exists already"
+719	0	                    Else
+720	0	                        .ReturnsRecords = False
+721	4	                        .sql = "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & IIf(fieldid = 10089, "Null", "Null") & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+722	0	                        .Execute
+723	0	                    End If
+724	0	                End With
+725	4	                Debug.Print "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & IIf(fieldid = 10089, "Null", "Null") & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+726	0	            Else
+727	0	                Forms![status_portfoliosync].Form![statuswindow] = Forms![status_portfoliosync].Form![statuswindow] & "no direction" & Chr(13) & Chr(10)
+728	0	            End If
+729	0	            If Trim(rst![rating]) <> "" Then
+730	0	                fieldid = 10096
+731	0	                stringvalue = Trim(rst![rating])
+732	0	                Set qdfincustom = CurrentDb.CreateQueryDef("")
+733	0	                With qdfincustom
+734	0	                    .Connect = CurrentDb.TableDefs("[photo_central]").Connect
+735	0	                    .ReturnsRecords = True
+736	4	                    .sql = "exec sp_" & flag3d & "photo_check_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & IIf(fieldid = 10096, "Null", "Null") & ", @decimal=" & decimalvalue & ""
+737	0	                    Set rstcheckrecord = qdfincustom.OpenRecordset
+738	0	                    
+739	0	                    If Not (rstcheckrecord.BOF And rstcheckrecord.EOF) Then
+740	0	                        Debug.Print "rating exists already"
+741	0	                    Else
+742	0	                        .ReturnsRecords = False
+743	4	                        .sql = "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & IIf(fieldid = 10096, "Null", "Null") & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+744	0	                        .Execute
+745	0	                    End If
+746	0	                End With
+747	4	                Debug.Print "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & IIf(fieldid = 10096, "Null", "Null") & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+748	0	                Else
+749	0	                Forms![status_portfoliosync].Form![statuswindow] = Forms![status_portfoliosync].Form![statuswindow] & "no rating" & Chr(13) & Chr(10)
+750	0	            End If
+751	0	            If Trim(rst![photoview]) <> "" Then
+752	0	                fieldid = 10102
+753	0	                stringvalue = Trim(rst![photoview])
+754	0	                Set qdfincustom = CurrentDb.CreateQueryDef("")
+755	0	                With qdfincustom
+756	0	                    .Connect = CurrentDb.TableDefs("[photo_central]").Connect
+757	0	                    .ReturnsRecords = True
+758	4	                    .sql = "exec sp_" & flag3d & "photo_check_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & IIf(fieldid = 10102, "Null", "Null") & ", @decimal=" & decimalvalue & ""
+759	0	                    Set rstcheckrecord = qdfincustom.OpenRecordset
+760	0	                    
+761	0	                    If Not (rstcheckrecord.BOF And rstcheckrecord.EOF) Then
+762	0	                        Debug.Print "photoview exists already"
+763	0	                    Else
+764	0	                        .ReturnsRecords = False
+765	4	                        .sql = "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & IIf(fieldid = 10102, "Null", "Null") & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+766	0	                        .Execute
+767	0	                    End If
+768	0	                End With
+769	4	                Debug.Print "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & IIf(fieldid = 10102, "Null", "Null") & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+770	0	            Else
+771	0	                Forms![status_portfoliosync].Form![statuswindow] = Forms![status_portfoliosync].Form![statuswindow] & "no photoview" & Chr(13) & Chr(10)
+772	0	            End If
+773	0	            If Trim(rst![technical]) <> "" Then
+774	0	                fieldid = 10100
+775	0	                stringvalue = Trim(rst![technical])
+776	0	                Set qdfincustom = CurrentDb.CreateQueryDef("")
+777	0	                With qdfincustom
+778	0	                    .Connect = CurrentDb.TableDefs("[photo_central]").Connect
+779	0	                    .ReturnsRecords = True
+780	4	                    .sql = "exec sp_" & flag3d & "photo_check_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & IIf(fieldid = 10100, "Null", "Null") & ", @decimal=" & decimalvalue & ""
+781	0	                    Set rstcheckrecord = qdfincustom.OpenRecordset
+782	0	                    
+783	0	                    If Not (rstcheckrecord.BOF And rstcheckrecord.EOF) Then
+784	0	                        Debug.Print "technical exists already"
+785	0	                    Else
+786	0	                        .ReturnsRecords = False
+787	4	                        .sql = "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & IIf(fieldid = 10100, "Null", "Null") & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+788	0	                        .Execute
+789	0	                    End If
+790	0	                End With
+791	4	                Debug.Print "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & IIf(fieldid = 10100, "Null", "Null") & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+792	0	            Else
+793	0	                Forms![status_portfoliosync].Form![statuswindow] = Forms![status_portfoliosync].Form![statuswindow] & "no technical" & Chr(13) & Chr(10)
+794	0	            End If
+795	1	            'If Trim(rst![status]) <> "" Then
+796	1	            '    fieldid = 10099
+797	1	            '    stringvalue = Trim(rst![status])
+798	1	            '    Set qdfincustom = CurrentDb.CreateQueryDef("")
+799	1	            '    With qdfincustom
+800	1	            '        .Connect = CurrentDb.TableDefs("[photo_central]").Connect
+801	1	            '        .ReturnsRecords = False
+802	5	            '        .sql = "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & IIf(fieldid = 10099, "Null", "Null") & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+803	1	            '        .Execute
+804	1	            '    End With
+805	5	            '    Debug.Print "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & IIf(fieldid = 10099, "Null", "Null") & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+806	1	            'Else
+807	1	            '    Debug.Print "no status"
+808	1	            'End If
+809	0	            If Trim(rst![photographer]) <> "" Then
+810	0	                fieldid = 10095
+811	0	                stringvalue = Trim(rst![photographer])
+812	0	                Set qdfincustom = CurrentDb.CreateQueryDef("")
+813	0	                With qdfincustom
+814	0	                    .Connect = CurrentDb.TableDefs("[photo_central]").Connect
+815	0	                    .ReturnsRecords = True
+816	4	                    .sql = "exec sp_" & flag3d & "photo_check_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & IIf(fieldid = 10095, "Null", "Null") & ", @decimal=" & decimalvalue & ""
+817	0	                    Set rstcheckrecord = qdfincustom.OpenRecordset
+818	0	                    
+819	0	                    If Not (rstcheckrecord.BOF And rstcheckrecord.EOF) Then
+820	0	                        Debug.Print "photographer exists already"
+821	0	                    Else
+822	0	                        .ReturnsRecords = False
+823	4	                        .sql = "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & IIf(fieldid = 10095, "Null", "Null") & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+824	0	                        .Execute
+825	0	                    End If
+826	0	                End With
+827	4	                Debug.Print "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & IIf(fieldid = 10095, "Null", "Null") & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+828	0	            Else
+829	0	                Forms![status_portfoliosync].Form![statuswindow] = Forms![status_portfoliosync].Form![statuswindow] & "no photographer" & Chr(13) & Chr(10)
+830	0	            End If
+831	0	
+832	1	            'Populating custom data fields for 1:n datasets related to photo item
+833	0	
+834	0	            Set rstnm = CurrentDb.OpenRecordset("photo_features", dbOpenSnapshot, dbSeeChanges)
+835	0	            rstnm.Filter = "[photo_id]=" & rst![photo_id]
+836	0	            Set rstfeatures = rstnm.OpenRecordset
+837	0	            Debug.Print rstnm.RecordCount
+838	0	            If Not (rstnm.BOF And rstnm.EOF) Then
+839	0	                With rstnm
+840	0	                    If Not (rstfeatures.BOF And rstfeatures.EOF) Then
+841	0	                        rstfeatures.MoveLast
+842	0	                        rstfeatures.MoveFirst
+843	0	                        For k = 1 To rstfeatures.RecordCount
+844	0	                            fieldid = 10090
+845	0	                            stringvalue = ""
+846	0	                            integervalue = rstfeatures![Feature]
+847	0	                            Set qdfincustom = CurrentDb.CreateQueryDef("")
+848	0	                            With qdfincustom
+849	0	                                .Connect = CurrentDb.TableDefs("[photo_central]").Connect
+850	0	                                .ReturnsRecords = True
+851	4	                                .sql = "exec sp_" & flag3d & "photo_check_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & integervalue & ", @decimal=" & decimalvalue & ""
+852	0	                                Set rstcheckrecord = qdfincustom.OpenRecordset
+853	0	
+854	0	                                If Not (rstcheckrecord.BOF And rstcheckrecord.EOF) Then
+855	0	                                    Debug.Print "feature exists already"
+856	0	                                Else
+857	0	                                    If integervalue <> 0 Then
+858	0	                                        .ReturnsRecords = False
+859	4	                                        .sql = "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & integervalue & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+860	0	                                        .Execute
+861	0	                                    Else
+862	1	                                    'value is 0: nonsense
+863	0	                                    End If
+864	0	                                End If
+865	0	                            End With
+866	4	                            Debug.Print "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & integervalue & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+867	0	                            rstfeatures.MoveNext
+868	0	                        Next k
+869	0	                    Else
+870	0	                        Forms![status_portfoliosync].Form![statuswindow] = Forms![status_portfoliosync].Form![statuswindow] & "no features" & Chr(13) & Chr(10)
+871	0	                    End If
+872	0	                End With
+873	0	            Else
+874	0	            End If
+875	0	            Debug.Print rstfeatures.RecordCount
+876	0	            Set rstnm = CurrentDb.OpenRecordset("photo_units", dbOpenSnapshot, dbSeeChanges)
+877	0	            rstnm.Filter = "[photo_id]=" & rst![photo_id]
+878	0	            Set rstunits = rstnm.OpenRecordset
+879	0	            If Not (rstnm.BOF And rstnm.EOF) Then
+880	0	                With rstnm
+881	0	                    If Not (rstunits.BOF And rstunits.EOF) Then
+882	0	                        rstunits.MoveLast
+883	0	                        rstunits.MoveFirst
+884	0	                        For k = 1 To rstunits.RecordCount
+885	0	                            fieldid = 10101
+886	0	                            stringvalue = ""
+887	0	                            integervalue = rstunits![Unit Number]
+888	0	                            Set qdfincustom = CurrentDb.CreateQueryDef("")
+889	0	                            With qdfincustom
+890	0	                                .Connect = CurrentDb.TableDefs("[photo_central]").Connect
+891	0	                                .ReturnsRecords = True
+892	4	                                .sql = "exec sp_" & flag3d & "photo_check_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & integervalue & ", @decimal=" & decimalvalue & ""
+893	0	                                Set rstcheckrecord = qdfincustom.OpenRecordset
+894	0	
+895	0	                                If Not (rstcheckrecord.BOF And rstcheckrecord.EOF) Then
+896	0	                                Debug.Print "unit exists already"
+897	0	                                Else
+898	0	                                    If integervalue <> 0 Then
+899	0	                                        .ReturnsRecords = False
+900	4	                                        .sql = "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & integervalue & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+901	0	                                        .Execute
+902	0	                                    Else
+903	1	                                    'unit value is 0: nonsense
+904	0	                                    End If
+905	0	                                End If
+906	0	                            End With
+907	4	                            Debug.Print "exec sp_" & flag3d & "photo_insert_customdata @recordid=" & rstrecord![record_id] & ", @fieldid=" & fieldid & ", @stringvalue='" & stringvalue & "', @longstring='" & longstring & "', @integer=" & integervalue & ", @decimal=" & decimalvalue & ", @valueorder=" & valueorder & ""
+908	0	                            rstunits.MoveNext
+909	0	                        Next k
+910	0	                    Else
+911	0	                        Forms![status_portfoliosync].Form![statuswindow] = Forms![status_portfoliosync].Form![statuswindow] & "no units" & Chr(13) & Chr(10)
+912	0	                    End If
+913	0	                End With
+914	0	            Else
+915	0	            End If
+916	0	            Debug.Print rstunits.RecordCount
+917	0	            Set rstnm = CurrentDb.OpenRecordset("photo_keywords", dbOpenSnapshot, dbSeeChanges)
+918	0	            rstnm.Filter = "[photo_id]=" & rst![photo_id]
+919	0	            Set rstkeywords = rstnm.OpenRecordset
+920	0	            If Not (rstnm.BOF And rstnm.EOF) Then
+921	0	                With rstnm
+922	0	                    If Not (rstkeywords.BOF And rstkeywords.EOF) Then
+923	0	                        rstkeywords.MoveLast
+924	0	                        rstkeywords.MoveFirst
+925	0	                        For k = 1 To rstkeywords.RecordCount
+926	0	                            integervalue = rstkeywords![keyword_id]
+927	0	                            Set qdfincustom = CurrentDb.CreateQueryDef("")
+928	0	                            With qdfincustom
+929	0	                                .Connect = CurrentDb.TableDefs("[photo_central]").Connect
+930	0	                                .ReturnsRecords = True
+931	0	                                .sql = "exec sp_" & flag3d & "photo_check_keyword @recordid=" & rstrecord![record_id] & ", @keyword_id=" & integervalue & ""
+932	0	                                Set rstcheckrecord = qdfincustom.OpenRecordset
+933	0	
+934	0	                                If Not (rstcheckrecord.BOF And rstcheckrecord.EOF) Then
+935	0	                                    Debug.Print "keyword exists already"
+936	0	                                Else
+937	0	                                    .ReturnsRecords = False
+938	0	                                    .sql = "exec sp_" & flag3d & "photo_insert_keyword @recordid=" & rstrecord![record_id] & ", @keyword_id=" & integervalue & ""
+939	0	                                    .Execute
+940	0	                                End If
+941	0	                            End With
+942	0	                            Debug.Print "exec sp_" & flag3d & "photo_insert_keyword @recordid=" & rstrecord![record_id] & ", @keyword_id=" & integervalue & ""
+943	0	                            rstkeywords.MoveNext
+944	0	                        Next k
+945	0	                    Else
+946	0	                        Forms![status_portfoliosync].Form![statuswindow] = Forms![status_portfoliosync].Form![statuswindow] & "no keywords" & Chr(13) & Chr(10)
+947	0	                    End If
+948	0	                End With
+949	0	            Else
+950	0	            End If
+951	0	
+952	0	            If (flag3d = "3d") Then
+953	0	                sqlflag = "INSERT INTO [photo_flag]([photocentral_id]) VALUES (" & rst![photo_id] & ")"
+954	0	                DoCmd.RunSQL sqlflag
+955	0	            Else
+956	0	                flaggederase = "DELETE FROM [photo_central] WHERE [photocentral_id] = " & rst![photo_id]
+957	0	                DoCmd.RunSQL flaggederase
+958	0	            End If
+959	0	            
+960	0	            Forms![status_portfoliosync].Form![statuswindow].Value = Forms![status_portfoliosync].Form![statuswindow].Value & "-> dataset synced" & Chr(13) & Chr(10) & Chr(13) & Chr(10)
+961	0	            report_success = report_success + "RecordID: " & rstrecord![record_id] & ", File: " & photofile & Chr(13) & Chr(10)
+962	0	        Else
+963	0	            Debug.Print "Kein Datensatz"
+964	0	            report_nonsync = report_nonsync + "Filename: " & photofile & Chr(13) & Chr(10)
+965	0	        End If
+966	0	        rst.MoveNext
+967	0	    Next I
+968	0	Else
+969	0	End If
+970	0	
+971	0	Forms![status_portfoliosync].Form![statuswindow] = Forms![status_portfoliosync].Form![statuswindow] & "Syncing was succesful for the following datasets:" & Chr(13) & Chr(10)
+972	0	Forms![status_portfoliosync].Form![statuswindow] = Forms![status_portfoliosync].Form![statuswindow] & report_success & Chr(13) & Chr(10)
+973	0	Forms![status_portfoliosync].Form![statuswindow] = Forms![status_portfoliosync].Form![statuswindow] & "The following images could not be found in Portfolio:" & Chr(13) & Chr(10)
+974	0	Forms![status_portfoliosync].Form![statuswindow] = Forms![status_portfoliosync].Form![statuswindow] & report_nonsync
+975	0	
+976	0	Exit Sub
+977	0	
+978	0	err_sync_portfolio_Click:
+979	0	    Dim errX As DAO.Error
+980	0	    
+981	0	    If Errors.Count > 1 Then
+982	0	    For Each errX In DAO.Errors
+983	0	        Debug.Print "ODBC Error: " & errX.Number
+984	0	        Debug.Print errX.Description
+985	0	    Next errX
+986	0	    Else
+987	0	        Debug.Print "VBA Error: " & Err.Number
+988	0	        Debug.Print Err.Description
+989	0	    End If
+990	0	
+991	1	    'Call General_Error_Trap
+992	0	    Exit Sub
+993	0	End Sub
+994	0	
+995	0	Private Sub tglDataSheet_Click()
+996	1	'********************************************************************
+997	1	' The user wants to see the basic data in datasheet view
+998	1	' DL
+999	1	'********************************************************************
+1000	0	On Error GoTo Err_tglDataSheet
+1001	0	
+1002	0	    Me![date_taken].SetFocus
+1003	0	    DoCmd.RunCommand acCmdDatasheetView
+1004	0	
+1005	0	Exit Sub
+1006	0	
+1007	0	Err_tglDataSheet:
+1008	0	    Call General_Error_Trap
+1009	0	    Exit Sub
+1010	0	
+1011	0	End Sub

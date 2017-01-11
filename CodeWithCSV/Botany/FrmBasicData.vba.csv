@@ -1,0 +1,321 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cboFindFlot_AfterUpdate()
+5	1	'******************************************************************
+6	1	' Search for a flot number from the list
+7	1	' SAJ
+8	1	'******************************************************************
+9	0	On Error GoTo err_FindFlot
+10	0	
+11	0	If Me![cboFindFlot] <> "" Then
+12	0	    DoCmd.GoToControl "FrmSubBasicData"
+13	0	    DoCmd.GoToControl "Flot Number"
+14	1	    'DoCmd.GoToControl Me!FrmSubBasicData.Form![Flot Number].Name
+15	0	    DoCmd.FindRecord Me![cboFindFlot]
+16	0	End If
+17	0	
+18	0	Exit Sub
+19	0	
+20	0	err_FindFlot:
+21	0	    Call General_Error_Trap
+22	0	    Exit Sub
+23	0	End Sub
+24	0	
+25	0	Private Sub cmdAddRange_Click()
+26	1	'new in 2006 - request from Nikki to add range of number automatically
+27	1	'july 2007 get them to add the float date
+28	0	On Error GoTo err_range
+29	0	
+30	0	    Dim startnum, endnum, sql, sql1, floatdate
+31	0	    startnum = InputBox("Please enter the number that starts this set of Flot numbers", "Start Number")
+32	0	    If startnum <> "" Then
+33	0	        endnum = InputBox("Please enter the number that ends this set of Flot numbers", "End Number")
+34	0	        If endnum <> "" Then
+35	0	            
+36	0	            floatdate = InputBox("Please enter the Flot date for these records (dd/mm/yyyy)", "Float Date")
+37	0	            If floatdate <> "" Then
+38	0	            
+39	0	                If startnum < endnum Then
+40	0	                    Do While CInt(startnum) <= CInt(endnum)
+41	1	                        'sql = "INSERT INTO [Bot: Basic Data] ([Flot Number], [Float date]) VALUES (" & startnum & ", #" & Date & "#);"
+42	0	                        sql = "INSERT INTO [Bot: Basic Data] ([Flot Number], [Float date]) VALUES (" & startnum & ", #" & floatdate & "#);"
+43	0	                        DoCmd.RunSQL sql
+44	0	                    
+45	1	                        'sql1 = "INSERT INTO [Bot: Sample Scanning] ([Flot Number], [YearScanned]) VALUES (" & startnum & ", " & Year(Date) & ");"
+46	0	                        sql1 = "INSERT INTO [Bot: Sample Scanning] ([Flot Number], [YearScanned]) VALUES (" & startnum & ", " & Year(floatdate) & ");"
+47	0	                        DoCmd.RunSQL sql1
+48	0	                        startnum = startnum + 1
+49	0	                    Loop
+50	0	                    Me!FrmSubBasicData.Requery
+51	0	                    DoCmd.GoToControl "FrmSubBasicData"
+52	0	                    DoCmd.GoToControl "Flot Number"
+53	0	                    DoCmd.GoToRecord acActiveDataObject, , acLast
+54	0	                Else
+55	0	                    MsgBox "Invalid number range the start number is greater than the end number, please try again", vbInformation, "Invalid Action"
+56	0	                    Exit Sub
+57	0	                End If
+58	0	            Else
+59	0	                MsgBox "Sorry this function only works if a start and end number are entered, please use the new record button instead", vbExclamation, "No end number entered"
+60	0	            End If
+61	0	        End If
+62	0	    End If
+63	0	Exit Sub
+64	0	
+65	0	err_range:
+66	0	    If Err.Number = 2501 Then
+67	0	        MsgBox "An error has occured, the record you were trying to enter probably already exisits", vbInformation, "Error"
+68	0	    Else
+69	0	        Call General_Error_Trap
+70	0	    End If
+71	0	    Exit Sub
+72	0	End Sub
+73	0	
+74	0	Private Sub cmdClose_Click()
+75	1	'********************************************************************
+76	1	' Close form and return to main menu
+77	1	' SAJ
+78	1	'********************************************************************
+79	0	On Error GoTo err_close
+80	0	    DoCmd.OpenForm "FrmMainMenu"
+81	0	    DoCmd.Close acForm, "FrmBasicData"
+82	0	
+83	0	Exit Sub
+84	0	err_close:
+85	0	    Call General_Error_Trap
+86	0	    Exit Sub
+87	0	End Sub
+88	0	
+89	0	Private Sub cmdGoFirst_Click()
+90	1	'********************************************************************
+91	1	' Go to first record
+92	1	' SAJ
+93	1	'********************************************************************
+94	0	On Error GoTo Err_cmdgofirst_Click
+95	0	
+96	0	    DoCmd.GoToControl Forms![FrmBasicData]![FrmSubBasicData].Name
+97	0	    DoCmd.GoToRecord , , acFirst
+98	0	
+99	0	    Exit Sub
+100	0	
+101	0	Err_cmdgofirst_Click:
+102	0	    Call General_Error_Trap
+103	0	    Exit Sub
+104	0	End Sub
+105	0	
+106	0	Private Sub cmdGoLast_Click()
+107	1	'********************************************************************
+108	1	' Go to last record
+109	1	' SAJ
+110	1	'********************************************************************
+111	0	On Error GoTo Err_cmdgoLast_Click
+112	0	
+113	0	    DoCmd.GoToControl Forms![FrmBasicData]![FrmSubBasicData].Name
+114	0	    DoCmd.GoToRecord , , acLast
+115	0	
+116	0	    Exit Sub
+117	0	
+118	0	Err_cmdgoLast_Click:
+119	0	    Call General_Error_Trap
+120	0	    Exit Sub
+121	0	End Sub
+122	0	
+123	0	Private Sub cmdGoNext_Click()
+124	1	'********************************************************************
+125	1	' Go to next record
+126	1	' SAJ
+127	1	'********************************************************************
+128	0	On Error GoTo Err_cmdgoNext_Click
+129	0	
+130	0	    DoCmd.GoToControl Forms![FrmBasicData]![FrmSubBasicData].Name
+131	0	    DoCmd.GoToRecord , , acNext
+132	0	
+133	0	    Exit Sub
+134	0	
+135	0	Err_cmdgoNext_Click:
+136	0	    If Err.Number = 2105 Then
+137	0	        MsgBox "No more records to show", vbInformation, "End of records"
+138	0	    Else
+139	0	        Call General_Error_Trap
+140	0	    End If
+141	0	    Exit Sub
+142	0	End Sub
+143	0	
+144	0	Private Sub cmdgoprevious_Click()
+145	1	'********************************************************************
+146	1	' Go to previous record
+147	1	' SAJ
+148	1	'********************************************************************
+149	0	On Error GoTo Err_cmdgoprevious_Click
+150	0	
+151	0	    DoCmd.GoToControl Forms![FrmBasicData]![FrmSubBasicData].Name
+152	0	    DoCmd.GoToRecord , , acPrevious
+153	0	
+154	0	    Exit Sub
+155	0	
+156	0	Err_cmdgoprevious_Click:
+157	0	    If Err.Number = 2105 Then
+158	0	        MsgBox "Already at the begining of the recordset", vbInformation, "Begining of records"
+159	0	    Else
+160	0	        Call General_Error_Trap
+161	0	    End If
+162	0	    Exit Sub
+163	0	End Sub
+164	0	
+165	0	Private Sub cmdgotonew_Click()
+166	1	'********************************************************************
+167	1	' Create new record
+168	1	' SAJ
+169	1	'********************************************************************
+170	0	On Error GoTo Err_cmdgonew_Click
+171	0	
+172	0	    DoCmd.GoToControl Forms![FrmBasicData]![FrmSubBasicData].Name
+173	0	    DoCmd.GoToRecord , , acNewRec
+174	0	    DoCmd.GoToControl Forms![FrmBasicData]![FrmSubBasicData].Form![Flot Number].Name
+175	0	
+176	0	    Exit Sub
+177	0	
+178	0	Err_cmdgonew_Click:
+179	0	    Call General_Error_Trap
+180	0	    Exit Sub
+181	0	End Sub
+182	0	
+183	0	Private Sub cmdHistoric_Click()
+184	1	'Open the old bots interface
+185	0	On Error GoTo err_Historic
+186	0	    DoCmd.OpenForm "Bots98: Flot Sheet", , , "[FLot Number] = " & Me![FrmSubBasicData].Form![Flot Number], acFormReadOnly
+187	0	
+188	0	Exit Sub
+189	0	
+190	0	err_Historic:
+191	0	    Call General_Error_Trap
+192	0	    Exit Sub
+193	0	End Sub
+194	0	
+195	0	Private Sub cmdOutput_Click()
+196	1	'open output options pop up
+197	0	On Error GoTo err_Output
+198	0	
+199	0	    If Me![FrmSubBasicData].Form![Flot Number] <> "" Then
+200	1	        'DoCmd.OpenForm "FrmPopDataOutputOptions", acNormal, , , , acDialog, "Bot: Basic Data;" & Me![FrmSubBasicData].Form![Flot Number]
+201	1	        'Q_ExportBasicData_AllRecs_withUnit
+202	1	        'will this be too slow - but request from A & M to have excavation data as well
+203	0	        DoCmd.OpenForm "FrmPopDataOutputOptions", acNormal, , , , acDialog, "Q_ExportBasicData_AllRecs_withUnit;" & Me![FrmSubBasicData].Form![Flot Number]
+204	0	    Else
+205	0	        MsgBox "The output options form cannot be shown when there is no Flot Number on screen", vbInformation, "Action Cancelled"
+206	0	    End If
+207	0	
+208	0	Exit Sub
+209	0	
+210	0	err_Output:
+211	0	    Call General_Error_Trap
+212	0	    Exit Sub
+213	0	End Sub
+214	0	
+215	0	Private Sub cmdUnitDescr_Click()
+216	0	On Error GoTo Err_cmdUnitDesc_Click
+217	0	
+218	0	If Me![FrmSubBasicData].Form![Unit Number] <> "" Then
+219	1	    'check the unit number is in the unit desc form
+220	0	    Dim checknum, sql
+221	0	    checknum = DLookup("[Unit]", "[Bot: Unit Description]", "[Unit] = " & Me![FrmSubBasicData].Form![Unit Number])
+222	0	    If IsNull(checknum) Then
+223	1	        'must add the unit to the table
+224	0	        sql = "INSERT INTo [Bot: Unit Description] ([Unit]) VALUES (" & Me![FrmSubBasicData].Form![Unit Number] & ");"
+225	0	        DoCmd.RunSQL sql
+226	0	    End If
+227	0	    
+228	0	    DoCmd.OpenForm "FrmBotUnitDescription", acNormal, , "[Unit] = " & Me![FrmSubBasicData].Form![Unit Number], acFormPropertySettings
+229	0	Else
+230	0	    MsgBox "No Unit number is present, cannot open the Unit Description form", vbInformation, "No Unit Number"
+231	0	End If
+232	0	Exit Sub
+233	0	
+234	0	Err_cmdUnitDesc_Click:
+235	0	    Call General_Error_Trap
+236	0	    Exit Sub
+237	0	End Sub
+238	0	
+239	0	Private Sub Form_Open(Cancel As Integer)
+240	1	'********************************************************************
+241	1	' Set up how the form should look
+242	1	' SAJ
+243	1	'********************************************************************
+244	0	On Error GoTo err_open
+245	0	
+246	0	If Not IsNull(Me.OpenArgs) Then
+247	1	    'flot number passed in must find it
+248	0	    DoCmd.GoToControl "FrmSubBasicData"
+249	0	    DoCmd.GoToControl "Flot Number"
+250	0	    DoCmd.FindRecord Me.OpenArgs
+251	0	    DoCmd.GoToControl "Sample Number"
+252	0	End If
+253	0	
+254	0	If Me!FrmSubBasicData.Form.DefaultView = 2 Then
+255	1	    'if the default view of the subform is datasheet then set the datasheet
+256	1	    'button to true, the cbo is shown for the datasheet
+257	0	    Me!tglDataSheet = True
+258	0	    Me!tglFormV = False
+259	0	    Me!FrmSubBasicData.Form!cboOptions.Visible = True
+260	0	Else
+261	1	    'if the default view of the subform is form then set the datasheet
+262	1	    'button to false, the cbo is hidden for the form
+263	0	    Me!tglDataSheet = False
+264	0	    Me!tglFormV = True
+265	0	    Me!FrmSubBasicData.Form!cboOptions.Visible = False
+266	0	End If
+267	0	    
+268	0	    
+269	0	Exit Sub
+270	0	
+271	0	err_open:
+272	0	    Call General_Error_Trap
+273	0	    Exit Sub
+274	0	
+275	0	End Sub
+276	0	
+277	0	Private Sub tglDataSheet_Click()
+278	1	'********************************************************************
+279	1	' The user wants to see the basic data in datasheet view
+280	1	' SAJ
+281	1	'********************************************************************
+282	0	On Error GoTo Err_tglDataSheet
+283	0	
+284	0	If Me!tglDataSheet = True Then
+285	1	    'set the sub form to datasheet view and make the combo of actions visible
+286	1	    'as this replaces the form action buttons visible in form view
+287	0	    Me!FrmSubBasicData.SetFocus
+288	0	    Me!FrmSubBasicData.Form![cboOptions].Visible = True
+289	0	    DoCmd.RunCommand acCmdSubformDatasheet
+290	0	    Me!tglFormV = False
+291	0	End If
+292	0	Exit Sub
+293	0	
+294	0	Err_tglDataSheet:
+295	0	    Call General_Error_Trap
+296	0	    Exit Sub
+297	0	End Sub
+298	0	
+299	0	Private Sub tglFormV_Click()
+300	1	'********************************************************************
+301	1	' The user wants to see the basic data in form view
+302	1	' SAJ
+303	1	'********************************************************************
+304	0	On Error GoTo Err_tglFormV
+305	0	
+306	0	If Me!tglFormV = True Then
+307	1	    'set the sub form to form view and make the combo of actions invisible
+308	1	    'as this is replaced by the form action buttons when in form view
+309	0	    Me!FrmSubBasicData.SetFocus
+310	0	    Me!FrmSubBasicData![Flot Number].SetFocus
+311	0	    Me!FrmSubBasicData.Form![cboOptions].Visible = False
+312	0	    DoCmd.RunCommand acCmdSubformDatasheet
+313	0	    Me!tglDataSheet = False
+314	0	End If
+315	0	
+316	0	Exit Sub
+317	0	
+318	0	Err_tglFormV:
+319	0	    Call General_Error_Trap
+320	0	    Exit Sub
+321	0	End Sub

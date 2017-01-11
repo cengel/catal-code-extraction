@@ -1,0 +1,90 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdCompleteLHand_Click()
+5	1	'new season 2007 - fill out all hands bones
+6	0	On Error GoTo err_completeLHand
+7	0	
+8	1	    'check all the hand bone fields
+9	0	    
+10	0	    Me!Metacarpal_1_left = True
+11	0	    Me!Metacarpal_2_left = True
+12	0	    Me!Metacarpal_3_left = True
+13	0	    Me!Metacarpal_4_left = True
+14	0	    Me!Metacarpal_5_left = True
+15	0	
+16	0	    Me!Proximal_phalanx_1_left = True
+17	0	    Me!Distal_phalanx_1_left = True
+18	0	    
+19	0	    Me![Proximal_phalanges_2-5_left] = 4
+20	0	    Me![Middle_phalanges_2-5_left] = 4
+21	0	    Me![Distal_phalanges_2-5_left] = 4
+22	0	    
+23	1	   ' Me!Proximal_phalanx_2_left = True
+24	1	   ' Me!Proximal_phalanx_3_left = True
+25	1	    'Me!Proximal_phalanx_4_left = True
+26	1	    'Me!Proximal_phalanx_5_left = True
+27	0	
+28	1	    'Me!Middle_phalanx_2_left = True
+29	1	    'Me!Middle_phalanx_3_left = True
+30	1	    'Me!Middle_phalanx_4_left = True
+31	1	    'Me!Middle_phalanx_5_left = True
+32	0	
+33	0	    
+34	1	    'Me!Distal_phalanx_2_left = True
+35	1	    'Me!Distal_phalanx_3_left = True
+36	1	    'Me!Distal_phalanx_4_left = True
+37	1	    'Me!Distal_phalanx_5_left = True
+38	0	
+39	0	
+40	0	Exit Sub
+41	0	
+42	0	err_completeLHand:
+43	0	    Call General_Error_Trap
+44	0	    Exit Sub
+45	0	End Sub
+46	0	
+47	0	Private Sub cmdCompleteRHand_Click()
+48	1	'new season 2007 - fill out all hands bones
+49	0	On Error GoTo err_completeRHand
+50	0	
+51	1	    'check all the hand bone fields
+52	0	    
+53	0	    Me!Metacarpal_1_right = True
+54	0	    Me!Metacarpal_2_right = True
+55	0	    Me!Metacarpal_3_right = True
+56	0	    Me!Metacarpal_4_right = True
+57	0	    Me!Metacarpal_5_right = True
+58	0	
+59	0	    Me!Proximal_phalanx_1_right = True
+60	0	    Me!Distal_phalanx_1_right = True
+61	0	    
+62	0	    Me![Proximal_phalanges_2-5_right] = 4
+63	0	    Me![Middle_phalanges_2-5_right] = 4
+64	0	    Me![Distal_phalanges_2-5_right] = 4
+65	0	    
+66	0	    
+67	1	    'Me!Proximal_phalanx_2_right = True
+68	1	    'Me!Proximal_phalanx_3_right = True
+69	1	    'Me!Proximal_phalanx_4_right = True
+70	1	    'Me!Proximal_phalanx_5_right = True
+71	0	
+72	1	    'Me!Middle_phalanx_2_right = True
+73	1	    'Me!Middle_phalanx_3_right = True
+74	1	    'Me!Middle_phalanx_4_right = True
+75	1	    'Me!Middle_phalanx_5_right = True
+76	0	
+77	0	    
+78	1	    'Me!Distal_phalanx_2_right = True
+79	1	    'Me!Distal_phalanx_3_right = True
+80	1	    'Me!Distal_phalanx_4_right = True
+81	1	    'Me!Distal_phalanx_5_right = True
+82	0	
+83	0	
+84	0	Exit Sub
+85	0	
+86	0	err_completeRHand:
+87	0	    Call General_Error_Trap
+88	0	    Exit Sub
+89	0	
+90	0	End Sub

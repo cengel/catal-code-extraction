@@ -1,0 +1,46 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub Form_BeforeUpdate(Cancel As Integer)
+5	0	Me![Date Changed] = Now()
+6	0	End Sub
+7	0	
+8	0	
+9	0	Private Sub Unit_AfterUpdate()
+10	0	Me.Requery
+11	0	DoCmd.GoToRecord , , acLast
+12	0	End Sub
+13	0	
+14	0	Sub Command5_Click()
+15	0	On Error GoTo Err_Command5_Click
+16	0	
+17	0	
+18	0	    DoCmd.GoToRecord , , acLast
+19	0	
+20	0	Exit_Command5_Click:
+21	0	    Exit Sub
+22	0	
+23	0	Err_Command5_Click:
+24	0	    MsgBox Err.Description
+25	0	    Resume Exit_Command5_Click
+26	0	    
+27	0	End Sub
+28	0	Sub go_to_unit_Click()
+29	0	On Error GoTo Err_go_to_unit_Click
+30	0	
+31	0	    Dim stDocName As String
+32	0	    Dim stLinkCriteria As String
+33	0	
+34	0	    stDocName = "Exca: Unit Sheet"
+35	0	    
+36	0	    stLinkCriteria = "[Unit Number]=" & Me![Unit]
+37	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+38	0	
+39	0	Exit_go_to_unit_Click:
+40	0	    Exit Sub
+41	0	
+42	0	Err_go_to_unit_Click:
+43	0	    MsgBox Err.Description
+44	0	    Resume Exit_go_to_unit_Click
+45	0	    
+46	0	End Sub

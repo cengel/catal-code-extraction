@@ -1,0 +1,233 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	0	Option Explicit
+3	0	
+4	0	
+5	0	
+6	0	Private Sub Area_name_AfterUpdate()
+7	1	'***********************************************************************************
+8	1	' Area names are taken and stored in lots of other tables, therefore they should not
+9	1	' be altered once they have been entered. Although there is an Area number field this is
+10	1	' not stored by the other tables (it should be but thats a huge alteration).
+11	1	'
+12	2	' Area names will also be stored in tables that aren't used here so cannot be updated
+13	1	' from here anyway so the safest thing to do is to tell the user (an Admin) the impact changing
+14	1	' will have and let them put the area in the historical areas table or cancel the alteration
+15	1	'
+16	1	' originally had this code in beforeupdate as that allows cancel of input but it would
+17	1	' not allow the recordset to be requeried after the old area record was deleted
+18	1	'
+19	1	' SAJ v9.1
+20	1	'***********************************************************************************
+21	0	
+22	0	On Error GoTo err_Area_name_afterupdate
+23	0	Dim msg, retval
+24	0	
+25	0	    If Not IsNull(Me![Area Name].OldValue) Or (Me![Area Name].OldValue <> Me![Area Name]) Then
+26	1	        'check its not a new entry which means the oldvalue is null
+27	1	        'and only act if its an edit that alters the text
+28	0	        msg = "Sorry but edits to the Area name are not allowed. Area names are stored in many different tables "
+29	0	        msg = msg & "and this name may have already been used." & Chr(13) & Chr(13)
+30	0	        msg = msg & "It is possible to archive this as an old area name and add it to the list of Historical area names if you wish. This would "
+31	0	        msg = msg & " take the format of:" & Chr(13) & Chr(13) & "Old Area name: " & Me![Area Name].OldValue & " now equates to " & Me![Area Name]
+32	0	        msg = msg & Chr(13) & Chr(13) & "Press Cancel to return to the original Area name"
+33	0	        msg = msg & Chr(13) & "or "
+34	0	        msg = msg & "Press OK to change this area name and add the old one to the historical list. "
+35	0	        
+36	0	        retval = MsgBox(msg, vbExclamation + vbOKCancel + vbDefaultButton2, "Stop: Area names cannot just be altered")
+37	0	        If retval = vbCancel Then
+38	2	            ' Cancel = True 'used in before update
+39	1	            Me![Area Name] = Me![Area Name].OldValue 'reset to oldval
+40	0	        ElseIf retval = vbOK Then
+41	1	            'need to archive this area off, this involves creating a new area in this RS for this new name, getting
+42	1	            'its new number and then entering the old details along with the new details in the Historical table
+43	1	            'to allow the 2 to be linked for archival purposes.
+44	0	            Dim sql, sql2, sql3, newAreaNum
+45	6	            sql = "INSERT INTO [Exca: Area Sheet] ([Area name], [Mound], [Description]) VALUES ('" & Me![Area Name] & "','" & Me![Mound] & "'," & IIf(IsNull(Me![Description]), "null", "'" & Me![Description] & "'") & ");"
+46	0	            DoCmd.RunSQL sql
+47	2	            newAreaNum = DLookup("[Area Number]", "Exca: Area Sheet", "[Area Name] = '" & Me![Area Name] & "'")
+48	0	            
+49	0	            sql2 = "INSERT INTO [Exca: Area_Historical_Names] (CurrentAreaNumber, CurrentAreaName, OldAreaNumber, OldAreaName, OldMound, OldDescription)"
+50	8	            sql2 = sql2 & " VALUES (" & newAreaNum & ", '" & Me![Area Name] & "', " & Me![Area number] & ", '" & Me![Area Name].OldValue & "', '" & Me![Mound] & "', '" & Me![Description] & "');"
+51	0	            DoCmd.RunSQL sql2
+52	0	            
+53	1	            'Cancel = False
+54	0	            
+55	1	            'sql3 = "DELETE * FROM [Exca: Area Sheet] WHERE [Area number] = " & Me![Area number]
+56	1	            ' DoCmd.RunSQL sql3
+57	1	            'can do delete with screen commands which prevents conflict error being returned to user
+58	0	            DoCmd.RunCommand acCmdDeleteRecord
+59	1	            Me.Requery 'get updated RS
+60	1	            'move to last record as new area name will be the last record now
+61	0	            DoCmd.GoToRecord acActiveDataObject, , acLast
+62	0	        End If
+63	0	    End If
+64	0	
+65	0	Exit Sub
+66	0	
+67	0	err_Area_name_afterupdate:
+68	0	    Call General_Error_Trap
+69	0	    Exit Sub
+70	0	End Sub
+71	0	
+72	0	Private Sub cboFindArea_AfterUpdate()
+73	1	'********************************************
+74	1	'Find the selected building number from the list
+75	1	'
+76	1	'SAJ 2009
+77	1	'********************************************
+78	0	On Error GoTo err_cboFindArea_AfterUpdate
+79	0	
+80	0	    If Me![cboFindArea] <> "" Then
+81	1	        'for existing number the field with be disabled, enable it as when find num
+82	1	        'is shown the on current event will deal with disabling it again
+83	0	        If Me![Area Name].Enabled = False Then Me![Area Name].Enabled = True
+84	0	        DoCmd.GoToControl "Area Name"
+85	0	        DoCmd.FindRecord Me![cboFindArea]
+86	0	        Me![cboFindArea] = ""
+87	0	    End If
+88	0	Exit Sub
+89	0	
+90	0	err_cboFindArea_AfterUpdate:
+91	0	    Call General_Error_Trap
+92	0	    Exit Sub
+93	0	
+94	0	End Sub
+95	0	
+96	0	Private Sub cboFindArea_NotInList(NewData As String, response As Integer)
+97	1	'stop not in list msg loop
+98	0	On Error GoTo err_cbofindNot
+99	0	
+100	0	    MsgBox "Sorry this area cannot be found in the list", vbInformation, "No Match"
+101	0	    response = acDataErrContinue
+102	0	    
+103	0	    Me![cboFind].Undo
+104	0	Exit Sub
+105	0	
+106	0	err_cbofindNot:
+107	0	    Call General_Error_Trap
+108	0	    Exit Sub
+109	0	End Sub
+110	0	
+111	0	Private Sub cmdAddNew_Click()
+112	1	'********************************************
+113	1	'Add a new record
+114	1	'
+115	1	'SAJ 2009
+116	1	'********************************************
+117	0	On Error GoTo err_cmdAddNew_Click
+118	0	
+119	0	    DoCmd.GoToRecord acActiveDataObject, , acNewRec
+120	0	    DoCmd.GoToControl "Area name"
+121	0	Exit Sub
+122	0	
+123	0	err_cmdAddNew_Click:
+124	0	    Call General_Error_Trap
+125	0	    Exit Sub
+126	0	End Sub
+127	0	
+128	0	Private Sub cmdViewHistorical_Click()
+129	1	'*******************************************************************
+130	1	' New, to view historical naming of this area, opens form read only
+131	1	'
+132	1	' SAJ v9.1
+133	1	'*******************************************************************
+134	0	On Error GoTo err_cmdViewHistorical_Click
+135	0	
+136	0	    DoCmd.OpenForm "Exca: Area Historical", acNormal, , "[CurrentAreaNumber] = " & Me![Area number], acFormReadOnly, acDialog
+137	0	    
+138	0	
+139	0	Exit Sub
+140	0	
+141	0	err_cmdViewHistorical_Click:
+142	0	    Call General_Error_Trap
+143	0	    Exit Sub
+144	0	End Sub
+145	0	
+146	0	Private Sub Excavation_Click()
+147	1	'********************************************
+148	1	'This is the trowel button to close the form
+149	1	' Error trap added v9.1
+150	1	'********************************************
+151	0	On Error GoTo err_Excavation_Click
+152	0	
+153	0	    Dim stDocName As String
+154	0	    Dim stLinkCriteria As String
+155	0	
+156	0	    stDocName = "Excavation"
+157	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+158	0	    DoCmd.Close acForm, "Exca: Area Sheet"
+159	0	Exit Sub
+160	0	
+161	0	err_Excavation_Click:
+162	0	    Call General_Error_Trap
+163	0	    Exit Sub
+164	0	End Sub
+165	0	
+166	0	
+167	0	Private Sub Form_Current()
+168	1	'*************************************************
+169	1	' As mounds are  stored in many different tables,
+170	2	' associated with the area don't allow them to altered
+171	1	' after an area record has been entered.
+172	1	'
+173	1	' On screen msg tells user to contact DBA who can explain
+174	1	' what a problem the change could have, unless it really is just
+175	1	' an error done very recently.
+176	1	'
+177	1	' Also check if each area has any historical naming to determine
+178	1	' whether view button should be enabled
+179	1	'
+180	1	' SAJ v9.1
+181	1	'*************************************************
+182	0	On Error GoTo err_Form_Current
+183	0	
+184	0	If IsNull(Me![Area number]) Then
+185	1	    'this is a new record, show mound combo
+186	0	    Me![Field24].Visible = True
+187	0	    Me![txtMound].Visible = False
+188	0	Else
+189	1	    'not a new record do not allow mound to be altered
+190	1	    'so hide mound combo and show mound as a locked txt fld
+191	0	    Me![Field24].Visible = False
+192	0	    Me![txtMound].Visible = True
+193	0	    Me![txtMound].Locked = True
+194	0	End If
+195	0	
+196	1	'now check if this area has any historical numbers and enable button if it does
+197	0	Dim historical
+198	0	historical = Null
+199	1	'2009 error trap new record
+200	0	If Not IsNull(Me![Area number]) Then
+201	0	    historical = DLookup("[CurrentAreaNumber]", "[Exca: Area_Historical_Names]", "[CurrentAreaNumber] = " & Me![Area number])
+202	0	End If
+203	0	
+204	0	If Not IsNull(historical) Then
+205	0	    Me![cmdViewHistorical].Enabled = True
+206	0	Else
+207	0	    Me![cmdViewHistorical].Enabled = False
+208	0	End If
+209	0	Exit Sub
+210	0	
+211	0	err_Form_Current:
+212	0	    Call General_Error_Trap
+213	0	    Exit Sub
+214	0	
+215	0	End Sub
+216	0	
+217	0	Private Sub Form_Open(Cancel As Integer)
+218	1	'*************************************************************
+219	1	' Check permissions of user to define how to display form
+220	1	' v9.1 SAJ
+221	1	'*************************************************************
+222	0	On Error GoTo err_Form_Open
+223	0	    If GetGeneralPermissions = "ADMIN" Then
+224	0	        ToggleFormReadOnly Me, False
+225	0	    Else
+226	0	        ToggleFormReadOnly Me, True
+227	0	    End If
+228	0	Exit Sub
+229	0	
+230	0	err_Form_Open:
+231	0	    Call General_Error_Trap
+232	0	    Exit Sub
+233	0	End Sub

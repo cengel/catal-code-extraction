@@ -1,0 +1,100 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	
+5	0	
+6	0	Private Sub cmdAdmin_Click()
+7	1	'open the pub data screen
+8	0	On Error GoTo err_Admin
+9	0	
+10	0	    DoCmd.OpenForm "Frm_GS_AdminMenu", acNormal
+11	0	
+12	0	Exit Sub
+13	0	
+14	0	err_Admin:
+15	0	    Call General_Error_Trap
+16	0	    Exit Sub
+17	0	End Sub
+18	0	
+19	0	Private Sub cmdOpenData_Click()
+20	1	'open the main data screen
+21	0	On Error GoTo err_OpenData
+22	0	
+23	0	    DoCmd.OpenForm "Frm_CS_BasicData", acNormal
+24	0	
+25	0	Exit Sub
+26	0	
+27	0	err_OpenData:
+28	0	    Call General_Error_Trap
+29	0	    Exit Sub
+30	0	End Sub
+31	0	
+32	0	
+33	0	Private Sub cmdQuit_Click()
+34	1	'quit system
+35	0	On Error GoTo err_Quit
+36	0	
+37	0	    DoCmd.Quit acQuitSaveAll
+38	0	    
+39	0	
+40	0	Exit Sub
+41	0	
+42	0	err_Quit:
+43	0	    Call General_Error_Trap
+44	0	    Exit Sub
+45	0	End Sub
+46	0	
+47	0	
+48	0	
+49	0	Private Sub cmdStageTwo_Click()
+50	1	'open the sample data screen
+51	0	On Error GoTo err_Sample
+52	0	
+53	0	    DoCmd.OpenForm "Frm_CS_StageTwo", acNormal
+54	0	
+55	0	Exit Sub
+56	0	
+57	0	err_Sample:
+58	0	    Call General_Error_Trap
+59	0	    Exit Sub
+60	0	End Sub
+61	0	
+62	0	
+63	0	
+64	0	Private Sub stageone_Click()
+65	1	'open the main data screen
+66	0	On Error GoTo err_stageone_Click
+67	0	
+68	0	    DoCmd.OpenForm "Frm_CS_StageOne2016", acNormal
+69	0	
+70	0	Exit Sub
+71	0	
+72	0	err_stageone_Click:
+73	0	    Call General_Error_Trap
+74	0	    Exit Sub
+75	0	End Sub
+76	0	
+77	0	Private Sub cmdPub_Click()
+78	1	'open the pub data screen
+79	0	On Error GoTo err_pub
+80	0	
+81	0	    DoCmd.OpenForm "LithicForm:BagAndUnitDescription", acNormal
+82	0	Exit Sub
+83	0	
+84	0	err_pub:
+85	0	    Call General_Error_Trap
+86	0	    Exit Sub
+87	0	End Sub
+88	0	
+89	0	Private Sub stagetwo_Click()
+90	1	'open the main data screen
+91	0	On Error GoTo err_stageone_Click
+92	0	
+93	0	    DoCmd.OpenForm "Frm_CS_StageTwo2016", acNormal
+94	0	
+95	0	Exit Sub
+96	0	
+97	0	err_stageone_Click:
+98	0	    Call General_Error_Trap
+99	0	    Exit Sub
+100	0	End Sub

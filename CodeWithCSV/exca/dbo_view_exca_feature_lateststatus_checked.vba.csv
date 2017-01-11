@@ -1,0 +1,28 @@
+1	0	Option Compare Database
+2	0	
+3	0	
+4	0	
+5	0	Private Sub cmdgotofeature_Click()
+6	0	
+7	0	On Error GoTo Err_FeatureSheet_Click
+8	0	
+9	0	    Dim stDocName As String
+10	0	    Dim stLinkCriteria As String
+11	0	
+12	0	    stDocName = "Exca: Feature Sheet"
+13	0	    stLinkCriteria = "[Feature Number] = " & Me.[latestfeature]
+14	0	
+15	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+16	0	
+17	0	
+18	0	Exit_FeatureSheet_Click:
+19	0	    Exit Sub
+20	0	
+21	0	Err_FeatureSheet_Click:
+22	0	    Call General_Error_Trap
+23	0	    Resume Exit_FeatureSheet_Click
+24	0	End Sub
+25	0	
+26	0	Private Sub Form_Activate()
+27	0	Me.Requery
+28	0	End Sub

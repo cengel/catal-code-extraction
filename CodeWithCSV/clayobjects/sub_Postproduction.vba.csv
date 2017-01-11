@@ -1,0 +1,17 @@
+1	0	Option Compare Database
+2	0	
+3	0	Private Sub Form_Current()
+4	0	If Me.Parent![cbo_year_studied].Value = 6 Then
+5	0	    Me!cbo_breakage.Enabled = False
+6	0	    Me!breakage_detail.Enabled = False
+7	0	    Me!cbo_heavywear.Enabled = False
+8	0	    Me!heavy_wear_detail.Enabled = False
+9	0	    Me!adhering_material.Enabled = False
+10	0	Else
+11	0	    Me!cbo_breakage.Enabled = True
+12	0	    Me!breakage_detail.Enabled = True
+13	0	    Me!cbo_heavywear.Enabled = True
+14	0	    Me!heavy_wear_detail.Enabled = True
+15	0	    Me!adhering_material.Enabled = True
+16	0	End If
+17	0	End Sub

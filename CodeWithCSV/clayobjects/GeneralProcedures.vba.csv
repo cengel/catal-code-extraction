@@ -1,0 +1,43 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	
+5	0	Function StartUp()
+6	1	'*****************************************************************************
+7	1	' All actions necessary to start the system as smoothly as possible
+8	1	'
+9	1	' SAJ
+10	1	'*****************************************************************************
+11	0	On Error GoTo err_startup
+12	0	
+13	2	'DoCmd.RunCommand acCmdWindowHide 'hide the DB window from prying eyes
+14	0	
+15	0	DoCmd.OpenForm "ClayObjects_Login", acNormal, , , acFormEdit, acDialog
+16	0	
+17	1	'you can hide the warning messages that Access popups up when
+18	1	'you do sql tasks in the background - however the negative side to
+19	1	'this is that you hide all these types of message which you may not
+20	1	'want to do - the options you have are:
+21	2	'   DoCmd.SetWarnings False 'turns off macro msgs
+22	1	'   Application.SetOption "Confirm Record Changes", False
+23	1	'   Application.SetOption "Confirm Document Deletions", False
+24	2	'    Application.SetOption "Confirm Action Queries", False  'this will hide behind the scences sql actions
+25	2	'you could of course turn this on an off around each statement - I'm undecided at present
+26	0	
+27	1	'now the tables are all ok find out the current version
+28	1	'SetCurrentVersion
+29	0	
+30	1	'**** open move from marked place above
+31	1	DoCmd.OpenForm "ClayObjects: Main", acNormal, , , acFormReadOnly 'open main menu
+32	0	
+33	1	'refresh the main menu so the version number appears
+34	1	'Forms![Excavation].Refresh
+35	0	
+36	0	Exit Function
+37	0	
+38	0	err_startup:
+39	0	    Call General_Error_Trap
+40	1	    'now should the system quit out here?
+41	1	    'to be decided
+42	0	End Function
+43	0	

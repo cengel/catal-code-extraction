@@ -1,0 +1,27 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub Form_BeforeUpdate(Cancel As Integer)
+5	0	Me![Date Changed] = Now()
+6	0	End Sub
+7	0	
+8	0	
+9	0	Sub open_skell_Click()
+10	0	On Error GoTo Err_open_skell_Click
+11	0	
+12	0	    Dim stDocName As String
+13	0	    Dim stLinkCriteria As String
+14	0	
+15	0	    stDocName = "Exca: Skeleton Sheet"
+16	0	    
+17	0	    stLinkCriteria = "[Unit Number]=" & Me![To_Unit]
+18	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+19	0	
+20	0	Exit_open_skell_Click:
+21	0	    Exit Sub
+22	0	
+23	0	Err_open_skell_Click:
+24	0	    MsgBox Err.Description
+25	0	    Resume Exit_open_skell_Click
+26	0	    
+27	0	End Sub

@@ -1,0 +1,47 @@
+1	0	Option Compare Database
+2	0	
+3	0	Sub insert_flips_data()
+4	1	'sql = "INSERT INTO FR_Phytolith_sample_analysis_details ( SiteCode, SampleProcessYear, LabSampleNumber, SampleID, SingleOrMulti, PhytoName, DicotOrMonocot, PhytoCount, [PhytoN/Slide], [PhytoN/gm] )"
+5	7	'sql = sql & "SELECT 'CH' AS Expr1, '09' AS Expr2, 2 AS Expr3, 'CH-09-2' AS Expr4, FR_Analysis_Details1.SorMforImport, "
+6	1	'sql = sql & "FR_Analysis_Details1.PhytoName , FR_Analysis_Details1.DorMforImport, "
+7	1	'sql = sql & "FR_Analysis_Details1.count02, FR_Analysis_Details1.[n/slide02], FR_Analysis_Details1.[n/gm02] "
+8	1	'sql = sql & "FROM FR_Analysis_Details1;"
+9	0	
+10	1	'DoCmd.RunSQL sql
+11	0	
+12	0	Dim num, numtxt
+13	1	'num = 3
+14	1	'
+15	1	'Do Until num > 143
+16	1	'    numtxt = num
+17	1	'    If num < 10 Then numtxt = "0" & numtxt
+18	1	'
+19	1	'    sql = "INSERT INTO FR_Phytolith_sample_analysis_details ( SiteCode, SampleProcessYear, LabSampleNumber, SampleID, SingleOrMulti, PhytoName, DicotOrMonocot, PhytoCount, [PhytoN/Slide], [PhytoN/gm] )"
+20	7	'    sql = sql & " SELECT 'CH' AS Expr1, '09' AS Expr2, " & num & " AS Expr3, 'CH-09-" & num & "' AS Expr4, FR_Analysis_Details1.SorMforImport, "
+21	1	'    sql = sql & "FR_Analysis_Details1.PhytoName , FR_Analysis_Details1.DorMforImport, "
+22	1	'    sql = sql & "FR_Analysis_Details1.count" & numtxt & ", FR_Analysis_Details1.[n/slide" & numtxt & "], FR_Analysis_Details1.[n/gm" & numtxt & "] "
+23	1	'    sql = sql & "FROM FR_Analysis_Details1;"
+24	1	'
+25	1	'    DoCmd.RunSQL sql
+26	1	'    num = num + 1
+27	1	'Loop
+28	0	
+29	0	num = 56
+30	0	
+31	0	Do Until num > 143
+32	0	    numtxt = num
+33	0	    If num < 10 Then numtxt = "0" & numtxt
+34	0	    
+35	0	    sql = "INSERT INTO FR_Phytolith_sample_analysis_details ( SiteCode, SampleProcessYear, LabSampleNumber, SampleID, SingleOrMulti, PhytoName, DicotOrMonocot, PhytoCount, [PhytoN/Slide], [PhytoN/gm] )"
+36	6	    sql = sql & " SELECT 'CH' AS Expr1, '09' AS Expr2, " & num & " AS Expr3, 'CH-09-" & num & "' AS Expr4, FR_AnalysisDetails2.SorMforImport, "
+37	0	    sql = sql & "FR_AnalysisDetails2.PhytoName , FR_AnalysisDetails2.DorMforImport, "
+38	0	    sql = sql & "FR_AnalysisDetails2.count" & numtxt & ", FR_AnalysisDetails2.[n/slide" & numtxt & "], FR_AnalysisDetails2.[n/gm" & numtxt & "] "
+39	0	    sql = sql & "FROM FR_AnalysisDetails2;"
+40	0	    
+41	0	    DoCmd.RunSQL sql
+42	0	    num = num + 1
+43	0	Loop
+44	0	
+45	0	
+46	0	End Sub
+47	0	

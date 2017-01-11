@@ -1,0 +1,89 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cboConserv_AfterUpdate()
+5	1	'new season 2006, if pick conservator name bring up quick view
+6	1	'list of their records
+7	0	On Error GoTo err_cboConserv
+8	0	
+9	0	    DoCmd.OpenForm "frm_ConservationRef_ByConservator", acFormDS, , "[NameID] = " & Me![cboConserv], acFormReadOnly
+10	0	    
+11	0	
+12	0	Exit Sub
+13	0	
+14	0	err_cboConserv:
+15	0	    Call General_Error_Trap
+16	0	    Exit Sub
+17	0	End Sub
+18	0	
+19	0	Private Sub cmdClose_Click()
+20	1	'new season 2006
+21	1	'open conservators list admin screen
+22	0	On Error GoTo err_Close
+23	0	
+24	0	    DoCmd.Close acForm, "frm_Admin_Menu", acSaveYes
+25	0	Exit Sub
+26	0	
+27	0	err_Close:
+28	0	    Call General_Error_Trap
+29	0	    Exit Sub
+30	0	End Sub
+31	0	
+32	0	Private Sub cmdConserList_Click()
+33	1	'new season 2006
+34	1	'open conservators list admin screen
+35	0	On Error GoTo err_ConsList
+36	0	
+37	0	    DoCmd.OpenForm "frm_Admin_conservators", acNormal
+38	0	Exit Sub
+39	0	
+40	0	err_ConsList:
+41	0	    Call General_Error_Trap
+42	0	    Exit Sub
+43	0	End Sub
+44	0	
+45	0	Private Sub cmdPacking_Click()
+46	1	'new season 2006
+47	1	'open packing list admin screen
+48	0	On Error GoTo err_packing
+49	0	
+50	0	    DoCmd.OpenForm "frm_Admin_packing", acNormal
+51	0	Exit Sub
+52	0	
+53	0	err_packing:
+54	0	    Call General_Error_Trap
+55	0	    Exit Sub
+56	0	End Sub
+57	0	
+58	0	Private Sub cmdTreatments_Click()
+59	1	'new season 2006
+60	1	'open treatments list admin screen
+61	0	On Error GoTo err_Treatments
+62	0	
+63	0	    DoCmd.OpenForm "frm_Admin_treatments", acNormal
+64	0	Exit Sub
+65	0	
+66	0	err_Treatments:
+67	0	    Call General_Error_Trap
+68	0	    Exit Sub
+69	0	End Sub
+70	0	
+71	0	Private Sub Form_Open(Cancel As Integer)
+72	1	'new for season 2006
+73	1	'must only allow admins in
+74	0	On Error GoTo err_open
+75	0	
+76	0	    Dim permiss
+77	0	    permiss = GetGeneralPermissions
+78	0	
+79	0	    If permiss <> "ADMIN" Then
+80	0	        MsgBox "Only administrators can view this form", vbInformation, "Access Denied"
+81	0	        DoCmd.Close acForm, "frm_admin_menu"
+82	0	        
+83	0	    End If
+84	0	Exit Sub
+85	0	
+86	0	err_open:
+87	0	    Call General_Error_Trap
+88	0	    Exit Sub
+89	0	End Sub

@@ -1,0 +1,101 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	
+5	0	
+6	0	
+7	0	Private Sub AddDetail_Click()
+8	0	On Error GoTo Err_AddDetail_Click
+9	0	
+10	0	    Dim stDocName As String
+11	0	    Dim stLinkCriteria As String
+12	0	    Dim relationexists, msg, retVal, sql, permiss
+13	0	    
+14	0	    stDocName = "Anthracology: Dendro"
+15	2	    relationexists = DLookup("[GID]", "Anthracology: Dendro", "[GID] = '" & Me![GID] & "'")
+16	0	        If IsNull(relationexists) Then
+17	1	            'number not exist - now see what permissions user has
+18	0	            msg = "Details for this flotation have not been entered yet."
+19	0	            msg = msg & Chr(13) & Chr(13) & "Would you like to add this information now?"
+20	0	            retVal = MsgBox(msg, vbInformation + vbYesNo, "Detail does not exist")
+21	0	        
+22	0	            If retVal = vbNo Then
+23	0	                MsgBox "Details will not be added.", vbExclamation, "Missing Detail Record"
+24	0	            Else
+25	1	                'add new records behind scences
+26	2	                sql = "INSERT INTO [Anthracology: Dendro] ([id],[GID]) VALUES (1,'" & Me![GID] & "');"
+27	0	                DoCmd.RunSQL sql
+28	2	                DoCmd.OpenForm stDocName, acNormal, , "[GID] = '" & Me![GID] & "'", acFormEdit, acDialog
+29	0	            End If
+30	0	        Else
+31	0	            MsgBox "Details have already been added.", vbInformation, "Existing Detail Record"
+32	0	        End If
+33	0	
+34	0	
+35	0	Exit_AddDetail_Click:
+36	0	    Exit Sub
+37	0	
+38	0	Err_AddDetail_Click:
+39	0	    MsgBox Err.Description
+40	0	    Resume Exit_AddDetail_Click
+41	0	    
+42	0	End Sub
+43	0	
+44	0	Private Sub Form_BeforeUpdate(Cancel As Integer)
+45	0	On Error GoTo err_BUpd
+46	0	
+47	0	Debug.Print Now()
+48	0	Forms![Anthracology: Sheet]![timestamp] = Now()
+49	0	
+50	0	Exit Sub
+51	0	
+52	0	err_BUpd:
+53	0	    Call General_Error_Trap
+54	0	    Exit Sub
+55	0	
+56	0	End Sub
+57	0	
+58	0	
+59	0	Private Sub Form_Current()
+60	1	'check whether taxa determination has relation in dendro_detail
+61	0	
+62	0	Dim relationexists
+63	2	relationexists = DLookup("[GID]", "Anthracology: Dendro", "[GID] = '" & Me![GID] & "'")
+64	0	If Not IsNull(relationexists) Then
+65	0	    Me![goto_DendroDetails].Visible = True
+66	0	    Me![AddDetail].Visible = False
+67	0	Else
+68	0	    Me![goto_DendroDetails].Visible = False
+69	0	    Me![AddDetail].Visible = True
+70	0	End If
+71	0	
+72	0	
+73	0	End Sub
+74	0	
+75	0	Private Sub goto_DendroDetails_Click()
+76	0	On Error GoTo Err_goto_DendroDetails_Click
+77	0	
+78	0	    Dim stDocName As String
+79	0	    Dim stLinkCriteria As String
+80	0	    Dim relationexists
+81	0	    
+82	0	    stDocName = "Anthracology: Dendro"
+83	0	    
+84	2	    relationexists = DLookup("[GID]", "Anthracology: Dendro", "[GID] = '" & Me![GID] & "'")
+85	0	    If IsNull(relationexists) Then
+86	1	        'record does not exist
+87	0	    Else
+88	1	        'record exists - open it
+89	2	        stLinkCriteria = "[GID]='" & Me![GID] & "'"
+90	0	        DoCmd.OpenForm stDocName, acNormal, , stLinkCriteria, acFormReadOnly
+91	0	    End If
+92	0	    
+93	0	
+94	0	Exit_goto_DendroDetails_Click:
+95	0	    Exit Sub
+96	0	
+97	0	Err_goto_DendroDetails_Click:
+98	0	    MsgBox Err.Description
+99	0	    Resume Exit_goto_DendroDetails_Click
+100	0	    
+101	0	End Sub

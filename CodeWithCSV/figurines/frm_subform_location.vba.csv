@@ -1,0 +1,89 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdLocate_Click()
+5	1	'allow user to locate this artefact in  crate
+6	2	'this worked for GS but not for figurines as can't seem to alter the visibility of this button on current
+7	1	'so have put button on main form -  would like to return to this off site and crack it - 9/8/10
+8	0	On Error GoTo err_locate
+9	0	
+10	1	    'get find number from main form to pass as openargs
+11	2	''    Dim current
+12	2	''    current = Forms![Frm_Basic_Data]![frm_subform_basic].Form![Unit] & ":" & Forms![Frm_Basic_Data]![frm_subform_basic].Form![Lettercode] & ":" & Forms![Frm_Basic_Data]![frm_subform_basic].Form![FindNumber]
+13	2	''    DoCmd.OpenForm "frm_subform_newlocation", acNormal, , , acFormPropertySettings, acDialog, current
+14	0	    
+15	0	Exit Sub
+16	0	
+17	0	err_locate:
+18	0	    Call General_Error_Trap
+19	0	    Exit Sub
+20	0	End Sub
+21	0	
+22	0	Private Sub cmdMove_Click()
+23	1	'moving something is more complicated than a simple locate - if the find is in more than one crate I think
+24	1	'this is an issue that should be raised with the finds officer as is that correct or is that a mistake - so this is the
+25	1	'first check this code carries out
+26	0	On Error GoTo err_move
+27	0	
+28	0	    If Me.RecordsetClone.RecordCount > 1 Then
+29	0	        MsgBox "This particular find is listed as being located in " & Me.RecordsetClone.RecordCount & " crates. This maybe because " & _
+30	0	                "it was comprised of more than one material but this needs to be checked. Please take this issue to the Finds Officer " & _
+31	0	                "straight away who can resolve it and ensure the Crate Register is updated correctly." & Chr(13) & Chr(13) & "The Finds Officer will then deal with " & _
+32	0	                "updating the location for you.", vbExclamation, "Raise with Finds Officer"
+33	0	    Else
+34	1	        'ok only one location so now is it a FG location?
+35	0	        If Me![CrateLetter] <> "FG" Then
+36	0	            MsgBox "This particular find is listed as being located in non Figurine Crate. This may mean it has been mis-assigned or " & _
+37	0	                "that the find was comprised of more than one material. This needs to be checked. Please take this issue to the Finds Officer " & _
+38	0	                "straight away who can resolve it and ensure the Crate Register is updated correctly." & Chr(13) & Chr(13) & "The Finds Officer will then deal with " & _
+39	0	                "updating the location for you.", vbExclamation, "Raise with Finds Officer"
+40	0	        Else
+41	1	            'ok so allow it to be moved within the FG crates
+42	1	            'get find number from main form to pass as openargs
+43	0	            Dim current
+44	0	            current = Forms![Frm_MainData]![ID number] & ":" & Me![CrateLetter] & Me![CrateNumber]
+45	0	            DoCmd.OpenForm "frm_subform_changelocation", acNormal, , , acFormPropertySettings, acDialog, current
+46	0	        End If
+47	0	    End If
+48	0	
+49	0	Exit Sub
+50	0	
+51	0	err_move:
+52	0	    Call General_Error_Trap
+53	0	    Exit Sub
+54	0	End Sub
+55	0	
+56	0	Private Sub Form_Current()
+57	1	'check if there is any known crate location for the selected record (this form is only opened via frm_sub_basic)
+58	0	On Error GoTo err_current
+59	0	
+60	2	    ''MsgBox "current:" & Me.RecordsetClone.RecordCount
+61	0	    If Me.RecordsetClone.RecordCount > 0 Then
+62	0	        Me![cmdMove].Visible = True
+63	0	        Me![cmdLocate].Visible = False
+64	0	    Else
+65	0	        Me![cmdMove].Visible = False
+66	0	        Me![cmdLocate].Visible = True
+67	0	    End If
+68	0	Exit Sub
+69	0	
+70	0	err_current:
+71	0	    Call General_Error_Trap
+72	0	    Exit Sub
+73	0	End Sub
+74	0	
+75	0	Private Sub Form_Open(Cancel As Integer)
+76	1	'check if there is any known crate location for the selected record (this form is only opened via frm_sub_basic)
+77	1	'On Error GoTo err_open
+78	1	'
+79	1	'    MsgBox Me.RecordsetClone.RecordCount
+80	1	'
+81	1	'
+82	1	'Exit Sub
+83	1	'
+84	1	'err_open:
+85	1	'    Call General_Error_Trap
+86	1	'    Exit Sub
+87	0	    
+88	0	End Sub
+89	0	

@@ -1,0 +1,172 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdAction_Click()
+5	1	'************************************************************************
+6	1	' Process output depending on values selected on screen
+7	1	' SAJ
+8	1	'************************************************************************
+9	0	On Error GoTo err_cmdAction
+10	0	Dim which, where, sql, rpt
+11	0	
+12	0	    If Me![optgrpWhich] = 1 Then
+13	1	        'report
+14	0	        which = "report"
+15	0	    ElseIf Me![optgrpWhich] = 2 Then
+16	1	        'excel
+17	0	        which = "excel"
+18	0	    Else
+19	0	        MsgBox "Please select to either report or export data to excel", vbInformation, "No action to carry out"
+20	0	        which = ""
+21	0	        Exit Sub
+22	0	    End If
+23	0	
+24	0	   If which <> "" Then
+25	0	        If Me![optgrpData] = 1 Then
+26	1	            'current only
+27	0	            If Me![txttable] = "basic" Then
+28	2	                where = "[Q_BasicData].[BagNo] = '" & Me![txtRec] & "'"
+29	0	            Else
+30	2	                where = "[Q_StageTwo].[GID] = '" & Me![txtRec] & "'"
+31	0	            End If
+32	0	        ElseIf Me![optgrpData] = 2 Then
+33	1	            'range
+34	0	            If Me![cboStart] = "" Or Me![cboEnd] = "" Then
+35	0	                MsgBox "Please enter both a Start and End value for the range of records to output.", vbInformation, "Insufficient Data"
+36	0	                Exit Sub
+37	0	            Else
+38	0	                If Me![txttable] = "basic" Then
+39	4	                    where = "[Q_BasicData].[Bagno] BETWEEN '" & Me![cboStart] & "' AND '" & Me![cboEnd] & "'"
+40	0	                Else
+41	4	                    where = "[Q_StageTwo].[GID] BETWEEN '" & Me![cboStart] & "' AND '" & Me![cboEnd] & "'"
+42	0	                End If
+43	0	            End If
+44	0	        ElseIf Me![optgrpData] = 3 Then
+45	1	            'all
+46	0	            where = ""
+47	0	        ElseIf Me![optgrpData] = 4 Then
+48	1	            'current only
+49	0	            If Me![txttable] = "basic" Then
+50	0	                where = "[Q_BasicData].[Unit] = " & Forms![frm_CS_basicdata]![Unit]
+51	0	            Else
+52	1	                where = "[Q_StageTwo].[Unit] = '" & Forms![frm_CS_stagetwo]![Unit]
+53	0	            End If
+54	0	        End If
+55	0	   
+56	0	        If Me![txttable] = "basic" Then
+57	0	            sql = "SELECT * FROM [Q_BasicData]"
+58	0	        Else
+59	0	            sql = "SELECT * FROM [Q_StageTwo]"
+60	0	        End If
+61	0	        If where <> "" Then sql = sql & " where " & where
+62	0	        sql = sql & ";"
+63	0	   
+64	0	   
+65	0	        If which = "report" Then
+66	0	            If Me![txttable] = "basic" Then
+67	0	                rpt = "R_BasicData"
+68	0	                DoCmd.OpenReport rpt, acViewPreview, , where
+69	1	                'DoCmd.SelectObject acReport, "R_BasicData", True
+70	0	            Else
+71	0	                rpt = "R_StageTwo"
+72	0	                DoCmd.OpenReport rpt, acViewPreview, , where
+73	1	            'Else
+74	1	            '    MsgBox "Sorry but the table name passed into this form cannot be matched with a report. Please contact the database administrator", vbCritical, "Report cannot be found"
+75	0	            End If
+76	0	            MsgBox "Sorry the report will have appeared behind the form, click on it to bring it to the front" & Chr(13) & Chr(13) & "This is an outstanding problem.", vbInformation, "Report Location"
+77	0	            DoCmd.Close acForm, Me.Name
+78	1	            'rpt.SetFocus
+79	0	        ElseIf which = "excel" Then
+80	0	            Dim mydb As Database, myq As QueryDef
+81	0	            Set mydb = CurrentDb
+82	0	            Set myq = mydb.CreateQueryDef("CSExcelExport")
+83	0	            
+84	0	            myq.sql = sql
+85	0	            myq.ReturnsRecords = False
+86	0	            
+87	0	            DoCmd.OutputTo acOutputQuery, "CSExcelExport", acFormatXLS, , True
+88	0	            
+89	0	            mydb.QueryDefs.Delete ("CSExcelExport")
+90	0	            
+91	0	            myq.Close
+92	0	            Set myq = Nothing
+93	0	            mydb.Close
+94	0	            Set mydb = Nothing
+95	0	            
+96	0	            DoCmd.Close acForm, Me.Name
+97	0	        End If
+98	0	   End If
+99	0	Exit Sub
+100	0	
+101	0	err_cmdAction:
+102	0	    If Err.Number = 3012 Then
+103	1	        'query already exists
+104	0	        mydb.QueryDefs.Delete ("CSExcelExport")
+105	0	        Resume
+106	0	    Else
+107	0	        Call General_Error_Trap
+108	0	    End If
+109	0	    Exit Sub
+110	0	
+111	0	End Sub
+112	0	
+113	0	Private Sub Form_Open(Cancel As Integer)
+114	1	'**********************************************************************
+115	1	' This form allows the user to select what data they wish to output and in
+116	1	' what format. OpenArgs are required to specify what the current record was
+117	1	' and which table to output
+118	1	' This must take the format: record;table
+119	1	' SAJ
+120	1	'**********************************************************************
+121	0	On Error GoTo err_open
+122	0	
+123	0	If Not IsNull(Me.OpenArgs) Then
+124	0	    Dim tbl, rec
+125	0	    rec = Left(Me.OpenArgs, InStr(Me.OpenArgs, ";") - 1)
+126	0	    tbl = Right(Me.OpenArgs, Len(Me.OpenArgs) - InStr(Me.OpenArgs, ";"))
+127	0	    
+128	0	    Me![txtRec] = rec
+129	0	    Me![txttable] = tbl
+130	0	    
+131	0	    If tbl = "basic" Then
+132	0	        Me![cboStart].RowSource = "SELECT DISTINCT [BagNo] FROM [ChippedStone_Basic_Data] ORDER BY [BagNo];"
+133	0	        Me![cboEnd].RowSource = "SELECT DISTINCT [BagNo] FROM [ChippedStone_Basic_Data] ORDER BY [BagNo];"
+134	0	    Else
+135	1	        'stage two
+136	0	        Me![cboStart].RowSource = "SELECT DISTINCT [GID] FROM [ChippedStone_StageTwo_Data] ORDER BY [GID];"
+137	0	        Me![cboEnd].RowSource = "SELECT DISTINCT [GID] FROM [ChippedStone_StageTwo_Data] ORDER BY [GID];"
+138	0	    End If
+139	0	Else
+140	0	    MsgBox "This form has been called without the necessary parameters, it will now close", vbCritical, "Insufficient Parameters"
+141	0	    DoCmd.Close acForm, Me.Name
+142	0	End If
+143	0	
+144	0	
+145	0	Exit Sub
+146	0	
+147	0	err_open:
+148	0	    Call General_Error_Trap
+149	0	    Exit Sub
+150	0	End Sub
+151	0	
+152	0	Private Sub optgrpData_Click()
+153	1	'***********************************************************************
+154	1	' enable/disable range combos depending on value selected
+155	1	' SAJ
+156	1	'***********************************************************************
+157	0	On Error GoTo err_optgrpData
+158	0	
+159	0	If Me![optgrpData] = 2 Then
+160	0	    Me![cboStart].Enabled = True
+161	0	    Me![cboEnd].Enabled = True
+162	0	Else
+163	0	    Me![cboStart].Enabled = False
+164	0	    Me![cboEnd].Enabled = False
+165	0	End If
+166	0	
+167	0	Exit Sub
+168	0	
+169	0	err_optgrpData:
+170	0	    Call General_Error_Trap
+171	0	    Exit Sub
+172	0	End Sub

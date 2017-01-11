@@ -1,0 +1,176 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub Form_BeforeUpdate(Cancel As Integer)
+5	0	Me![Date changed] = Now()
+6	0	Forms![Exca: Feature Sheet]![dbo_Exca: FeatureHistory].Form![lastmodify].Value = Now()
+7	0	End Sub
+8	0	
+9	0	
+10	0	Private Sub Form_Open(Cancel As Integer)
+11	1	'**********************************************************************
+12	1	' Set up form view depending on permissions
+13	1	' SAJ v9.1
+14	1	'**********************************************************************
+15	0	On Error GoTo err_Form_Open
+16	0	
+17	0	    Dim permiss
+18	0	    permiss = GetGeneralPermissions
+19	0	    If permiss = "ADMIN" Or permiss = "RW" Or permiss = "exsuper" Then
+20	0	        ToggleFormReadOnly Me, False
+21	0	    Else
+22	1	        'set read only form here, just once
+23	0	        ToggleFormReadOnly Me, True
+24	0	    End If
+25	0	    
+26	1	    '2009 - OMG the feature type field is being unlocked so can be EDITED here - thats terrible
+27	0	    Me![Feature Type].Locked = True
+28	0	    Me![Feature Type].Enabled = False
+29	0	    Me![FeatureSubType].Locked = True
+30	0	    Me![FeatureSubType].Enabled = False
+31	0	Exit Sub
+32	0	
+33	0	err_Form_Open:
+34	0	    Call General_Error_Trap
+35	0	    Exit Sub
+36	0	End Sub
+37	0	
+38	0	Private Sub To_feature_AfterUpdate()
+39	1	'***********************************************************************
+40	1	' Intro of a validity check to ensure related feature num entered here is ok
+41	1	' if not tell the user and enter it if necess. SF not want it to restrict
+42	1	' entry and trusts excavators to enter feature num when they can - however
+43	1	' only allow the entry of existing num if its in the same space
+44	1	'
+45	1	' SAJ v9.1
+46	1	'***********************************************************************
+47	0	On Error GoTo err_To_feature_AfterUpdate
+48	0	
+49	0	Dim checknum, msg, retval, sql, currentFeature, checknum2, featureRel, checknum3, myrs As DAO.Recordset, mydb As DAO.Database
+50	0	
+51	0	If Me![To_feature] <> "" Then
+52	1	    'first check its valid
+53	0	    If IsNumeric(Me![To_feature]) Then
+54	0	    
+55	1	        'check that building num does exist
+56	0	        checknum = DLookup("[Feature Number]", "[Exca: Features]", "[Feature Number] = " & Me![To_feature])
+57	0	        If IsNull(checknum) Then
+58	0	            msg = "The Feature Number " & Me![To_feature] & " DOES NOT EXIST in the database. The system can enter it for you ready for you to update later."
+59	0	            msg = msg & Chr(13) & Chr(13) & "Would you like the system to create this feature number now?"
+60	0	            retval = MsgBox(msg, vbInformation + vbYesNo, "Feature Number does not exist")
+61	0	        
+62	0	            If retval = vbNo Then
+63	1	                MsgBox "Ok, but you must remember to enter it soon otherwise you'll be chased!", vbExclamation, "Remember!"
+64	0	            Else
+65	1	               'Dim myf As Form
+66	1	              ' myf.Name = "Exca: Feature Sheet"
+67	1	               'myf.Show
+68	1	              ' DoCmd.OpenForm "Exca: Feature Sheet", acNormal, , , acFormAdd, acDialog, "NEW,Num:" & Me![To_feature] & ",Area:" & Forms![Exca: Feature Sheet]![Combo27]
+69	1	                'ok add the feature number - add it to table but then need to update form
+70	1	                'annoyingly when requery a form it retains no memory of where you were and flicks to begining
+71	1	                'warn user screen will refresh and put in hourglass to make it clear its processing for slow links
+72	0	                
+73	1	                'grab current feature number to return to
+74	0	                currentFeature = Me![Feature Number]
+75	1	                'create feature record
+76	0	                sql = "INSERT INTO [Exca: Features] ([Feature Number]) VALUES (" & Me![To_feature] & ");"
+77	0	                DoCmd.RunSQL sql
+78	1	                'tell user theres going to be a refresh
+79	0	                MsgBox "Feature " & Me![To_feature] & " has been created in the database. This screen will now refresh itself.", vbInformation, "System updating"
+80	0	                DoCmd.Hourglass True
+81	0	                Forms![Exca: Feature Sheet].Requery
+82	1	                DoCmd.GoToControl Forms![Exca: Feature Sheet]![Feature Number].Name 'goto main forms feature num
+83	1	                DoCmd.FindRecord currentFeature 'find the number user was editing before
+84	0	                DoCmd.Hourglass False
+85	0	            End If
+86	0	        Else
+87	1	            'valid number, but must check its in same space
+88	1	            'SEASON 2009 - this field went in v9.2 but this bug not picked up until v12.6 - how did it take so long!!!
+89	1	            '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+90	1	            'If Not IsNull(Forms![Exca: Feature Sheet]![Space]) Or Forms![Exca: Feature Sheet]![Space] <> "" Then
+91	1	            '    checknum2 = DLookup("[Space]", "[Exca: Features]", "[Feature Number] = " & Me![To_feature])
+92	2	            '    If Not IsNull(checknum2) Then 'there is a space for this related feature
+93	2	            '        If checknum2 <> Forms![Exca: Feature Sheet]![Space] Then 'do not allow entry if space numbers differ
+94	1	            '            msg = "This entry is not allowed:  feature (" & Me![To_feature] & ")"
+95	1	            '            msg = msg & " is in Space " & checknum2 & " but Feature " & Forms![Exca: Feature Sheet]![Feature Number]
+96	1	            '            msg = msg & " is in Space " & Forms![Exca: Feature Sheet]![Space]
+97	1	            '            msg = msg & Chr(13) & Chr(13) & "This entry cannot be allowed. Please double check this issue with your Supervisor."
+98	1	            '            MsgBox msg, vbExclamation, "Space mis-match"
+99	1	            '
+100	1	            '            MsgBox "To remove this relationship completely press ESC", vbInformation, "Help Tip"
+101	1	            '
+102	2	            '            'reset val to previous val if is one or else remove it completely
+103	1	            '            If Not IsNull(Me![To_feature].OldValue) Then
+104	1	            '                Me![To_feature] = Me![To_feature].OldValue
+105	1	            '            Else
+106	1	            '                featureRel = Me![Relation]
+107	1	            '                Me.Undo
+108	1	            '                Me![Relation] = featureRel
+109	1	            '            End If
+110	1	            '            DoCmd.GoToControl "Feature Type"
+111	1	            '            DoCmd.GoToControl "To_Feature"
+112	1	            '        End If
+113	1	            '    End If
+114	1	            'End If
+115	0	            
+116	1	            'first check this feature has a space/s
+117	0	            checknum2 = DLookup("[In_Space]", "[Exca: Features in Spaces]", "[Feature] = " & Me![Feature Number])
+118	1	            If Not IsNull(checknum2) Then 'there is a space for main feature
+119	0	                checknum3 = DLookup("[In_Space]", "[Exca: Features in Spaces]", "[Feature] = " & Me![To_feature])
+120	1	                If Not IsNull(checknum3) Then 'there is a space for related feature
+121	1	                    'ok so both have at least one space number so lets check they are in same space
+122	1	                    'never done this before but this query seems to work to see if the features have the same space number
+123	0	                    sql = "SELECT [Exca: Features in Spaces].Feature, [Exca: Features in Spaces].In_Space, [Exca: Features in Spaces_1].Feature, [Exca: Features in Spaces_1].In_Space" & _
+124	0	                            " FROM [Exca: Features in Spaces] INNER JOIN [Exca: Features in Spaces] AS [Exca: Features in Spaces_1] ON [Exca: Features in Spaces].In_Space = [Exca: Features in Spaces_1].In_Space " & _
+125	0	                            " WHERE ([Exca: Features in Spaces].Feature =" & Me![Feature Number] & ")  AND ([Exca: Features in Spaces_1].Feature=" & Me![To_feature] & ");"
+126	0	                    Set mydb = CurrentDb
+127	0	                    Set myrs = mydb.OpenRecordset(sql, dbOpenSnapshot)
+128	0	                    
+129	0	                    If myrs.EOF And myrs.BOF Then
+130	1	                        'contrary to what had once been conceived, features might relate to features from other spaces. Possibility of inserting such relations is now possible,
+131	1	                        'but user has to be informed on possible erroneous relation; DL 2015
+132	0	                        Dim response
+133	0	                        msg = "This entry is not allowed because these two features are not currently in the same Space. They must be in the same space to create a relationship."
+134	0	                        msg = msg & Chr(13) & Chr(13) & "Are you sure that " & Parent![Feature Number] & " is " & Me![Relation] & " " & Me![To_feature] & "?"
+135	0	                        response = MsgBox(msg, vbYesNo + vbQuestion, "Space mis-match")
+136	0	                        If response = vbYes Then
+137	0	                        Else
+138	0	                    
+139	2	                        'if no old value it reverts to 0 and we can't have the To_Feature number as 0
+140	1	                        'MsgBox "To remove this relationship completely press ESC", vbInformation, "Help Tip"
+141	0	            
+142	1	                       'reset val to previous val if is one or else remove it completely
+143	0	                        If Not IsNull(Me![To_feature].OldValue) Then
+144	0	                            Me![To_feature] = Me![To_feature].OldValue
+145	0	                            DoCmd.GoToControl "To_Feature"
+146	0	                        Else
+147	1	                            'featureRel = Me![Relation]
+148	0	                            Me.Undo
+149	1	                            'Me![Relation] = featureRel
+150	1	                            'Me![To_feature] = ""
+151	0	                             DoCmd.GoToControl "Relation"
+152	0	                        End If
+153	1	                        'DoCmd.GoToControl "Feature Type"
+154	0	                    End If
+155	0	                        
+156	0	                End If
+157	0	            End If
+158	0	        End If
+159	0	        
+160	0	    End If
+161	0	    
+162	0	    Else
+163	1	        'not a vaild numeric feature number
+164	0	        MsgBox "The Feature number is invalid, please enter a numeric value only", vbInformation, "Invalid Entry"
+165	0	    End If
+166	0	End If
+167	0	
+168	0	Exit Sub
+169	0	
+170	0	err_To_feature_AfterUpdate:
+171	0	    Call General_Error_Trap
+172	1	    'just in case fell over when hourglass on - turn it off
+173	0	    DoCmd.Hourglass False
+174	0	    Exit Sub
+175	0	
+176	0	End Sub

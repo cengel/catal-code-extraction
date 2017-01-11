@@ -1,0 +1,203 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	0	Option Explicit
+3	1	'******************************************************************************
+4	1	' this sub menu is new with v9.1, it takes two buttons that were on the
+5	1	' the original main menu: list all feature types, list interpertative categories
+6	1	' SAJ v9.1
+7	1	'******************************************************************************
+8	0	
+9	0	Private Sub Button13_Click()
+10	0	interpret_Click
+11	0	End Sub
+12	0	
+13	0	Private Sub cmdBuildingReport_Click()
+14	1	'new for 2008
+15	0	On Error GoTo err_cmdBuilding
+16	0	
+17	0	    Dim resp, both
+18	0	    resp = InputBox("If you wish to only report on a certain building please enter the number below, otherwise leave All for all buildings.", "Specify Building?", "All")
+19	0	    
+20	1	    'bug fix 2010 - wasnt capturing cancel so have put in default of All
+21	0	    If resp <> "" Then
+22	0	        both = MsgBox("Do you want a list of the associated Units as well?", vbQuestion + vbYesNo, "Units?")
+23	0	        If resp <> "All" Then
+24	0	            DoCmd.OpenReport "R_BuildingSheet", acViewPreview, , "[Number] = " & resp
+25	0	            If both = vbYes Then DoCmd.OpenReport "R_Units_in_Buildings", acViewPreview, , "[In_Building] = " & resp
+26	0	        Else
+27	0	            DoCmd.OpenReport "R_BuildingSheet", acViewPreview
+28	0	            If both = vbYes Then DoCmd.OpenReport "R_Units_in_Buildings", acViewPreview
+29	0	        End If
+30	0	    End If
+31	0	
+32	0	Exit Sub
+33	0	
+34	0	err_cmdBuilding:
+35	0	    Call General_Error_Trap
+36	0	    Exit Sub
+37	0	End Sub
+38	0	
+39	0	Private Sub cmdClose_Click()
+40	1	'********************************************
+41	1	' This will close this form and return to main menu
+42	1	' SAJ v9.1
+43	1	'********************************************
+44	0	On Error GoTo err_cmdClose_Click
+45	0	
+46	0	    Dim stDocName As String
+47	0	    Dim stLinkCriteria As String
+48	0	
+49	0	    stDocName = "Excavation"
+50	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+51	0	    DoCmd.Close acForm, "Excavation:ListsMenu"
+52	0	Exit Sub
+53	0	
+54	0	err_cmdClose_Click:
+55	0	    Call General_Error_Trap
+56	0	    Exit Sub
+57	0	End Sub
+58	0	
+59	0	Private Sub cmdFeatureReport_Click()
+60	1	'new for 2009
+61	0	On Error GoTo err_cmdFeature
+62	0	
+63	0	    Dim resp, both
+64	0	    resp = InputBox("To avoid over printing you can only print one feature at a time. Please enter the feature number below.", "Specify Feature")
+65	0	    If resp <> "" Then
+66	0	        DoCmd.OpenReport "R_Feature_Sheet", acViewPreview, , "[Feature Number] = " & resp
+67	0	    End If
+68	0	
+69	0	Exit Sub
+70	0	
+71	0	err_cmdFeature:
+72	0	    Call General_Error_Trap
+73	0	    Exit Sub
+74	0	End Sub
+75	0	
+76	0	Private Sub cmdSearchUnits_Click()
+77	1	'open the new unit search screen 2009
+78	0	On Error GoTo err_units
+79	0	
+80	0	    DoCmd.OpenForm "frm_search", acNormal
+81	0	
+82	0	Exit Sub
+83	0	
+84	0	err_units:
+85	0	    Call General_Error_Trap
+86	0	    Exit Sub
+87	0	End Sub
+88	0	
+89	0	Private Sub cmdSpaceSheet_Click()
+90	1	'new for 2008
+91	0	On Error GoTo err_cmdSpace
+92	0	
+93	0	    Dim resp, both
+94	0	    resp = InputBox("If you wish to only report on a certain space please enter the number below, otherwise leave All in place for all spaces.", "Specify Space?", "All")
+95	0	    
+96	1	    'bug fix 2010 - wasnt capturing cancel so have put in default of All
+97	0	    If resp <> "" Then
+98	0	        both = MsgBox("Do you want a list of the associated Units as well?", vbQuestion + vbYesNo, "Units?")
+99	0	        If resp <> "All" Then
+100	0	            DoCmd.OpenReport "R_SpaceSheet", acViewPreview, , "[Space Number] = " & resp
+101	0	            If both = vbYes Then DoCmd.OpenReport "R_Units_in_Spaces", acViewPreview, , "[In_Space] = " & resp
+102	0	        Else
+103	0	            DoCmd.OpenReport "R_SpaceSheet", acViewPreview
+104	0	            If both = vbYes Then DoCmd.OpenReport "R_Units_in_Spaces", acViewPreview
+105	0	        End If
+106	0	    End If
+107	0	
+108	0	Exit Sub
+109	0	
+110	0	err_cmdSpace:
+111	0	    Call General_Error_Trap
+112	0	    Exit Sub
+113	0	End Sub
+114	0	
+115	0	Private Sub cmdUnitReport_Click()
+116	1	'new for 2009
+117	0	On Error GoTo err_cmdUnit
+118	0	
+119	0	    Dim resp, both
+120	0	    resp = InputBox("To avoid over printing you can only print one unit at a time. Please enter the unit number below.", "Specify Unit")
+121	0	    If resp <> "" Then
+122	1	        'find out type of unit
+123	0	        Dim unitcat
+124	0	        If IsNumeric(resp) Then
+125	0	            unitcat = DLookup("[Category]", "[Exca: Unit Sheet]", "[Unit number] = " & resp)
+126	0	            If Not IsNull(unitcat) Then
+127	0	                Select Case LCase(unitcat)
+128	0	                Case "cut"
+129	0	                    DoCmd.OpenReport "R_Unit_Sheet_cut", acViewPreview, , "[Unit Number] = " & resp
+130	0	                Case "skeleton"
+131	0	                    DoCmd.OpenReport "R_Unit_Sheet_skeleton", acViewPreview, , "[Unit Number] = " & resp
+132	0	                Case Else
+133	0	                    DoCmd.OpenReport "R_Unit_Sheet_layercluster", acViewPreview, , "[Unit Number] = " & resp
+134	0	                End Select
+135	0	            Else
+136	0	                MsgBox "Unit number not present in the database.", vbInformation, "Data not found"
+137	0	            End If
+138	0	        Else
+139	0	            MsgBox "Not a valid unit number", vbInformation, "Invalid entry"
+140	0	        End If
+141	0	    End If
+142	0	
+143	0	Exit Sub
+144	0	
+145	0	err_cmdUnit:
+146	0	    Call General_Error_Trap
+147	0	    Exit Sub
+148	0	End Sub
+149	0	
+150	0	Private Sub Command18_Click()
+151	0	Feature_types_Click
+152	0	End Sub
+153	0	
+154	0	Private Sub Command24_Click()
+155	0	cmdClose_Click
+156	0	End Sub
+157	0	
+158	0	Private Sub Command27_Click()
+159	0	cmdSpaceSheet_Click
+160	0	End Sub
+161	0	
+162	0	Private Sub Command29_Click()
+163	0	cmdSearchUnits_Click
+164	0	End Sub
+165	0	
+166	0	Private Sub Command34_Click()
+167	0	cmdFeatureReport_Click
+168	0	End Sub
+169	0	
+170	0	Sub Feature_types_Click()
+171	1	' orig apart from general error trap
+172	0	On Error GoTo Err_Feature_types_Click
+173	0	
+174	0	    Dim stDocName As String
+175	0	
+176	0	    stDocName = "Exca: Feature Types"
+177	0	    DoCmd.OpenQuery stDocName, acNormal, acEdit
+178	0	
+179	0	Exit_Feature_types_Click:
+180	0	    Exit Sub
+181	0	
+182	0	Err_Feature_types_Click:
+183	0	    Call General_Error_Trap
+184	0	    Resume Exit_Feature_types_Click
+185	0	    
+186	0	End Sub
+187	0	Sub interpret_Click()
+188	1	' orig apart from general error trap
+189	0	On Error GoTo Err_interpret_Click
+190	0	
+191	0	    Dim stDocName As String
+192	0	
+193	0	    stDocName = "Exca: List Interpretive Categories"
+194	0	    DoCmd.OpenQuery stDocName, acNormal, acEdit
+195	0	
+196	0	Exit_interpret_Click:
+197	0	    Exit Sub
+198	0	
+199	0	Err_interpret_Click:
+200	0	     Call General_Error_Trap
+201	0	    Resume Exit_interpret_Click
+202	0	    
+203	0	End Sub

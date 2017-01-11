@@ -1,0 +1,29 @@
+1	0	Option Compare Database
+2	0	
+3	0	Private Sub goto_BasicData_Click()
+4	0	On Error GoTo Err_goto_BasicData_Click
+5	0	
+6	0	    Dim stDocName As String
+7	0	    Dim stLinkCriteria As String
+8	0	    Dim relationexists
+9	0	    
+10	0	    stDocName = "Anthracology: Sheet"
+11	0	    
+12	2	    relationexists = DLookup("[GID]", "Anthracology: Basic Details", "[GID] = '" & Me![GID] & "'")
+13	0	    If IsNull(relationexists) Then
+14	1	        'record does not exist
+15	0	    Else
+16	1	        'record exists - open it
+17	2	        stLinkCriteria = "[GID]='" & Me![GID] & "'"
+18	0	        DoCmd.OpenForm stDocName, acNormal, , stLinkCriteria, acFormReadOnly
+19	0	    End If
+20	0	    
+21	0	
+22	0	Exit_goto_BasicData_Click:
+23	0	    Exit Sub
+24	0	
+25	0	Err_goto_BasicData_Click:
+26	0	    MsgBox Err.Description
+27	0	    Resume Exit_goto_BasicData_Click
+28	0	    
+29	0	End Sub

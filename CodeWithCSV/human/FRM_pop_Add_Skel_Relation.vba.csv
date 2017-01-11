@@ -1,0 +1,176 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cboSelect_AfterUpdate()
+5	1	'MsgBox Me!cboSelect
+6	0	
+7	0	End Sub
+8	0	
+9	0	Private Sub cmdCancel_Click()
+10	1	'do nothing just shut form
+11	0	On Error GoTo err_cmdCancel
+12	0	
+13	0	    DoCmd.Close acForm, Me.Name
+14	0	Exit Sub
+15	0	
+16	0	err_cmdCancel:
+17	0	    Call General_Error_Trap
+18	0	    Exit Sub
+19	0	
+20	0	End Sub
+21	0	
+22	0	Private Sub cmdOK_Click()
+23	1	'the user needs to have selected a individual from the combo and this is then
+24	1	'related to the individual number that was passed into the form by the openargs
+25	1	' - need to check an individual has been selected
+26	2	' - check relationship doesn't already exist
+27	1	' - if all ok right in relationship both ways
+28	0	
+29	0	On Error GoTo err_cmdOK
+30	0	Dim sql, sql1
+31	0	Dim mydb As DAO.Database, myrs As DAO.Recordset
+32	0	
+33	0	    If Me!cboSelect <> "" Then
+34	1	        'check relationship not already exist
+35	0	        sql = "SELECT HR_Skeleton_RelatedTo_Skeleton.Unit, HR_Skeleton_RelatedTo_Skeleton.IndividualNumber, "
+36	0	        sql = sql & "HR_Skeleton_RelatedTo_Skeleton.RelatedToUnit, HR_Skeleton_RelatedTo_Skeleton.RelatedToIndividualNumber "
+37	0	        sql = sql & "FROM HR_Skeleton_RelatedTo_Skeleton "
+38	0	        sql = sql & "WHERE ((HR_Skeleton_RelatedTo_Skeleton.Unit=" & Me!txtUnit & " AND HR_Skeleton_RelatedTo_Skeleton.IndividualNumber=" & Me!txtIndivid & ")"
+39	0	        sql = sql & " AND "
+40	0	        sql = sql & "(HR_Skeleton_RelatedTo_Skeleton.RelatedToUnit=" & Me!cboSelect.Column(1) & " AND HR_Skeleton_RelatedTo_Skeleton.RelatedToIndividualNumber=" & Me!cboSelect.Column(2) & "))"
+41	0	        sql = sql & " OR"
+42	0	        sql = sql & "((HR_Skeleton_RelatedTo_Skeleton.Unit=" & Me!cboSelect.Column(1) & " AND HR_Skeleton_RelatedTo_Skeleton.IndividualNumber=" & Me!cboSelect.Column(2) & ")"
+43	0	        sql = sql & " AND "
+44	0	        sql = sql & "(HR_Skeleton_RelatedTo_Skeleton.RelatedToUnit=" & Me!txtUnit & " AND HR_Skeleton_RelatedTo_Skeleton.RelatedToIndividualNumber=" & Me!txtIndivid & "));"
+45	0	
+46	0	        
+47	0	        Set mydb = CurrentDb
+48	0	        Set myrs = mydb.OpenRecordset(sql, dbOpenSnapshot)
+49	0	        If Not (myrs.BOF And myrs.EOF) Then
+50	1	            'relationship exists
+51	0	            myrs.MoveLast
+52	0	            If myrs.RecordCount = 1 Then
+53	1	                'something wrong as there should be two records for each relationship, must find out where the problem lies and correct it behind the scenes
+54	0	               myrs.MoveFirst
+55	0	               If myrs![Unit] = CInt(Me!txtUnit) And myrs![IndividualNumber] = CInt(Me!txtIndivid) Then
+56	1	                    'this unit has been related to the selection but the reverse relationship is missing so insert but with out notes
+57	0	                    sql = "INSERT INTO HR_Skeleton_RelatedTo_Skeleton (Unit, IndividualNumber, RelatedToUnit, RelatedToIndividualNumber) VALUES (" & Me![cboSelect].Column(1) & ", " & Me![cboSelect].Column(2) & ", " & Me![txtUnit] & ", " & Me![txtIndivid] & ");"
+58	0	                    DoCmd.RunSQL sql
+59	0	                ElseIf myrs![RelatedToUnit] = CInt(Me![txtUnit]) And myrs![RelatedToIndividualNumber] = CInt(Me!txtIndivid) Then
+60	1	                    'this unit is in the related to side of the relationship but the reverse is missing so insert but without notes
+61	2	                    sql = "INSERT INTO HR_Skeleton_RelatedTo_Skeleton (Unit, IndividualNumber, RelatedToUnit, RelatedToIndividualNumber, Notes) VALUES (" & Me!txtUnit & ", " & Me![txtIndivid] & ", " & Me![cboSelect].Column(1) & ", " & Me![cboSelect].Column(2) & ", '" & Me!txtNotes & "');"
+62	0	                    DoCmd.RunSQL sql
+63	0	                End If
+64	1	                 'the relationship has been sorted tell user relationship already exists
+65	0	                MsgBox "Skeleton " & Me!txtUnit & ".B" & Me!txtIndivid & " was already related to Skeleton " & Me![cboSelect].Column(1) & ".B" & Me![cboSelect].Column(2) & " but this was not shown on screen, this problem has been recitfied. Press Cancel to exit this screen.", vbExclamation, "Relationship already exists"
+66	0	            Else
+67	1	                'the relationship exists tell user relationship already exists
+68	0	                MsgBox "Skeleton " & Me!txtUnit & ".B" & Me!txtIndivid & " is already related to Skeleton " & Me![cboSelect].Column(1) & ".B" & Me![cboSelect].Column(2) & Chr(13) & Chr(13) & "Please choose another skeleton or press Cancel to exit this screen.", vbExclamation, "Relationship already exists"
+69	0	            End If
+70	0	           
+71	0	        Else
+72	1	            'no relationship so create it both ways
+73	0	            Dim Notes
+74	0	            If Not IsNull(Me!txtNotes) Then
+75	3	                Notes = Replace(Me!txtNotes, "'", "''")
+76	0	            Else
+77	0	                Notes = ""
+78	0	            End If
+79	0	            
+80	0	            
+81	1	            'august 2009 - whoops needed more logic added to this as below
+82	1	            'the select unit might already have a relationship with another unit so we must related them all together
+83	0	            Dim OtherRelatedToUnit, OtherRelatedToIndivid, present
+84	0	            
+85	0	            sql1 = "SELECT * FROM HR_Skeleton_RelatedTo_Skeleton " & _
+86	0	                    "WHERE HR_Skeleton_RelatedTo_Skeleton.Unit= " & Me![cboSelect].Column(1) & " AND HR_Skeleton_RelatedTo_Skeleton.IndividualNumber=" & Me![cboSelect].Column(2) & ";"
+87	0	
+88	0	            Set mydb = CurrentDb
+89	0	            Set myrs = mydb.OpenRecordset(sql1, dbOpenSnapshot)
+90	0	            If Not (myrs.BOF And myrs.EOF) Then
+91	1	                'the related unit has relationships of its own so we must check each one and make sure the current unit gets tied in
+92	0	                myrs.MoveFirst
+93	0	                Do Until myrs.EOF
+94	1	                    'get the related to individual and see if the current unit is also related to it
+95	0	                    OtherRelatedToUnit = myrs![RelatedToUnit]
+96	0	                    OtherRelatedToIndivid = myrs![RelatedToIndividualNumber]
+97	0	                    present = DCount("[Unit]", "[HR_Skeleton_RelatedTo_Skeleton]", "[Unit] = " & Me![txtUnit] & " AND [IndividualNumber] = " & Me![txtIndivid] & " AND [RelatedToUnit] = " & OtherRelatedToUnit & " AND [RelatedToIndividualNumber] = " & OtherRelatedToIndivid)
+98	0	                    
+99	0	                    If present = 0 Or IsNull(present) Then
+100	0	                        MsgBox Me![cboSelect].Column(1) & ".B" & Me![cboSelect].Column(2) & " is in turn related to " & OtherRelatedToUnit & ".B" & OtherRelatedToIndivid & " and so this relationship will also exist here", vbInformation, "Relationship cascade"
+101	0	                        
+102	2	                        sql = "INSERT INTO HR_Skeleton_RelatedTo_Skeleton (Unit, IndividualNumber, RelatedToUnit, RelatedToIndividualNumber, Notes) VALUES (" & Me!txtUnit & ", " & Me![txtIndivid] & ", " & OtherRelatedToUnit & ", " & OtherRelatedToIndivid & ", '" & myrs!Notes & "');"
+103	0	                        DoCmd.RunSQL sql
+104	0	            
+105	2	                        sql = "INSERT INTO HR_Skeleton_RelatedTo_Skeleton (Unit, IndividualNumber, RelatedToUnit, RelatedToIndividualNumber, Notes) VALUES (" & OtherRelatedToUnit & ", " & OtherRelatedToIndivid & ", " & Me![txtUnit] & ", " & Me![txtIndivid] & ", '" & Notes & "');"
+106	0	                        DoCmd.RunSQL sql
+107	0	                    
+108	0	                    End If
+109	0	                
+110	0	                myrs.MoveNext
+111	0	                Loop
+112	0	            
+113	0	            End If
+114	0	            
+115	1	            'must do the original relationship request last so that its not picked up above as one of the rels in the above check
+116	1	            'could make the above cleverer not to find this match but no time
+117	2	            sql = "INSERT INTO HR_Skeleton_RelatedTo_Skeleton (Unit, IndividualNumber, RelatedToUnit, RelatedToIndividualNumber, Notes) VALUES (" & Me!txtUnit & ", " & Me![txtIndivid] & ", " & Me![cboSelect].Column(1) & ", " & Me![cboSelect].Column(2) & ", '" & Notes & "');"
+118	0	            DoCmd.RunSQL sql
+119	0	            
+120	2	            sql = "INSERT INTO HR_Skeleton_RelatedTo_Skeleton (Unit, IndividualNumber, RelatedToUnit, RelatedToIndividualNumber, Notes) VALUES (" & Me![cboSelect].Column(1) & ", " & Me![cboSelect].Column(2) & ", " & Me![txtUnit] & ", " & Me![txtIndivid] & ", '" & "Relationship made from " & Me!txtUnit & "." & Me![txtIndivid] & ". " & Notes & "');"
+121	0	            DoCmd.RunSQL sql
+122	0	            DoCmd.Close acForm, Me.Name
+123	0	            
+124	0	        End If
+125	0	        
+126	0	        myrs.Close
+127	0	        Set myrs = Nothing
+128	0	        mydb.Close
+129	0	        Set mydb = Nothing
+130	0	        
+131	0	
+132	0	    Else
+133	0	        MsgBox "You must select an individual to relate to", vbInformation, "Action Cancelled"
+134	0	    End If
+135	0	
+136	0	Exit Sub
+137	0	
+138	0	err_cmdOK:
+139	0	    Call General_Error_Trap
+140	0	    Exit Sub
+141	0	
+142	0	End Sub
+143	0	
+144	0	Private Sub Form_Open(Cancel As Integer)
+145	1	'new 2008, allow skels to be related
+146	0	On Error GoTo err_open
+147	0	    If Not IsNull(Me.OpenArgs) Then
+148	1	        'must split up string
+149	0	        Dim strArgs, unitnum, skelnum, dot
+150	0	        strArgs = Me.OpenArgs
+151	2	        ''MsgBox Me.OpenArgs
+152	0	        dot = InStr(strArgs, ".")
+153	0	        If dot > 0 Then
+154	1	            'split at the dot
+155	0	            unitnum = Left(strArgs, dot - 1)
+156	2	            ''MsgBox unitnum
+157	0	            Me!txtUnit = unitnum
+158	0	            skelnum = right(strArgs, Len(strArgs) - dot)
+159	2	            ''MsgBox skelnum
+160	0	            Me!txtIndivid = skelnum
+161	0	        
+162	0	            Me![txtTitle] = "Relate Skeleton " & Me!txtUnit & ".B" & Me!txtIndivid & " to another Skeleton"
+163	0	        Else
+164	0	            MsgBox "Invalid identifier passed into the form, it must be the unit number and individual number"
+165	0	            DoCmd.Close acForm, Me.Name
+166	0	        End If
+167	0	        
+168	0	       
+169	0	    End If
+170	0	
+171	0	Exit Sub
+172	0	
+173	0	err_open:
+174	0	    Call General_Error_Trap
+175	0	    Exit Sub
+176	0	End Sub

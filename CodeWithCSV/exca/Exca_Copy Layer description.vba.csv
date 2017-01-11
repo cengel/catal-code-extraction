@@ -1,0 +1,113 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cboFindUnitToCopy_AfterUpdate()
+5	1	'**************************************************************
+6	3	' This combo has replaced the old 'Find unit' button that simply
+7	1	' brought up the Find/Replace dialog. This allows the user to select
+8	1	' the unit to copy from it then sets the control source of the
+9	1	' fields below (the form opens blank so there is nothing the user can do
+10	1	' until they select a Unit
+11	1	' SAJ v.91
+12	1	'**************************************************************
+13	0	On Error GoTo err_cboFindUnitToCopy_AfterUpdate
+14	0	
+15	0	If Me![cboFindUnitToCopy] <> "" Then
+16	0	    Me.RecordSource = "SELECT * FROM [Exca: Descriptions Layer] WHERE [Unit Number] = " & Me![cboFindUnitToCopy]
+17	0	    Me![Unit Number].ControlSource = "Unit Number"
+18	0	    Me![Consistency].ControlSource = "Consistency"
+19	0	    Me![Colour].ControlSource = "Colour"
+20	0	    Me![Texture].ControlSource = "Texture"
+21	0	    Me![Bedding].ControlSource = "Bedding"
+22	0	    Me![Inclusions].ControlSource = "Inclusions"
+23	0	    Me![Post-depositional Features].ControlSource = "Post-depositional Features"
+24	0	    Me![Basal Boundary].ControlSource = "Basal Boundary"
+25	0	    Me![copy data].Enabled = True
+26	0	End If
+27	0	Exit Sub
+28	0	
+29	0	err_cboFindUnitToCopy_AfterUpdate:
+30	0	    Call General_Error_Trap
+31	0	    Exit Sub
+32	0	End Sub
+33	0	
+34	0	Private Sub copy_data_Click()
+35	1	'**************************************************************
+36	1	' Mainly original code, intro more into message and error trap
+37	1	' SAJ v.91
+38	1	'**************************************************************
+39	0	On Error GoTo Err_copy_data_Click
+40	0	
+41	0	Dim msg, Style, Title, response
+42	0	msg = "This action will replace the unit sheet (" & Me![Text17] & ") "
+43	0	msg = msg & "data with with that of unit " & Me![Unit Number] & " shown here." & Chr(13) & Chr(13)
+44	1	msg = msg & "This action cannot be undone. Do you want to continue?"   ' Define message.
+45	1	Style = vbYesNo + vbQuestion + vbDefaultButton2 ' Define buttons.
+46	1	Title = "Overwriting Records"  ' Define title.
+47	0	
+48	1	' Display message.
+49	0	response = MsgBox(msg, Style, Title)
+50	1	If response = vbYes Then    ' User chose Yes.
+51	1	    ' overwrite records
+52	0	    Forms![Exca: Unit Sheet]![Exca: Subform Layer descr]![Consistency] = Me![Consistency]
+53	0	    Forms![Exca: Unit Sheet]![Exca: Subform Layer descr]![Colour] = Me![Colour]
+54	0	    Forms![Exca: Unit Sheet]![Exca: Subform Layer descr]![Texture] = Me![Texture]
+55	0	    Forms![Exca: Unit Sheet]![Exca: Subform Layer descr]![Bedding] = Me![Bedding]
+56	0	    Forms![Exca: Unit Sheet]![Exca: Subform Layer descr]![Inclusions] = Me![Inclusions]
+57	0	    Forms![Exca: Unit Sheet]![Exca: Subform Layer descr]![Post-depositional Features] = Me![Post-depositional Features]
+58	0	    Forms![Exca: Unit Sheet]![Exca: Subform Layer descr]![Basal Boundary] = Me![Basal Boundary]
+59	0	 
+60	1	Else    ' User chose No.
+61	0	
+62	1	    ' do nothing.
+63	0	End If
+64	0	
+65	0	
+66	0	   
+67	0	
+68	0	Exit_copy_data_Click:
+69	0	    Exit Sub
+70	0	
+71	0	Err_copy_data_Click:
+72	0	    Call General_Error_Trap
+73	0	    Resume Exit_copy_data_Click
+74	0	End Sub
+75	0	
+76	0	
+77	0	Sub find_unit_Click()
+78	1	'replaced by cboFindUnitToCopy_AfterUpdate
+79	1	'On Error GoTo Err_find_unit_Click
+80	1	'
+81	1	'
+82	1	'    Screen.PreviousControl.SetFocus
+83	1	'     Unit_Number.SetFocus
+84	1	'    DoCmd.DoMenuItem acFormBar, acEditMenu, 10, , acMenuVer70
+85	1	'
+86	1	'Exit_find_unit_Click:
+87	1	'    Exit Sub
+88	1	'
+89	1	'Err_find_unit_Click:
+90	1	'    MsgBox Err.Description
+91	1	'    Resume Exit_find_unit_Click
+92	0	    
+93	0	End Sub
+94	0	
+95	0	
+96	0	Sub Close_Click()
+97	1	'**************************************************************
+98	1	' Mainly original code, intro name of form and error trap
+99	1	' SAJ v.91
+100	1	'**************************************************************
+101	0	On Error GoTo err_close_Click
+102	0	
+103	0	
+104	0	    DoCmd.Close acForm, "Exca: Copy layer description"
+105	0	
+106	0	Exit_close_Click:
+107	0	    Exit Sub
+108	0	
+109	0	err_close_Click:
+110	0	    Call General_Error_Trap
+111	0	    Resume Exit_close_Click
+112	0	    
+113	0	End Sub

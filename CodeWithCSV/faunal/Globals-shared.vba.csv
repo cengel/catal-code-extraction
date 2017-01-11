@@ -1,0 +1,9 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Public Const DBName = "Faunal"
+5	0	
+6	0	Public VersionNumber
+7	1	Public Const VersionNumberLocal = "7.5" 'NEW 2009 TO FLAG UPDATE MESSAGE TO USER - see SetCurrentVersion in module General Procedures-shared
+8	0	
+9	0	Public GeneralPermissions

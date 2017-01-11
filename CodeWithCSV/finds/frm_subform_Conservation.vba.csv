@@ -1,0 +1,61 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdGoDB_Click()
+5	0	On Error GoTo err_handler
+6	0	
+7	0	If Me![FullConservation_Ref] <> "" Then
+8	0	    
+9	1	    'old code does not work with runtime as not take into account mdw
+10	1	     'Dim appAccess As Access.Application
+11	0	     Dim appAccess As New Access.Application
+12	0	    
+13	0	     Dim dbpath
+14	0	     dbpath = Replace(CurrentDb.Name, "Finds Register Central.mdb", "Conservation Central Database.mdb")
+15	2	     '' Open database in Microsoft Access window.
+16	1	     appAccess.OpenCurrentDatabase dbpath, False 'false = shared
+17	2	     '' Open given form.
+18	0	     
+19	0	    Set appAccess = getobject(dbpath)
+20	1	    'having it as an object reference allows use of the openform command
+21	1	    'to form - it will hold focus till shut
+22	3	    'appAccess.DoCmd.OpenForm "Conserv: Basic Record", acNormal, , "FullConservation_Ref = '00.088'", , acDialog
+23	4	    ''appAccess.DoCmd.OpenForm "'Conserv: Basic Record'", acNormal, , , , acDialog
+24	1	    'conservation form opens straight away so just need to make vis
+25	0	    appAccess.Visible = True
+26	0	    appAccess.DoCmd.Close acForm, "Conserv: Basic Record"
+27	2	    appAccess.DoCmd.OpenForm "Conserv: Basic Record", acNormal, , "FullConservation_Ref = '" & Me![FullConservation_Ref] & "'", , acDialog
+28	1	    'once shut the code will continue - so must close connection to DB
+29	0	    appAccess.CloseCurrentDatabase
+30	1	    'and quit the shell that it is runningin
+31	0	    appAccess.Quit
+32	0	    Set appAccess = Nothing
+33	1	    '--
+34	0	End If
+35	0	Exit Sub
+36	0	
+37	0	err_handler:
+38	0	
+39	0	    If Err.Number = -2147467259 Or Err.Number = 432 Then
+40	1	       ' the user has entered the incorrect password - must shut the underlying shell
+41	1	'       If KillProcess(shellobj, 0) Then
+42	2	'         'MsgBox "App was terminated"
+43	1	'       End If
+44	0	       
+45	1	       'Set shellobj = Null
+46	0	        If Err.Number = -2147467259 Then MsgBox "The system cannot open the scheme database - you must enter a valid password", vbCritical, "Scheme cannot be opened"
+47	0	        If Err.Number = 432 Then MsgBox "The system cannot open the scheme database. The path to the database entered into the Scheme Administration screen cannot be found", vbCritical, "Scheme cannot be opened"
+48	0	        DoCmd.Hourglass False
+49	0	    Else
+50	0	        DoCmd.Hourglass False
+51	0	    
+52	0	        MsgBox "An error has occurred in General Procedures - OpenASchemeAtGivenForm(). The error is:" & Chr(13) & Chr(13) & Err.Number & " -- " & Err.Description
+53	0	    
+54	0	        appAccess.CloseCurrentDatabase
+55	1	        'and quit the shell that it is runningin
+56	0	        appAccess.Quit
+57	0	        Set appAccess = Nothing
+58	0	    End If
+59	0	    Exit Sub
+60	0	
+61	0	End Sub

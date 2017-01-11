@@ -1,0 +1,238 @@
+1	0	Option Compare Database
+2	0	
+3	0	Private Sub cboFindUnit_AfterUpdate()
+4	1	'********************************************
+5	1	'Find the selected unit from the list
+6	1	'********************************************
+7	0	On Error GoTo err_cboFindUnit_AfterUpdate
+8	0	
+9	0	    If Me![cboFindUnit] <> "" Then
+10	1	         'for existing number the field will be disabled, enable it as when find num
+11	1	        'is shown the on current event will deal with disabling it again
+12	0	        If Me![txtUnit].Enabled = False Then Me![txtUnit].Enabled = True
+13	0	        DoCmd.GoToControl "txtUnit"
+14	0	        DoCmd.FindRecord Me![cboFindUnit]
+15	0	        Me![cboFindUnit] = ""
+16	0	    End If
+17	0	Exit Sub
+18	0	
+19	0	err_cboFindUnit_AfterUpdate:
+20	0	    Call General_Error_Trap
+21	0	    Exit Sub
+22	0	End Sub
+23	0	
+24	0	
+25	0	Private Sub cboFindUnit_NotInList(NewData As String, Response As Integer)
+26	0	On Error GoTo err_cbo
+27	0	
+28	0	MsgBox "This Unit has not been entered into the Ceramics Sheet yet", vbExclamation, "Unit not in lisr"
+29	0	Response = acDataErrContinue
+30	0	Me![cboFindUnit].Undo
+31	0	
+32	0	Exit Sub
+33	0	
+34	0	err_cbo:
+35	0	    Call General_Error_Trap
+36	0	    Exit Sub
+37	0	End Sub
+38	0	
+39	0	Private Sub Close_Click()
+40	0	On Error GoTo err_cmdAddNew_Click
+41	0	
+42	1	    'DoCmd.Close acForm, Me.Name
+43	0	    DoCmd.Quit acQuitSaveAll
+44	0	    
+45	0	Exit Sub
+46	0	
+47	0	err_cmdAddNew_Click:
+48	0	    Call General_Error_Trap
+49	0	    Exit Sub
+50	0	End Sub
+51	0	
+52	0	Private Sub cmdAddNew_Click()
+53	0	On Error GoTo err_cmdAddNew_Click
+54	0	
+55	0	    DoCmd.GoToRecord acActiveDataObject, , acNewRec
+56	1	    'new record allow GID entry
+57	0	    Me![txtUnit].Enabled = True
+58	0	    Me![txtUnit].Locked = False
+59	0	    Me![txtUnit].BackColor = 16777215
+60	0	    DoCmd.GoToControl "txtUnit"
+61	0	Exit Sub
+62	0	
+63	0	err_cmdAddNew_Click:
+64	0	    Call General_Error_Trap
+65	0	    Exit Sub
+66	0	End Sub
+67	0	
+68	0	Private Sub cmdDiag_Click()
+69	0	On Error GoTo err_diag
+70	0	
+71	0	
+72	0	    Dim sql, cd
+73	0	    cd = InputBox("Please enter the new S number:", "Sherd Number")
+74	0	    If cd <> "" Then
+75	2	        sql = "INSERT INTO [Ceramics_Stratified_Diagnostic_Sherds_NY06] ([Unit], [LetterCode], [FindNumber]) VALUES (" & Me![txtUnit] & ", 'S'," & cd & ");"
+76	0	        DoCmd.RunSQL sql
+77	1	        'me![frm_subform_strat_body_Sherds].Forms![WARE CODE] = Me![txtWareCode]
+78	0	        Me![frm_subform_Strat_Diagnostic_Sherds].Requery
+79	0	        DoCmd.GoToControl "frm_subform_Strat_Diagnostic_Sherds"
+80	0	        DoCmd.GoToControl "Weight gr"
+81	0	    End If
+82	0	Exit Sub
+83	0	
+84	0	err_diag:
+85	0	    Call General_Error_Trap
+86	0	    Exit Sub
+87	0	End Sub
+88	0	
+89	0	Private Sub cmdNewBody_Click()
+90	0	On Error GoTo err_txtWare
+91	0	
+92	0	
+93	0	    Dim sql, cd
+94	0	    cd = InputBox("Please enter the new ware code:", "Ware Code")
+95	0	    If cd <> "" Then
+96	2	        sql = "INSERT INTO [Ceramics_Stratified_Body_Sherds_NY06] ([Unit], [WARE CODE]) VALUES (" & Me![txtUnit] & ", '" & cd & "');"
+97	0	        DoCmd.RunSQL sql
+98	1	        'me![frm_subform_strat_body_Sherds].Forms![WARE CODE] = Me![txtWareCode]
+99	0	        Me![frm_subform_strat_body_Sherds].Requery
+100	0	        DoCmd.GoToControl "frm_subform_strat_body_sherds"
+101	0	        DoCmd.GoToControl "total body sherds"
+102	0	    End If
+103	0	Exit Sub
+104	0	
+105	0	err_txtWare:
+106	0	    Call General_Error_Trap
+107	0	    Exit Sub
+108	0	End Sub
+109	0	
+110	0	Private Sub cmdUnI_Click()
+111	0	On Error GoTo err_uni
+112	0	
+113	0	
+114	0	    Dim sql, cd, dec
+115	0	    cd = InputBox("Please enter the new Element:", "Element")
+116	0	    If cd <> "" Then
+117	0	        dec = InputBox("Please enter the new Decoration:", "Decoration")
+118	0	        If dec <> "" Then
+119	4	            sql = "INSERT INTO [Ceramics_Stratified_Diagnostic_UnIdentified_Sherds_NY06] ([Unit], [Element], [Decoration]) VALUES (" & Me![txtUnit] & ", '" & cd & "', '" & dec & "');"
+120	0	            DoCmd.RunSQL sql
+121	1	            'me![frm_subform_strat_body_Sherds].Forms![WARE CODE] = Me![txtWareCode]
+122	0	            Me![frm_subform_strat_Diag_Unid_Sherds].Requery
+123	0	            DoCmd.GoToControl "frm_subform_strat_Diag_Unid_Sherds"
+124	0	            DoCmd.GoToControl "Total Mineral Tempered"
+125	0	        End If
+126	0	    End If
+127	0	Exit Sub
+128	0	
+129	0	err_uni:
+130	0	    Call General_Error_Trap
+131	0	    Exit Sub
+132	0	End Sub
+133	0	
+134	0	Private Sub Form_Current()
+135	1	'new code for 2006
+136	0	On Error GoTo err_current
+137	0	
+138	1	    'If (Me![txtUnit] = "" Or IsNull(Me![txtUnit])) And (Me![cboFindLetter] = "" Or IsNull(Me![cboFindLetter])) And (Me![txtFindNumber] = "" Or IsNull(Me![txtFindNumber])) Then
+139	2	    'don't include find number as defaults to x
+140	0	    If (Me![txtUnit] = "" Or IsNull(Me![txtUnit])) Then
+141	1	        'new record allow GID entry
+142	0	        Me![txtUnit].Enabled = True
+143	0	        Me![txtUnit].Locked = False
+144	0	        Me![txtUnit].BackColor = 16777215
+145	0	    Else
+146	1	        'existing entry lock
+147	0	        Me![txtUnit].Enabled = False
+148	0	        Me![txtUnit].Locked = True
+149	0	        Me![txtUnit].BackColor = Me.Section(0).BackColor
+150	0	    End If
+151	0	Exit Sub
+152	0	
+153	0	err_current:
+154	0	    Call General_Error_Trap
+155	0	    Exit Sub
+156	0	
+157	0	End Sub
+158	0	
+159	0	Private Sub go_next_Click()
+160	0	On Error GoTo Err_go_next_Click
+161	0	
+162	0	
+163	0	    DoCmd.GoToRecord , , acNext
+164	0	
+165	0	Exit_go_next_Click:
+166	0	    Exit Sub
+167	0	
+168	0	Err_go_next_Click:
+169	0	    MsgBox Err.Description
+170	0	    Resume Exit_go_next_Click
+171	0	End Sub
+172	0	
+173	0	Private Sub go_previous2_Click()
+174	0	On Error GoTo Err_go_previous2_Click
+175	0	
+176	0	
+177	0	    DoCmd.GoToRecord , , acPrevious
+178	0	
+179	0	Exit_go_previous2_Click:
+180	0	    Exit Sub
+181	0	
+182	0	Err_go_previous2_Click:
+183	0	    Call General_Error_Trap
+184	0	    Resume Exit_go_previous2_Click
+185	0	End Sub
+186	0	
+187	0	Private Sub go_to_first_Click()
+188	0	On Error GoTo Err_go_to_first_Click
+189	0	
+190	0	
+191	0	    DoCmd.GoToRecord , , acFirst
+192	0	
+193	0	Exit_go_to_first_Click:
+194	0	    Exit Sub
+195	0	
+196	0	Err_go_to_first_Click:
+197	0	    Call General_Error_Trap
+198	0	    Resume Exit_go_to_first_Click
+199	0	End Sub
+200	0	
+201	0	Private Sub go_to_last_Click()
+202	0	On Error GoTo Err_go_last_Click
+203	0	
+204	0	
+205	0	    DoCmd.GoToRecord , , acLast
+206	0	
+207	0	Exit_go_last_Click:
+208	0	    Exit Sub
+209	0	
+210	0	Err_go_last_Click:
+211	0	    Call General_Error_Trap
+212	0	    Resume Exit_go_last_Click
+213	0	End Sub
+214	0	
+215	0	Private Sub txtUnit_AfterUpdate()
+216	1	'Me![frm_subform_UnitDetails].Requery
+217	0	Me.Refresh
+218	0	End Sub
+219	0	
+220	0	Private Sub txtWareCode_AfterUpdate()
+221	0	On Error GoTo err_txtWare
+222	0	
+223	0	If Me![txtWareCode] <> "" Then
+224	0	    Dim sql
+225	2	    sql = "INSERT INTO [Ceramics_Stratified_Body_Sherds_NY06] ([Unit], [WARE CODE]) VALUES (" & Me![txtUnit] & ", '" & Me![txtWareCode] & "');"
+226	0	    DoCmd.RunSQL sql
+227	1	    'me![frm_subform_strat_body_Sherds].Forms![WARE CODE] = Me![txtWareCode]
+228	0	    Me![frm_subform_strat_body_Sherds].Requery
+229	0	    DoCmd.GoToControl "frm_subform_strat_body_sherds"
+230	0	    DoCmd.GoToControl "total body sherds"
+231	0	    Me![txtWareCode] = ""
+232	0	End If
+233	0	Exit Sub
+234	0	
+235	0	err_txtWare:
+236	0	    Call General_Error_Trap
+237	0	    Exit Sub
+238	0	End Sub

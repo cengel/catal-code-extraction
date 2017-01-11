@@ -1,0 +1,196 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub Form_BeforeUpdate(Cancel As Integer)
+5	0	Me![Date changed] = Now()
+6	0	Forms![Exca: Unit Sheet]![dbo_Exca: UnitHistory].Form![lastmodify].Value = Now()
+7	0	End Sub
+8	0	
+9	0	
+10	0	Private Sub Form_Open(Cancel As Integer)
+11	1	'**********************************************************************
+12	1	' Set up form view depending on permissions
+13	1	' SAJ v9.1
+14	1	'**********************************************************************
+15	0	On Error GoTo err_Form_Open
+16	0	
+17	0	    Dim permiss
+18	0	    permiss = GetGeneralPermissions
+19	0	    If permiss = "ADMIN" Or permiss = "RW" Or permiss = "exsuper" Then
+20	0	        ToggleFormReadOnly Me, False
+21	0	    Else
+22	1	        'set read only form here, just once
+23	0	        ToggleFormReadOnly Me, True
+24	0	    End If
+25	0	Exit Sub
+26	0	
+27	0	err_Form_Open:
+28	0	    Call General_Error_Trap
+29	0	    Exit Sub
+30	0	End Sub
+31	0	
+32	0	Private Sub go_to_feature_Click()
+33	1	'***********************************************************************
+34	1	' changed open form string to be read only from here, also call general
+35	1	' error trap, plus no feature num catch.
+36	1	'
+37	1	' Also becuase they can enter a feature num that not exist yet (SF requirement)
+38	1	' need to see if the record exists before opening the form (otherwise be blank)
+39	1	'
+40	1	' SAJ v9.1
+41	1	'***********************************************************************
+42	0	On Error GoTo Err_go_to_feature_Click
+43	0	
+44	0	    Dim stDocName As String
+45	0	    Dim stLinkCriteria As String
+46	0	    Dim checknum, msg, retval, sql, insertArea, permiss
+47	0	    
+48	0	    stDocName = "Exca: Feature Sheet"
+49	0	    
+50	0	    If Not IsNull(Me![In_feature]) Or Me![In_feature] <> "" Then
+51	1	        'check that feature num does exist
+52	0	        checknum = DLookup("[Feature Number]", "[Exca: Features]", "[Feature Number] = " & Me![In_feature])
+53	0	        If IsNull(checknum) Then
+54	1	            'number not exist - now see what permissions user has
+55	0	            permiss = GetGeneralPermissions
+56	0	            If permiss = "ADMIN" Or permiss = "RW" Or permiss = "exsuper" Then
+57	0	                msg = "This Feature Number DOES NOT EXIST in the database."
+58	0	                msg = msg & Chr(13) & Chr(13) & "Would you like to enter it now?"
+59	0	                retval = MsgBox(msg, vbInformation + vbYesNo, "Feature Number does not exist")
+60	0	        
+61	0	                If retval = vbNo Then
+62	0	                    MsgBox "No feature record to view, please alert the your team leader about this.", vbExclamation, "Missing Feature Record"
+63	0	                Else
+64	1	                    'add new records behind scences
+65	0	                    If Forms![Exca: Unit Sheet]![Area] <> "" Then
+66	2	                        insertArea = "'" & Forms![Exca: Unit Sheet]![Area] & "'"
+67	0	                    Else
+68	0	                        insertArea = Null
+69	0	                    End If
+70	0	                    sql = "INSERT INTO [Exca: Features] ([Feature Number], [Area]) VALUES (" & Me![In_feature] & ", " & insertArea & ");"
+71	0	                    DoCmd.RunSQL sql
+72	0	                    DoCmd.OpenForm "Exca: Feature Sheet", acNormal, , "[Feature Number] = " & Me![In_feature], acFormEdit, acDialog
+73	0	                End If
+74	0	            Else
+75	1	                'user is readonly so just tell them record not exist
+76	0	                MsgBox "Sorry but this feature record has not been added to the system yet, there is no record to view.", vbInformation, "Missing Feature Record"
+77	0	            End If
+78	0	        Else
+79	1	            'record exists - open it
+80	0	            stLinkCriteria = "[Feature Number]=" & Me![In_feature]
+81	1	            'DoCmd.OpenForm stDocName, , , stLinkCriteria
+82	1	            'DoCmd.OpenForm stDocName, acNormal, , stLinkCriteria, acFormReadOnly, acDialog
+83	1	            'decided against dialog as can open other forms on the feature form and they would appear underneath it
+84	0	            DoCmd.OpenForm stDocName, acNormal, , stLinkCriteria, acFormReadOnly
+85	0	        End If
+86	0	    Else
+87	0	        MsgBox "No Feature number to view", vbInformation, "No Feature Number"
+88	0	    End If
+89	0	    
+90	0	Exit_go_to_feature_Click:
+91	0	    Exit Sub
+92	0	
+93	0	
+94	0	Err_go_to_feature_Click:
+95	0	    Call General_Error_Trap
+96	0	    Resume Exit_go_to_feature_Click
+97	0	    
+98	0	End Sub
+99	0	
+100	0	Private Sub In_feature_AfterUpdate()
+101	1	'***********************************************************************
+102	1	' Intro of a validity check to ensure feature num entered here is ok
+103	1	' if not tell the user and allow them to enter. SF not want it to restrict
+104	1	' entry and trusts excavators to enter feature num when they can
+105	1	'
+106	1	' SAJ v9.1
+107	1	'***********************************************************************
+108	0	On Error GoTo err_In_feature_AfterUpdate
+109	0	
+110	0	Dim checknum, msg, retval, sql, insertArea
+111	0	
+112	0	If Me![In_feature] <> "" Then
+113	1	    'first check its valid
+114	0	    If IsNumeric(Me![In_feature]) Then
+115	0	    
+116	1	        'check that feature num does exist
+117	0	        checknum = DLookup("[Feature Number]", "[Exca: Features]", "[Feature Number] = " & Me![In_feature])
+118	0	        If IsNull(checknum) Then
+119	0	            msg = "This Feature Number DOES NOT EXIST in the database, you must remember to enter it."
+120	0	            msg = msg & Chr(13) & Chr(13) & "Would you like to enter it now?"
+121	0	            retval = MsgBox(msg, vbInformation + vbYesNo, "Feature Number does not exist")
+122	0	        
+123	0	            If retval = vbNo Then
+124	1	                MsgBox "Ok, but you must remember to enter it soon otherwise you'll be chased!", vbExclamation, "Remember!"
+125	0	            Else
+126	1	                'add new records behind scences
+127	0	                If Forms![Exca: Unit Sheet]![Area] <> "" Then
+128	2	                    insertArea = "'" & Forms![Exca: Unit Sheet]![Area] & "'"
+129	0	                Else
+130	0	                    insertArea = Null
+131	0	                End If
+132	0	                sql = "INSERT INTO [Exca: Features] ([Feature Number], [Area]) VALUES (" & Me![In_feature] & ", " & insertArea & ");"
+133	0	                DoCmd.RunSQL sql
+134	0	                DoCmd.OpenForm "Exca: Feature Sheet", acNormal, , "[Feature Number] = " & Me![In_feature], acFormEdit, acDialog
+135	2	                ''DoCmd.OpenForm "Exca: Feature Sheet", acNormal, , , acFormAdd, acDialog, "NEW,Num:" & Me![In_feature] & ",Area:" & Forms![Exca: Unit Sheet]![Area]
+136	0	            End If
+137	0	        Else
+138	1	            'valid number, enable view button
+139	0	            Me![go to feature].Enabled = True
+140	0	        End If
+141	0	    
+142	0	    Else
+143	1	        'not a vaild numeric feature number
+144	0	        MsgBox "The Feature number is invalid, please enter a numeric value only", vbInformation, "Invalid Entry"
+145	0	    End If
+146	0	End If
+147	0	
+148	0	Exit Sub
+149	0	
+150	0	err_In_feature_AfterUpdate:
+151	0	    Call General_Error_Trap
+152	0	    Exit Sub
+153	0	
+154	0	
+155	0	End Sub
+156	0	
+157	0	Private Sub In_feature_BeforeUpdate(Cancel As Integer)
+158	2	'new 2009 winter - if a user gets number wrong they can't delete it and many then put 0
+159	2	'building 0 keeps appearing and we don't want it so put a check in
+160	0	On Error GoTo err_featurebefore
+161	0	
+162	0	If Me![In_feature] = 0 Then
+163	0	        MsgBox "Feature 0 is invalid, this entry will be removed", vbInformation, "Invalid Entry"
+164	0	      
+165	0	        Cancel = True
+166	1	        'Me![txtIn_Building].Undo
+167	1	        SendKeys "{ESC}" 'seems to need it done 3x
+168	0	        SendKeys "{ESC}"
+169	0	        SendKeys "{ESC}"
+170	0	End If
+171	0	Exit Sub
+172	0	
+173	0	err_featurebefore:
+174	0	    Call General_Error_Trap
+175	0	    Exit Sub
+176	0	End Sub
+177	0	
+178	0	Private Sub Unit_AfterUpdate()
+179	0	Me.Requery
+180	0	DoCmd.GoToRecord , , acLast
+181	0	End Sub
+182	0	
+183	0	Sub Command5_Click()
+184	0	On Error GoTo Err_Command5_Click
+185	0	
+186	0	
+187	0	    DoCmd.GoToRecord , , acLast
+188	0	
+189	0	Exit_Command5_Click:
+190	0	    Exit Sub
+191	0	
+192	0	Err_Command5_Click:
+193	0	    MsgBox Err.Description
+194	0	    Resume Exit_Command5_Click
+195	0	    
+196	0	End Sub

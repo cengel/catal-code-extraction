@@ -1,0 +1,23 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Sub Phase_3_Click()
+5	0	On Error GoTo Err_Phase_3_Click
+6	0	    
+7	0	    Dim stDocName As String
+8	0	    Dim stLinkCriteria As String
+9	1	' Refresh
+10	0	    DoCmd.DoMenuItem acFormBar, acRecordsMenu, 5, , acMenuVer70
+11	0	    stDocName = "Bots98: Heavy Residue Phase 3"
+12	0	    
+13	4	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "' AND [Material]=" & "'" & Me![Material] & "'"
+14	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+15	0	
+16	0	Exit_Phase_3_Click:
+17	0	    Exit Sub
+18	0	
+19	0	Err_Phase_3_Click:
+20	0	    MsgBox Err.Description
+21	0	    Resume Exit_Phase_3_Click
+22	0	    
+23	0	End Sub

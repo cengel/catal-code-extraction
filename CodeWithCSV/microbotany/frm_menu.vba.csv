@@ -1,0 +1,61 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmd_Register_Click()
+5	0	On Error GoTo err_Register_Click
+6	0	
+7	0	    Dim stDocName As String
+8	0	    Dim stLinkCriteria As String
+9	0	
+10	0	    stDocName = "frm_Phyto_SampleRegister"
+11	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+12	0	
+13	0	Exit Sub
+14	0	
+15	0	err_Register_Click:
+16	0	    MsgBox "An error has occured: " & Err.Description
+17	0	    Exit Sub
+18	0	
+19	0	End Sub
+20	0	
+21	0	Private Sub cmdAdmin_Click()
+22	0	On Error GoTo err_cmdAdmin
+23	0	    DoCmd.OpenForm "frm_admin_phytoname_LOV", acNormal
+24	0	Exit Sub
+25	0	
+26	0	err_cmdAdmin:
+27	0	    MsgBox "An error has occured: " & Err.Description
+28	0	    Exit Sub
+29	0	End Sub
+30	0	
+31	0	Private Sub cmdClose_Click()
+32	0	On Error GoTo err_close
+33	0	    DoCmd.Quit acQuitSaveAll
+34	0	Exit Sub
+35	0	
+36	0	err_close:
+37	0	    MsgBox "An error has occured: " & Err.Description
+38	0	    Exit Sub
+39	0	End Sub
+40	0	
+41	0	Private Sub cmdData_Click()
+42	0	On Error GoTo err_data
+43	0	
+44	0	    DoCmd.OpenForm "frm_Phyto_Data_Entry", acNormal
+45	0	Exit Sub
+46	0	
+47	0	err_data:
+48	0	    MsgBox "An error has occured: " & Err.Description
+49	0	    Exit Sub
+50	0	End Sub
+51	0	
+52	0	Private Sub cmdField_Click()
+53	0	On Error GoTo err_field
+54	0	
+55	0	    DoCmd.OpenForm "frm_Phyto_FieldAnalysis", acNormal
+56	0	Exit Sub
+57	0	
+58	0	err_field:
+59	0	    MsgBox "An error has occured: " & Err.Description
+60	0	    Exit Sub
+61	0	End Sub

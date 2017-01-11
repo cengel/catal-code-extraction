@@ -1,0 +1,12 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdClose_Click()
+5	0	On Error GoTo err_close
+6	0	    DoCmd.Close acForm, Me.Name
+7	0	Exit Sub
+8	0	
+9	0	err_close:
+10	0	    MsgBox "An error has occured: " & Err.Description
+11	0	    Exit Sub
+12	0	End Sub

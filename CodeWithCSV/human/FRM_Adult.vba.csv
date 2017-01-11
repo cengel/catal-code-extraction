@@ -1,0 +1,2028 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Function LoadXmlFile(Path As String) As MSXML2.DOMDocument60
+5	0	    LoadXmlFile = New MSXML2.DOMDocument60
+6	0	
+7	0	    With LoadXmlFile
+8	0	        .async = False
+9	0	        .validateOnParse = False
+10	0	        .resolveExternals = False
+11	0	        .Load (Path)
+12	0	    End With
+13	0	End Function
+14	0	
+15	0	Private Sub var(p1 As Object)
+16	0	    Throw New NotImplementedException
+17	0	End Sub
+18	0	
+19	0	
+20	0	    
+21	0	Public Sub DisplayNode(ByRef Nodes As MSXML2.IXMLDOMNodeList, _
+22	0	ByVal Indent As Integer)
+23	0	
+24	0	Dim xNode As MSXML2.IXMLDOMNode
+25	0	
+26	0	Indent = Indent + 1
+27	0	
+28	0	For Each xNode In Nodes
+29	0	
+30	0	    If xNode.nodeType = MSXML2.DOMNodeType.NODE_ELEMENT Then
+31	0	        Log = Log & (Space$(Indent) & xNode.parentNode.nodeName & _
+32	0	                        ":" & xNode.nodeValue)
+33	0	    End If
+34	0	
+35	0	    If xNode.hasChildNodes Then
+36	1	        'DisplayNode(xNode.childNodes, Indent)
+37	0	    End If
+38	0	Next xNode
+39	0	
+40	0	End Sub
+41	0	
+42	0	
+43	0	
+44	0	Private Sub cboFind_AfterUpdate()
+45	1	'find skeleton record - SAJ
+46	0	On Error GoTo err_cboFind
+47	0	
+48	0	    If Me![cboFind] <> "" Then
+49	0	        Me.Filter = "[UnitNumber] = " & Me![cboFind] & " AND [Individual Number] = " & Me!cboFind.Column(1)
+50	0	        Me.FilterOn = True
+51	0	    End If
+52	0	Exit Sub
+53	0	
+54	0	err_cboFind:
+55	0	    MsgBox Err.Description
+56	0	    Exit Sub
+57	0	End Sub
+58	0	
+59	0	
+60	0	Private Sub cmdAll_Click()
+61	1	'take off any filter - saj
+62	0	On Error GoTo err_all
+63	0	
+64	0	    Me.FilterOn = False
+65	0	    Me.Filter = ""
+66	0	Exit Sub
+67	0	
+68	0	err_all:
+69	0	    MsgBox Err.Description
+70	0	    Exit Sub
+71	0	End Sub
+72	0	
+73	0	Private Sub CmdOpenPermTeethFrm_Click()
+74	0	On Error GoTo Err_CmdOpenPermTeethFrm_Click
+75	0	
+76	0	    Call DoRecordCheck("HR_Teeth development measurement", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+77	0	    Call DoRecordCheck("HR_Teeth development score", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+78	0	    Call DoRecordCheck("HR_Teeth wear", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+79	0	  
+80	0	    Dim stDocName As String
+81	0	    Dim stLinkCriteria As String
+82	0	
+83	2	    ''stDocName = "FRM_simons PERMANENT TEETH"
+84	0	    stDocName = "FRM_Permanent_Teeth"
+85	0	    
+86	0	    DoCmd.OpenForm stDocName, , , "[UnitNumber] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+87	0	    DoCmd.Close acForm, Me.Name
+88	0	Exit_CmdOpenPermTeethFrm_Click:
+89	0	    Exit Sub
+90	0	
+91	0	Err_CmdOpenPermTeethFrm_Click:
+92	0	    MsgBox Err.Description
+93	0	    Resume Exit_CmdOpenPermTeethFrm_Click
+94	0	    
+95	0	End Sub
+96	0	Private Sub CmdOpenMeasFrm_Click()
+97	0	On Error GoTo Err_CmdOpenMeasFrm_Click
+98	0	
+99	0	    Call DoRecordCheck("HR_Measurements version 2", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+100	0	
+101	0	    Dim stDocName As String
+102	0	    Dim stLinkCriteria As String
+103	0	
+104	0	    stDocName = "FRM_Measurement form version 2"
+105	0	    DoCmd.OpenForm stDocName, , , "[UnitNumber] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+106	0	    DoCmd.Close acForm, Me.Name
+107	0	Exit_CmdOpenMeasFrm_Click:
+108	0	    Exit Sub
+109	0	
+110	0	Err_CmdOpenMeasFrm_Click:
+111	0	    MsgBox Err.Description
+112	0	    Resume Exit_CmdOpenMeasFrm_Click
+113	0	    
+114	0	End Sub
+115	0	Private Sub CmdOpenUnitDescFrm_Click()
+116	0	On Error GoTo Err_CmdOpenUnitDescFrm_Click
+117	0	
+118	0	    Dim stDocName As String
+119	0	    Dim stLinkCriteria As String
+120	0	
+121	0	    stDocName = "FRM_SkeletonDescription"
+122	0	    DoCmd.OpenForm stDocName, , , "[UnitNumber] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+123	0	    DoCmd.Close acForm, Me.Name
+124	0	    
+125	0	Exit_CmdOpenUnitDescFrm_Click:
+126	0	    Exit Sub
+127	0	
+128	0	Err_CmdOpenUnitDescFrm_Click:
+129	0	    MsgBox Err.Description
+130	0	    Resume Exit_CmdOpenUnitDescFrm_Click
+131	0	    
+132	0	End Sub
+133	0	Private Sub CmdOpenMainMenuFrm_Click()
+134	0	Call ReturnToMenu(Me)
+135	0	    
+136	0	End Sub
+137	0	Private Sub CmdOpenAgeSexFrm_Click()
+138	0	On Error GoTo Err_CmdOpenAgeSexFrm_Click
+139	0	
+140	0	    Call DoRecordCheck("HR_ageing and sexing", Me![txtUnit], Me![txtIndivid], "Unit Number")
+141	0	
+142	0	    Dim stDocName As String
+143	0	    Dim stLinkCriteria As String
+144	0	
+145	0	    stDocName = "FRM_Ageing-sexing form"
+146	0	    DoCmd.OpenForm stDocName, , , "[Unit Number] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+147	0	    DoCmd.Close acForm, Me.Name
+148	0	Exit_CmdOpenAgeSexFrm_Click:
+149	0	    Exit Sub
+150	0	
+151	0	Err_CmdOpenAgeSexFrm_Click:
+152	0	    MsgBox Err.Description
+153	0	    Resume Exit_CmdOpenAgeSexFrm_Click
+154	0	    
+155	0	End Sub
+156	0	
+157	0	Private Sub Form_Open(Cancel As Integer)
+158	1	'saj new season 2007 - form jumping to middle on open - make sure it keeps the top at the top
+159	0	On Error GoTo err_open
+160	0	
+161	0	    DoCmd.GoToControl "FRM_SUBFORM_Adult_skull"
+162	1	    'docmd.GoToControl ""
+163	0	
+164	0	Exit Sub
+165	0	
+166	0	err_open:
+167	0	    General_Error_Trap
+168	0	    Exit Sub
+169	0	End Sub
+170	0	
+171	0	Private Sub openSkeletonView_Click()
+172	1	'Handles Button1.Click
+173	0	On Error GoTo err_openSkeletonView
+174	0	
+175	0	Dim xmldom As MSXML2.DOMDocument60
+176	0	Set xmldom = New DOMDocument60
+177	0	Dim xml_nodes_collection As MSXML2.IXMLDOMSelection
+178	0	Dim xml_node_attribute As MSXML2.IXMLDOMAttribute
+179	0	Dim root, unittag, node As MSXML2.IXMLDOMElement
+180	0	Dim unreferenced As String
+181	0	Dim referenced As String
+182	0	Dim selectedbone, complete_colour, fragment_colour As String
+183	0	Dim wrappingsvg As String
+184	0	Dim file
+185	0	Dim filebuffer, fileReader As String
+186	0	Dim replacecheck
+187	0	Dim fso
+188	0	Dim Unit
+189	0	Dim bones As DAO.Recordset
+190	0	Dim bonesfiltered As DAO.Recordset
+191	0	Dim mydb
+192	0	
+193	0	Dim Path
+194	0	
+195	0	Path = sketchpath & "units\skeletons\" & "S" & Me![txtUnit] & "_" & Me![txtIndivid] & ".jpg"
+196	0	   
+197	0	If Dir(Path) = "" Then
+198	1	    'directory not exist
+199	0	    MsgBox "The skeleton of this unit has not been modelled in yet. It will be created now, but the process will take some seconds. Try to open the skeleton view again in ca. 10 seconds.", vbInformation, "No Sketch available to view"
+200	0	
+201	0	Set fso = CreateObject("Scripting.FileSystemObject")
+202	0	Set root = xmldom.documentElement
+203	0	Set unittag = xmldom.documentElement
+204	0	
+205	0	complete_colour = "#666666"
+206	0	fragment_colour = "#aaaaaa"
+207	0	
+208	0	xmldom.async = False
+209	0	xmldom.SetProperty "ProhibitDTD", False
+210	0	
+211	2	xmldom.SetProperty "SelectionNamespaces", "xmlns='http://www.w3.org/2000/svg'"
+212	0	xmldom.resolveExternals = False
+213	0	xmldom.validateOnParse = False
+214	0	xmldom.SetProperty "SelectionLanguage", "XPath"
+215	0	
+216	0	xmldom.Load (sketchpath & "\units\skeletons\prototype\skeleton_prototype.svg")
+217	0	
+218	4	Set unittag = xmldom.selectSingleNode("//*[local-name()='tspan' and @id = 'unit']")
+219	0	unittag.Text = "S" & Me![txtUnit] & ".B" & Me![txtIndivid]
+220	0	
+221	0	Set mydb = CurrentDb
+222	0	Set bones = mydb.OpenRecordset("HR_Adult_Cranial_Data", dbOpenSnapshot)
+223	0	
+224	0	bones.Filter = "[UnitNumber] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+225	0	
+226	0	Set bonesfiltered = bones.OpenRecordset
+227	0	
+228	0	If Not (bonesfiltered.BOF And bonesfiltered.EOF) Then
+229	0	    bonesfiltered.MoveFirst
+230	1	    Do Until bonesfiltered.EOF 'Or counter = 1000
+231	0	        
+232	0	        If Not IsNull(bonesfiltered![Occipital_left_lateral]) Or Not IsNull(bonesfiltered![Frontal]) Or Not IsNull(bonesfiltered![Occipital_right_lateral]) Or Not IsNull(bonesfiltered![Occipital_squamous]) Or Not IsNull(bonesfiltered![Occipital_basilar]) Or Not IsNull(bonesfiltered![Parietal_left]) Or Not IsNull(bonesfiltered![Parietal_right]) Or Not IsNull(bonesfiltered![Temporal_left_petrous]) Or Not IsNull(bonesfiltered![Temporal_right_petrous]) Or Not IsNull(bonesfiltered![Temporal_left_squamous]) Or Not IsNull(bonesfiltered![Temporal_right_squamous]) Or Not IsNull(bonesfiltered![Sphenoid_body]) Or Not IsNull(bonesfiltered![Sphenoid_left_wing]) Or Not IsNull(bonesfiltered![Sphenoid_right_wing]) Then
+233	0	        selectedbone = "frontalbone"
+234	7	            'Set xml_nodes_collection = xmldom.selectNodes("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+235	6	            Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+236	0	            selectedbone = "frontalbone"
+237	0	            If bonesfiltered![Occipital_left_lateral] = 1 Or bonesfiltered![Frontal] = 1 Or bonesfiltered![Occipital_right_lateral] = 1 Or bonesfiltered![Occipital_squamous] = 1 Or bonesfiltered![Occipital_basilar] = 1 Or bonesfiltered![Parietal_left] = 1 Or bonesfiltered![Parietal_right] = 1 Or bonesfiltered![Temporal_left_petrous] = 1 Or bonesfiltered![Temporal_right_petrous] = 1 Or bonesfiltered![Temporal_left_squamous] = 1 Or bonesfiltered![Temporal_right_squamous] = 1 Or bonesfiltered![Sphenoid_body] = 1 Or bonesfiltered![Sphenoid_left_wing] = 1 Or bonesfiltered![Sphenoid_right_wing] = 1 Then
+238	0	                node.setAttribute "fill", fragment_colour
+239	0	            Else
+240	0	                node.setAttribute "fill", complete_colour
+241	0	            End If
+242	0	        End If
+243	0	        
+244	0	        If Not IsNull(bonesfiltered![Zygomatic_left]) Or Not IsNull(bonesfiltered![Zygomatic_right]) Or Not IsNull(bonesfiltered![Nasal_left]) Or Not IsNull(bonesfiltered![Nasal_right]) Or Not IsNull(bonesfiltered![Palatine_left]) Or Not IsNull(bonesfiltered![Palatine_right]) Or Not IsNull(bonesfiltered![Small_face_bones]) Or Not IsNull(bonesfiltered![Maxilla_left]) Or Not IsNull(bonesfiltered![Maxilla_right]) Then
+245	0	        selectedbone = "facialbone"
+246	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+247	0	            If bonesfiltered![Zygomatic_left] = 1 Or bonesfiltered![Zygomatic_right] = 1 Or bonesfiltered![Nasal_left] = 1 Or bonesfiltered![Nasal_right] = 1 Or bonesfiltered![Palatine_left] = 1 Or bonesfiltered![Palatine_right] = 1 Or bonesfiltered![Small_face_bones] = 1 Or bonesfiltered![Maxilla_left] = 1 Or bonesfiltered![Maxilla_right] = 1 Then
+248	0	                node.setAttribute "fill", fragment_colour
+249	0	            Else
+250	0	                node.setAttribute "fill", complete_colour
+251	0	            End If
+252	0	        End If
+253	0	         
+254	0	        If Not IsNull(bonesfiltered![Mandible_right]) Or Not IsNull(bonesfiltered![Mandible_left]) Or bonesfiltered![Hyoid] <> 0 Or bonesfiltered![Thyroid/cricoid_cartilage] <> 0 Then
+255	0	        selectedbone = "mandible"
+256	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+257	0	            If bonesfiltered![Mandible_right] = 1 Or bonesfiltered![Mandible_left] = 1 Or bonesfiltered![Hyoid] = 0 Or bonesfiltered![Thyroid/cricoid_cartilage] = 0 Then
+258	0	                node.setAttribute "fill", fragment_colour
+259	0	            Else
+260	0	                node.setAttribute "fill", complete_colour
+261	0	            End If
+262	0	        End If
+263	0	        
+264	0	        bonesfiltered.MoveNext
+265	0	    Loop
+266	0	Else
+267	0	End If
+268	0	
+269	0	Set bones = Nothing
+270	0	
+271	0	Set mydb = CurrentDb
+272	0	Set bones = mydb.OpenRecordset("HR_Adult_shoulder_hip", dbOpenSnapshot)
+273	0	
+274	0	bones.Filter = "[UnitNumber] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+275	0	
+276	0	Set bonesfiltered = bones.OpenRecordset
+277	0	
+278	0	If Not (bonesfiltered.BOF And bonesfiltered.EOF) Then
+279	0	    bonesfiltered.MoveFirst
+280	1	    Do Until bonesfiltered.EOF 'Or counter = 1000
+281	0	        
+282	0	        If Not IsNull(bonesfiltered![Clavicle_left_proximal]) Or Not IsNull(bonesfiltered![Clavicle_left_shaft]) Or Not IsNull(bonesfiltered![Clavicle_left_distal]) Then
+283	0	        selectedbone = "clavicle_b"
+284	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+285	0	            If bonesfiltered![Clavicle_left_proximal] = 1 Or bonesfiltered![Clavicle_left_shaft] = 1 Or bonesfiltered![Clavicle_left_distal] = 1 Then
+286	0	                node.setAttribute "fill", fragment_colour
+287	0	            Else
+288	0	                node.setAttribute "fill", complete_colour
+289	0	            End If
+290	0	        End If
+291	0	
+292	0	        If Not IsNull(bonesfiltered![Clavicle_right_proximal]) Or Not IsNull(bonesfiltered![Clavicle_right_shaft]) Or Not IsNull(bonesfiltered![Clavicle_right_distal]) Then
+293	0	        selectedbone = "clavicle_a"
+294	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+295	0	           If Not bonesfiltered![Clavicle_right_proximal] = 1 Or bonesfiltered![Clavicle_right_shaft] = 1 Or bonesfiltered![Clavicle_right_distal] = 1 Then
+296	0	                node.setAttribute "fill", fragment_colour
+297	0	            Else
+298	0	                node.setAttribute "fill", complete_colour
+299	0	            End If
+300	0	        End If
+301	0	
+302	0	        If Not IsNull(bonesfiltered![Scapula_left]) Then
+303	0	        selectedbone = "scapula_b"
+304	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+305	0	            If bonesfiltered![Scapula_left] = 1 Then
+306	0	                node.setAttribute "fill", fragment_colour
+307	0	            Else
+308	0	                node.setAttribute "fill", complete_colour
+309	0	            End If
+310	0	        selectedbone = "acromionprocess_b"
+311	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+312	0	            If bonesfiltered![Scapula_left] = 1 Then
+313	0	                node.setAttribute "fill", fragment_colour
+314	0	            Else
+315	0	                node.setAttribute "fill", complete_colour
+316	0	            End If
+317	0	        selectedbone = "coracoidprocess_b"
+318	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+319	0	            If bonesfiltered![Scapula_left] = 1 Then
+320	0	                node.setAttribute "fill", fragment_colour
+321	0	            Else
+322	0	                node.setAttribute "fill", complete_colour
+323	0	            End If
+324	0	        End If
+325	0	        If Not IsNull(bonesfiltered![Scapula_right]) Then
+326	0	        selectedbone = "scapula_a"
+327	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+328	0	            If bonesfiltered![Scapula_right] = 1 Then
+329	0	                node.setAttribute "fill", fragment_colour
+330	0	            Else
+331	0	                node.setAttribute "fill", complete_colour
+332	0	            End If
+333	0	        selectedbone = "acromionprocess_a"
+334	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+335	0	            If bonesfiltered![Scapula_right] = 1 Then
+336	0	                node.setAttribute "fill", fragment_colour
+337	0	            Else
+338	0	                node.setAttribute "fill", complete_colour
+339	0	            End If
+340	0	        selectedbone = "coracoidprocess_a"
+341	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+342	0	            If bonesfiltered![Scapula_right] = 1 Then
+343	0	                node.setAttribute "fill", fragment_colour
+344	0	            Else
+345	0	                node.setAttribute "fill", complete_colour
+346	0	            End If
+347	0	        End If
+348	0	
+349	0	        If Not IsNull(bonesfiltered![Hipbone_ilium_left]) Or Not IsNull(bonesfiltered![Hipbone_ischium_left]) Or Not IsNull(bonesfiltered![Hipbone_pubis_left]) Then
+350	0	        selectedbone = "ilium_b"
+351	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+352	0	            If bonesfiltered![Hipbone_ilium_left] = 1 Or bonesfiltered![Hipbone_ischium_left] = 1 Or bonesfiltered![Hipbone_pubis_left] = 1 Then
+353	0	                node.setAttribute "fill", fragment_colour
+354	0	            Else
+355	0	                node.setAttribute "fill", complete_colour
+356	0	            End If
+357	0	        
+358	0	        selectedbone = "iliaccrest_b"
+359	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+360	0	            If bonesfiltered![Hipbone_ilium_left] = 1 Or bonesfiltered![Hipbone_ischium_left] = 1 Or bonesfiltered![Hipbone_pubis_left] = 1 Then
+361	0	                node.setAttribute "fill", fragment_colour
+362	0	            Else
+363	0	                node.setAttribute "fill", complete_colour
+364	0	            End If
+365	0	        
+366	0	        selectedbone = "acetabulum_b"
+367	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+368	0	            If bonesfiltered![Hipbone_ilium_left] = 1 Or bonesfiltered![Hipbone_ischium_left] = 1 Or bonesfiltered![Hipbone_pubis_left] = 1 Then
+369	0	                node.setAttribute "fill", fragment_colour
+370	0	            Else
+371	0	                node.setAttribute "fill", complete_colour
+372	0	            End If
+373	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='polygon']")
+374	0	            If bonesfiltered![Hipbone_ilium_left] = 1 Or bonesfiltered![Hipbone_ischium_left] = 1 Or bonesfiltered![Hipbone_pubis_left] = 1 Then
+375	0	                node.setAttribute "fill", fragment_colour
+376	0	            Else
+377	0	                node.setAttribute "fill", complete_colour
+378	0	            End If
+379	0	        End If
+380	0	
+381	0	        If Not IsNull(bonesfiltered![Hipbone_ilium_right]) Or Not IsNull(bonesfiltered![Hipbone_ischium_right]) Or Not IsNull(bonesfiltered![Hipbone_pubis_right]) Then
+382	0	        selectedbone = "ilium_a"
+383	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+384	0	            If bonesfiltered![Hipbone_ilium_right] = 1 Or bonesfiltered![Hipbone_ischium_right] = 1 Or bonesfiltered![Hipbone_pubis_right] = 1 Then
+385	0	                node.setAttribute "fill", fragment_colour
+386	0	            Else
+387	0	                node.setAttribute "fill", complete_colour
+388	0	            End If
+389	0	
+390	0	        selectedbone = "iliaccrest_a"
+391	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+392	0	            If bonesfiltered![Hipbone_ilium_right] = 1 Or bonesfiltered![Hipbone_ischium_right] = 1 Or bonesfiltered![Hipbone_pubis_right] = 1 Then
+393	0	                node.setAttribute "fill", fragment_colour
+394	0	            Else
+395	0	                node.setAttribute "fill", complete_colour
+396	0	            End If
+397	0	
+398	0	        selectedbone = "acetabulum_a"
+399	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+400	0	            If bonesfiltered![Hipbone_ilium_right] = 1 Or bonesfiltered![Hipbone_ischium_right] = 1 Or bonesfiltered![Hipbone_pubis_right] = 1 Then
+401	0	                node.setAttribute "fill", fragment_colour
+402	0	            Else
+403	0	                node.setAttribute "fill", complete_colour
+404	0	            End If
+405	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='polygon']")
+406	0	            If bonesfiltered![Hipbone_ilium_right] = 1 Or bonesfiltered![Hipbone_ischium_right] = 1 Or bonesfiltered![Hipbone_pubis_right] = 1 Then
+407	0	                node.setAttribute "fill", fragment_colour
+408	0	            Else
+409	0	                node.setAttribute "fill", complete_colour
+410	0	            End If
+411	0	        End If
+412	0	
+413	0	        bonesfiltered.MoveNext
+414	0	    Loop
+415	0	Else
+416	0	End If
+417	0	
+418	0	Set bones = Nothing
+419	0	
+420	0	Set mydb = CurrentDb
+421	0	Set bones = mydb.OpenRecordset("HR_Adult_Arm_Data", dbOpenSnapshot)
+422	0	
+423	0	bones.Filter = "[UnitNumber] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+424	0	
+425	0	Set bonesfiltered = bones.OpenRecordset
+426	0	
+427	0	If Not (bonesfiltered.BOF And bonesfiltered.EOF) Then
+428	0	    bonesfiltered.MoveFirst
+429	1	    Do Until bonesfiltered.EOF 'Or counter = 1000
+430	0	        
+431	0	        If Not IsNull(bonesfiltered![Humerus_left_proximal]) Or Not IsNull(bonesfiltered![Humerus_left_shaft]) Or Not IsNull(bonesfiltered![Humerus_left_distal]) Then
+432	0	        selectedbone = "humerus_b"
+433	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+434	0	            If bonesfiltered![Humerus_left_proximal] = 1 Or bonesfiltered![Humerus_left_shaft] = 1 Or bonesfiltered![Humerus_left_distal] = 1 Then
+435	0	                node.setAttribute "fill", fragment_colour
+436	0	            Else
+437	0	                node.setAttribute "fill", complete_colour
+438	0	            End If
+439	0	        End If
+440	0	
+441	0	        If Not IsNull(bonesfiltered![Humerus_right_proximal]) Or Not IsNull(bonesfiltered![Humerus_right_shaft]) Or Not IsNull(bonesfiltered![Humerus_right_distal]) Then
+442	0	        selectedbone = "humerus_a"
+443	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+444	0	            If bonesfiltered![Humerus_right_proximal] = 1 Or bonesfiltered![Humerus_right_shaft] = 1 Or bonesfiltered![Humerus_right_distal] = 1 Then
+445	0	                node.setAttribute "fill", fragment_colour
+446	0	            Else
+447	0	                node.setAttribute "fill", complete_colour
+448	0	            End If
+449	0	        End If
+450	0	
+451	0	        If Not IsNull(bonesfiltered![Ulna_left_proximal]) Or Not IsNull(bonesfiltered![Ulna_left_shaft]) Or Not IsNull(bonesfiltered![Ulna_left_distal]) Then
+452	0	        selectedbone = "ulna_b"
+453	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+454	0	            If bonesfiltered![Ulna_left_proximal] = 1 Or bonesfiltered![Ulna_left_shaft] = 1 Or bonesfiltered![Ulna_left_distal] = 1 Then
+455	0	                node.setAttribute "fill", fragment_colour
+456	0	            Else
+457	0	                node.setAttribute "fill", complete_colour
+458	0	            End If
+459	0	        End If
+460	0	
+461	0	        If Not IsNull(bonesfiltered![Ulna_right_proximal]) Or Not IsNull(bonesfiltered![Ulna_right_shaft]) Or Not IsNull(bonesfiltered![Ulna_right_distal]) Then
+462	0	        selectedbone = "ulna_a"
+463	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+464	0	            If bonesfiltered![Ulna_right_proximal] = 1 Or bonesfiltered![Ulna_right_shaft] = 1 Or bonesfiltered![Ulna_right_distal] = 1 Then
+465	0	                node.setAttribute "fill", fragment_colour
+466	0	            Else
+467	0	                node.setAttribute "fill", complete_colour
+468	0	            End If
+469	0	        End If
+470	0	
+471	0	        If Not IsNull(bonesfiltered![Radius_left_proximal]) Or Not IsNull(bonesfiltered![Radius_left_shaft]) Or Not IsNull(bonesfiltered![Radius_left_distal]) Then
+472	0	        selectedbone = "radius_b"
+473	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+474	0	            If bonesfiltered![Radius_left_proximal] = 1 Or bonesfiltered![Radius_left_shaft] = 1 Or bonesfiltered![Radius_left_distal] = 1 Then
+475	0	                node.setAttribute "fill", fragment_colour
+476	0	            Else
+477	0	                node.setAttribute "fill", complete_colour
+478	0	            End If
+479	0	        End If
+480	0	
+481	0	        If Not IsNull(bonesfiltered![Radius_right_proximal]) Or Not IsNull(bonesfiltered![Radius_right_shaft]) Or Not IsNull(bonesfiltered![Radius_right_distal]) Then
+482	0	        selectedbone = "radius_a"
+483	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+484	0	            If bonesfiltered![Radius_right_proximal] = 1 Or bonesfiltered![Radius_right_shaft] = 1 Or bonesfiltered![Radius_right_distal] = 1 Then
+485	0	                node.setAttribute "fill", fragment_colour
+486	0	            Else
+487	0	                node.setAttribute "fill", complete_colour
+488	0	            End If
+489	0	        End If
+490	0	        
+491	0	        If bonesfiltered![Scaphoid_left] <> 0 Then
+492	0	        selectedbone = "scaphoid_b"
+493	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+494	0	            If bonesfiltered![Scaphoid_left] = 1 Then
+495	0	                node.setAttribute "fill", fragment_colour
+496	0	            Else
+497	0	                node.setAttribute "fill", complete_colour
+498	0	            End If
+499	0	        End If
+500	0	
+501	0	        If bonesfiltered![Scaphoid_right] <> 0 Then
+502	0	        selectedbone = "scaphoid_a"
+503	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+504	0	            If bonesfiltered![Scaphoid_right] = 1 Then
+505	0	                node.setAttribute "fill", fragment_colour
+506	0	            Else
+507	0	                node.setAttribute "fill", complete_colour
+508	0	            End If
+509	0	        End If
+510	0	
+511	0	        If bonesfiltered![Lunate_left] <> 0 Then
+512	0	        selectedbone = "lunate_b"
+513	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+514	0	            If bonesfiltered![Lunate_left] = 1 Then
+515	0	                node.setAttribute "fill", fragment_colour
+516	0	            Else
+517	0	                node.setAttribute "fill", complete_colour
+518	0	            End If
+519	0	        End If
+520	0	
+521	0	        If bonesfiltered![Lunate_right] <> 0 Then
+522	0	        selectedbone = "lunate_a"
+523	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+524	0	            If bonesfiltered![Lunate_right] = 1 Then
+525	0	                node.setAttribute "fill", fragment_colour
+526	0	            Else
+527	0	                node.setAttribute "fill", complete_colour
+528	0	            End If
+529	0	        End If
+530	0	
+531	0	        If bonesfiltered![Triquetral_left] <> 0 Then
+532	0	        selectedbone = "triquetrum_b"
+533	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+534	0	            If bonesfiltered![Triquetral_left] = 1 Then
+535	0	                node.setAttribute "fill", fragment_colour
+536	0	            Else
+537	0	                node.setAttribute "fill", complete_colour
+538	0	            End If
+539	0	        End If
+540	0	
+541	0	        If bonesfiltered![Triquetral_right] <> 0 Then
+542	0	        selectedbone = "triquetrum_a"
+543	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+544	0	            If bonesfiltered![Triquetral_right] = 1 Then
+545	0	                node.setAttribute "fill", fragment_colour
+546	0	            Else
+547	0	                node.setAttribute "fill", complete_colour
+548	0	            End If
+549	0	        End If
+550	0	        
+551	0	        If bonesfiltered![Pisiform_left] <> 0 Then
+552	0	        selectedbone = "pisiform_b"
+553	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+554	0	            If bonesfiltered![Pisiform_left] = 1 Then
+555	0	                node.setAttribute "fill", fragment_colour
+556	0	            Else
+557	0	                node.setAttribute "fill", complete_colour
+558	0	            End If
+559	0	        End If
+560	0	
+561	0	        If bonesfiltered![Pisiform_right] <> 0 Then
+562	0	        selectedbone = "pisiform_a"
+563	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+564	0	            If bonesfiltered![Pisiform_right] = 1 Then
+565	0	                node.setAttribute "fill", fragment_colour
+566	0	            Else
+567	0	                node.setAttribute "fill", complete_colour
+568	0	            End If
+569	0	        End If
+570	0	        
+571	0	        If bonesfiltered![Trapezium_left] <> 0 Then
+572	0	        selectedbone = "trapezoid_b"
+573	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+574	0	            If bonesfiltered![Trapezium_left] = 1 Then
+575	0	                node.setAttribute "fill", fragment_colour
+576	0	            Else
+577	0	                node.setAttribute "fill", complete_colour
+578	0	            End If
+579	0	        End If
+580	0	
+581	0	        If bonesfiltered![Trapezoid_right] <> 0 Then
+582	0	        selectedbone = "trapezoid_a"
+583	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+584	0	            If bonesfiltered![Trapezoid_right] = 1 Then
+585	0	                node.setAttribute "fill", fragment_colour
+586	0	            Else
+587	0	                node.setAttribute "fill", complete_colour
+588	0	            End If
+589	0	        End If
+590	0	        
+591	0	        If bonesfiltered![Capitate_left] <> 0 Then
+592	0	        selectedbone = "capitate_b"
+593	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+594	0	            If bonesfiltered![Capitate_left] = 1 Then
+595	0	                node.setAttribute "fill", fragment_colour
+596	0	            Else
+597	0	                node.setAttribute "fill", complete_colour
+598	0	            End If
+599	0	        End If
+600	0	
+601	0	        If bonesfiltered![Capitate_right] <> 0 Then
+602	0	        selectedbone = "capitate_a"
+603	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+604	0	            If bonesfiltered![Capitate_right] = 1 Then
+605	0	                node.setAttribute "fill", fragment_colour
+606	0	            Else
+607	0	                node.setAttribute "fill", complete_colour
+608	0	            End If
+609	0	        End If
+610	0	        
+611	0	        If bonesfiltered![Trapezoid_left] <> 0 Then
+612	0	        selectedbone = "trapezium_b"
+613	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+614	0	            If bonesfiltered![Trapezoid_left] = 1 Then
+615	0	                node.setAttribute "fill", fragment_colour
+616	0	            Else
+617	0	                node.setAttribute "fill", complete_colour
+618	0	            End If
+619	0	        End If
+620	0	
+621	0	        If bonesfiltered![Trapezium_right] <> 0 Then
+622	0	        selectedbone = "trapezium_a"
+623	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+624	0	            If bonesfiltered![Trapezium_right] = 1 Then
+625	0	                node.setAttribute "fill", fragment_colour
+626	0	            Else
+627	0	                node.setAttribute "fill", complete_colour
+628	0	            End If
+629	0	        End If
+630	0	        
+631	0	        If bonesfiltered![Hamate_left] <> 0 Then
+632	0	        selectedbone = "hamate_b"
+633	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+634	0	            If bonesfiltered![Hamate_left] = 1 Then
+635	0	                node.setAttribute "fill", fragment_colour
+636	0	            Else
+637	0	                node.setAttribute "fill", complete_colour
+638	0	            End If
+639	0	        End If
+640	0	
+641	0	        If bonesfiltered![Hamate_right] <> 0 Then
+642	0	        selectedbone = "hamate_a"
+643	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+644	0	            If bonesfiltered![Hamate_right] = 1 Then
+645	0	                node.setAttribute "fill", fragment_colour
+646	0	            Else
+647	0	                node.setAttribute "fill", complete_colour
+648	0	            End If
+649	0	        End If
+650	0	
+651	0	        If bonesfiltered![Metacarpal_1_left] <> 0 Then
+652	0	        selectedbone = "metacarpal1b"
+653	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+654	0	            If bonesfiltered![Metacarpal_1_left] = 1 Then
+655	0	                node.setAttribute "fill", fragment_colour
+656	0	            Else
+657	0	                node.setAttribute "fill", complete_colour
+658	0	            End If
+659	0	        End If
+660	0	
+661	0	        If bonesfiltered![Metacarpal_1_right] <> 0 Then
+662	0	        selectedbone = "metacarpal1a"
+663	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+664	0	            If bonesfiltered![Metacarpal_1_right] = 1 Then
+665	0	                node.setAttribute "fill", fragment_colour
+666	0	            Else
+667	0	                node.setAttribute "fill", complete_colour
+668	0	            End If
+669	0	        End If
+670	0	
+671	0	        If bonesfiltered![Metacarpal_2_left] <> 0 Then
+672	0	        selectedbone = "metacarpal2b"
+673	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+674	0	            If bonesfiltered![Metacarpal_2_left] = 1 Then
+675	0	                node.setAttribute "fill", fragment_colour
+676	0	            Else
+677	0	                node.setAttribute "fill", complete_colour
+678	0	            End If
+679	0	        End If
+680	0	
+681	0	        If bonesfiltered![Metacarpal_2_right] <> 0 Then
+682	0	        selectedbone = "metacarpal2a"
+683	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+684	0	            If bonesfiltered![Metacarpal_2_right] = 1 Then
+685	0	                node.setAttribute "fill", fragment_colour
+686	0	            Else
+687	0	                node.setAttribute "fill", complete_colour
+688	0	            End If
+689	0	        End If
+690	0	
+691	0	        If bonesfiltered![Metacarpal_3_left] <> 0 Then
+692	0	        selectedbone = "metacarpal3b"
+693	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+694	0	            If bonesfiltered![Metacarpal_3_left] = 1 Then
+695	0	                node.setAttribute "fill", fragment_colour
+696	0	            Else
+697	0	                node.setAttribute "fill", complete_colour
+698	0	            End If
+699	0	        End If
+700	0	
+701	0	        If bonesfiltered![Metacarpal_3_right] <> 0 Then
+702	0	        selectedbone = "metacarpal3a"
+703	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+704	0	            If bonesfiltered![Metacarpal_3_right] = 1 Then
+705	0	                node.setAttribute "fill", fragment_colour
+706	0	            Else
+707	0	                node.setAttribute "fill", complete_colour
+708	0	            End If
+709	0	        End If
+710	0	        
+711	0	        If bonesfiltered![Metacarpal_4_left] <> 0 Then
+712	0	        selectedbone = "metacarpal4b"
+713	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+714	0	            If bonesfiltered![Metacarpal_4_left] = 1 Then
+715	0	                node.setAttribute "fill", fragment_colour
+716	0	            Else
+717	0	                node.setAttribute "fill", complete_colour
+718	0	            End If
+719	0	        End If
+720	0	
+721	0	        If bonesfiltered![Metacarpal_4_right] <> 0 Then
+722	0	        selectedbone = "metacarpal4a"
+723	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+724	0	            If bonesfiltered![Metacarpal_4_right] = 1 Then
+725	0	                node.setAttribute "fill", fragment_colour
+726	0	            Else
+727	0	                node.setAttribute "fill", complete_colour
+728	0	            End If
+729	0	        End If
+730	0	
+731	0	        If bonesfiltered![Metacarpal_5_left] <> 0 Then
+732	0	        selectedbone = "metacarpal5b"
+733	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+734	0	            If bonesfiltered![Metacarpal_5_left] = 1 Then
+735	0	                node.setAttribute "fill", fragment_colour
+736	0	            Else
+737	0	                node.setAttribute "fill", complete_colour
+738	0	            End If
+739	0	        End If
+740	0	
+741	0	        If bonesfiltered![Metacarpal_5_right] <> 0 Then
+742	0	        selectedbone = "metacarpal5a"
+743	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+744	0	            If bonesfiltered![Metacarpal_5_right] = 1 Then
+745	0	                node.setAttribute "fill", fragment_colour
+746	0	            Else
+747	0	                node.setAttribute "fill", complete_colour
+748	0	            End If
+749	0	        End If
+750	0	
+751	0	        If bonesfiltered![Proximal_phalanx_1_left] <> 0 Then
+752	0	        selectedbone = "prox.phalanx1b"
+753	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+754	0	            If bonesfiltered![Proximal_phalanx_1_left] = 1 Then
+755	0	                node.setAttribute "fill", fragment_colour
+756	0	            Else
+757	0	                node.setAttribute "fill", complete_colour
+758	0	            End If
+759	0	        End If
+760	0	
+761	0	        If bonesfiltered![Proximal_phalanx_1_right] <> 0 Then
+762	0	        selectedbone = "prox.phalanx1a"
+763	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+764	0	            If bonesfiltered![Proximal_phalanx_1_right] = 1 Then
+765	0	                node.setAttribute "fill", fragment_colour
+766	0	            Else
+767	0	                node.setAttribute "fill", complete_colour
+768	0	            End If
+769	0	        End If
+770	0	
+771	0	        If Not IsNull(bonesfiltered![Proximal_phalanges_2-5_left]) Then
+772	0	        selectedbone = "prox.phalanx2b"
+773	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+774	0	            If bonesfiltered![Proximal_phalanges_2-5_left] < 4 Then
+775	0	                node.setAttribute "fill", fragment_colour
+776	0	            Else
+777	0	                node.setAttribute "fill", complete_colour
+778	0	            End If
+779	0	        
+780	0	        selectedbone = "prox.phalanx3b"
+781	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+782	0	            If bonesfiltered![Proximal_phalanges_2-5_left] < 4 Then
+783	0	                node.setAttribute "fill", fragment_colour
+784	0	            Else
+785	0	                node.setAttribute "fill", complete_colour
+786	0	            End If
+787	0	
+788	0	        selectedbone = "prox.phalanx4b"
+789	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+790	0	            If bonesfiltered![Proximal_phalanges_2-5_left] < 4 Then
+791	0	                node.setAttribute "fill", fragment_colour
+792	0	            Else
+793	0	                node.setAttribute "fill", complete_colour
+794	0	            End If
+795	0	        
+796	0	        selectedbone = "prox.phalanx5b"
+797	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+798	0	            If bonesfiltered![Proximal_phalanges_2-5_left] < 4 Then
+799	0	                node.setAttribute "fill", fragment_colour
+800	0	            Else
+801	0	                node.setAttribute "fill", complete_colour
+802	0	            End If
+803	0	
+804	0	        End If
+805	0	
+806	0	        If Not IsNull(bonesfiltered![Proximal_phalanges_2-5_right]) Then
+807	0	        selectedbone = "prox.phalanx2a"
+808	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+809	0	            If bonesfiltered![Proximal_phalanges_2-5_right] < 4 Then
+810	0	                node.setAttribute "fill", fragment_colour
+811	0	            Else
+812	0	                node.setAttribute "fill", complete_colour
+813	0	            End If
+814	0	        
+815	0	        selectedbone = "prox.phalanx3a"
+816	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+817	0	            If bonesfiltered![Proximal_phalanges_2-5_right] < 4 Then
+818	0	                node.setAttribute "fill", fragment_colour
+819	0	            Else
+820	0	                node.setAttribute "fill", complete_colour
+821	0	            End If
+822	0	
+823	0	        selectedbone = "prox.phalanx4a"
+824	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+825	0	            If bonesfiltered![Proximal_phalanges_2-5_right] < 4 Then
+826	0	                node.setAttribute "fill", fragment_colour
+827	0	            Else
+828	0	                node.setAttribute "fill", complete_colour
+829	0	            End If
+830	0	        
+831	0	        selectedbone = "prox.phalanx5a"
+832	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+833	0	            If bonesfiltered![Proximal_phalanges_2-5_right] < 4 Then
+834	0	                node.setAttribute "fill", fragment_colour
+835	0	            Else
+836	0	                node.setAttribute "fill", complete_colour
+837	0	            End If
+838	0	        
+839	0	        End If
+840	0	
+841	0	
+842	0	        If bonesfiltered![Distal_phalanx_1_left] <> 0 Then
+843	0	        selectedbone = "dist.phalanx1b"
+844	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+845	0	            If bonesfiltered![Distal_phalanx_1_left] = 1 Then
+846	0	                node.setAttribute "fill", fragment_colour
+847	0	            Else
+848	0	                node.setAttribute "fill", complete_colour
+849	0	            End If
+850	0	        End If
+851	0	
+852	0	        If bonesfiltered![Distal_phalanx_1_right] <> 0 Then
+853	0	        selectedbone = "dist.phalanx1a"
+854	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+855	0	            If bonesfiltered![Distal_phalanx_1_right] = 1 Then
+856	0	                node.setAttribute "fill", fragment_colour
+857	0	            Else
+858	0	                node.setAttribute "fill", complete_colour
+859	0	            End If
+860	0	        End If
+861	0	
+862	0	
+863	0	        If Not IsNull(bonesfiltered![Distal_phalanges_2-5_left]) Then
+864	0	        selectedbone = "dist.phalanx2b"
+865	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+866	0	            If bonesfiltered![Distal_phalanges_2-5_left] < 4 Then
+867	0	                node.setAttribute "fill", fragment_colour
+868	0	            Else
+869	0	                node.setAttribute "fill", complete_colour
+870	0	            End If
+871	0	        
+872	0	        selectedbone = "dist.phalanx3b"
+873	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+874	0	            If bonesfiltered![Distal_phalanges_2-5_left] < 4 Then
+875	0	                node.setAttribute "fill", fragment_colour
+876	0	            Else
+877	0	                node.setAttribute "fill", complete_colour
+878	0	            End If
+879	0	        
+880	0	        selectedbone = "dist.phalanx4b"
+881	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+882	0	            If bonesfiltered![Distal_phalanges_2-5_left] < 4 Then
+883	0	                node.setAttribute "fill", fragment_colour
+884	0	            Else
+885	0	                node.setAttribute "fill", complete_colour
+886	0	            End If
+887	0	        
+888	0	        selectedbone = "dist.phalanx5b"
+889	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+890	0	            If bonesfiltered![Distal_phalanges_2-5_left] < 4 Then
+891	0	                node.setAttribute "fill", fragment_colour
+892	0	            Else
+893	0	                node.setAttribute "fill", complete_colour
+894	0	            End If
+895	0	        End If
+896	0	
+897	0	        If Not IsNull(bonesfiltered![Distal_phalanges_2-5_right]) Then
+898	0	        selectedbone = "dist.phalanx2a"
+899	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+900	0	            If bonesfiltered![Distal_phalanges_2-5_right] < 4 Then
+901	0	                node.setAttribute "fill", fragment_colour
+902	0	            Else
+903	0	                node.setAttribute "fill", complete_colour
+904	0	            End If
+905	0	        
+906	0	        selectedbone = "dist.phalanx3a"
+907	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+908	0	            If bonesfiltered![Distal_phalanges_2-5_right] < 4 Then
+909	0	                node.setAttribute "fill", fragment_colour
+910	0	            Else
+911	0	                node.setAttribute "fill", complete_colour
+912	0	            End If
+913	0	        
+914	0	        selectedbone = "dist.phalanx4a"
+915	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+916	0	            If bonesfiltered![Distal_phalanges_2-5_right] < 4 Then
+917	0	                node.setAttribute "fill", fragment_colour
+918	0	            Else
+919	0	                node.setAttribute "fill", complete_colour
+920	0	            End If
+921	0	        
+922	0	        selectedbone = "dist.phalanx5a"
+923	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+924	0	            If bonesfiltered![Distal_phalanges_2-5_right] < 4 Then
+925	0	                node.setAttribute "fill", fragment_colour
+926	0	            Else
+927	0	                node.setAttribute "fill", complete_colour
+928	0	            End If
+929	0	        End If
+930	0	
+931	0	
+932	0	        If Not IsNull(bonesfiltered![Middle_phalanges_2-5_left]) Then
+933	0	        selectedbone = "mid.phalanx2b"
+934	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+935	0	            If bonesfiltered![Middle_phalanges_2-5_left] < 4 Then
+936	0	                node.setAttribute "fill", fragment_colour
+937	0	            Else
+938	0	                node.setAttribute "fill", complete_colour
+939	0	            End If
+940	0	        
+941	0	        selectedbone = "mid.phalanx3b"
+942	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+943	0	            If bonesfiltered![Middle_phalanges_2-5_left] < 4 Then
+944	0	                node.setAttribute "fill", fragment_colour
+945	0	            Else
+946	0	                node.setAttribute "fill", complete_colour
+947	0	            End If
+948	0	        
+949	0	        selectedbone = "mid.phalanx4b"
+950	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+951	0	            If bonesfiltered![Middle_phalanges_2-5_left] < 4 Then
+952	0	                node.setAttribute "fill", fragment_colour
+953	0	            Else
+954	0	                node.setAttribute "fill", complete_colour
+955	0	            End If
+956	0	        
+957	0	        selectedbone = "mid.phalanx5b"
+958	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+959	0	            If bonesfiltered![Middle_phalanges_2-5_left] < 4 Then
+960	0	                node.setAttribute "fill", fragment_colour
+961	0	            Else
+962	0	                node.setAttribute "fill", complete_colour
+963	0	            End If
+964	0	        End If
+965	0	
+966	0	        If Not IsNull(bonesfiltered![Middle_phalanges_2-5_right]) Then
+967	0	        selectedbone = "mid.phalanx2a"
+968	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+969	0	            If bonesfiltered![Middle_phalanges_2-5_right] < 4 Then
+970	0	                node.setAttribute "fill", fragment_colour
+971	0	            Else
+972	0	                node.setAttribute "fill", complete_colour
+973	0	            End If
+974	0	        
+975	0	        selectedbone = "mid.phalanx3a"
+976	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+977	0	            If bonesfiltered![Middle_phalanges_2-5_right] < 4 Then
+978	0	                node.setAttribute "fill", fragment_colour
+979	0	            Else
+980	0	                node.setAttribute "fill", complete_colour
+981	0	            End If
+982	0	        
+983	0	        selectedbone = "mid.phalanx4a"
+984	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+985	0	            If bonesfiltered![Middle_phalanges_2-5_right] < 4 Then
+986	0	                node.setAttribute "fill", fragment_colour
+987	0	            Else
+988	0	                node.setAttribute "fill", complete_colour
+989	0	            End If
+990	0	        
+991	0	        selectedbone = "mid.phalanx5a"
+992	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+993	0	            If bonesfiltered![Middle_phalanges_2-5_right] < 4 Then
+994	0	                node.setAttribute "fill", fragment_colour
+995	0	            Else
+996	0	                node.setAttribute "fill", complete_colour
+997	0	            End If
+998	0	        End If
+999	0	
+1000	0	        bonesfiltered.MoveNext
+1001	0	    Loop
+1002	0	Else
+1003	0	End If
+1004	0	
+1005	0	
+1006	0	Set bones = Nothing
+1007	0	
+1008	0	Set mydb = CurrentDb
+1009	0	Set bones = mydb.OpenRecordset("HR_Adult_Axial_Data", dbOpenSnapshot)
+1010	0	
+1011	0	bones.Filter = "[UnitNumber] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+1012	0	
+1013	0	Set bonesfiltered = bones.OpenRecordset
+1014	0	
+1015	0	If Not (bonesfiltered.BOF And bonesfiltered.EOF) Then
+1016	0	    bonesfiltered.MoveFirst
+1017	1	    Do Until bonesfiltered.EOF 'Or counter = 1000
+1018	0	        
+1019	0	        If Not IsNull(bonesfiltered![Sternum_manubrium]) Or Not IsNull(bonesfiltered![Sternum_body]) Then
+1020	0	        selectedbone = "sternum"
+1021	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1022	0	            If bonesfiltered![Sternum_manubrium] = 1 Or bonesfiltered![Sternum_body] = 1 Then
+1023	0	                node.setAttribute "fill", fragment_colour
+1024	0	            Else
+1025	0	                node.setAttribute "fill", complete_colour
+1026	0	            End If
+1027	0	        End If
+1028	0	
+1029	0	        If Not IsNull(bonesfiltered![Ribs_left_1]) Then
+1030	0	        selectedbone = "rib1b"
+1031	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1032	0	            If bonesfiltered![Ribs_left_1] = 1 Then
+1033	0	                node.setAttribute "fill", fragment_colour
+1034	0	            Else
+1035	0	                node.setAttribute "fill", complete_colour
+1036	0	            End If
+1037	0	        End If
+1038	0	
+1039	0	        If Not IsNull(bonesfiltered![Ribs_left_2]) Then
+1040	0	        selectedbone = "rib2b"
+1041	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1042	0	            If bonesfiltered![Ribs_left_2] = 1 Then
+1043	0	                node.setAttribute "fill", fragment_colour
+1044	0	            Else
+1045	0	                node.setAttribute "fill", complete_colour
+1046	0	            End If
+1047	0	        End If
+1048	0	        
+1049	0	        If Not IsNull(bonesfiltered![Ribs_left_3]) Then
+1050	0	        selectedbone = "rib3b"
+1051	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1052	0	            If bonesfiltered![Ribs_left_3] = 1 Then
+1053	0	                node.setAttribute "fill", fragment_colour
+1054	0	            Else
+1055	0	                node.setAttribute "fill", complete_colour
+1056	0	            End If
+1057	0	        End If
+1058	0	                
+1059	0	        If Not IsNull(bonesfiltered![Ribs_left_4]) Then
+1060	0	        selectedbone = "rib4b"
+1061	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1062	0	            If bonesfiltered![Ribs_left_4] = 1 Then
+1063	0	                node.setAttribute "fill", fragment_colour
+1064	0	            Else
+1065	0	                node.setAttribute "fill", complete_colour
+1066	0	            End If
+1067	0	        End If
+1068	0	        
+1069	0	        If Not IsNull(bonesfiltered![Ribs_left_5]) Then
+1070	0	        selectedbone = "rib5b"
+1071	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1072	0	            If bonesfiltered![Ribs_left_5] = 1 Then
+1073	0	                node.setAttribute "fill", fragment_colour
+1074	0	            Else
+1075	0	                node.setAttribute "fill", complete_colour
+1076	0	            End If
+1077	0	        End If
+1078	0	        
+1079	0	        If Not IsNull(bonesfiltered![Ribs_left_6]) Then
+1080	0	        selectedbone = "rib6b"
+1081	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1082	0	            If bonesfiltered![Ribs_left_6] = 1 Then
+1083	0	                node.setAttribute "fill", fragment_colour
+1084	0	            Else
+1085	0	                node.setAttribute "fill", complete_colour
+1086	0	            End If
+1087	0	        End If
+1088	0	        
+1089	0	        If Not IsNull(bonesfiltered![Ribs_left_7]) Then
+1090	0	        selectedbone = "rib7b"
+1091	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1092	0	            If bonesfiltered![Ribs_left_7] = 1 Then
+1093	0	                node.setAttribute "fill", fragment_colour
+1094	0	            Else
+1095	0	                node.setAttribute "fill", complete_colour
+1096	0	            End If
+1097	0	        End If
+1098	0	        
+1099	0	        If Not IsNull(bonesfiltered![Ribs_left_8]) Then
+1100	0	        selectedbone = "rib8b"
+1101	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1102	0	            If bonesfiltered![Ribs_left_8] = 1 Then
+1103	0	                node.setAttribute "fill", fragment_colour
+1104	0	            Else
+1105	0	                node.setAttribute "fill", complete_colour
+1106	0	            End If
+1107	0	        End If
+1108	0	        
+1109	0	        If Not IsNull(bonesfiltered![Ribs_left_9]) Then
+1110	0	        selectedbone = "rib9b"
+1111	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1112	0	            If bonesfiltered![Ribs_left_9] = 1 Then
+1113	0	                node.setAttribute "fill", fragment_colour
+1114	0	            Else
+1115	0	                node.setAttribute "fill", complete_colour
+1116	0	            End If
+1117	0	        End If
+1118	0	        
+1119	0	        If Not IsNull(bonesfiltered![Ribs_left_10]) Then
+1120	0	        selectedbone = "rib10b"
+1121	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1122	1	        'node.setAttribute "fill", complete_colour
+1123	0	        End If
+1124	0	        
+1125	0	        If Not IsNull(bonesfiltered![Ribs_left_11]) Then
+1126	0	        selectedbone = "rib11b"
+1127	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1128	0	            If bonesfiltered![Ribs_left_11] = 1 Then
+1129	0	                node.setAttribute "fill", fragment_colour
+1130	0	            Else
+1131	0	                node.setAttribute "fill", complete_colour
+1132	0	            End If
+1133	0	        End If
+1134	0	        
+1135	0	        If Not IsNull(bonesfiltered![Ribs_left_12]) Then
+1136	0	        selectedbone = "rib12b"
+1137	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1138	0	            If bonesfiltered![Ribs_left_12] = 1 Then
+1139	0	                node.setAttribute "fill", fragment_colour
+1140	0	            Else
+1141	0	                node.setAttribute "fill", complete_colour
+1142	0	            End If
+1143	0	        End If
+1144	0	
+1145	0	        If Not IsNull(bonesfiltered![Ribs_right_1]) Then
+1146	0	        selectedbone = "rib1a"
+1147	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1148	0	            If bonesfiltered![Ribs_right_1] = 1 Then
+1149	0	                node.setAttribute "fill", fragment_colour
+1150	0	            Else
+1151	0	                node.setAttribute "fill", complete_colour
+1152	0	            End If
+1153	0	        End If
+1154	0	
+1155	0	        If Not IsNull(bonesfiltered![Ribs_right_2]) Then
+1156	0	        selectedbone = "rib2a"
+1157	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1158	0	            If bonesfiltered![Ribs_right_2] = 1 Then
+1159	0	                node.setAttribute "fill", fragment_colour
+1160	0	            Else
+1161	0	                node.setAttribute "fill", complete_colour
+1162	0	            End If
+1163	0	        End If
+1164	0	        
+1165	0	        If Not IsNull(bonesfiltered![Ribs_right_3]) Then
+1166	0	        selectedbone = "rib3a"
+1167	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1168	0	            If bonesfiltered![Ribs_right_3] = 1 Then
+1169	0	                node.setAttribute "fill", fragment_colour
+1170	0	            Else
+1171	0	                node.setAttribute "fill", complete_colour
+1172	0	            End If
+1173	0	        End If
+1174	0	                
+1175	0	        If Not IsNull(bonesfiltered![Ribs_right_4]) Then
+1176	0	        selectedbone = "rib4a"
+1177	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1178	0	            If bonesfiltered![Ribs_right_4] = 1 Then
+1179	0	                node.setAttribute "fill", fragment_colour
+1180	0	            Else
+1181	0	                node.setAttribute "fill", complete_colour
+1182	0	            End If
+1183	0	        End If
+1184	0	        
+1185	0	        If Not IsNull(bonesfiltered![Ribs_right_5]) Then
+1186	0	        selectedbone = "rib5a"
+1187	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1188	0	            If bonesfiltered![Ribs_right_5] = 1 Then
+1189	0	                node.setAttribute "fill", fragment_colour
+1190	0	            Else
+1191	0	                node.setAttribute "fill", complete_colour
+1192	0	            End If
+1193	0	        End If
+1194	0	        
+1195	0	        If Not IsNull(bonesfiltered![Ribs_right_6]) Then
+1196	0	        selectedbone = "rib6a"
+1197	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1198	0	            If bonesfiltered![Ribs_right_6] = 1 Then
+1199	0	                node.setAttribute "fill", fragment_colour
+1200	0	            Else
+1201	0	                node.setAttribute "fill", complete_colour
+1202	0	            End If
+1203	0	        End If
+1204	0	        
+1205	0	        If Not IsNull(bonesfiltered![Ribs_right_7]) Then
+1206	0	        selectedbone = "rib7a"
+1207	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1208	0	            If bonesfiltered![Ribs_right_7] = 1 Then
+1209	0	                node.setAttribute "fill", fragment_colour
+1210	0	            Else
+1211	0	                node.setAttribute "fill", complete_colour
+1212	0	            End If
+1213	0	        End If
+1214	0	        
+1215	0	        If Not IsNull(bonesfiltered![Ribs_right_8]) Then
+1216	0	        selectedbone = "rib8a"
+1217	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1218	0	            If bonesfiltered![Ribs_right_8] = 1 Then
+1219	0	                node.setAttribute "fill", fragment_colour
+1220	0	            Else
+1221	0	                node.setAttribute "fill", complete_colour
+1222	0	            End If
+1223	0	        End If
+1224	0	        
+1225	0	        If Not IsNull(bonesfiltered![Ribs_right_9]) Then
+1226	0	        selectedbone = "rib9a"
+1227	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1228	0	            If bonesfiltered![Ribs_right_9] = 1 Then
+1229	0	                node.setAttribute "fill", fragment_colour
+1230	0	            Else
+1231	0	                node.setAttribute "fill", complete_colour
+1232	0	            End If
+1233	0	        End If
+1234	0	        
+1235	0	        If Not IsNull(bonesfiltered![Ribs_right_10]) Then
+1236	0	        selectedbone = "rib10a"
+1237	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1238	1	        'node.setAttribute "fill", complete_colour
+1239	0	        End If
+1240	0	        
+1241	0	        If Not IsNull(bonesfiltered![Ribs_right_11]) Then
+1242	0	        selectedbone = "rib11a"
+1243	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1244	0	            If bonesfiltered![Ribs_right_11] = 1 Then
+1245	0	                node.setAttribute "fill", fragment_colour
+1246	0	            Else
+1247	0	                node.setAttribute "fill", complete_colour
+1248	0	            End If
+1249	0	        End If
+1250	0	        
+1251	0	        If Not IsNull(bonesfiltered![Ribs_right_12]) Then
+1252	0	        selectedbone = "rib12a"
+1253	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1254	0	            If bonesfiltered![Ribs_right_12] = 1 Then
+1255	0	                node.setAttribute "fill", fragment_colour
+1256	0	            Else
+1257	0	                node.setAttribute "fill", complete_colour
+1258	0	            End If
+1259	0	        End If
+1260	0	        
+1261	0	        If Not IsNull(bonesfiltered![C6]) Then
+1262	0	        selectedbone = "vertebra4"
+1263	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1264	0	            If bonesfiltered![C6] = 1 Then
+1265	0	                node.setAttribute "fill", fragment_colour
+1266	0	            Else
+1267	0	                node.setAttribute "fill", complete_colour
+1268	0	            End If
+1269	0	        End If
+1270	0	        
+1271	0	        If Not IsNull(bonesfiltered![C7]) Then
+1272	0	        selectedbone = "vertebra5"
+1273	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1274	0	            If bonesfiltered![C7] = 1 Then
+1275	0	                node.setAttribute "fill", fragment_colour
+1276	0	            Else
+1277	0	                node.setAttribute "fill", complete_colour
+1278	0	            End If
+1279	0	        End If
+1280	0	        
+1281	0	        If Not IsNull(bonesfiltered![T1]) Or Not IsNull(bonesfiltered![T2]) Or Not IsNull(bonesfiltered![T3]) Or Not IsNull(bonesfiltered![T4]) Or Not IsNull(bonesfiltered![T5]) Or Not IsNull(bonesfiltered![T6]) Or Not IsNull(bonesfiltered![T7]) Or Not IsNull(bonesfiltered![T8]) Or Not IsNull(bonesfiltered![T9]) Or Not IsNull(bonesfiltered![T10]) Or Not IsNull(bonesfiltered![T11]) Or Not IsNull(bonesfiltered![T12]) Then
+1282	0	        selectedbone = "vertebra6"
+1283	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1284	0	            If bonesfiltered![T1] = 1 Or bonesfiltered![T2] = 1 Or bonesfiltered![T3] = 1 Or bonesfiltered![T4] = 1 Or bonesfiltered![T5] = 1 Or bonesfiltered![T6] = 1 Or bonesfiltered![T7] = 1 Or bonesfiltered![T8] = 1 Or bonesfiltered![T9] = 1 Or bonesfiltered![T10] = 1 Or bonesfiltered![T11] = 1 Or bonesfiltered![T12] = 1 Then
+1285	0	                node.setAttribute "fill", fragment_colour
+1286	0	            Else
+1287	0	                node.setAttribute "fill", complete_colour
+1288	0	            End If
+1289	0	
+1290	0	        selectedbone = "vertebra7"
+1291	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1292	0	            If bonesfiltered![T1] = 1 Or bonesfiltered![T2] = 1 Or bonesfiltered![T3] = 1 Or bonesfiltered![T4] = 1 Or bonesfiltered![T5] = 1 Or bonesfiltered![T6] = 1 Or bonesfiltered![T7] = 1 Or bonesfiltered![T8] = 1 Or bonesfiltered![T9] = 1 Or bonesfiltered![T10] = 1 Or bonesfiltered![T11] = 1 Or bonesfiltered![T12] = 1 Then
+1293	0	                node.setAttribute "fill", fragment_colour
+1294	0	            Else
+1295	0	                node.setAttribute "fill", complete_colour
+1296	0	            End If
+1297	0	        
+1298	0	        selectedbone = "vertebra18"
+1299	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1300	0	            If bonesfiltered![T1] = 1 Or bonesfiltered![T2] = 1 Or bonesfiltered![T3] = 1 Or bonesfiltered![T4] = 1 Or bonesfiltered![T5] = 1 Or bonesfiltered![T6] = 1 Or bonesfiltered![T7] = 1 Or bonesfiltered![T8] = 1 Or bonesfiltered![T9] = 1 Or bonesfiltered![T10] = 1 Or bonesfiltered![T11] = 1 Or bonesfiltered![T12] = 1 Then
+1301	0	                node.setAttribute "fill", fragment_colour
+1302	0	            Else
+1303	0	                node.setAttribute "fill", complete_colour
+1304	0	            End If
+1305	0	        
+1306	0	        selectedbone = "vertebra19"
+1307	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1308	0	            If bonesfiltered![T1] = 1 Or bonesfiltered![T2] = 1 Or bonesfiltered![T3] = 1 Or bonesfiltered![T4] = 1 Or bonesfiltered![T5] = 1 Or bonesfiltered![T6] = 1 Or bonesfiltered![T7] = 1 Or bonesfiltered![T8] = 1 Or bonesfiltered![T9] = 1 Or bonesfiltered![T10] = 1 Or bonesfiltered![T11] = 1 Or bonesfiltered![T12] = 1 Then
+1309	0	                node.setAttribute "fill", fragment_colour
+1310	0	            Else
+1311	0	                node.setAttribute "fill", complete_colour
+1312	0	            End If
+1313	0	        End If
+1314	0	        
+1315	0	        If Not IsNull(bonesfiltered![L1]) Then
+1316	0	        selectedbone = "vertebra20"
+1317	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1318	0	            If bonesfiltered![L1] = 1 Then
+1319	0	                node.setAttribute "fill", fragment_colour
+1320	0	            Else
+1321	0	                node.setAttribute "fill", complete_colour
+1322	0	            End If
+1323	0	        End If
+1324	0	        
+1325	0	        If Not IsNull(bonesfiltered![L2]) Then
+1326	0	        selectedbone = "vertebra21"
+1327	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1328	0	            If bonesfiltered![L2] = 1 Then
+1329	0	                node.setAttribute "fill", fragment_colour
+1330	0	            Else
+1331	0	                node.setAttribute "fill", complete_colour
+1332	0	            End If
+1333	0	        End If
+1334	0	        
+1335	0	        If Not IsNull(bonesfiltered![L3]) Then
+1336	0	        selectedbone = "vertebra22"
+1337	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1338	0	            If bonesfiltered![L3] = 1 Then
+1339	0	                node.setAttribute "fill", fragment_colour
+1340	0	            Else
+1341	0	                node.setAttribute "fill", complete_colour
+1342	0	            End If
+1343	0	        End If
+1344	0	        
+1345	0	        If Not IsNull(bonesfiltered![L4]) Then
+1346	0	        selectedbone = "vertebra23"
+1347	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1348	0	            If bonesfiltered![L4] = 1 Then
+1349	0	                node.setAttribute "fill", fragment_colour
+1350	0	            Else
+1351	0	                node.setAttribute "fill", complete_colour
+1352	0	            End If
+1353	0	        End If
+1354	0	        
+1355	0	        If Not IsNull(bonesfiltered![L5]) Then
+1356	0	        selectedbone = "vertebra24"
+1357	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1358	0	            If bonesfiltered![L5] = 1 Then
+1359	0	                node.setAttribute "fill", fragment_colour
+1360	0	            Else
+1361	0	                node.setAttribute "fill", complete_colour
+1362	0	            End If
+1363	0	        End If
+1364	0	        
+1365	0	        If Not IsNull(bonesfiltered![Sacrum]) Then
+1366	0	        selectedbone = "sacrum"
+1367	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1368	0	            If bonesfiltered![Sacrum] = 1 Then
+1369	0	                node.setAttribute "fill", fragment_colour
+1370	0	            Else
+1371	0	                node.setAttribute "fill", complete_colour
+1372	0	            End If
+1373	0	        End If
+1374	0	        
+1375	0	        bonesfiltered.MoveNext
+1376	0	    Loop
+1377	0	Else
+1378	0	End If
+1379	0	
+1380	0	Set bones = Nothing
+1381	0	
+1382	0	Set mydb = CurrentDb
+1383	0	Set bones = mydb.OpenRecordset("HR_Adult_Leg_Data", dbOpenSnapshot)
+1384	0	
+1385	0	bones.Filter = "[UnitNumber] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+1386	0	
+1387	0	Set bonesfiltered = bones.OpenRecordset
+1388	0	
+1389	0	If Not (bonesfiltered.BOF And bonesfiltered.EOF) Then
+1390	0	    bonesfiltered.MoveFirst
+1391	1	    Do Until bonesfiltered.EOF 'Or counter = 1000
+1392	0	        
+1393	0	        If Not IsNull(bonesfiltered![Femur_left_proximal]) Or Not IsNull(bonesfiltered![Femur_left_shaft]) Or Not IsNull(bonesfiltered![Femur_left_distal]) Then
+1394	0	        selectedbone = "femur_b"
+1395	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1396	0	            If bonesfiltered![Femur_left_proximal] = 1 Or bonesfiltered![Femur_left_shaft] = 1 Or bonesfiltered![Femur_left_distal] = 1 Then
+1397	0	                node.setAttribute "fill", fragment_colour
+1398	0	            Else
+1399	0	                node.setAttribute "fill", complete_colour
+1400	0	            End If
+1401	0	        End If
+1402	0	        
+1403	0	        If Not IsNull(bonesfiltered![Femur_right_proximal]) Or Not IsNull(bonesfiltered![Femur_right_shaft]) Or Not IsNull(bonesfiltered![Femur_right_distal]) Then
+1404	0	        selectedbone = "femur_a"
+1405	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1406	0	            If bonesfiltered![Femur_right_proximal] = 1 Or bonesfiltered![Femur_right_shaft] = 1 Or bonesfiltered![Femur_right_distal] = 1 Then
+1407	0	                node.setAttribute "fill", fragment_colour
+1408	0	            Else
+1409	0	                node.setAttribute "fill", complete_colour
+1410	0	            End If
+1411	0	        End If
+1412	0	        
+1413	0	        If Not IsNull(bonesfiltered![Tibia_left_proximal]) Or Not IsNull(bonesfiltered![Tibia_left_shaft]) Or Not IsNull(bonesfiltered![Tibia_left_distal]) Then
+1414	0	        selectedbone = "tibia_b"
+1415	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1416	0	            If bonesfiltered![Tibia_left_proximal] = 1 Or bonesfiltered![Tibia_left_shaft] = 1 Or bonesfiltered![Tibia_left_distal] = 1 Then
+1417	0	                node.setAttribute "fill", fragment_colour
+1418	0	            Else
+1419	0	                node.setAttribute "fill", complete_colour
+1420	0	            End If
+1421	0	        End If
+1422	0	        
+1423	0	        If Not IsNull(bonesfiltered![Tibia_right_proximal]) Or Not IsNull(bonesfiltered![Tibia_right_shaft]) Or Not IsNull(bonesfiltered![Tibia_right_distal]) Then
+1424	0	        selectedbone = "tibia_a"
+1425	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1426	0	            If bonesfiltered![Tibia_right_proximal] = 1 Or bonesfiltered![Tibia_right_shaft] = 1 Or bonesfiltered![Tibia_right_distal] = 1 Then
+1427	0	                node.setAttribute "fill", fragment_colour
+1428	0	            Else
+1429	0	                node.setAttribute "fill", complete_colour
+1430	0	            End If
+1431	0	        End If
+1432	0	        
+1433	0	        If Not IsNull(bonesfiltered![Fibula_left_proximal]) Or Not IsNull(bonesfiltered![Fibula_left_shaft]) Or Not IsNull(bonesfiltered![Fibula_left_distal]) Then
+1434	0	        selectedbone = "fibula_b"
+1435	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1436	0	            If bonesfiltered![Fibula_left_proximal] = 1 Or bonesfiltered![Fibula_left_shaft] = 1 Or bonesfiltered![Fibula_left_distal] = 1 Then
+1437	0	                node.setAttribute "fill", fragment_colour
+1438	0	            Else
+1439	0	                node.setAttribute "fill", complete_colour
+1440	0	            End If
+1441	0	        End If
+1442	0	        
+1443	0	        If Not IsNull(bonesfiltered![Fibula_right_proximal]) Or Not IsNull(bonesfiltered![Fibula_right_shaft]) Or Not IsNull(bonesfiltered![Fibula_right_distal]) Then
+1444	0	        selectedbone = "fibula_a"
+1445	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1446	0	            If bonesfiltered![Fibula_right_proximal] = 1 Or bonesfiltered![Fibula_right_shaft] = 1 Or bonesfiltered![Fibula_right_distal] = 1 Then
+1447	0	                node.setAttribute "fill", fragment_colour
+1448	0	            Else
+1449	0	                node.setAttribute "fill", complete_colour
+1450	0	            End If
+1451	0	        End If
+1452	0	
+1453	0	        If Not IsNull(bonesfiltered![Patella_left]) Then
+1454	0	        selectedbone = "patella_b"
+1455	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1456	0	            If bonesfiltered![Patella_left] = 1 Then
+1457	0	                node.setAttribute "fill", fragment_colour
+1458	0	            Else
+1459	0	                node.setAttribute "fill", complete_colour
+1460	0	            End If
+1461	0	        End If
+1462	0	        
+1463	0	        If Not IsNull(bonesfiltered![Patella_right]) Then
+1464	0	        selectedbone = "patella_a"
+1465	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1466	0	            If bonesfiltered![Patella_right] = 1 Then
+1467	0	                node.setAttribute "fill", fragment_colour
+1468	0	            Else
+1469	0	                node.setAttribute "fill", complete_colour
+1470	0	            End If
+1471	0	        End If
+1472	0	        
+1473	0	        If bonesfiltered![Calcaneus_right] <> 0 Then
+1474	0	        selectedbone = "calcaneus_a"
+1475	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1476	0	            If bonesfiltered![Calcaneus_right] = 1 Then
+1477	0	                node.setAttribute "fill", fragment_colour
+1478	0	            Else
+1479	0	                node.setAttribute "fill", complete_colour
+1480	0	            End If
+1481	0	        End If
+1482	0	        
+1483	0	        If bonesfiltered![Calcaneus_left] <> 0 Then
+1484	0	        selectedbone = "calcaneus_b"
+1485	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1486	0	            If bonesfiltered![Calcaneus_left] = 1 Then
+1487	0	                node.setAttribute "fill", fragment_colour
+1488	0	            Else
+1489	0	                node.setAttribute "fill", complete_colour
+1490	0	            End If
+1491	0	        End If
+1492	0	        
+1493	0	        If bonesfiltered![Talus_right] <> 0 Then
+1494	0	        selectedbone = "talus_a"
+1495	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1496	0	            If bonesfiltered![Talus_right] = 1 Then
+1497	0	                node.setAttribute "fill", fragment_colour
+1498	0	            Else
+1499	0	                node.setAttribute "fill", complete_colour
+1500	0	            End If
+1501	0	        End If
+1502	0	        
+1503	0	        If bonesfiltered![Talus_left] <> 0 Then
+1504	0	        selectedbone = "talus_b"
+1505	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1506	0	            If bonesfiltered![Talus_left] = 1 Then
+1507	0	                node.setAttribute "fill", fragment_colour
+1508	0	            Else
+1509	0	                node.setAttribute "fill", complete_colour
+1510	0	            End If
+1511	0	        End If
+1512	0	
+1513	0	        If bonesfiltered![Navicular_right] <> 0 Then
+1514	0	        selectedbone = "navicular_a"
+1515	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1516	0	            If bonesfiltered![Navicular_right] = 1 Then
+1517	0	                node.setAttribute "fill", fragment_colour
+1518	0	            Else
+1519	0	                node.setAttribute "fill", complete_colour
+1520	0	            End If
+1521	0	        End If
+1522	0	        
+1523	0	        If bonesfiltered![Navicular_left] <> 0 Then
+1524	0	        selectedbone = "navicular_b"
+1525	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1526	0	            If bonesfiltered![Navicular_left] = 1 Then
+1527	0	                node.setAttribute "fill", fragment_colour
+1528	0	            Else
+1529	0	                node.setAttribute "fill", complete_colour
+1530	0	            End If
+1531	0	        End If
+1532	0	
+1533	0	        If bonesfiltered![Cuboid_right] <> 0 Then
+1534	0	        selectedbone = "cuboid_a"
+1535	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1536	0	            If bonesfiltered![Cuboid_right] = 1 Then
+1537	0	                node.setAttribute "fill", fragment_colour
+1538	0	            Else
+1539	0	                node.setAttribute "fill", complete_colour
+1540	0	            End If
+1541	0	        End If
+1542	0	        
+1543	0	        If bonesfiltered![Cuboid_left] <> 0 Then
+1544	0	        selectedbone = "cuboid_b"
+1545	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1546	0	            If bonesfiltered![Cuboid_left] = 1 Then
+1547	0	                node.setAttribute "fill", fragment_colour
+1548	0	            Else
+1549	0	                node.setAttribute "fill", complete_colour
+1550	0	            End If
+1551	0	        End If
+1552	0	        
+1553	0	        If bonesfiltered![Cuneiform1_right] <> 0 Then
+1554	0	        selectedbone = "cuneiform1a"
+1555	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1556	0	            If bonesfiltered![Cuneiform1_right] = 1 Then
+1557	0	                node.setAttribute "fill", fragment_colour
+1558	0	            Else
+1559	0	                node.setAttribute "fill", complete_colour
+1560	0	            End If
+1561	0	        End If
+1562	0	        
+1563	0	        If bonesfiltered![Cuneiform1_left] <> 0 Then
+1564	0	        selectedbone = "cuneiform1b"
+1565	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1566	0	            If bonesfiltered![Cuneiform1_left] = 1 Then
+1567	0	                node.setAttribute "fill", fragment_colour
+1568	0	            Else
+1569	0	                node.setAttribute "fill", complete_colour
+1570	0	            End If
+1571	0	        End If
+1572	0	
+1573	0	        If bonesfiltered![Cuneiform2_right] <> 0 Then
+1574	0	        selectedbone = "cuneiform2a"
+1575	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1576	0	            If bonesfiltered![Cuneiform2_right] = 1 Then
+1577	0	                node.setAttribute "fill", fragment_colour
+1578	0	            Else
+1579	0	                node.setAttribute "fill", complete_colour
+1580	0	            End If
+1581	0	        End If
+1582	0	        
+1583	0	        If bonesfiltered![Cuneiform2_left] <> 0 Then
+1584	0	        selectedbone = "cuneiform2b"
+1585	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1586	0	            If bonesfiltered![Cuneiform2_left] = 1 Then
+1587	0	                node.setAttribute "fill", fragment_colour
+1588	0	            Else
+1589	0	                node.setAttribute "fill", complete_colour
+1590	0	            End If
+1591	0	        End If
+1592	0	
+1593	0	        If bonesfiltered![Cuneiform3_right] <> 0 Then
+1594	0	        selectedbone = "cuneiform3a"
+1595	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1596	0	            If bonesfiltered![Cuneiform3_right] = 1 Then
+1597	0	                node.setAttribute "fill", fragment_colour
+1598	0	            Else
+1599	0	                node.setAttribute "fill", complete_colour
+1600	0	            End If
+1601	0	        End If
+1602	0	        
+1603	0	        If bonesfiltered![Cuneiform3_left] <> 0 Then
+1604	0	        selectedbone = "cuneiform3b"
+1605	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1606	0	            If bonesfiltered![Cuneiform3_left] = 1 Then
+1607	0	                node.setAttribute "fill", fragment_colour
+1608	0	            Else
+1609	0	                node.setAttribute "fill", complete_colour
+1610	0	            End If
+1611	0	        End If
+1612	0	
+1613	0	        If bonesfiltered![Metatarsal_1_right] <> 0 Then
+1614	0	        selectedbone = "metatarsal1a"
+1615	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1616	0	            If bonesfiltered![Metatarsal_1_right] = 1 Then
+1617	0	                node.setAttribute "fill", fragment_colour
+1618	0	            Else
+1619	0	                node.setAttribute "fill", complete_colour
+1620	0	            End If
+1621	0	        End If
+1622	0	        
+1623	0	        If bonesfiltered![Metatarsal_1_left] <> 0 Then
+1624	0	        selectedbone = "metatarsal1b"
+1625	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1626	0	            If bonesfiltered![Metatarsal_1_left] = 1 Then
+1627	0	                node.setAttribute "fill", fragment_colour
+1628	0	            Else
+1629	0	                node.setAttribute "fill", complete_colour
+1630	0	            End If
+1631	0	        End If
+1632	0	
+1633	0	        If bonesfiltered![Metatarsal_2_right] <> 0 Then
+1634	0	        selectedbone = "metatarsal2a"
+1635	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1636	0	            If bonesfiltered![Metatarsal_2_right] = 1 Then
+1637	0	                node.setAttribute "fill", fragment_colour
+1638	0	            Else
+1639	0	                node.setAttribute "fill", complete_colour
+1640	0	            End If
+1641	0	        End If
+1642	0	        
+1643	0	        If bonesfiltered![Metatarsal_2_left] <> 0 Then
+1644	0	        selectedbone = "metatarsal2b"
+1645	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1646	0	            If bonesfiltered![Metatarsal_2_left] = 1 Then
+1647	0	                node.setAttribute "fill", fragment_colour
+1648	0	            Else
+1649	0	                node.setAttribute "fill", complete_colour
+1650	0	            End If
+1651	0	        End If
+1652	0	        
+1653	0	        If bonesfiltered![Metatarsal_3_right] <> 0 Then
+1654	0	        selectedbone = "metatarsal3a"
+1655	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1656	0	            If bonesfiltered![Metatarsal_3_right] = 1 Then
+1657	0	                node.setAttribute "fill", fragment_colour
+1658	0	            Else
+1659	0	                node.setAttribute "fill", complete_colour
+1660	0	            End If
+1661	0	        End If
+1662	0	        
+1663	0	        If bonesfiltered![Metatarsal_3_left] <> 0 Then
+1664	0	        selectedbone = "metatarsal3b"
+1665	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1666	0	            If bonesfiltered![Metatarsal_3_left] = 1 Then
+1667	0	                node.setAttribute "fill", fragment_colour
+1668	0	            Else
+1669	0	                node.setAttribute "fill", complete_colour
+1670	0	            End If
+1671	0	        End If
+1672	0	
+1673	0	        If bonesfiltered![Metatarsal_4_right] <> 0 Then
+1674	0	        selectedbone = "metatarsal4a"
+1675	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1676	0	            If bonesfiltered![Metatarsal_4_right] = 1 Then
+1677	0	                node.setAttribute "fill", fragment_colour
+1678	0	            Else
+1679	0	                node.setAttribute "fill", complete_colour
+1680	0	            End If
+1681	0	        End If
+1682	0	        
+1683	0	        If bonesfiltered![Metatarsal_4_left] <> 0 Then
+1684	0	        selectedbone = "metatarsal4b"
+1685	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1686	0	            If bonesfiltered![Metatarsal_4_left] = 1 Then
+1687	0	                node.setAttribute "fill", fragment_colour
+1688	0	            Else
+1689	0	                node.setAttribute "fill", complete_colour
+1690	0	            End If
+1691	0	        End If
+1692	0	
+1693	0	        If bonesfiltered![Metatarsal_5_right] <> 0 Then
+1694	0	        selectedbone = "metatarsal5a"
+1695	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1696	0	            If bonesfiltered![Metatarsal_5_right] = 1 Then
+1697	0	                node.setAttribute "fill", fragment_colour
+1698	0	            Else
+1699	0	                node.setAttribute "fill", complete_colour
+1700	0	            End If
+1701	0	        End If
+1702	0	        
+1703	0	        If bonesfiltered![Metatarsal_5_left] <> 0 Then
+1704	0	        selectedbone = "metatarsal5b"
+1705	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1706	0	            If bonesfiltered![Metatarsal_5_left] = 1 Then
+1707	0	                node.setAttribute "fill", fragment_colour
+1708	0	            Else
+1709	0	                node.setAttribute "fill", complete_colour
+1710	0	            End If
+1711	0	        End If
+1712	0	
+1713	0	        If bonesfiltered![Proximal_phalanx_1_right] <> 0 Then
+1714	0	        selectedbone = "prox.phalange1a"
+1715	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1716	0	            If bonesfiltered![Proximal_phalanx_1_right] = 1 Then
+1717	0	                node.setAttribute "fill", fragment_colour
+1718	0	            Else
+1719	0	                node.setAttribute "fill", complete_colour
+1720	0	            End If
+1721	0	        End If
+1722	0	        
+1723	0	        If bonesfiltered![Proximal_phalanx_1_left] <> 0 Then
+1724	0	        selectedbone = "prox.phalange1b"
+1725	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1726	0	            If bonesfiltered![Proximal_phalanx_1_left] = 1 Then
+1727	0	                node.setAttribute "fill", fragment_colour
+1728	0	            Else
+1729	0	                node.setAttribute "fill", complete_colour
+1730	0	            End If
+1731	0	        End If
+1732	0	
+1733	0	        If Not IsNull(bonesfiltered![Middle_phalanges_2-5_right]) Then
+1734	0	        selectedbone = "dist.phalange2.2a"
+1735	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1736	0	            If bonesfiltered![Middle_phalanges_2-5_right] < 4 Then
+1737	0	                node.setAttribute "fill", fragment_colour
+1738	0	            Else
+1739	0	                node.setAttribute "fill", complete_colour
+1740	0	            End If
+1741	0	        
+1742	0	        selectedbone = "dist.phalange3.2a"
+1743	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1744	0	            If bonesfiltered![Middle_phalanges_2-5_right] < 4 Then
+1745	0	                node.setAttribute "fill", fragment_colour
+1746	0	            Else
+1747	0	                node.setAttribute "fill", complete_colour
+1748	0	            End If
+1749	0	        
+1750	0	        selectedbone = "dist.phalange4.2a"
+1751	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1752	0	            If bonesfiltered![Middle_phalanges_2-5_right] < 4 Then
+1753	0	                node.setAttribute "fill", fragment_colour
+1754	0	            Else
+1755	0	                node.setAttribute "fill", complete_colour
+1756	0	            End If
+1757	0	        
+1758	0	        selectedbone = "dist.phalange5.2a"
+1759	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1760	0	            If bonesfiltered![Middle_phalanges_2-5_right] < 4 Then
+1761	0	                node.setAttribute "fill", fragment_colour
+1762	0	            Else
+1763	0	                node.setAttribute "fill", complete_colour
+1764	0	            End If
+1765	0	        End If
+1766	0	        
+1767	0	        If Not IsNull(bonesfiltered![Middle_phalanges_2-5_left]) Then
+1768	0	        selectedbone = "dist.phalange2.2b"
+1769	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1770	0	            If bonesfiltered![Middle_phalanges_2-5_left] < 4 Then
+1771	0	                node.setAttribute "fill", fragment_colour
+1772	0	            Else
+1773	0	                node.setAttribute "fill", complete_colour
+1774	0	            End If
+1775	0	        
+1776	0	        selectedbone = "dist.phalange3.2b"
+1777	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1778	0	            If bonesfiltered![Middle_phalanges_2-5_left] < 4 Then
+1779	0	                node.setAttribute "fill", fragment_colour
+1780	0	            Else
+1781	0	                node.setAttribute "fill", complete_colour
+1782	0	            End If
+1783	0	        
+1784	0	        selectedbone = "dist.phalange4.2b"
+1785	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1786	0	            If bonesfiltered![Middle_phalanges_2-5_left] < 4 Then
+1787	0	                node.setAttribute "fill", fragment_colour
+1788	0	            Else
+1789	0	                node.setAttribute "fill", complete_colour
+1790	0	            End If
+1791	0	        
+1792	0	        selectedbone = "dist.phalange5.2b"
+1793	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1794	0	            If bonesfiltered![Middle_phalanges_2-5_left] < 4 Then
+1795	0	                node.setAttribute "fill", fragment_colour
+1796	0	            Else
+1797	0	                node.setAttribute "fill", complete_colour
+1798	0	            End If
+1799	0	        End If
+1800	0	
+1801	0	        If bonesfiltered![Distal_phalanx_1_right] <> 0 Then
+1802	0	        selectedbone = "dist.phalange1.1a"
+1803	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1804	0	            If bonesfiltered![Distal_phalanx_1_right] = 1 Then
+1805	0	                node.setAttribute "fill", fragment_colour
+1806	0	            Else
+1807	0	                node.setAttribute "fill", complete_colour
+1808	0	            End If
+1809	0	        
+1810	0	        selectedbone = "dist.phalange1.2a"
+1811	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1812	0	            If bonesfiltered![Distal_phalanx_1_right] = 1 Then
+1813	0	                node.setAttribute "fill", fragment_colour
+1814	0	            Else
+1815	0	                node.setAttribute "fill", complete_colour
+1816	0	            End If
+1817	0	        End If
+1818	0	        
+1819	0	        If bonesfiltered![Distal_phalanx_1_left] <> 0 Then
+1820	0	        selectedbone = "dist.phalange1.1b"
+1821	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1822	0	            If bonesfiltered![Distal_phalanx_1_right] = 1 Then
+1823	0	                node.setAttribute "fill", fragment_colour
+1824	0	            Else
+1825	0	                node.setAttribute "fill", complete_colour
+1826	0	            End If
+1827	0	        
+1828	0	        selectedbone = "dist.phalange1.2b"
+1829	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1830	0	            If bonesfiltered![Distal_phalanx_1_right] = 1 Then
+1831	0	                node.setAttribute "fill", fragment_colour
+1832	0	            Else
+1833	0	                node.setAttribute "fill", complete_colour
+1834	0	            End If
+1835	0	        End If
+1836	0	
+1837	0	        If Not IsNull(bonesfiltered![Distal_phalanges_2-5_right]) Then
+1838	0	        selectedbone = "dist.phalange2.1a"
+1839	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1840	0	            If bonesfiltered![Distal_phalanges_2-5_right] < 4 Then
+1841	0	                node.setAttribute "fill", fragment_colour
+1842	0	            Else
+1843	0	                node.setAttribute "fill", complete_colour
+1844	0	            End If
+1845	0	        
+1846	0	        selectedbone = "dist.phalange3.1a"
+1847	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1848	0	            If bonesfiltered![Distal_phalanges_2-5_right] < 4 Then
+1849	0	                node.setAttribute "fill", fragment_colour
+1850	0	            Else
+1851	0	                node.setAttribute "fill", complete_colour
+1852	0	            End If
+1853	0	        
+1854	0	        selectedbone = "dist.phalange4.1a"
+1855	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1856	0	            If bonesfiltered![Distal_phalanges_2-5_right] < 4 Then
+1857	0	                node.setAttribute "fill", fragment_colour
+1858	0	            Else
+1859	0	                node.setAttribute "fill", complete_colour
+1860	0	            End If
+1861	0	        
+1862	0	        selectedbone = "dist.phalange5.1a"
+1863	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1864	0	            If bonesfiltered![Distal_phalanges_2-5_right] < 4 Then
+1865	0	                node.setAttribute "fill", fragment_colour
+1866	0	            Else
+1867	0	                node.setAttribute "fill", complete_colour
+1868	0	            End If
+1869	0	        End If
+1870	0	        
+1871	0	        If Not IsNull(bonesfiltered![Distal_phalanges_2-5_left]) Then
+1872	0	        selectedbone = "dist.phalange2.1b"
+1873	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1874	0	            If bonesfiltered![Distal_phalanges_2-5_left] < 4 Then
+1875	0	                node.setAttribute "fill", fragment_colour
+1876	0	            Else
+1877	0	                node.setAttribute "fill", complete_colour
+1878	0	            End If
+1879	0	        
+1880	0	        selectedbone = "dist.phalange3.1b"
+1881	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1882	0	            If bonesfiltered![Distal_phalanges_2-5_left] < 4 Then
+1883	0	                node.setAttribute "fill", fragment_colour
+1884	0	            Else
+1885	0	                node.setAttribute "fill", complete_colour
+1886	0	            End If
+1887	0	        
+1888	0	        selectedbone = "dist.phalange4.1b"
+1889	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1890	0	            If bonesfiltered![Distal_phalanges_2-5_left] < 4 Then
+1891	0	                node.setAttribute "fill", fragment_colour
+1892	0	            Else
+1893	0	                node.setAttribute "fill", complete_colour
+1894	0	            End If
+1895	0	        
+1896	0	        selectedbone = "dist.phalange5.1b"
+1897	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1898	0	            If bonesfiltered![Distal_phalanges_2-5_left] < 4 Then
+1899	0	                node.setAttribute "fill", fragment_colour
+1900	0	            Else
+1901	0	                node.setAttribute "fill", complete_colour
+1902	0	            End If
+1903	0	        End If
+1904	0	        
+1905	0	        If Not IsNull(bonesfiltered![Proximal_phalanges_2-5_right]) Then
+1906	0	        selectedbone = "prox.phalange2b"
+1907	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1908	0	            If bonesfiltered![Proximal_phalanges_2-5_right] < 4 Then
+1909	0	                node.setAttribute "fill", fragment_colour
+1910	0	            Else
+1911	0	                node.setAttribute "fill", complete_colour
+1912	0	            End If
+1913	0	        
+1914	0	        selectedbone = "prox.phalange3b"
+1915	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1916	0	            If bonesfiltered![Proximal_phalanges_2-5_right] < 4 Then
+1917	0	                node.setAttribute "fill", fragment_colour
+1918	0	            Else
+1919	0	                node.setAttribute "fill", complete_colour
+1920	0	            End If
+1921	0	        
+1922	0	        selectedbone = "prox.phalange4b"
+1923	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1924	0	            If bonesfiltered![Proximal_phalanges_2-5_right] < 4 Then
+1925	0	                node.setAttribute "fill", fragment_colour
+1926	0	            Else
+1927	0	                node.setAttribute "fill", complete_colour
+1928	0	            End If
+1929	0	        
+1930	0	        selectedbone = "prox.phalange5b"
+1931	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1932	0	            If bonesfiltered![Proximal_phalanges_2-5_right] < 4 Then
+1933	0	                node.setAttribute "fill", fragment_colour
+1934	0	            Else
+1935	0	                node.setAttribute "fill", complete_colour
+1936	0	            End If
+1937	0	        End If
+1938	0	        
+1939	0	        If Not IsNull(bonesfiltered![Proximal_phalanges_2-5_left]) Then
+1940	0	        selectedbone = "prox.phalange2a"
+1941	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1942	0	            If bonesfiltered![Proximal_phalanges_2-5_left] < 4 Then
+1943	0	                node.setAttribute "fill", fragment_colour
+1944	0	            Else
+1945	0	                node.setAttribute "fill", complete_colour
+1946	0	            End If
+1947	0	        
+1948	0	        selectedbone = "prox.phalange3a"
+1949	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1950	0	            If bonesfiltered![Proximal_phalanges_2-5_left] < 4 Then
+1951	0	                node.setAttribute "fill", fragment_colour
+1952	0	            Else
+1953	0	                node.setAttribute "fill", complete_colour
+1954	0	            End If
+1955	0	        
+1956	0	        selectedbone = "prox.phalange4a"
+1957	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1958	0	            If bonesfiltered![Proximal_phalanges_2-5_left] < 4 Then
+1959	0	                node.setAttribute "fill", fragment_colour
+1960	0	            Else
+1961	0	                node.setAttribute "fill", complete_colour
+1962	0	            End If
+1963	0	        
+1964	0	        selectedbone = "prox.phalange5a"
+1965	6	        Set node = xmldom.selectSingleNode("//*[local-name()='g' and @id = '" & selectedbone & "']/*[local-name()='path']")
+1966	0	            If bonesfiltered![Proximal_phalanges_2-5_left] < 4 Then
+1967	0	                node.setAttribute "fill", fragment_colour
+1968	0	            Else
+1969	0	                node.setAttribute "fill", complete_colour
+1970	0	            End If
+1971	0	        End If
+1972	0	        
+1973	0	        bonesfiltered.MoveNext
+1974	0	    Loop
+1975	0	Else
+1976	0	End If
+1977	0	
+1978	0	
+1979	0	
+1980	0	xmldom.Save (sketchpath & "\units\skeletons\S" & Me![txtUnit] & "_" & Me![txtIndivid] & ".svg")
+1981	0	
+1982	1	'ugly hack to reference schemas necessary for svg display [implementing schemas in MSXML does not work correctly]
+1983	0	
+1984	0	unreferenced = Chr(34) & "Layer_1" & Chr(34) & " width=" & Chr(34) & "277.779px" & Chr(34)
+1985	0	
+1986	0	referenced = Chr(34) & "Layer_1" & Chr(34) & " xmlns=" & Chr(34) & "http://www.w3.org/2000/svg" & Chr(34) & " xmlns:xlink=" & Chr(34) & "http://www.w3.org/1999/xlink" & Chr(34) & " width=" & Chr(34) & "277.779px" & Chr(34)
+1987	1	    'Set filebuffer = My.Computer.FileSystem.ReadAllText(CurrentProject.Path & "\skeleton_modified.svg")
+1988	0	
+1989	0	    If fso.FileExists(sketchpath & "\units\skeletons\S" & Me![txtUnit] & "_" & Me![txtIndivid] & ".svg") Then
+1990	0	    Set file = fso.OpenTextFile(sketchpath & "\units\skeletons\S" & Me![txtUnit] & "_" & Me![txtIndivid] & ".svg", 1)
+1991	0	
+1992	0	    While Not file.AtEndOfStream
+1993	0	        filebuffer = filebuffer & file.ReadLine & Chr(13) & Chr(10)
+1994	0	    Wend
+1995	0	    file.Close
+1996	0	
+1997	0	    If InStr(filebuffer, unreferenced) > 0 Then
+1998	0	        fileReader = Replace(filebuffer, unreferenced, referenced)
+1999	0	        Set file = fso.OpenTextFile(sketchpath & "\units\skeletons\S" & Me![txtUnit] & "_" & Me![txtIndivid] & ".svg", 2)
+2000	0	        file.WriteLine fileReader
+2001	0	        file.Close
+2002	0	    Else
+2003	0	
+2004	0	    End If
+2005	1	    'WebBrowser1.Navigate (Application.StartupPath & "/wrapsvg.html")
+2006	1	    'WebBrowser1.DocumentText = "<?xml version=" & Chr(34) & "1.0" & Chr(34) & " encoding=" & Chr(34) & "utf-8" & Chr(34) & " standalone=" & Chr(34) & "no" & Chr(34) & "?><!DOCTYPE html PUBLIC " & Chr(34) & "-//W3C//DTD XHTML 1.0 Transitional//EN" & Chr(34) & " " & Chr(34) & "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" & Chr(34) & "><html xmlns=" & Chr(34) & "http://www.w3.org/1999/xhtml" & Chr(34) & "><head><!-- <meta content=" & Chr(34) & "text/html; charset=utf-8" & Chr(34) & " http-equiv=" & Chr(34) & "Content-Type" & Chr(34) & " /> --><title>Skeleton</title></head><body>" & fileReader & "</body></html>"
+2007	1	    'Me![picturecontainer].Picture = CurrentProject.Path & "\skeleton_modified.svg"
+2008	0	Else
+2009	0	    
+2010	0	End If
+2011	0	
+2012	0	Else
+2013	0	    DoCmd.OpenForm "frm_pop_graphic", acNormal, , , acFormReadOnly, , Me![txtUnit] & "_" & Me![txtIndivid]
+2014	0	End If
+2015	0	    
+2016	0	Exit Sub
+2017	0	
+2018	0	err_openSkeletonView:
+2019	0	    MsgBox Err.Description
+2020	0	    Exit Sub
+2021	0	
+2022	0	
+2023	0	End Sub
+2024	0	
+2025	0	
+2026	0	
+2027	0	
+2028	0	

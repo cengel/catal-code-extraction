@@ -1,0 +1,70 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdExport_Click()
+5	1	'On Error GoTo err_cmdExport
+6	1	'
+7	1	'    DoCmd.OutputTo acOutputQuery, "Q_ExportToExcel_Sample_OnScreen", acFormatXLS, "Phyto Sample Data for " & Me![SampleID] & ".xls", True
+8	1	'Exit Sub
+9	1	'
+10	1	'err_cmdExport:
+11	1	'    MsgBox "An error has occured, the description is: " & Err.Description
+12	1	'    Exit Sub
+13	0	End Sub
+14	0	
+15	0	Private Sub PhytoCount_AfterUpdate()
+16	1	'This is where the calculations are done for the n/slide and n/mg fields
+17	0	
+18	0	On Error GoTo err_PhytoCount
+19	0	
+20	0	Dim countedFields, totfields, result1, result2, result
+21	0	
+22	0	
+23	0	If Me![PhytoCount] <> "" Then
+24	1	    'only do this if a valid numeric count number has been entered
+25	0	    If IsNumeric(Me![PhytoCount]) Then
+26	1	        'n/slide = Count / fields counted on slide * total fields on slide
+27	1	        'n/gm = n per slide / mg mounted * total mg phyto / Total mg sediment  * 1000
+28	0	        If Me![SorM] = "Single" Then
+29	0	            countedFields = Forms![frm_Phyto_Data_Entry]![FieldsCountedSinglePhyto]
+30	0	        ElseIf Me![SorM] = "Multi" Then
+31	0	            countedFields = Forms![frm_Phyto_Data_Entry]![FieldsCountedMultiPhyto]
+32	0	        ElseIf Me![SorM] = "SilicaAgg" Then
+33	0	            countedFields = Forms![frm_Phyto_Data_Entry]![FieldsCountedSilica]
+34	1	        ElseIf Me![SorM] = "Other" Then 'ie non phyto
+35	0	            countedFields = Forms![frm_Phyto_Data_Entry]![FieldsCountedNonPhyto]
+36	0	        Else
+37	0	            MsgBox "The Single / Multi / Silica Agg / Other field contains the value " & Me![SorM] & ", no calculation formula is stored for  this type", vbExclamation, "No calculation can be done"
+38	0	        End If
+39	0	        
+40	0	        totfields = Forms![frm_Phyto_Data_Entry]![SlideFields]
+41	0	        
+42	0	        If IsNumeric(countedFields) And IsNumeric(totfields) Then
+43	0	        
+44	0	            result = Me![PhytoCount] / countedFields * totfields
+45	0	            
+46	0	            Me![PhytoN/Slide] = result
+47	0	            
+48	0	            If IsNumeric(Forms![frm_Phyto_Data_Entry]![MGMounted]) And IsNumeric(Forms![frm_Phyto_Data_Entry]![TotalMGPhyto]) And IsNumeric(Forms![frm_Phyto_Data_Entry]![TotalMGSediment]) Then
+49	1	                'MGMounted, TotalMGPhyto,TotalMGSediment
+50	0	                result2 = result / Forms![frm_Phyto_Data_Entry]![MGMounted] * Forms![frm_Phyto_Data_Entry]![TotalMGPhyto] / Forms![frm_Phyto_Data_Entry]![TotalMGSediment] * 1000
+51	0	                Me![PhytoN/gm] = result2
+52	0	            Else
+53	0	                MsgBox "Cannot undertake n/gm calculation, one or more parameters is not numeric"
+54	0	            End If
+55	0	        Else
+56	0	            MsgBox "Cannot undertake n/slide calculation, one or more parameters is not numeric"
+57	0	        End If
+58	0	        
+59	0	        
+60	0	    End If
+61	0	End If
+62	0	Exit Sub
+63	0	
+64	0	err_PhytoCount:
+65	0	    If Err.Number = 11 Then
+66	0	        MsgBox "A problem has occured undertaking a calculation, the message is: " & Err.Description, vbCritical, "Error"
+67	0	    Else
+68	0	        MsgBox "A error has occured, the message is: " & Err.Description, vbCritical, "Error"
+69	0	    End If
+70	0	End Sub

@@ -1,0 +1,115 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Sub Button_CloseForm_Click()
+5	0	On Error GoTo Err_Button_CloseForm_Click
+6	0	
+7	0	
+8	0	    DoCmd.Close
+9	0	
+10	0	Exit_Button_CloseForm_Click:
+11	0	    Exit Sub
+12	0	
+13	0	Err_Button_CloseForm_Click:
+14	0	    MsgBox Err.Description
+15	0	    Resume Exit_Button_CloseForm_Click
+16	0	    
+17	0	End Sub
+18	0	Sub Button_OpenFormProxend_Click()
+19	0	On Error GoTo Err_Button_OpenFormProxend_Click
+20	0	
+21	0	    Dim stDocName As String
+22	0	    Dim stLinkCriteria As String
+23	0	
+24	0	    stDocName = "LithicForm:ProximalEnds"
+25	0	    
+26	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+27	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+28	0	    
+29	0	Exit_Button_OpenFormProxend_Click:
+30	0	    Exit Sub
+31	0	
+32	0	Err_Button_OpenFormProxend_Click:
+33	0	    MsgBox Err.Description
+34	0	    Resume Exit_Button_OpenFormProxend_Click
+35	0	    
+36	0	End Sub
+37	0	Sub Button_OpenForm_Blades_Click()
+38	0	On Error GoTo Err_Button_OpenForm_Blades_Click
+39	0	
+40	0	    Dim stDocName As String
+41	0	    Dim stLinkCriteria As String
+42	0	
+43	0	    stDocName = "LithicForm:Blades"
+44	0	    
+45	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+46	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+47	0	
+48	0	Exit_Button_OpenForm_Blades_Click:
+49	0	    Exit Sub
+50	0	
+51	0	Err_Button_OpenForm_Blades_Click:
+52	0	    MsgBox Err.Description
+53	0	    Resume Exit_Button_OpenForm_Blades_Click
+54	0	    
+55	0	End Sub
+56	0	Sub Buttons_OpenForm_Cores_Click()
+57	0	On Error GoTo Err_Buttons_OpenForm_Cores_Click
+58	0	
+59	0	    Dim stDocName As String
+60	0	    Dim stLinkCriteria As String
+61	0	
+62	0	    stDocName = "LithicForm:Cores"
+63	0	    
+64	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+65	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+66	0	
+67	0	Exit_Buttons_OpenForm_Cores_Click:
+68	0	    Exit Sub
+69	0	
+70	0	Err_Buttons_OpenForm_Cores_Click:
+71	0	    MsgBox Err.Description
+72	0	    Resume Exit_Buttons_OpenForm_Cores_Click
+73	0	    
+74	0	End Sub
+75	0	Sub Button_OpenForm_MB_Click()
+76	0	On Error GoTo Err_Button_OpenForm_MB_Click
+77	0	
+78	0	    Dim stDocName As String
+79	0	    Dim stLinkCriteria As String
+80	0	
+81	0	    stDocName = "LithicForm:ModifiedBlanks"
+82	0	    
+83	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+84	0	    
+85	0	        DoCmd.Minimize
+86	0	        DoCmd.OpenForm stDocName, , , stLinkCriteria
+87	0	
+88	0	Exit_Button_OpenForm_MB_Click:
+89	0	    Exit Sub
+90	0	
+91	0	Err_Button_OpenForm_MB_Click:
+92	0	    MsgBox Err.Description
+93	0	    Resume Exit_Button_OpenForm_MB_Click
+94	0	    
+95	0	End Sub
+96	0	Sub button_goto_bagandunit_Click()
+97	0	On Error GoTo Err_button_goto_bagandunit_Click
+98	0	
+99	0	    Dim stDocName As String
+100	0	    Dim stLinkCriteria As String
+101	0	
+102	0	    stDocName = "LithicForm:BagAndUnitDescription"
+103	0	    
+104	0	    stLinkCriteria = "[Bag]=" & Me![Bag]
+105	0	    DoCmd.Close
+106	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+107	0	
+108	0	Exit_button_goto_bagandunit_Click:
+109	0	    Exit Sub
+110	0	
+111	0	Err_button_goto_bagandunit_Click:
+112	0	    MsgBox Err.Description
+113	0	    Resume Exit_button_goto_bagandunit_Click
+114	0	    
+115	0	End Sub

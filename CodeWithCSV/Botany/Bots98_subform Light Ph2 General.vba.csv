@@ -1,0 +1,31 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub Ctl0_5___sorted_Exit(Cancel As Integer)
+5	0	
+6	0	Forms![Bots98: Light Residue Phase 2]![Bots98: Light Ph2 Material subform].Requery
+7	0	
+8	0	End Sub
+9	0	
+10	0	
+11	0	Private Sub Ctl1___sorted_Exit(Cancel As Integer)
+12	0	
+13	0	Forms![Bots98: Light Residue Phase 2]![Bots98: Light Ph2 Material subform].Requery
+14	0	
+15	0	End Sub
+16	0	
+17	0	
+18	0	Private Sub Ctl2___sorted_Exit(Cancel As Integer)
+19	0	
+20	0	Forms![Bots98: Light Residue Phase 2]![Bots98: Light Ph2 Material subform].Requery
+21	0	
+22	0	End Sub
+23	0	
+24	0	
+25	0	Sub Ctl4___sorted_Exit(Cancel As Integer)
+26	0	
+27	0	Forms![Bots98: Light Residue Phase 2]![Bots98: Light Ph2 Material subform].Requery
+28	0	
+29	0	End Sub
+30	0	
+31	0	

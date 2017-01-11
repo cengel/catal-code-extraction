@@ -1,0 +1,171 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cboFind_AfterUpdate()
+5	1	'find the sample number
+6	0	On Error GoTo err_cboFind
+7	0	
+8	0	    If Me![cboFind] <> "" Then
+9	0	    
+10	0	        If Me.Filter <> "" Then
+11	2	            If Me.Filter <> "[GID] = '" & Me![cboFind].Column(1) & "'" Then
+12	0	                MsgBox "This form was opened to only show sample records relating to " & Me.Filter & ". This action has removed the filter and all records are available to view.", vbInformation, "Filter Removed"
+13	0	                Me.FilterOn = False
+14	0	            End If
+15	0	        End If
+16	0	        DoCmd.GoToControl Me![GSSample Number].Name
+17	0	        DoCmd.FindRecord Me![cboFind]
+18	0	   
+19	0	    End If
+20	0	
+21	0	Exit Sub
+22	0	
+23	0	err_cboFind:
+24	0	    Call General_Error_Trap
+25	0	    Exit Sub
+26	0	End Sub
+27	0	
+28	0	Private Sub Close_Click()
+29	0	On Error GoTo err_close
+30	0	
+31	0	    DoCmd.Close acForm, Me.Name
+32	0	
+33	0	Exit Sub
+34	0	
+35	0	err_close:
+36	0	    Call General_Error_Trap
+37	0	    Exit Sub
+38	0	End Sub
+39	0	
+40	0	Private Sub cmdAddNew_Click()
+41	1	'add a new sample record
+42	0	On Error GoTo err_cmdAddNew
+43	0	Dim retVal, getsample, getGID, getUnit, getLetter, getNum, sql
+44	0	
+45	0	If Me![txtGID] <> "" Then
+46	0	    retVal = MsgBox("Do you want to add another sample record for this GID (" & Me![txtGID] & ")?", vbYesNo + vbQuestion, "New sample")
+47	0	    If retVal = vbYes Then
+48	0	        getsample = InputBox("Please enter the unique GS sample number for this sample:", "Unique Sample Number")
+49	0	        If getsample = "" Then
+50	0	            MsgBox "A new record must have a unique GS sample number, action cancelled", vbCritical, "Action Cancelled"
+51	0	            Exit Sub
+52	0	        Else
+53	0	            getGID = Me![txtGID]
+54	0	            getUnit = Me![txtUnit]
+55	0	            getLetter = Me![txtLetter]
+56	0	            getNum = Me![txtNum]
+57	0	            Me.AllowAdditions = True
+58	0	            DoCmd.RunCommand acCmdRecordsGoToNew
+59	0	            Me![GSSample Number] = getsample
+60	0	            Me![txtGID] = getGID
+61	0	            Me![txtUnit] = getUnit
+62	0	            Me![txtLetter] = getLetter
+63	0	            Me![txtNum] = getNum
+64	0	            Me.AllowAdditions = False
+65	0	            
+66	1	            'it should be that this basic record is already marked as sampled but just in case mark is so
+67	1	            'as a catchall for any previous mismatches between tables
+68	2	            sql = "UPDATE [GroundStone 1: Basic Data] SET [Sampled?] = True WHERE [GID] = '" & Me![txtGID] & "';"
+69	0	            DoCmd.RunSQL sql
+70	0	            Exit Sub
+71	0	        End If
+72	0	    End If
+73	0	End If
+74	0	
+75	0	MsgBox "You now be asked for the GID fields related to this sample, you must enter them all", vbInformation, "Data Required"
+76	0	
+77	0	getsample = InputBox("Please enter the unique GS Sample number allocated to the sample:", "Unique Sample Number")
+78	0	If getsample = "" Then
+79	0	    MsgBox "You cannot enter a new record without a unique sample number", vbCritical, "Action Cancelled"
+80	0	    Exit Sub
+81	0	End If
+82	0	
+83	0	getUnit = InputBox("Please enter the Unit number related to the sample:", "Unit number")
+84	0	If getUnit = "" Then
+85	0	    MsgBox "You cannot enter a new record without a Unit number", vbCritical, "Action Cancelled"
+86	0	    Exit Sub
+87	0	End If
+88	0	
+89	0	getLetter = InputBox("Please enter the Letter (X or K) related to the object sampled:", "Letter")
+90	0	If getLetter = "" Then
+91	0	    MsgBox "You cannot enter a new record without the id letter", vbCritical, "Action Cancelled"
+92	0	    Exit Sub
+93	0	End If
+94	0	
+95	0	getNum = InputBox("Please enter the object number related to the sample:", "Object number")
+96	0	If getNum = "" Then
+97	0	    MsgBox "You cannot enter a new record without a number", vbCritical, "Action Cancelled"
+98	0	    Exit Sub
+99	0	End If
+100	0	
+101	0	Me.AllowAdditions = True
+102	0	DoCmd.RunCommand acCmdRecordsGoToNew
+103	0	Me![GSSample Number] = getsample
+104	0	Me![txtGID] = getUnit & "." & getLetter & getNum
+105	0	Me![txtUnit] = getUnit
+106	0	Me![txtLetter] = getLetter
+107	0	Me![txtNum] = getNum
+108	0	Me.AllowAdditions = False
+109	0	
+110	1	'now mark the basic record for this GID as sampled
+111	2	sql = "UPDATE [GroundStone 1: Basic Data] SET [Sampled?] = True WHERE [GID] = '" & Me![txtGID] & "';"
+112	0	DoCmd.RunSQL sql
+113	0	Exit Sub
+114	0	
+115	0	err_cmdAddNew:
+116	0	    Call General_Error_Trap
+117	0	    Exit Sub
+118	0	End Sub
+119	0	
+120	0	Private Sub cmdGoFirst_Click()
+121	0	On Error GoTo Err_gofirst_Click
+122	0	
+123	0	
+124	0	    DoCmd.GoToRecord , , acFirst
+125	0	
+126	0	    Exit Sub
+127	0	
+128	0	Err_gofirst_Click:
+129	0	    Call General_Error_Trap
+130	0	    
+131	0	End Sub
+132	0	
+133	0	Private Sub cmdGoLast_Click()
+134	0	On Error GoTo Err_goLast_Click
+135	0	
+136	0	
+137	0	    DoCmd.GoToRecord , , acLast
+138	0	
+139	0	    Exit Sub
+140	0	
+141	0	Err_goLast_Click:
+142	0	    Call General_Error_Trap
+143	0	    
+144	0	End Sub
+145	0	
+146	0	Private Sub cmdGoNext_Click()
+147	0	On Error GoTo Err_goNext_Click
+148	0	
+149	0	
+150	0	    DoCmd.GoToRecord , , acNext
+151	0	
+152	0	    Exit Sub
+153	0	
+154	0	Err_goNext_Click:
+155	0	    Call General_Error_Trap
+156	0	    
+157	0	End Sub
+158	0	
+159	0	Private Sub cmdGoPrev_Click()
+160	0	On Error GoTo Err_goPrev_Click
+161	0	
+162	0	
+163	0	    DoCmd.GoToRecord , , acPrevious
+164	0	
+165	0	    Exit Sub
+166	0	
+167	0	Err_goPrev_Click:
+168	0	    Call General_Error_Trap
+169	0	    
+170	0	End Sub
+171	0	

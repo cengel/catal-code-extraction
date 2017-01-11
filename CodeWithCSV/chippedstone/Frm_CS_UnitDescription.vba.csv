@@ -1,0 +1,92 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cboFind_AfterUpdate()
+5	1	'find the unit number
+6	0	On Error GoTo err_cboFind
+7	0	
+8	0	    If Me![cboFind] <> "" Then
+9	0	    
+10	0	        If Me.Filter <> "" Then
+11	2	            If Me.Filter <> "[Unit] = '" & Me![cboFind] & "'" Then
+12	0	                MsgBox "This form was opened to only show a particular Unit. This action has removed the filter and all records are available to view.", vbInformation, "Filter Removed"
+13	0	                Me.FilterOn = False
+14	0	            End If
+15	0	        End If
+16	0	        DoCmd.GoToControl Me![txtUnit].Name
+17	0	        DoCmd.FindRecord Me![cboFind]
+18	0	        DoCmd.GoToControl Me![txtComment].Name
+19	0	   
+20	0	    End If
+21	0	
+22	0	Exit Sub
+23	0	
+24	0	err_cboFind:
+25	0	    Call General_Error_Trap
+26	0	    Exit Sub
+27	0	End Sub
+28	0	
+29	0	Private Sub Close_Click()
+30	0	On Error GoTo err_close
+31	0	
+32	0	    DoCmd.Close acForm, Me.Name
+33	0	
+34	0	Exit Sub
+35	0	
+36	0	err_close:
+37	0	    Call General_Error_Trap
+38	0	    Exit Sub
+39	0	End Sub
+40	0	
+41	0	Private Sub cmdGoFirst_Click()
+42	0	On Error GoTo Err_gofirst_Click
+43	0	
+44	0	
+45	0	    DoCmd.GoToRecord , , acFirst
+46	0	
+47	0	    Exit Sub
+48	0	
+49	0	Err_gofirst_Click:
+50	0	    Call General_Error_Trap
+51	0	    
+52	0	End Sub
+53	0	
+54	0	Private Sub cmdGoLast_Click()
+55	0	On Error GoTo Err_goLast_Click
+56	0	
+57	0	
+58	0	    DoCmd.GoToRecord , , acLast
+59	0	
+60	0	    Exit Sub
+61	0	
+62	0	Err_goLast_Click:
+63	0	    Call General_Error_Trap
+64	0	    
+65	0	End Sub
+66	0	
+67	0	Private Sub cmdGoNext_Click()
+68	0	On Error GoTo Err_goNext_Click
+69	0	
+70	0	
+71	0	    DoCmd.GoToRecord , , acNext
+72	0	
+73	0	    Exit Sub
+74	0	
+75	0	Err_goNext_Click:
+76	0	    Call General_Error_Trap
+77	0	    
+78	0	End Sub
+79	0	
+80	0	Private Sub cmdGoPrev_Click()
+81	0	On Error GoTo Err_goPrev_Click
+82	0	
+83	0	
+84	0	    DoCmd.GoToRecord , , acPrevious
+85	0	
+86	0	    Exit Sub
+87	0	
+88	0	Err_goPrev_Click:
+89	0	    Call General_Error_Trap
+90	0	    
+91	0	End Sub
+92	0	

@@ -1,0 +1,404 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	0	
+3	0	Private Sub Area_Sheet_Click()
+4	0	On Error GoTo Err_Area_Sheet_Click
+5	0	
+6	0	    Dim stDocName As String
+7	0	    Dim stLinkCriteria As String
+8	0	
+9	0	    stDocName = "Finds: Basic Data"
+10	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+11	0	
+12	0	Exit_Area_Sheet_Click:
+13	0	    Exit Sub
+14	0	
+15	0	Err_Area_Sheet_Click:
+16	0	    MsgBox Err.Description
+17	0	    Resume Exit_Area_Sheet_Click
+18	0	End Sub
+19	0	
+20	0	
+21	0	Private Sub Building_Sheet_Click()
+22	0	On Error GoTo Err_Building_Sheet_Click
+23	0	
+24	0	    Dim stDocName As String
+25	0	    Dim stLinkCriteria As String
+26	0	
+27	0	    stDocName = "Store: Crate Register"
+28	0	    stLinkCriteria = ""
+29	0	    
+30	1	    'Added where clause to select for subset of crates only depending on user 2013 season, amended 2014
+31	0	    If CrateLetterFlag = "P" Or CrateLetterFlag = "HB" Or CrateLetterFlag = "OB" Or CrateLetterFlag = "PH" Then
+32	2	        stLinkCriteria = "[Store: Crate Register].CrateLetter = '" & CrateLetterFlag & "'"
+33	0	    ElseIf CrateLetterFlag = "CO" Then
+34	8	        stLinkCriteria = "[Store: Crate Register].CrateLetter In ('" & CrateLetterFlag & "', 'BE', 'FG', 'CB')"
+35	0	    ElseIf CrateLetterFlag = "GS" Then
+36	6	         stLinkCriteria = "[Store: Crate Register].CrateLetter In ('" & CrateLetterFlag & "', 'NS', 'Depot')"
+37	0	    ElseIf CrateLetterFlag = "FB" Then
+38	4	        stLinkCriteria = "[Store: Crate Register].CrateLetter In ('" & CrateLetterFlag & "', 'Depot')"
+39	0	    ElseIf CrateLetterFlag = "BE" Then
+40	2	        stLinkCriteria = "[Store: Crate Register].CrateLetter = '" & CrateLetterFlag & "'"
+41	0	    ElseIf CrateLetterFlag = "char" Then
+42	4	        stLinkCriteria = "[Store: Crate Register].CrateLetter In ('" & CrateLetterFlag & "', 'or')"
+43	0	    ElseIf CrateLetterFlag = "S" Then
+44	4	        stLinkCriteria = "[Store: Crate Register].CrateLetter In ('" & CrateLetterFlag & "', 'BE')"
+45	0	    End If
+46	1	    ' otherwise load the whole empanada
+47	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+48	0	    
+49	0	
+50	0	Exit_Building_Sheet_Click:
+51	0	    Exit Sub
+52	0	
+53	0	Err_Building_Sheet_Click:
+54	0	    MsgBox Err.Description
+55	0	    Resume Exit_Building_Sheet_Click
+56	0	End Sub
+57	0	
+58	0	Private Sub Button10_Click()
+59	0	Building_Sheet_Click
+60	0	End Sub
+61	0	
+62	0	Private Sub Button11_Click()
+63	0	Space_Sheet_Button_Click
+64	0	End Sub
+65	0	
+66	0	
+67	0	Private Sub Button12_Click()
+68	0	Feature_Sheet_Button_Click
+69	0	End Sub
+70	0	
+71	0	
+72	0	Private Sub Button13_Click()
+73	0	Unit_Sheet_Click
+74	0	End Sub
+75	0	
+76	0	
+77	0	Private Sub Button17_Click()
+78	0	Area_Sheet_Click
+79	0	End Sub
+80	0	
+81	0	Private Sub Button9_Click()
+82	0	Return_to_Master_Con_Click
+83	0	End Sub
+84	0	
+85	0	Private Sub Command18_Click()
+86	0	Open_priority_Click
+87	0	End Sub
+88	0	
+89	0	Private Sub Feature_Sheet_Button_Click()
+90	0	On Error GoTo Err_Feature_Sheet_Button_Click
+91	0	
+92	0	    Dim stDocName As String
+93	0	    Dim stLinkCriteria As String
+94	0	
+95	0	    stDocName = "Exca: Feature Sheet"
+96	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+97	0	
+98	0	Exit_Feature_Sheet_Button_Click:
+99	0	    Exit Sub
+100	0	
+101	0	Err_Feature_Sheet_Button_Click:
+102	0	    MsgBox Err.Description
+103	0	    Resume Exit_Feature_Sheet_Button_Click
+104	0	End Sub
+105	0	
+106	0	
+107	0	Sub Open_priority_Click()
+108	0	On Error GoTo Err_Open_priority_Click
+109	0	
+110	0	    Dim stDocName As String
+111	0	    Dim stLinkCriteria As String
+112	0	
+113	0	    stDocName = "Exca: Priority Detail"
+114	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+115	0	
+116	0	Exit_Open_priority_Click:
+117	0	    Exit Sub
+118	0	
+119	0	Err_Open_priority_Click:
+120	0	    MsgBox Err.Description
+121	0	    Resume Exit_Open_priority_Click
+122	0	    
+123	0	End Sub
+124	0	
+125	0	
+126	0	
+127	0	Private Sub Command22_Click()
+128	0	
+129	0	Dim stDocName As String
+130	0	    Dim stLinkCriteria As String
+131	0	
+132	0	    stDocName = "Finds: Unstrat"
+133	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+134	0	
+135	0	Exit_Command22_Click:
+136	0	    Exit Sub
+137	0	
+138	0	Err_Command22_Click:
+139	0	    MsgBox Err.Description
+140	0	    Resume Exit_Command22_Click
+141	0	End Sub
+142	0	
+143	0	Private Sub Return_to_Master_Con_Click()
+144	0	
+145	0	DoCmd.DoMenuItem acFormBar, acFileMenu, 14, , acMenuVer70
+146	0	
+147	0	End Sub
+148	0	
+149	0	Private Sub cmdAdmin_Click()
+150	1	'new season 2006 saj
+151	0	On Error GoTo err_cmdAdmin
+152	0	
+153	0	If GetGeneralPermissions = "Admin" Then
+154	0	    DoCmd.OpenForm "Finds: Admin_MaterialGroupSubGroupLOV"
+155	0	Else
+156	0	    MsgBox "Only adminstrators can access this page", vbExclamation, "Administrators Only"
+157	0	End If
+158	0	Exit Sub
+159	0	
+160	0	err_cmdAdmin:
+161	0	    Call General_Error_Trap
+162	0	    Exit Sub
+163	0	End Sub
+164	0	
+165	0	Private Sub cmdCrateCodes_Click()
+166	1	'just a quick view of the crate codes
+167	0	On Error GoTo err_codes
+168	0	
+169	0	    DoCmd.OpenForm "frm_pop_cratecodes", acNormal, , , acFormReadOnly, acDialog
+170	0	    
+171	0	Exit Sub
+172	0	
+173	0	err_codes:
+174	0	    Call General_Error_Trap
+175	0	    Exit Sub
+176	0	End Sub
+177	0	
+178	0	Private Sub cmdCrateDescr_Click()
+179	1	'new season 2008 will show count of distinct description entries in crate reg
+180	0	On Error GoTo err_cratemat
+181	0	    DoCmd.OpenQuery "Julie_Count_Description_in_Crate_Reg", acViewNormal, acReadOnly
+182	0	Exit Sub
+183	0	
+184	0	err_cratemat:
+185	0	    Call General_Error_Trap
+186	0	    Exit Sub
+187	0	End Sub
+188	0	
+189	0	Private Sub cmdCrateMaterials_Click()
+190	1	'new season 2008 will show count of distinct material entries in crate reg
+191	0	On Error GoTo err_cratemat
+192	0	    DoCmd.OpenQuery "Julie_Count_Materials_in_Crate_Reg", acViewNormal, acReadOnly
+193	0	Exit Sub
+194	0	
+195	0	err_cratemat:
+196	0	    Call General_Error_Trap
+197	0	    Exit Sub
+198	0	End Sub
+199	0	
+200	0	Private Sub cmdDBLink_Click()
+201	0	On Error GoTo err_dblink
+202	0	
+203	0	    DoCmd.OpenForm "Finds: Database Link", acNormal
+204	0	Exit Sub
+205	0	
+206	0	err_dblink:
+207	0	    Call General_Error_Trap
+208	0	    Exit Sub
+209	0	End Sub
+210	0	
+211	0	Private Sub cmdLetters_Click()
+212	1	'just a quick view of the letter codes v3.1
+213	0	On Error GoTo err_letters
+214	0	
+215	0	    DoCmd.OpenForm "frm_pop_letter_prefixes", acNormal, , , acFormReadOnly, acDialog
+216	0	    
+217	0	Exit Sub
+218	0	
+219	0	err_letters:
+220	0	    Call General_Error_Trap
+221	0	    Exit Sub
+222	0	End Sub
+223	0	
+224	0	Private Sub cmdMaterials_Click()
+225	1	'just a quick view of the material groups v3.1
+226	0	On Error GoTo err_letters
+227	0	
+228	0	    DoCmd.OpenForm "frm_pop_Materials_with_subgroups", acNormal, , , acFormReadOnly, acDialog
+229	0	    
+230	0	Exit Sub
+231	0	
+232	0	err_letters:
+233	0	    Call General_Error_Trap
+234	0	    Exit Sub
+235	0	End Sub
+236	0	
+237	0	Private Sub Form_Open(Cancel As Integer)
+238	1	'new season 2006 saj
+239	0	On Error GoTo err_open
+240	0	
+241	0	If GetGeneralPermissions = "Admin" Then
+242	0	    Me![cmdAdmin].Visible = True
+243	0	Else
+244	0	    Me![cmdAdmin].Visible = False
+245	0	End If
+246	0	Exit Sub
+247	0	
+248	0	err_open:
+249	0	    Call General_Error_Trap
+250	0	    Exit Sub
+251	0	End Sub
+252	0	
+253	0	Private Sub Space_Sheet_Button_Click()
+254	0	On Error GoTo Err_Space_Sheet_Button_Click
+255	0	
+256	0	    Dim stDocName As String
+257	0	    Dim stLinkCriteria As String
+258	0	
+259	0	    stDocName = "Conserv: Basic Record"
+260	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+261	0	
+262	0	Exit_Space_Sheet_Button_Click:
+263	0	    Exit Sub
+264	0	
+265	0	Err_Space_Sheet_Button_Click:
+266	0	    MsgBox Err.Description
+267	0	    Resume Exit_Space_Sheet_Button_Click
+268	0	
+269	0	End Sub
+270	0	
+271	0	
+272	0	Private Sub Unit_Sheet_Click()
+273	0	On Error GoTo Err_Unit_Sheet_Click
+274	0	
+275	0	    Dim stDocName As String
+276	0	    Dim stLinkCriteria As String
+277	0	
+278	0	    stDocName = "Exca: Unit Sheet"
+279	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+280	0	    DoCmd.GoToRecord acForm, stDocName, acLast
+281	0	
+282	0	Exit_Unit_Sheet_Click:
+283	0	    Exit Sub
+284	0	
+285	0	Err_Unit_Sheet_Click:
+286	0	    MsgBox Err.Description
+287	0	    Resume Exit_Unit_Sheet_Click
+288	0	
+289	0	End Sub
+290	0	
+291	0	
+292	0	Sub Command19_Click()
+293	0	On Error GoTo Err_Command19_Click
+294	0	
+295	0	
+296	0	    DoCmd.Close
+297	0	
+298	0	Exit_Command19_Click:
+299	0	    Exit Sub
+300	0	
+301	0	Err_Command19_Click:
+302	0	    MsgBox Err.Description
+303	0	    Resume Exit_Command19_Click
+304	0	    
+305	0	End Sub
+306	0	Sub Finds_Print_Click()
+307	0	On Error GoTo Err_Finds_Print_Click
+308	0	
+309	0	    Dim stDocName As String
+310	0	
+311	0	    stDocName = "Finds: Sheets printout"
+312	0	    DoCmd.OpenReport stDocName, acPreview
+313	0	
+314	0	Exit_Finds_Print_Click:
+315	0	    Exit Sub
+316	0	
+317	0	Err_Finds_Print_Click:
+318	0	    MsgBox Err.Description
+319	0	    Resume Exit_Finds_Print_Click
+320	0	    
+321	0	End Sub
+322	0	Sub Print_Cratereg_Click()
+323	0	On Error GoTo Err_Print_Cratereg_Click
+324	0	
+325	0	    Dim stDocName As String
+326	0	
+327	0	    stDocName = "Finds Store: Crate Register"
+328	0	    DoCmd.OpenReport stDocName, acPreview
+329	0	
+330	0	Exit_Print_Cratereg_Click:
+331	0	    Exit Sub
+332	0	
+333	0	Err_Print_Cratereg_Click:
+334	0	    MsgBox Err.Description
+335	0	    Resume Exit_Print_Cratereg_Click
+336	0	    
+337	0	End Sub
+338	0	Sub Print_unstrat_Click()
+339	0	On Error GoTo Err_Print_unstrat_Click
+340	0	
+341	0	    Dim stDocName As String
+342	0	
+343	0	    stDocName = "Finds: Unstrat Printout"
+344	0	    DoCmd.OpenReport stDocName, acPreview
+345	0	
+346	0	Exit_Print_unstrat_Click:
+347	0	    Exit Sub
+348	0	
+349	0	Err_Print_unstrat_Click:
+350	0	    MsgBox Err.Description
+351	0	    Resume Exit_Print_unstrat_Click
+352	0	    
+353	0	End Sub
+354	0	Sub Print_conserv_Click()
+355	0	On Error GoTo Err_Print_conserv_Click
+356	0	
+357	0	    Dim stDocName As String
+358	0	
+359	0	    stDocName = "Conserv: Full Printout"
+360	0	    DoCmd.OpenReport stDocName, acPreview
+361	0	
+362	0	Exit_Print_conserv_Click:
+363	0	    Exit Sub
+364	0	
+365	0	Err_Print_conserv_Click:
+366	0	    MsgBox Err.Description
+367	0	    Resume Exit_Print_conserv_Click
+368	0	    
+369	0	End Sub
+370	0	Sub Command28_Click()
+371	0	On Error GoTo Err_Command28_Click
+372	0	
+373	0	
+374	0	    DoCmd.Close
+375	0	
+376	0	Exit_Command28_Click:
+377	0	    Exit Sub
+378	0	
+379	0	Err_Command28_Click:
+380	0	    MsgBox Err.Description
+381	0	    Resume Exit_Command28_Click
+382	0	    
+383	0	End Sub
+384	0	
+385	0	Private Sub X_Finds_Sheet_Click()
+386	0	
+387	0	End Sub
+388	0	Private Sub OpenUnitSheet_Click()
+389	0	On Error GoTo Err_OpenUnitSheet_Click
+390	0	
+391	0	    Dim stDocName As String
+392	0	    Dim stLinkCriteria As String
+393	0	
+394	0	    stDocName = "Exca: Unit Sheet"
+395	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+396	0	
+397	0	Exit_OpenUnitSheet_Click:
+398	0	    Exit Sub
+399	0	
+400	0	Err_OpenUnitSheet_Click:
+401	0	    MsgBox Err.Description
+402	0	    Resume Exit_OpenUnitSheet_Click
+403	0	    
+404	0	End Sub

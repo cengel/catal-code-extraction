@@ -1,0 +1,45 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub go_to_conservation_Click()
+5	0	
+6	0	On Error GoTo Err_go_to_conservation_Click
+7	0	
+8	0	    Dim stDocName As String
+9	0	    Dim stLinkCriteria As String
+10	0	
+11	0	    stDocName = "Conserv: Basic Record"
+12	0	    
+13	0	    stLinkCriteria = "[Conservation Ref]=" & Me![Conservation Ref]
+14	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+15	0	
+16	0	Exit_go_to_conservation_Click:
+17	0	    Exit Sub
+18	0	
+19	0	Err_go_to_conservation_Click:
+20	0	    MsgBox Err.Description
+21	0	    Resume Exit_go_to_conservation_Click
+22	0	    
+23	0	End Sub
+24	0	
+25	0	
+26	0	Sub Command4_Click()
+27	0	On Error GoTo Err_Command4_Click
+28	0	
+29	0	    Dim stDocName As String
+30	0	    Dim stLinkCriteria As String
+31	0	
+32	0	    stDocName = "Conserv: Basic Record"
+33	0	    
+34	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+35	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+36	0	
+37	0	Exit_Command4_Click:
+38	0	    Exit Sub
+39	0	
+40	0	Err_Command4_Click:
+41	0	    MsgBox Err.Description
+42	0	    Resume Exit_Command4_Click
+43	0	    
+44	0	End Sub
+45	0	

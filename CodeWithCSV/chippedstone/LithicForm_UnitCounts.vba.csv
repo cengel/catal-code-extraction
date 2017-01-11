@@ -1,0 +1,22 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Sub OpenForm_BagAndUnitDescription_Click()
+5	0	On Error GoTo Err_OpenForm_BagAndUnitDescription_Click
+6	0	
+7	0	    Dim stDocName As String
+8	0	    Dim stLinkCriteria As String
+9	0	
+10	0	    stDocName = "LithicForm:BagAndUnitDescription"
+11	0	    
+12	0	    stLinkCriteria = "[Unit]=" & Me![Unit]
+13	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+14	0	
+15	0	Exit_OpenForm_BagAndUnitDescription_Clic:
+16	0	    Exit Sub
+17	0	
+18	0	Err_OpenForm_BagAndUnitDescription_Click:
+19	0	    MsgBox Err.Description
+20	0	    Resume Exit_OpenForm_BagAndUnitDescription_Clic
+21	0	    
+22	0	End Sub

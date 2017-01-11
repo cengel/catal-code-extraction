@@ -1,0 +1,156 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdAction_Click()
+5	1	'************************************************************************
+6	1	' Process output depending on values selected on screen
+7	1	' SAJ
+8	1	'************************************************************************
+9	0	On Error GoTo err_cmdAction
+10	0	Dim which, where, sql, rpt
+11	0	
+12	0	    If Me![optgrpWhich] = 1 Then
+13	1	        'report
+14	0	        which = "report"
+15	0	    ElseIf Me![optgrpWhich] = 2 Then
+16	1	        'excel
+17	0	        which = "excel"
+18	0	    Else
+19	0	        MsgBox "Please select to either report or export data to excel", vbInformation, "No action to carry out"
+20	0	        which = ""
+21	0	        Exit Sub
+22	0	    End If
+23	0	
+24	0	   If which <> "" Then
+25	0	        If Me![optgrpData] = 1 Then
+26	1	            'current only
+27	0	            where = "[Flot Number] = " & Me![txtRec]
+28	0	        ElseIf Me![optgrpData] = 2 Then
+29	1	            'range
+30	0	            If Me![cboStart] = "" Or Me![cboEnd] = "" Then
+31	0	                MsgBox "Please enter both a Start and End value for the range of records to output.", vbInformation, "Insufficient Data"
+32	0	                Exit Sub
+33	0	            Else
+34	0	                where = "[Flot Number] BETWEEN " & Me![cboStart] & " AND " & Me![cboEnd]
+35	0	            End If
+36	0	        ElseIf Me![optgrpData] = 3 Then
+37	1	            'all
+38	0	            where = ""
+39	0	        End If
+40	0	   
+41	0	        sql = "SELECT * FROM [" & Me![txtData] & "]"
+42	0	        If where <> "" Then sql = sql & " where " & where
+43	0	        sql = sql & ";"
+44	0	   
+45	0	   
+46	0	        If which = "report" Then
+47	0	            If Me![txtData] = "Bot: Basic Data" Or Me![txtData] = "Q_ExportBasicData_AllRecs_withUnit" Then
+48	0	                rpt = "R_BasicData"
+49	0	                DoCmd.OpenReport rpt, acViewPreview, , where
+50	1	                'DoCmd.SelectObject acReport, "R_BasicData", True
+51	0	            ElseIf Me![txtData] = "Bot: Priority Sample" Then
+52	0	                rpt = "R_PrioritySample"
+53	0	                DoCmd.OpenReport rpt, acViewPreview, , where
+54	0	            ElseIf Me![txtData] = "Bot: SieveScanning" Then
+55	0	                rpt = "R_SieveScanning"
+56	0	                DoCmd.OpenReport rpt, acViewPreview, , where
+57	0	            ElseIf Me![txtData] = "Bot: Sample Scanning" Then
+58	0	                rpt = "R_SampleScanning"
+59	0	                DoCmd.OpenReport rpt, acViewPreview, , where
+60	0	            ElseIf Me![txtData] = "Bot: Priority Report" Then
+61	0	                rpt = "R_PriorityReport"
+62	0	                DoCmd.OpenReport rpt, acViewPreview, , where
+63	0	            Else
+64	0	                MsgBox "Sorry but the table name passed into this form cannot be matched with a report. Please contact the database administrator", vbCritical, "Report cannot be found"
+65	0	            End If
+66	0	            DoCmd.Close acForm, Me.Name
+67	1	            'rpt.SetFocus
+68	0	        ElseIf which = "excel" Then
+69	0	            Dim mydb As Database, myq As QueryDef
+70	0	            Set mydb = CurrentDb
+71	0	            Set myq = mydb.CreateQueryDef("ArchBotExcelExport")
+72	0	            
+73	0	            myq.sql = sql
+74	0	            myq.ReturnsRecords = False
+75	0	            
+76	0	            DoCmd.OutputTo acOutputQuery, "ArchBotExcelExport", acFormatXLS, , True
+77	0	            
+78	0	            mydb.QueryDefs.Delete ("ArchBotExcelExport")
+79	0	            
+80	0	            myq.Close
+81	0	            Set myq = Nothing
+82	0	            mydb.Close
+83	0	            Set mydb = Nothing
+84	0	            
+85	0	            DoCmd.Close acForm, Me.Name
+86	0	        End If
+87	0	   End If
+88	0	Exit Sub
+89	0	
+90	0	err_cmdAction:
+91	0	    If Err.Number = 3012 Then
+92	1	        'query already exists
+93	0	        mydb.QueryDefs.Delete ("ArchBotExcelExport")
+94	0	        Resume
+95	0	    Else
+96	0	        Call General_Error_Trap
+97	0	    End If
+98	0	    Exit Sub
+99	0	
+100	0	End Sub
+101	0	
+102	0	Private Sub Form_Open(Cancel As Integer)
+103	1	'**********************************************************************
+104	1	' This form allows the user to select what data they wish to output and in
+105	1	' what format. OpenArgs are required to specify where the call to the form
+106	1	' was made from (ie: what table was viewed) and what the current record was.
+107	1	' This must take the format: table;record
+108	1	' SAJ
+109	1	'**********************************************************************
+110	0	On Error GoTo err_open
+111	0	
+112	0	If Not IsNull(Me.OpenArgs) Then
+113	0	    Dim data, rec
+114	0	    data = Left(Me.OpenArgs, InStr(Me.OpenArgs, ";") - 1)
+115	0	    rec = Right(Me.OpenArgs, Len(Me.OpenArgs) - InStr(Me.OpenArgs, ";"))
+116	0	    
+117	0	    Me![txtRec] = rec
+118	0	    Me![txtData] = data
+119	0	    
+120	0	    Me![cboStart].RowSource = "SELECT DISTINCT [Flot Number] FROM [" & data & "] ORDER BY [Flot Number];"
+121	0	    Me![cboEnd].RowSource = "SELECT DISTINCT [Flot Number] FROM [" & data & "] ORDER BY [Flot Number];"
+122	0	
+123	0	Else
+124	0	    MsgBox "This form has been called without the necessary parameters, it will now close", vbCritical, "Insufficient Parameters"
+125	0	    DoCmd.Close acForm, Me.Name
+126	0	End If
+127	0	
+128	0	
+129	0	Exit Sub
+130	0	
+131	0	err_open:
+132	0	    Call General_Error_Trap
+133	0	    Exit Sub
+134	0	End Sub
+135	0	
+136	0	Private Sub optgrpData_Click()
+137	1	'***********************************************************************
+138	1	' enable/disable range combos depending on value selected
+139	1	' SAJ
+140	1	'***********************************************************************
+141	0	On Error GoTo err_optgrpData
+142	0	
+143	0	If Me![optgrpData] = 2 Then
+144	0	    Me![cboStart].Enabled = True
+145	0	    Me![cboEnd].Enabled = True
+146	0	Else
+147	0	    Me![cboStart].Enabled = False
+148	0	    Me![cboEnd].Enabled = False
+149	0	End If
+150	0	
+151	0	Exit Sub
+152	0	
+153	0	err_optgrpData:
+154	0	    Call General_Error_Trap
+155	0	    Exit Sub
+156	0	End Sub

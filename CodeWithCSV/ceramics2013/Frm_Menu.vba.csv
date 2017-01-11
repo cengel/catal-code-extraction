@@ -1,0 +1,94 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdAdmin_Click()
+5	0	On Error GoTo err_cmdAdmin
+6	0	
+7	0	    DoCmd.OpenForm "Frm_AdminMenu"
+8	0	    
+9	0	    
+10	0	Exit Sub
+11	0	
+12	0	err_cmdAdmin:
+13	0	    Call General_Error_Trap
+14	0	    Exit Sub
+15	0	End Sub
+16	0	
+17	0	Private Sub cmdBody_Click()
+18	0	On Error GoTo err_cmdBody
+19	0	
+20	0	    DoCmd.OpenForm "Frm_BodySherd"
+21	0	    DoCmd.Maximize
+22	0	    
+23	0	Exit Sub
+24	0	
+25	0	err_cmdBody:
+26	0	    Call General_Error_Trap
+27	0	    Exit Sub
+28	0	End Sub
+29	0	
+30	0	Private Sub cmdDiagnostic_Click()
+31	0	On Error GoTo err_cmdDiag
+32	0	
+33	0	    DoCmd.OpenForm "Frm_Diagnostic"
+34	0	    DoCmd.Maximize
+35	0	Exit Sub
+36	0	
+37	0	err_cmdDiag:
+38	0	    Call General_Error_Trap
+39	0	    Exit Sub
+40	0	End Sub
+41	0	
+42	0	Private Sub cmdOldSys_Click()
+43	0	DoCmd.OpenForm "Frm_Main"
+44	0	
+45	0	End Sub
+46	0	
+47	0	Private Sub cmdQuit_Click()
+48	0	On Error GoTo err_quit
+49	0	
+50	0	    DoCmd.Quit acQuitSaveAll
+51	0	    
+52	0	Exit Sub
+53	0	
+54	0	err_quit:
+55	0	    Call General_Error_Trap
+56	0	    Exit Sub
+57	0	End Sub
+58	0	
+59	0	Private Sub cmdUnIdBody_Click()
+60	0	On Error GoTo err_cmdUnIdDiag
+61	0	
+62	0	    DoCmd.OpenForm "Frm_NonNeolithic_Sherds"
+63	0	    DoCmd.Maximize
+64	0	Exit Sub
+65	0	
+66	0	err_cmdUnIdDiag:
+67	0	    Call General_Error_Trap
+68	0	    Exit Sub
+69	0	End Sub
+70	0	
+71	0	Private Sub cmdUnIdDiag_Click()
+72	0	On Error GoTo err_cmdUnIdDiag
+73	0	
+74	0	    DoCmd.OpenForm "Frm_Unidentified_Diagnostic"
+75	0	    DoCmd.Maximize
+76	0	    
+77	0	Exit Sub
+78	0	
+79	0	err_cmdUnIdDiag:
+80	0	    Call General_Error_Trap
+81	0	    Exit Sub
+82	0	End Sub
+83	0	
+84	0	Private Sub cmdUnitsOverview_Click()
+85	0	On Error GoTo err_cmdUnit
+86	0	
+87	0	    DoCmd.OpenForm "Frm_UnitOverview"
+88	0	    DoCmd.Maximize
+89	0	Exit Sub
+90	0	
+91	0	err_cmdUnit:
+92	0	    Call General_Error_Trap
+93	0	    Exit Sub
+94	0	End Sub

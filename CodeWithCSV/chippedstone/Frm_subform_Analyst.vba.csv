@@ -1,0 +1,29 @@
+1	0	Option Compare Database
+2	0	
+3	0	Private Sub GSAnalyst_NotInList(NewData As String, Response As Integer)
+4	1	'Allow more values to be added if necessary
+5	0	On Error GoTo err_GSAnalyst_NotInList
+6	0	
+7	0	Dim retVal, sql, inputname
+8	0	
+9	0	retVal = MsgBox("This value is not in the list, are you sure you want to add it?", vbQuestion + vbYesNo, "Value not in list")
+10	0	If retVal = vbYes Then
+11	0	    Response = acDataErrAdded
+12	0	    inputname = InputBox("Please enter the full name of the analyst to go along with these initials:", "Analyst Name")
+13	0	    If inputname <> "" Then
+14	4	        sql = "INSERT INTO [ChippedStoneLOV_Analyst]([CSAnalystInitials], [CSAnalystName]) VALUES ('" & NewData & "', '" & inputname & "');"
+15	0	        DoCmd.RunSQL sql
+16	0	    Else
+17	0	        Response = acDataErrContinue
+18	0	    End If
+19	0	Else
+20	0	    Response = acDataErrContinue
+21	0	End If
+22	0	
+23	0	   
+24	0	Exit Sub
+25	0	
+26	0	err_GSAnalyst_NotInList:
+27	0	    Call General_Error_Trap
+28	0	    Exit Sub
+29	0	End Sub

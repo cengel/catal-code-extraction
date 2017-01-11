@@ -1,0 +1,186 @@
+1	0	Option Compare Database
+2	0	
+3	0	Private Sub cboFind_AfterUpdate()
+4	1	'find skeleton record - SAJ
+5	0	On Error GoTo err_cboFind
+6	0	
+7	0	    If Me![cboFind] <> "" Then
+8	0	        Me.Filter = "[UnitNumber] = " & Me![cboFind] & " AND [Individual Number] = " & Me!cboFind.Column(1)
+9	0	        Me.FilterOn = True
+10	0	    End If
+11	0	Exit Sub
+12	0	
+13	0	err_cboFind:
+14	0	    MsgBox Err.Description
+15	0	    Exit Sub
+16	0	End Sub
+17	0	
+18	0	Private Sub cmdAll_Click()
+19	1	'take off any filter - saj
+20	0	On Error GoTo err_all
+21	0	
+22	0	    Me.FilterOn = False
+23	0	    Me.Filter = ""
+24	0	Exit Sub
+25	0	
+26	0	err_all:
+27	0	    MsgBox Err.Description
+28	0	    Exit Sub
+29	0	End Sub
+30	0	
+31	0	Private Sub CmdOpenDecidTeethFrm_Click()
+32	0	On Error GoTo Err_CmdOpenDecidTeethFrm_Click
+33	0	
+34	0	    Call DoRecordCheck("HR_Teeth development measurement", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+35	0	    Call DoRecordCheck("HR_Teeth development score", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+36	0	    Call DoRecordCheck("HR_Teeth wear", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+37	0	  
+38	0	    Dim stDocName As String
+39	0	    Dim stLinkCriteria As String
+40	0	
+41	0	    stDocName = "FRM_Deciduous_Teeth"
+42	0	    DoCmd.OpenForm stDocName, , , "[UnitNumber] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+43	0	    DoCmd.Close acForm, Me.Name
+44	0	
+45	0	Exit_CmdOpenDecidTeethFrm_Click:
+46	0	    Exit Sub
+47	0	
+48	0	Err_CmdOpenDecidTeethFrm_Click:
+49	0	    MsgBox Err.Description
+50	0	    Resume Exit_CmdOpenDecidTeethFrm_Click
+51	0	    
+52	0	End Sub
+53	0	Private Sub CmdOpenPermTeethFrm_Click()
+54	0	On Error GoTo Err_CmdOpenPermTeethFrm_Click
+55	0	
+56	0	    Call DoRecordCheck("HR_Teeth development measurement", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+57	0	    Call DoRecordCheck("HR_Teeth development score", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+58	0	    Call DoRecordCheck("HR_Teeth wear", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+59	0	  
+60	0	    Dim stDocName As String
+61	0	    Dim stLinkCriteria As String
+62	0	
+63	1	    'stDocName = "FRM_simons PERMANENT TEETH"
+64	0	    stDocName = "FRM_Permanent_Teeth"
+65	0	    DoCmd.OpenForm stDocName, , , "[UnitNumber] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+66	0	    DoCmd.Close acForm, Me.Name
+67	0	
+68	0	Exit_CmdOpenPermTeethFrm_Click:
+69	0	    Exit Sub
+70	0	
+71	0	Err_CmdOpenPermTeethFrm_Click:
+72	0	    MsgBox Err.Description
+73	0	    Resume Exit_CmdOpenPermTeethFrm_Click
+74	0	    
+75	0	End Sub
+76	0	Private Sub CmdOpenMeasFrm_Click()
+77	0	On Error GoTo Err_CmdOpenMeasFrm_Click
+78	0	
+79	0	    Call DoRecordCheck("HR_Measurements version 2", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+80	0	
+81	0	    Dim stDocName As String
+82	0	    Dim stLinkCriteria As String
+83	0	
+84	0	    stDocName = "FRM_Measurement form version 2"
+85	0	    DoCmd.OpenForm stDocName, , , "[UnitNumber] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+86	0	    DoCmd.Close acForm, Me.Name
+87	0	
+88	0	Exit_CmdOpenMeasFrm_Click:
+89	0	    Exit Sub
+90	0	
+91	0	Err_CmdOpenMeasFrm_Click:
+92	0	    MsgBox Err.Description
+93	0	    Resume Exit_CmdOpenMeasFrm_Click
+94	0	    
+95	0	End Sub
+96	0	Private Sub CmdOpenUnitDescFrm_Click()
+97	0	On Error GoTo Err_CmdOpenUnitDescFrm_Click
+98	0	
+99	0	    Dim stDocName As String
+100	0	    Dim stLinkCriteria As String
+101	0	
+102	0	    stDocName = "FRM_SkeletonDescription"
+103	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+104	0	
+105	0	Exit_CmdOpenUnitDescFrm_Click:
+106	0	    Exit Sub
+107	0	
+108	0	Err_CmdOpenUnitDescFrm_Click:
+109	0	    MsgBox Err.Description
+110	0	    Resume Exit_CmdOpenUnitDescFrm_Click
+111	0	    
+112	0	End Sub
+113	0	Private Sub CmdOpenAgeSexFrm_Click()
+114	0	On Error GoTo Err_CmdOpenAgeSexFrm_Click
+115	0	
+116	0	    Call DoRecordCheck("HR_ageing and sexing", Me![txtUnit], Me![txtIndivid], "Unit Number")
+117	0	
+118	0	    Dim stDocName As String
+119	0	    Dim stLinkCriteria As String
+120	0	
+121	0	    stDocName = "FRM_Ageing-sexing form"
+122	0	    DoCmd.OpenForm stDocName, , , "[Unit Number] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+123	0	    DoCmd.Close acForm, Me.Name
+124	0	
+125	0	Exit_CmdOpenAgeSexFrm_Click:
+126	0	    Exit Sub
+127	0	
+128	0	Err_CmdOpenAgeSexFrm_Click:
+129	0	    MsgBox Err.Description
+130	0	    Resume Exit_CmdOpenAgeSexFrm_Click
+131	0	    
+132	0	End Sub
+133	0	Private Sub CmdOpenMainMenuFrm_Click()
+134	0	On Error GoTo Err_CmdOpenMainMenuFrm_Click
+135	0	
+136	0	    Dim stDocName As String
+137	0	    Dim stLinkCriteria As String
+138	0	
+139	0	    stDocName = "FRM_MAINMENU"
+140	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+141	0	
+142	0	Exit_CmdOpenMainMenuFrm_Click:
+143	0	    Exit Sub
+144	0	
+145	0	Err_CmdOpenMainMenuFrm_Click:
+146	0	    MsgBox Err.Description
+147	0	    Resume Exit_CmdOpenMainMenuFrm_Click
+148	0	    
+149	0	End Sub
+150	0	
+151	0	Private Sub Command462_Click()
+152	0	On Error GoTo Err_CmdOpenUnitDescFrm_Click
+153	0	
+154	0	    Dim stDocName As String
+155	0	    Dim stLinkCriteria As String
+156	0	
+157	0	    stDocName = "FRM_SkeletonDescription"
+158	0	    DoCmd.OpenForm stDocName, , , "[UnitNumber] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+159	0	    DoCmd.Close acForm, Me.Name
+160	0	    
+161	0	Exit_CmdOpenUnitDescFrm_Click:
+162	0	    Exit Sub
+163	0	
+164	0	Err_CmdOpenUnitDescFrm_Click:
+165	0	    MsgBox Err.Description
+166	0	    Resume Exit_CmdOpenUnitDescFrm_Click
+167	0	End Sub
+168	0	
+169	0	Private Sub Command463_Click()
+170	0	Call ReturnToMenu(Me)
+171	0	
+172	0	End Sub
+173	0	
+174	0	Private Sub Form_Open(Cancel As Integer)
+175	1	'saj new season 2007 - form jumping to middle on open - make sure it keeps the top at the top
+176	0	On Error GoTo err_open
+177	0	
+178	0	    DoCmd.GoToControl "FRM_SUBFORM_Juvenile_skull"
+179	1	    'docmd.GoToControl ""
+180	0	
+181	0	Exit Sub
+182	0	
+183	0	err_open:
+184	0	    General_Error_Trap
+185	0	    Exit Sub
+186	0	End Sub

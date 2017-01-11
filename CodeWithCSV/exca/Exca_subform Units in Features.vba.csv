@@ -1,0 +1,57 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	1	'********************************************************
+4	1	' This form which is used on Exca: Feature Sheet as a
+5	1	' subform is now read-only there - so no need to have
+6	1	' code processing - its commented out apart from button
+7	1	'
+8	1	' SAJ v9.1
+9	1	'********************************************************
+10	0	
+11	0	Private Sub Form_BeforeUpdate(Cancel As Integer)
+12	1	'Me![Date Changed] = Now()
+13	0	End Sub
+14	0	
+15	0	
+16	0	Private Sub Unit_AfterUpdate()
+17	1	'Me.Requery
+18	1	'DoCmd.GoToRecord , , acLast
+19	0	End Sub
+20	0	
+21	0	Sub Command5_Click()
+22	1	'On Error GoTo Err_Command5_Click
+23	1	'
+24	1	'
+25	1	'    DoCmd.GoToRecord , , acLast
+26	1	'
+27	1	'Exit_Command5_Click:
+28	1	'    Exit Sub
+29	1	'
+30	1	'Err_Command5_Click:
+31	1	'    MsgBox Err.Description
+32	1	'    Resume Exit_Command5_Click
+33	1	'
+34	0	End Sub
+35	0	Sub go_to_unit_Click()
+36	1	'********************************************
+37	1	'Existing code for go to unit button, added
+38	1	'general error trap, now open readonly
+39	1	'
+40	1	'SAJ v9.1
+41	1	'********************************************
+42	0	On Error GoTo Err_go_to_unit_Click
+43	0	
+44	0	    Dim stDocName As String
+45	0	    Dim stLinkCriteria As String
+46	0	
+47	0	    stDocName = "Exca: Unit Sheet"
+48	0	    
+49	0	    stLinkCriteria = "[Unit Number]=" & Me![Unit]
+50	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria, acFormReadOnly
+51	0	
+52	0	    Exit Sub
+53	0	
+54	0	Err_go_to_unit_Click:
+55	0	    Call General_Error_Trap
+56	0	    Exit Sub
+57	0	End Sub

@@ -1,0 +1,124 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	0	Option Explicit
+3	1	'**************************************************
+4	1	' This form is new in v9.2 - SAJ
+5	1	'**************************************************
+6	0	
+7	0	
+8	0	
+9	0	
+10	0	Private Sub cmdAddNew_Click()
+11	1	'v9.2 SAJ - add a new record
+12	0	On Error GoTo err_cmdAddNew_Click
+13	0	    
+14	0	    Dim resp
+15	0	    resp = InputBox("Please enter the name of the new Hodder Phase:", "New Phase")
+16	0	    If resp <> "" Then
+17	0	        Me.AllowAdditions = True
+18	0	        DoCmd.RunCommand acCmdRecordsGoToNew
+19	0	        Me![txtHPhase] = resp
+20	0	        DoCmd.GoToControl "txtDisplayOrder"
+21	0	        Me.AllowAdditions = False
+22	0	    End If
+23	0	Exit Sub
+24	0	
+25	0	err_cmdAddNew_Click:
+26	0	    Call General_Error_Trap
+27	0	    Exit Sub
+28	0	End Sub
+29	0	
+30	0	Private Sub Excavation_Click()
+31	1	'v9.2 SAJ - close the form
+32	0	    DoCmd.Close acForm, Me.Name
+33	0	End Sub
+34	0	
+35	0	
+36	0	
+37	0	Private Sub cmdEdit_Click()
+38	1	'v9.2 SAJ - check if user can edit this record
+39	1	' The phase value is used on the Space Sheet - so must check these values to see
+40	1	' if this phase is used before allow edit
+41	1	' At present not offering global edits - this can be extended to offer this if required
+42	0	
+43	0	On Error GoTo Err_cmdEdit_Click
+44	0	
+45	0	Dim checkValidAction, checkValidAction2, checkValidAction3, retval
+46	0	
+47	1	    'check space sheet level field
+48	0	    checkValidAction = CheckIfLOVValueUsed("Exca:HodderPhaseLOV", "HodderPhase", Me![txtHPhase], "Exca: Space Sheet", "Space Number", "HodderPhase", "edit")
+49	0	    
+50	0	    If checkValidAction = "ok" Then
+51	1	                'edit action can go ahead - at present simply offer an input box for this
+52	0	                retval = InputBox("No records refer to this Phase (" & Me![txtHPhase] & ") so an edit is allowed." & Chr(13) & Chr(13) & "Please enter the edited Phase that you wish to replace this entry with:", "Enter edited Phase")
+53	0	                If retval <> "" Then
+54	0	                    Me![txtHPhase] = retval
+55	0	                End If
+56	0	                
+57	0	    ElseIf checkValidAction = "fail" Then
+58	0	        MsgBox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+59	0	    Else
+60	0	        MsgBox checkValidAction, vbExclamation, "Action Report"
+61	0	    End If
+62	0	    
+63	0	Exit_cmdEdit_Click:
+64	0	    Exit Sub
+65	0	
+66	0	Err_cmdEdit_Click:
+67	0	    Call General_Error_Trap
+68	0	    Exit Sub
+69	0	    
+70	0	End Sub
+71	0	
+72	0	Private Sub cmdDelete_Click()
+73	1	'v9.2 SAJ - check if user can delete this record
+74	1	' The phase value is used on the Space Sheet - so must check these values to see
+75	1	' if this phase is used before allow deletion
+76	1	' At present not offering global edits - this can be extended to offer this if required
+77	0	
+78	0	On Error GoTo Err_cmdDelete_Click
+79	0	
+80	0	Dim checkValidAction, checkValidAction2, checkValidAction3, retval
+81	0	
+82	1	    'check space sheet level field
+83	0	    checkValidAction = CheckIfLOVValueUsed("Exca:HodderPhaseLOV", "HodderPhase", Me![txtHPhase], "Exca: Space Sheet", "Space Number", "HodderPhase", "delete")
+84	0	    
+85	0	    If checkValidAction = "ok" Then
+86	1	                'delete action can go ahead - at present simply offer an input box for this
+87	0	                retval = MsgBox("No records refer to this Phase (" & Me![txtHPhase] & ") so deletion is allowed." & Chr(13) & Chr(13) & "Are you sure you want to delete " & Me![txtHPhase] & " from the list of available phases?", vbExclamation + vbYesNo, "Confirm Deletion")
+88	0	                If retval = vbYes Then
+89	0	                    Me.AllowDeletions = True
+90	0	                    DoCmd.RunCommand acCmdDeleteRecord
+91	0	                    Me.AllowDeletions = False
+92	0	                End If
+93	0	        
+94	0	    ElseIf checkValidAction = "fail" Then
+95	0	        MsgBox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+96	0	    Else
+97	0	        MsgBox checkValidAction, vbExclamation, "Action Report"
+98	0	    End If
+99	0	    
+100	0	Exit_cmdDelete_Click:
+101	0	    Exit Sub
+102	0	
+103	0	Err_cmdDelete_Click:
+104	0	    Call General_Error_Trap
+105	0	    Exit Sub
+106	0	    
+107	0	End Sub
+108	0	
+109	0	Private Sub Form_Open(Cancel As Integer)
+110	1	'v9.2 SAJ - only adminstrators are allowed in here
+111	0	On Error GoTo err_Form_Open
+112	0	
+113	0	    Dim permiss
+114	0	    permiss = GetGeneralPermissions
+115	0	    If permiss <> "ADMIN" Then
+116	0	        MsgBox "Sorry but only Administrators have access to this form"
+117	0	        DoCmd.Close acForm, Me.Name
+118	0	    End If
+119	0	Exit Sub
+120	0	
+121	0	err_Form_Open:
+122	0	    Call General_Error_Trap
+123	0	    Exit Sub
+124	0	End Sub

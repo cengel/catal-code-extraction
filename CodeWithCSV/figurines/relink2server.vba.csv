@@ -1,0 +1,31 @@
+1	0	Option Compare Database
+2	0	
+3	1	'Sub to relink tables to local/online server when going on- or offsite
+4	1	'Only necessary to change DSN in tdf.connect
+5	0	
+6	0	Private Sub relinkTables()
+7	0	Dim tdf As DAO.TableDef
+8	0	 
+9	0	    For Each tdf In CurrentDb.TableDefs
+10	1	        ' check if table is a linked table
+11	0	        If Len(tdf.Connect) > 0 Then
+12	1	            'If tdf.Connect = "ODBC;DSN=catalhoyuk;WSID=CATAL;DATABASE=catalhoyuk;" Then
+13	1	            '    tdf.Connect = "ODBC;DSN=catal;WSID=CATAL;DATABASE=Catalhoyuk;"
+14	1	            '    tdf.RefreshLink
+15	1	            'ElseIf tdf.Connect = "ODBC;DSN=catal;WSID=CATAL;DATABASE=Catalhoyuk;" Then
+16	1	            '    tdf.Connect = "ODBC;DSN=catalhoyuk;WSID=CATAL;DATABASE=catalhoyuk;"
+17	1	            '    tdf.RefreshLink
+18	1	            'End If
+19	0	            
+20	1	            'relink to OnSite usage
+21	0	            tdf.Connect = "ODBC;DSN=Catalhoyuk;WSID=CATAL;DATABASE=Catalhoyuk;"
+22	0	            tdf.RefreshLink
+23	0	            
+24	1	            'relink to OffSite usage
+25	1	            'tdf.Connect = "ODBC;DSN=Catal;WSID=CATAL;DATABASE=Catalhoyuk;"
+26	1	            'tdf.RefreshLink
+27	0	            Debug.Print tdf.Name & ": " & tdf.Connect
+28	0	        End If
+29	0	    Next
+30	0	 
+31	0	End Sub

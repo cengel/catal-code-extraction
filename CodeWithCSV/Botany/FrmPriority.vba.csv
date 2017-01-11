@@ -1,0 +1,324 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdAddtoPReport_Click()
+5	1	'check if the record already exists in priority report
+6	1	'and if not insert it and do calculation required
+7	1	'SAJ season 2006
+8	0	On Error GoTo err_AddtoPReport
+9	0	
+10	0	    Dim checknum, sql, woodml, dungml, parencml, seedchaff
+11	0	    checknum = DLookup("[Flot Number]", "[Bot: Priority Report]", "[Flot Number] = " & Forms![FrmPriority]![FrmSubPriority].Form![Flot Number])
+12	0	    If IsNull(checknum) Then
+13	0	        sql = "INSERT INTO [Bot: Priority Report] ([Flot Number]) VALUES (" & Forms![FrmPriority]![FrmSubPriority].Form![Flot Number] & ");"
+14	0	        DoCmd.RunSQL sql
+15	1	        'calc the values required
+16	0	        woodml = ""
+17	0	        If Forms![FrmPriority]![FrmSubPriority].Form![4 mm wood] <> "" And Not IsNull(Forms![FrmPriority]![FrmSubPriority].Form![4 mm wood]) Then
+18	0	            
+19	0	            woodml = Calc_WoodParenceDung_ml_per_litre(Forms![FrmPriority]![FrmSubPriority].Form![Flot Number], Forms![FrmPriority]![FrmSubPriority].Form![4 mm wood], Forms![FrmPriority]![FrmSubPriority].Form![4 mm fraction])
+20	0	            If woodml <> "" Then
+21	0	                woodml = Round(woodml, 2)
+22	0	                sql = "UPDATE [Bot: Priority Report] SET [Wood_ml_Per_Litre] = " & woodml & " WHERE [Flot Number] = " & Forms![FrmPriority]![FrmSubPriority].Form![Flot Number] & ";"
+23	0	                DoCmd.RunSQL sql
+24	0	            End If
+25	0	        End If
+26	0	        
+27	0	        dungml = ""
+28	0	        If Forms![FrmPriority]![FrmSubPriority].Form![4 mm dung] <> "" And Not IsNull(Forms![FrmPriority]![FrmSubPriority].Form![4 mm dung]) Then
+29	0	            dungml = Calc_WoodParenceDung_ml_per_litre(Forms![FrmPriority]![FrmSubPriority].Form![Flot Number], Forms![FrmPriority]![FrmSubPriority].Form![4 mm dung], Forms![FrmPriority]![FrmSubPriority].Form![4 mm fraction])
+30	0	        
+31	0	            If dungml <> "" Then
+32	0	                dungml = Round(dungml, 2)
+33	0	                sql = "UPDATE [Bot: Priority Report] SET [Dung_ml_Per_Litre]= " & dungml & " WHERE [Flot Number] = " & Forms![FrmPriority]![FrmSubPriority].Form![Flot Number] & ";"
+34	0	                DoCmd.RunSQL sql
+35	0	            End If
+36	0	        End If
+37	0	        
+38	0	        parencml = ""
+39	0	        If Forms![FrmPriority]![FrmSubPriority].Form![4 mm parenc] <> "" And Not IsNull(Forms![FrmPriority]![FrmSubPriority].Form![4 mm parenc]) Then
+40	0	            parencml = Calc_WoodParenceDung_ml_per_litre(Forms![FrmPriority]![FrmSubPriority].Form![Flot Number], Forms![FrmPriority]![FrmSubPriority].Form![4 mm parenc], Forms![FrmPriority]![FrmSubPriority].Form![4 mm fraction])
+41	0	    
+42	0	            If parencml <> "" Then
+43	0	                parencml = Round(parencml, 2)
+44	0	                sql = "UPDATE [Bot: Priority Report] SET [Parenc_ml_Per_Litre] = " & parencml & " WHERE [Flot Number] = " & Forms![FrmPriority]![FrmSubPriority].Form![Flot Number] & ";"
+45	0	                DoCmd.RunSQL sql
+46	0	            End If
+47	0	        End If
+48	0	        
+49	0	        seedchaff = ""
+50	0	        seedchaff = Calc_seedchaff_per_litre(Forms![FrmPriority]![FrmSubPriority].Form![Flot Number])
+51	0	        If seedchaff <> "" Then
+52	0	            seedchaff = Round(seedchaff, 2)
+53	0	            sql = "UPDATE [Bot: Priority Report] SET [Seeds_Chaff_Per_Litre] = " & seedchaff & " WHERE [Flot Number] = " & Forms![FrmPriority]![FrmSubPriority].Form![Flot Number] & ";"
+54	0	            DoCmd.RunSQL sql
+55	0	        End If
+56	0	        
+57	0	        
+58	0	        If woodml = "" And parencml = "" And dungml = "" And seedchaff = "" Then
+59	0	            MsgBox "The system attempted to undetake the necessary calculations automatically but one or more of the necessary fields was missing", vbInformation, "Auto Calculate not performed"
+60	0	        End If
+61	0	    
+62	0	    End If
+63	0	
+64	0	    DoCmd.OpenForm "FrmPriorityReport", acNormal, , , , , Forms![FrmPriority]![FrmSubPriority].Form![Flot Number]
+65	0	Exit Sub
+66	0	
+67	0	err_AddtoPReport:
+68	0	    Call General_Error_Trap
+69	0	    Exit Sub
+70	0	End Sub
+71	0	
+72	0	Private Sub cmdGoFirst_Click()
+73	1	'********************************************************************
+74	1	' Go to first record
+75	1	' SAJ
+76	1	'********************************************************************
+77	0	On Error GoTo Err_cmdgofirst_Click
+78	0	
+79	0	    DoCmd.GoToControl Forms![FrmPriority]![FrmSubPriority].Name
+80	0	    DoCmd.GoToRecord , , acFirst
+81	0	
+82	0	    Exit Sub
+83	0	
+84	0	Err_cmdgofirst_Click:
+85	0	    Call General_Error_Trap
+86	0	    Exit Sub
+87	0	End Sub
+88	0	
+89	0	Private Sub cmdGoLast_Click()
+90	1	'********************************************************************
+91	1	' Go to last record
+92	1	' SAJ
+93	1	'********************************************************************
+94	0	On Error GoTo Err_cmdgoLast_Click
+95	0	
+96	0	    DoCmd.GoToControl Forms![FrmPriority]![FrmSubPriority].Name
+97	0	    DoCmd.GoToRecord , , acLast
+98	0	
+99	0	    Exit Sub
+100	0	
+101	0	Err_cmdgoLast_Click:
+102	0	    Call General_Error_Trap
+103	0	    Exit Sub
+104	0	End Sub
+105	0	
+106	0	Private Sub cmdGoNext_Click()
+107	1	'********************************************************************
+108	1	' Go to next record
+109	1	' SAJ
+110	1	'********************************************************************
+111	0	On Error GoTo Err_cmdgoNext_Click
+112	0	
+113	0	    DoCmd.GoToControl Forms![FrmPriority]![FrmSubPriority].Name
+114	0	    DoCmd.GoToRecord , , acNext
+115	0	
+116	0	    Exit Sub
+117	0	
+118	0	Err_cmdgoNext_Click:
+119	0	    If Err.Number = 2105 Then
+120	0	        MsgBox "No more records to show", vbInformation, "End of records"
+121	0	    Else
+122	0	        Call General_Error_Trap
+123	0	    End If
+124	0	    Exit Sub
+125	0	End Sub
+126	0	
+127	0	Private Sub cmdgoprevious_Click()
+128	1	'********************************************************************
+129	1	' Go to previous record
+130	1	' SAJ
+131	1	'********************************************************************
+132	0	On Error GoTo Err_cmdgoprevious_Click
+133	0	
+134	0	    DoCmd.GoToControl Forms![FrmPriority]![FrmSubPriority].Name
+135	0	    DoCmd.GoToRecord , , acPrevious
+136	0	
+137	0	    Exit Sub
+138	0	
+139	0	Err_cmdgoprevious_Click:
+140	0	    If Err.Number = 2105 Then
+141	0	        MsgBox "Already at the begining of the recordset", vbInformation, "Begining of records"
+142	0	    Else
+143	0	        Call General_Error_Trap
+144	0	    End If
+145	0	    Exit Sub
+146	0	End Sub
+147	0	
+148	0	Private Sub cmdGoToBasic_Click()
+149	1	'*******************************************************************
+150	1	' Open Basic data screen at selected flot number
+151	1	' SAJ
+152	1	'*******************************************************************
+153	0	On Error GoTo err_gotoBasic
+154	0	Dim openarg
+155	0	
+156	0	If Me![FrmSubPriority].Form![Flot Number] <> "" Then
+157	0	    openarg = Me![FrmSubPriority].Form![Flot Number]
+158	0	Else
+159	0	    openarg = Null
+160	0	End If
+161	0	
+162	0	DoCmd.OpenForm "FrmBasicData", acNormal, , , , , openarg
+163	0	DoCmd.Close acForm, "FrmPriority"
+164	0	Exit Sub
+165	0	
+166	0	err_gotoBasic:
+167	0	    Call General_Error_Trap
+168	0	    Exit Sub
+169	0	
+170	0	End Sub
+171	0	
+172	0	Private Sub cmdgotonew_Click()
+173	1	'********************************************************************
+174	1	' Create new record
+175	1	' SAJ
+176	1	'********************************************************************
+177	0	On Error GoTo Err_cmdgonew_Click
+178	0	
+179	0	    DoCmd.GoToControl Forms![FrmPriority]![FrmSubPriority].Name
+180	0	    DoCmd.GoToRecord , , acNewRec
+181	0	    DoCmd.GoToControl Forms![FrmPriority]![FrmSubPriority].Form![Flot Number].Name
+182	0	
+183	0	    Exit Sub
+184	0	
+185	0	Err_cmdgonew_Click:
+186	0	    Call General_Error_Trap
+187	0	    Exit Sub
+188	0	End Sub
+189	0	
+190	0	
+191	0	Private Sub cboFindFlot_AfterUpdate()
+192	1	'******************************************************************
+193	1	' Search for a flot number from the list
+194	1	' SAJ
+195	1	'******************************************************************
+196	0	On Error GoTo err_FindFlot
+197	0	
+198	0	If Me![cboFindFlot] <> "" Then
+199	0	
+200	0	    DoCmd.GoToControl "FrmSubPriority"
+201	0	    DoCmd.GoToControl "Flot Number"
+202	1	    'DoCmd.GoToControl Me!FrmSubBasicData.Form![Flot Number].Name
+203	0	    DoCmd.FindRecord Me![cboFindFlot]
+204	0	    DoCmd.GoToControl "4 mm fraction"
+205	0	End If
+206	0	
+207	0	Exit Sub
+208	0	
+209	0	err_FindFlot:
+210	0	    Call General_Error_Trap
+211	0	    Exit Sub
+212	0	End Sub
+213	0	
+214	0	Private Sub cmdClose_Click()
+215	1	'********************************************************************
+216	1	' Close form and return to main menu
+217	1	' SAJ
+218	1	'********************************************************************
+219	0	On Error GoTo err_close
+220	0	    DoCmd.OpenForm "FrmMainMenu"
+221	0	    DoCmd.Close acForm, "FrmPriority"
+222	0	
+223	0	Exit Sub
+224	0	err_close:
+225	0	    Call General_Error_Trap
+226	0	    Exit Sub
+227	0	End Sub
+228	0	
+229	0	Private Sub cmdOutput_Click()
+230	1	'open output options pop up
+231	0	On Error GoTo err_Output
+232	0	
+233	0	    If Me![FrmSubPriority].Form![Flot Number] <> "" Then
+234	0	        DoCmd.OpenForm "FrmPopDataOutputOptions", acNormal, , , , acDialog, "Bot: Priority Sample;" & Me![FrmSubPriority].Form![Flot Number]
+235	0	    Else
+236	0	        MsgBox "The output options form cannot be shown when there is no Flot Number on screen", vbInformation, "Action Cancelled"
+237	0	    End If
+238	0	
+239	0	Exit Sub
+240	0	
+241	0	err_Output:
+242	0	    Call General_Error_Trap
+243	0	    Exit Sub
+244	0	End Sub
+245	0	
+246	0	Private Sub Command22_Click()
+247	0	
+248	0	End Sub
+249	0	
+250	0	Private Sub Form_Open(Cancel As Integer)
+251	1	'*****************************************************************************
+252	1	' Check for any open args to set record to focus on and set up view of form
+253	1	'
+254	1	' SAJ
+255	1	'*****************************************************************************
+256	0	On Error GoTo err_open
+257	0	
+258	0	If Not IsNull(Me.OpenArgs) Then
+259	1	    'flot number passed in must find it
+260	0	    DoCmd.GoToControl "FrmSubPriority"
+261	0	    DoCmd.GoToControl "Flot Number"
+262	0	    DoCmd.FindRecord Me.OpenArgs
+263	0	    DoCmd.GoToControl "4 mm fraction"
+264	0	End If
+265	0	
+266	0	If Me!FrmSubPriority.Form.DefaultView = 2 Then
+267	0	    Me!tglDataSheet = True
+268	0	    Me!tglFormV = False
+269	1	    'Me!FrmSubBasicData.Form!cboOptions.Visible = True
+270	0	Else
+271	0	    Me!tglDataSheet = False
+272	0	    Me!tglFormV = True
+273	1	    'Me!FrmSubBasicData.Form!cboOptions.Visible = False
+274	0	End If
+275	0	    
+276	0	Exit Sub
+277	0	
+278	0	err_open:
+279	0	    Call General_Error_Trap
+280	0	    Exit Sub
+281	0	End Sub
+282	0	
+283	0	Private Sub tglDataSheet_Click()
+284	1	'********************************************************************
+285	1	' The user wants to see the basic data in datasheet view
+286	1	' SAJ
+287	1	'********************************************************************
+288	0	On Error GoTo Err_tglDataSheet
+289	0	
+290	0	If Me!tglDataSheet = True Then
+291	0	    Me!FrmSubPriority.SetFocus
+292	1	    'Me!FrmSubBasicData.Form![cboOptions].Visible = True
+293	0	    DoCmd.RunCommand acCmdSubformDatasheet
+294	0	    Me!tglFormV = False
+295	0	End If
+296	0	Exit Sub
+297	0	
+298	0	Err_tglDataSheet:
+299	0	    Call General_Error_Trap
+300	0	    Exit Sub
+301	0	End Sub
+302	0	
+303	0	Private Sub tglFormV_Click()
+304	1	'********************************************************************
+305	1	' The user wants to see the basic data in form view
+306	1	' SAJ
+307	1	'********************************************************************
+308	0	On Error GoTo Err_tglFormV
+309	0	
+310	0	If Me!tglFormV = True Then
+311	0	    
+312	0	    Me!FrmSubPriority.SetFocus
+313	0	    Me!FrmSubPriority![Flot Number].SetFocus
+314	0	    DoCmd.RunCommand acCmdSubformDatasheet
+315	0	
+316	1	    'Me!FrmSubBasicData.Form.DefaultView = 2
+317	0	    Me!tglDataSheet = False
+318	0	End If
+319	0	Exit Sub
+320	0	
+321	0	Err_tglFormV:
+322	0	    Call General_Error_Trap
+323	0	    Exit Sub
+324	0	End Sub

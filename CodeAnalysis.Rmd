@@ -1,0 +1,93 @@
+---
+title: "Catal DB Code Exploration"
+author: "cengel @ stanford"
+date: 'Last updated: `r format(Sys.time(), "%B %d, %Y")`'
+output: 
+  html_notebook:
+    highlight: tango
+    theme: readable
+    code_folding: hide    
+---
+
+```{r setup, include=FALSE}
+# root dir depends on local setup
+myDir <- '/Users/cengel/Anthro/Catal/CodeAnalysis/'
+knitr::opts_knit$set(root.dir=normalizePath(myDir))
+
+# read file
+code_all <- read.csv("CodeAll.csv")
+
+# libraries
+library(ggplot2)
+```
+
+### How many lines of code, including everything?
+```{r}
+nrow(code_all)
+```
+
+### How many scripts?
+```{r}
+length(unique(code_all$filename))
+```
+
+### 10 longest scripts
+**Do we need to review some of the scripts if they are really used, like `xxxtestunitshe` (?)**
+
+```{r}
+# need to group by team. some scripts have same names but are in different teams
+# could also use the csv field: `tail(sort(table(code_all$csv)), 10)`
+tt <- aggregate(code ~ team + filename, data = code_all, FUN = length)
+ttt <- tt[order(tt$code, decreasing = T),]
+head(ttt, n=10)
+```
+
+
+### Distribution of length (lines) per script
+```{r}
+ggplot(code_all, aes(x = reorder(csv, csv, function(x) - length(x)))) +
+  geom_bar() + 
+  theme(axis.ticks.x = element_blank(), 
+        axis.text.x = element_blank()) +
+  xlab("")
+```
+
+### How many teams
+```{r}
+length(unique(code_all$team))
+```
+
+### How many scripts per team?
+```{r}
+uu <- unique(code_all[c("team", "filename")])
+as.data.frame(table(uu$team))
+```
+
+
+### How many lines of code per team?
+```{r}
+as.data.frame(all_per_team <- table(code_all$team))
+
+ggplot(code_all, aes(x = reorder(team, team, function(x) + length(x)))) +
+  geom_bar() + 
+  xlab("") +
+  coord_flip()
+```
+
+### Comment line/code line ratio per team
+```{r}
+code_per_team <- with (code_all[code_all$c_marker == 0,], table(team)) # lines with executable code only
+(comment_code_ratio <- as.data.frame((all_per_team - code_per_team)/code_per_team))
+ggplot(comment_code_ratio) + geom_bar(aes(x=reorder(Var1, Freq), y=Freq), stat = "identity") + 
+  geom_hline(yintercept = sum(code_all$c_marker > 0)/nrow(code_all), color="red", linetype="dotted") +
+  xlab("") + ylab("comment code ratio and mean") + coord_flip()
+```
+
+
+### More things to do:
+- remove automatically generated scripts and do the same as above.
+- how to identify reuse of code
+    - scripts that are used in several teams
+- how to identify age of code chunks
+- how to bring together (potentially changing) team reserach agenda with code?
+

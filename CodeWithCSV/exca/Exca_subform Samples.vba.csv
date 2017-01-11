@@ -1,0 +1,172 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub Amount_AfterUpdate()
+5	1	'2009 first step on the road to sorting out volume issues, amount field still in process of being
+6	1	'cleaned so is not numeric, trying here to at least force user to put in a number
+7	1	'they get this message then they can move off this field so not foolproof, I tried it in LostFocus
+8	2	'but could get a way of knowing if its a new entry or existing one and don't want people getting stuck
+9	2	'in old entries that they don't know how to convert and making more of a mess.
+10	1	'Once cleaned this field will be data type numeric and this problem will go away
+11	0	On Error GoTo err_Amount
+12	0	
+13	0	    If Not IsNumeric(Me!Amount) Then
+14	0	        MsgBox Me!Amount & " is not a numeric amount, please enter the amount if Litres but as a number only", vbInformation, "Invalid Amount"
+15	0	        DoCmd.GoToControl "SampleType"
+16	0	        Me!Amount.SetFocus
+17	2	        'Me![Amount] = Me![Amount] & " " 'was trying to change its value to afterupdate to trigger until it was numeric but no effect
+18	0	    End If
+19	0	Exit Sub
+20	0	
+21	0	err_Amount:
+22	0	    Call General_Error_Trap
+23	0	    Exit Sub
+24	0	End Sub
+25	0	
+26	0	
+27	0	
+28	0	
+29	0	
+30	0	Private Sub Amount__ltrs__AfterUpdate()
+31	0	
+32	0	End Sub
+33	0	
+34	0	Private Sub Amount__ltrs__Change()
+35	0	
+36	0	End Sub
+37	0	
+38	0	Private Sub Amount__ltrs__LostFocus()
+39	0	
+40	0	End Sub
+41	0	
+42	0	Private Sub Form_BeforeUpdate(Cancel As Integer)
+43	1	'Me![Date changed] = Now()
+44	0	End Sub
+45	0	
+46	0	
+47	0	
+48	0	
+49	0	Private Sub Form_Open(Cancel As Integer)
+50	1	'**********************************************************************
+51	1	' Set up form view depending on permissions
+52	1	' SAJ v9.1
+53	1	'**********************************************************************
+54	0	On Error GoTo err_Form_Open
+55	0	
+56	0	    Dim permiss
+57	0	    permiss = GetGeneralPermissions
+58	0	    If permiss = "ADMIN" Or permiss = "RW" Or permiss = "exsuper" Then
+59	0	        ToggleFormReadOnly Me, False
+60	0	    Else
+61	1	        'set read only form here, just once
+62	0	        ToggleFormReadOnly Me, True
+63	0	    End If
+64	0	Exit Sub
+65	0	
+66	0	err_Form_Open:
+67	0	    Call General_Error_Trap
+68	0	    Exit Sub
+69	0	End Sub
+70	0	
+71	0	Private Sub SampleType_AfterUpdate()
+72	1	'new 2009 if sample amount present fill it in
+73	0	On Error GoTo err_sampletype
+74	0	    
+75	0	    If Me![SampleType].Column(1) <> "" Then
+76	0	        If Me![Amount] <> "" Then
+77	0	                      
+78	0	            Dim response
+79	0	            response = MsgBox("There is a default amount for this sample type of " & Me![SampleType].Column(1) & ". Do you wish to overwrite the current amount?", vbYesNo + vbQuestion, "Amount?")
+80	0	            If response = vbYes Then Me![Amount] = Me![SampleType].Column(1)
+81	0	        Else
+82	0	            Me![Amount] = Me![SampleType].Column(1)
+83	0	        End If
+84	0	    End If
+85	0	    
+86	1	    '2009 sample type list is now locked down so remind to make sure sub samples get entered correctly
+87	0	    If InStr(Me![SampleType], "subsample") > 0 Then
+88	0	        MsgBox "You must write the original sample number from which you are taking the sample in the Comment field as well as the details of the purpose of the sample and amount. No amount is required in the amount column itself", vbExclamation, "Sub sample requirements"
+89	2	        ''2010 - LOCK AMOUNT field
+90	0	        Me![Amount (ltrs)].Locked = True
+91	0	        Me![Amount (ltrs)].Enabled = False
+92	0	    Else
+93	2	        ''2010 ensure amount field unlocked
+94	0	        Me![Amount (ltrs)].Locked = False
+95	0	        Me![Amount (ltrs)].Enabled = True
+96	0	    End If
+97	0	    If Me![SampleType] = "" Or IsNull(Me![SampleType]) Then
+98	0	        MsgBox "YOU MUST ENTER A SAMPLE TYPE", vbExclamation, "Missing Sample Type"
+99	1	        '2010 - enough of this nonsense - insist
+100	2	        ''Me![SampleType].SetFocus
+101	0	    End If
+102	0	Exit Sub
+103	0	
+104	0	err_sampletype:
+105	0	    Call General_Error_Trap
+106	0	    Exit Sub
+107	0	End Sub
+108	0	
+109	0	Private Sub SampleType_LostFocus()
+110	1	'new 2010 - this is getting tough - see if it works. You cannot leave this field until a value is entered. Could lead to
+111	1	'crap being entered here I guess but its worth a try.
+112	1	'SAJ 7July10
+113	0	On Error GoTo err_sampletype
+114	0	
+115	0	If Me![SampleType] = "" Or IsNull(Me![SampleType]) Then
+116	0	    MsgBox "YOU MUST ENTER A SAMPLE TYPE", vbExclamation, "Missing Sample Type"
+117	1	    '2010 - enough of this nonsense - insist
+118	2	    ''Me![SampleType].SetFocus
+119	0	    DoCmd.GoToControl Me![X].Name
+120	0	    
+121	0	    DoCmd.GoToControl Me![SampleType].Name
+122	0	End If
+123	0	Exit Sub
+124	0	
+125	0	err_sampletype:
+126	0	    Call General_Error_Trap
+127	0	    Exit Sub
+128	0	
+129	0	End Sub
+130	0	
+131	0	Private Sub SampleType_NotInList(NewData As String, response As Integer)
+132	1	'***********************************************************************
+133	1	' Intro of a validity check to make users a little more aware of the data
+134	1	' they are entering here. The combo here is trying to prevent different entries
+135	1	' that represent the same thing. Users are allowed to enter new values but just made aware
+136	1	'
+137	1	' SAJ v9.1
+138	1	'***********************************************************************
+139	0	On Error GoTo err_Sampletype_NotInList
+140	0	
+141	2	''2009 locked down the list as people not using it sensibly at all
+142	2	''Dim retVal, sql
+143	2	''retVal = MsgBox("This Sample Type does not appear in the pre-defined list. Have you checked the list to make sure there is no match?", vbQuestion + vbYesNo, "New Sample Type")
+144	2	''If retVal = vbYes Then
+145	2	''    MsgBox "Ok this sample type will now be added to the list", vbInformation, "New Sample Type Allowed"
+146	3	''    'allow value,
+147	2	''    response = acDataErrAdded
+148	4	''     'Me![SampleType].LimitToList = False 'turn off limit to list so record can be saved
+149	2	''
+150	4	''    sql = "INSERT INTO [Exca:SampleTypeLOV] ([SampleType]) VALUES ('" & NewData & "');"
+151	2	''    DoCmd.RunSQL sql
+152	3	''    'dont need any of this for this situation
+153	3	''    'DoCmd.GoToControl "SampleType"
+154	4	''    'DoCmd.RunCommand acCmdSaveRecord 'save rec
+155	4	''    'Me![SampleType].Requery 'requery combo to get new value in list
+156	4	''    'Me![SampleType].LimitToList = True 'put back on limit to list
+157	2	''Else
+158	3	''    'no leave it so they can edit it
+159	2	''    response = acDataErrContinue
+160	2	''End If
+161	0	
+162	0	MsgBox "This Sample Type is not found in the current list, look carefully and consult the Type list via the button above. " & Chr(13) & Chr(13) & "There is a new format for sample types. This is: main type-subtype " & Chr(13) & Chr(13) & "eg: Flotation-routine" & Chr(13) & Chr(13) & "If you really cannot find your sample type then please use: Other and write specific details in the comment field. Then tell your Supervisor who will inform the project team.", vbExclamation, "Sample Types"
+163	0	SendKeys "{ESC}{ESC}"
+164	0	Exit Sub
+165	0	
+166	0	err_Sampletype_NotInList:
+167	0	    Call General_Error_Trap
+168	2	''    Me![SampleType].LimitToList = True
+169	0	    Exit Sub
+170	0	
+171	0	
+172	0	End Sub

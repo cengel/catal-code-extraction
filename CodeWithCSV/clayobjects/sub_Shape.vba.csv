@@ -1,0 +1,48 @@
+1	0	Option Compare Database
+2	0	
+3	0	Private Sub Form_Current()
+4	0	
+5	0	If Me.Parent![cbo_year_studied].Value = 6 Then
+6	0	    Me!cbo_plan2d_complete.Enabled = False
+7	0	    Me!cbo_plan2d_symmetry.Enabled = False
+8	0	    Me.sub_Shape_plan_2d_sidescorners.Enabled = False
+9	0	    Me!plan_2d_comments.Enabled = False
+10	0	    Me.sub_Shape_detail_pinched.Enabled = False
+11	0	    Me!pinched_detail.Enabled = False
+12	0	    Me!cbo_sect2d_complete.Enabled = False
+13	0	    Me!cbo_sect2d_symmetry.Enabled = False
+14	0	    Me.sub_Shape_section_2d_sidescorners.Enabled = False
+15	0	    Me!section_2d_comments.Enabled = False
+16	0	    Me.sub_Shape_detail_depressions.Enabled = False
+17	0	    Me!depressions_detail.Enabled = False
+18	0	    Me!long_comments.Enabled = False
+19	0	    Me.sub_Shape_long_sidescorners.Enabled = False
+20	0	    Me!cbo_long_complete.Enabled = False
+21	0	    Me!cbo_long_symmetry.Enabled = False
+22	0	    Me.sub_Shape_section_2d_basetop.Enabled = False
+23	0	    Me.sub_Shape_long_basetop.Enabled = False
+24	0	    Me.sub_Shape_long_sidescorners.Enabled = False
+25	0	Else
+26	0	    Me!cbo_plan2d_complete.Enabled = True
+27	0	    Me!cbo_plan2d_symmetry.Enabled = True
+28	0	    Me.sub_Shape_plan_2d_sidescorners.Enabled = True
+29	0	    Me!plan_2d_comments.Enabled = True
+30	0	    Me.sub_Shape_detail_pinched.Enabled = True
+31	0	    Me!pinched_detail.Enabled = True
+32	0	    Me!cbo_sect2d_complete.Enabled = True
+33	0	    Me!cbo_sect2d_symmetry.Enabled = True
+34	0	    Me.sub_Shape_section_2d_sidescorners.Enabled = True
+35	0	    Me!section_2d_comments.Enabled = True
+36	0	    Me.sub_Shape_detail_depressions.Enabled = True
+37	0	    Me!depressions_detail.Enabled = True
+38	0	    Me!long_comments.Enabled = True
+39	0	    Me.sub_Shape_long_sidescorners.Enabled = True
+40	0	    Me!cbo_long_complete.Enabled = True
+41	0	    Me!cbo_long_symmetry.Enabled = True
+42	0	    Me.sub_Shape_section_2d_basetop.Enabled = True
+43	0	    Me.sub_Shape_long_basetop.Enabled = True
+44	0	    Me.sub_Shape_long_sidescorners.Enabled = True
+45	0	
+46	0	End If
+47	0	
+48	0	End Sub

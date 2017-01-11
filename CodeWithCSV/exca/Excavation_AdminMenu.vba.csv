@@ -1,0 +1,238 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	0	Option Explicit
+3	1	'******************************************************************************
+4	1	' this sub menu is new with v9.2 - it offers all the admin functions
+5	1	' SAJ v9.2
+6	1	'******************************************************************************
+7	0	
+8	0	
+9	0	
+10	0	Private Sub cmdBuildings_Click()
+11	0	On Error GoTo Err_cmdBuildings_Click
+12	0	  
+13	0	    DoCmd.OpenForm "Exca: Admin_Buildings", acNormal
+14	0	
+15	0	    Exit Sub
+16	0	
+17	0	Err_cmdBuildings_Click:
+18	0	    Call General_Error_Trap
+19	0	    Exit Sub
+20	0	End Sub
+21	0	
+22	0	Private Sub cmdCleaning_Click()
+23	0	On Error GoTo Err_cmdCleaning_Click
+24	0	  
+25	0	    DoCmd.OpenForm "Excavation:AdminCleaningMenu", acNormal
+26	0	
+27	0	    Exit Sub
+28	0	
+29	0	Err_cmdCleaning_Click:
+30	0	    Call General_Error_Trap
+31	0	    Exit Sub
+32	0	
+33	0	End Sub
+34	0	
+35	0	Private Sub cmdClose_Click()
+36	1	'********************************************
+37	1	' This will close this form and return to main menu
+38	1	' SAJ v9.2
+39	1	'********************************************
+40	0	On Error GoTo err_cmdClose_Click
+41	0	
+42	0	    Dim stDocName As String
+43	0	    Dim stLinkCriteria As String
+44	0	
+45	0	    stDocName = "Excavation"
+46	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+47	0	    DoCmd.Close acForm, Me.Name
+48	0	Exit Sub
+49	0	
+50	0	err_cmdClose_Click:
+51	0	    Call General_Error_Trap
+52	0	    Exit Sub
+53	0	End Sub
+54	0	
+55	0	Private Sub cmdFeature_Click()
+56	1	'Features
+57	0	On Error GoTo Err_cmdFeatures_Click
+58	0	
+59	0	    
+60	0	    DoCmd.OpenForm "Exca: Admin_Features", acNormal
+61	0	
+62	0	
+63	0	    Exit Sub
+64	0	
+65	0	Err_cmdFeatures_Click:
+66	0	    Call General_Error_Trap
+67	0	    Exit Sub
+68	0	End Sub
+69	0	
+70	0	Private Sub cmdFeatureType_Click()
+71	0	On Error GoTo Err_cmdFeatureType_Click
+72	0	  
+73	0	    DoCmd.OpenForm "Exca: Admin_FeatureTypeSubTypeLOV", acNormal
+74	0	
+75	0	    Exit Sub
+76	0	
+77	0	Err_cmdFeatureType_Click:
+78	0	    Call General_Error_Trap
+79	0	    Exit Sub
+80	0	
+81	0	End Sub
+82	0	
+83	0	Private Sub cmdFT_Click()
+84	0	On Error GoTo err_cmdFT_Click
+85	0	
+86	0	    
+87	0	    DoCmd.OpenForm "Exca: Admin_Foundation_Trenches", acNormal
+88	0	
+89	0	
+90	0	    Exit Sub
+91	0	
+92	0	err_cmdFT_Click:
+93	0	    Call General_Error_Trap
+94	0	    Exit Sub
+95	0	End Sub
+96	0	
+97	0	Private Sub cmdHPhase_Click()
+98	0	On Error GoTo err_cmdHPhase_Click
+99	0	
+100	0	    DoCmd.OpenForm "Exca: Admin_HodderPhaseLOV", acNormal
+101	0	    Exit Sub
+102	0	
+103	0	err_cmdHPhase_Click:
+104	0	    Call General_Error_Trap
+105	0	    Exit Sub
+106	0	End Sub
+107	0	
+108	0	Private Sub cmdLevel_Click()
+109	0	On Error GoTo Err_cmdLevel_Click
+110	0	
+111	0	    
+112	0	    DoCmd.OpenForm "Exca: Admin_LevelLOV", acNormal
+113	0	
+114	0	
+115	0	    Exit Sub
+116	0	
+117	0	Err_cmdLevel_Click:
+118	0	    Call General_Error_Trap
+119	0	    Exit Sub
+120	0	End Sub
+121	0	
+122	0	Private Sub cmdProblem_Click()
+123	0	On Error GoTo Err_cmdLevel_Click
+124	0	
+125	0	    
+126	0	    DoCmd.OpenForm "Exca: Admin_ProblemReports", acNormal
+127	0	
+128	0	    Exit Sub
+129	0	
+130	0	Err_cmdLevel_Click:
+131	0	    Call General_Error_Trap
+132	0	    Exit Sub
+133	0	End Sub
+134	0	
+135	0	Private Sub cmdSampleTypes_Click()
+136	0	On Error GoTo Err_cmdSampleTypes_Click
+137	0	
+138	0	    
+139	0	    DoCmd.OpenForm "Exca: Admin_SampleTypesLOV", acNormal
+140	0	
+141	0	
+142	0	    Exit Sub
+143	0	
+144	0	Err_cmdSampleTypes_Click:
+145	0	    Call General_Error_Trap
+146	0	    Exit Sub
+147	0	
+148	0	End Sub
+149	0	
+150	0	Private Sub cmdSpace_Click()
+151	0	On Error GoTo Err_cmdSpaces_Click
+152	0	
+153	0	    
+154	0	    DoCmd.OpenForm "Exca: Admin_Spaces", acNormal
+155	0	
+156	0	
+157	0	    Exit Sub
+158	0	
+159	0	Err_cmdSpaces_Click:
+160	0	    Call General_Error_Trap
+161	0	    Exit Sub
+162	0	End Sub
+163	0	
+164	0	Private Sub cmdUnits_Click()
+165	0	On Error GoTo Err_cmdUnits_Click
+166	0	
+167	0	    
+168	0	    DoCmd.OpenForm "Exca: Admin_Units", acNormal
+169	0	
+170	0	
+171	0	    Exit Sub
+172	0	
+173	0	Err_cmdUnits_Click:
+174	0	    Call General_Error_Trap
+175	0	    Exit Sub
+176	0	End Sub
+177	0	
+178	0	Private Sub cmdUnits2_Click()
+179	0	cmdUnits_Click
+180	0	End Sub
+181	0	
+182	0	Private Sub Command18_Click()
+183	0	cmdLevel_Click
+184	0	End Sub
+185	0	
+186	0	Private Sub Command24_Click()
+187	0	cmdClose_Click
+188	0	End Sub
+189	0	
+190	0	
+191	0	Private Sub Command25_Click()
+192	0	cmdFeatureType_Click
+193	0	End Sub
+194	0	
+195	0	Private Sub Command29_Click()
+196	0	cmdFeature_Click
+197	0	End Sub
+198	0	
+199	0	Private Sub Command31_Click()
+200	0	cmdSpace_Click
+201	0	End Sub
+202	0	
+203	0	Private Sub Command33_Click()
+204	0	cmdBuildings_Click
+205	0	End Sub
+206	0	
+207	0	Private Sub Command35_Click()
+208	0	cmdFT_Click
+209	0	End Sub
+210	0	
+211	0	Private Sub Command37_Click()
+212	0	cmdCleaning_Click
+213	0	End Sub
+214	0	
+215	0	Private Sub Command39_Click()
+216	0	cmdProblem_Click
+217	0	End Sub
+218	0	
+219	0	Private Sub Command42_Click()
+220	0	cmdHPhase_Click
+221	0	End Sub
+222	0	
+223	0	Private Sub Form_Open(Cancel As Integer)
+224	1	'v9.2 SAJ - only adminstrators are allowed in here
+225	0	On Error GoTo err_Form_Open
+226	0	
+227	0	    Dim permiss
+228	0	    permiss = GetGeneralPermissions
+229	0	    If permiss <> "ADMIN" Then
+230	0	        MsgBox "Sorry but only Administrators have access to this form"
+231	0	        DoCmd.Close acForm, Me.Name
+232	0	    End If
+233	0	Exit Sub
+234	0	
+235	0	err_Form_Open:
+236	0	    Call General_Error_Trap
+237	0	    Exit Sub
+238	0	End Sub

@@ -1,0 +1,49 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Sub copy_layer_Click()
+5	0	On Error GoTo Err_copy_layer_Click
+6	0	
+7	0	    Dim stDocName As String
+8	0	    Dim stLinkCriteria As String
+9	0	
+10	0	    stDocName = "Exca: Copy Layer description"
+11	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+12	0	
+13	0	Exit_copy_layer_Click:
+14	0	    Exit Sub
+15	0	
+16	0	Err_copy_layer_Click:
+17	0	    MsgBox Err.Description
+18	0	    Resume Exit_copy_layer_Click
+19	0	    
+20	0	End Sub
+21	0	
+22	0	Private Sub Form_Open(Cancel As Integer)
+23	1	'*****************************************************************
+24	1	' Setup display parametres based on permissions
+25	1	' SAJ v9.1
+26	1	'*****************************************************************
+27	0	On Error GoTo err_Form_Open
+28	0	
+29	0	Dim permiss
+30	0	permiss = GetGeneralPermissions
+31	0	    If permiss = "ADMIN" Or permiss = "RW" Or permiss = "exsuper" Then
+32	0	        ToggleFormReadOnly Me, False
+33	0	    Else
+34	0	        ToggleFormReadOnly Me, True
+35	0	        Me![copy layer].Enabled = False
+36	1	        'in toggleformreadonly allowadditions is set to false and the fields are not showing
+37	1	        'for records where no data - just a blank grey area where subform should be
+38	1	        'data cannot be entered anyway due to set up of main form so set allowadditions to
+39	2	        'true to at least show subform fields - this doesn't happen with all subforms eg: dimensions
+40	1	        'must be something to do with the type of controls here
+41	0	        If Me.AllowAdditions = False Then Me.AllowAdditions = True
+42	0	    End If
+43	0	
+44	0	Exit Sub
+45	0	
+46	0	err_Form_Open:
+47	0	    Call General_Error_Trap
+48	0	    Exit Sub
+49	0	End Sub

@@ -1,0 +1,476 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Sub CalcMNI()
+5	1	'THIS IS FOR FEATURE - ONLY ONE HERE IN 2009
+6	0	Dim mydb As DAO.Database, burials As DAO.Recordset, sql
+7	0	Dim CurrentFeatureNo, CurrentAdultCount, CurrentJuvenileCount, CurrentNeonateCount, CurrentMNI
+8	0	Dim MNIQueryBuilder As DAO.Recordset, TableName, FieldName, Criteria, WhereClause, AgeCategory
+9	0	Dim CalcIndividuals As DAO.Recordset, sqlInsert, sqlDelete, AbleToCalc, AdditionalWhere
+10	0	
+11	0	Set mydb = CurrentDb
+12	2	Set burials = mydb.OpenRecordset("Select [Feature Number] from [Exca: Features] WHERE [Feature Type] = 'burial' ORDER By [Feature Number];", dbOpenSnapshot)
+13	0	
+14	1	'get burial feature numbers - loop through these
+15	0	If Not burials.EOF And Not burials.BOF Then
+16	1	    'there are burial features so can loop
+17	1	     'delete the old data out of the MNI storage table
+18	0	    sqlDelete = "DELETE FROM [HR_Feature_MNI];"
+19	0	    DoCmd.RunSQL sqlDelete
+20	0	    
+21	0	    burials.MoveFirst
+22	0	    Do Until burials.EOF
+23	0	        AbleToCalc = False
+24	0	        CurrentFeatureNo = burials![Feature Number]
+25	0	        Forms![FRM_MNI]![txtFeature] = "Calculating for Feature " & CurrentFeatureNo
+26	0	        DoCmd.RepaintObject acForm, "FRM_MNI"
+27	0	                
+28	0	        Set MNIQueryBuilder = mydb.OpenRecordset("HR_Feature_MNI_QueryBuilder", dbOpenDynaset)
+29	0	        If Not MNIQueryBuilder.EOF And Not MNIQueryBuilder.BOF Then
+30	1	            'there are records in the MNI builder which can be used to query HR DB and get info
+31	0	            MNIQueryBuilder.MoveFirst
+32	0	            CurrentAdultCount = 0
+33	0	            CurrentJuvenileCount = 0
+34	0	            CurrentNeonateCount = 0
+35	0	            
+36	0	            Dim AdultfldWithMost, JuvfldWithMost, NeofldWithMost
+37	0	            AdultfldWithMost = ""
+38	0	            JuvfldWithMost = ""
+39	0	            NeofldWithMost = ""
+40	0	            
+41	0	            Do Until MNIQueryBuilder.EOF
+42	1	                'now must loop the MNIQueryBuilder table and extract info to build queries
+43	0	                TableName = "[" & MNIQueryBuilder![TableName] & "]"
+44	0	                FieldName = "[" & MNIQueryBuilder![FieldName] & "]"
+45	0	                Criteria = MNIQueryBuilder![Criteria]
+46	0	                WhereClause = FieldName & " " & Criteria
+47	0	                AgeCategory = MNIQueryBuilder![AgeCategory]
+48	0	                
+49	0	                Forms![FRM_MNI]![txtMsg] = "Checking " & TableName & " - " & FieldName & " for feature number " & CurrentFeatureNo
+50	0	                DoCmd.RepaintObject acForm, "FRM_MNI"
+51	0	                
+52	0	                If TableName = "[HR_ageing and sexing]" Then
+53	1	                    'damn inconsistent field naming - this table uses Unit number not UnitNumber = difference is on inner join line
+54	0	                    sql = "SELECT Count([dbo_Exca: Units in Features].In_feature) AS CountOfIn_feature " & _
+55	0	                        "FROM ([Exca: Unit Sheet with Relationships] INNER JOIN [dbo_Exca: Units in Features] ON " & _
+56	0	                        "[Exca: Unit Sheet with Relationships].[Unit Number] = [dbo_Exca: Units in Features].Unit) " & _
+57	0	                        "INNER JOIN " & TableName & " ON [Exca: Unit Sheet with Relationships].[Unit Number] = " & TableName & ".[Unit Number] " & _
+58	0	                        "GROUP BY [dbo_Exca: Units in Features].In_feature, " & TableName & "." & FieldName & _
+59	0	                        " HAVING ((([dbo_Exca: Units in Features].In_feature)=" & CurrentFeatureNo & ") AND ((" & TableName & "." & WhereClause & ")));"
+60	0	                Else
+61	0	                    If InStr(TableName, "Measure") > 0 And AgeCategory <> "adult" Then
+62	1	                        'the measurement table for juveniles and neonates must be have age category criteria
+63	0	                        
+64	0	                        If AgeCategory = "neonate" Then
+65	1	                            'alteration 2010 with new pre-natal category
+66	1	                            'AdditionalWhere = "[HR_ageing and sexing].[age category]=0"
+67	0	                            AdditionalWhere = "[HR_ageing and sexing].[age category]=0 OR [HR_ageing and sexing].[age category]=9"
+68	0	                        ElseIf AgeCategory = "juvenile" Then
+69	1	                            'AdditionalWhere = "[HR_ageing and sexing].[age category]=1 OR [HR_ageing and sexing].[age category]=2 OR [HR_ageing and sexing].[age category]=3"
+70	1	                            'Basak change mind - take out 3
+71	0	                            AdditionalWhere = "[HR_ageing and sexing].[age category]=1 OR [HR_ageing and sexing].[age category]=2"
+72	0	                        End If
+73	0	                        sql = "SELECT Count([dbo_Exca: Units in Features].In_feature) AS CountOfIn_feature  " & _
+74	0	                        "FROM (([Exca: Unit Sheet with Relationships] INNER JOIN [dbo_Exca: Units in Features] ON " & _
+75	0	                        "[Exca: Unit Sheet with Relationships].[Unit Number] = [dbo_Exca: Units in Features].Unit) " & _
+76	0	                        "INNER JOIN " & TableName & "  ON [Exca: Unit Sheet with Relationships].[Unit Number] = " & TableName & ".UnitNumber) " & _
+77	0	                        "INNER JOIN [HR_ageing and sexing] ON (" & TableName & ".[Individual number] = [HR_ageing and sexing].[Individual number]) " & _
+78	0	                        " AND (" & TableName & ".UnitNumber = [HR_ageing and sexing].[unit number]) " & _
+79	0	                        "GROUP BY [dbo_Exca: Units in Features].In_feature, " & TableName & "." & FieldName & ", [HR_ageing and sexing].[age category] " & _
+80	0	                        "HAVING ((([dbo_Exca: Units in Features].In_feature)=" & CurrentFeatureNo & ") AND (" & AdditionalWhere & ") AND ((" & TableName & "." & WhereClause & ")));"
+81	0	                    Else
+82	0	                        sql = "SELECT Count([dbo_Exca: Units in Features].In_feature) AS CountOfIn_feature " & _
+83	0	                        "FROM ([Exca: Unit Sheet with Relationships] INNER JOIN [dbo_Exca: Units in Features] ON " & _
+84	0	                        "[Exca: Unit Sheet with Relationships].[Unit Number] = [dbo_Exca: Units in Features].Unit) " & _
+85	0	                        "INNER JOIN " & TableName & " ON [Exca: Unit Sheet with Relationships].[Unit Number] = " & TableName & ".UnitNumber " & _
+86	0	                        "GROUP BY [dbo_Exca: Units in Features].In_feature, " & TableName & "." & FieldName & _
+87	0	                        " HAVING ((([dbo_Exca: Units in Features].In_feature)=" & CurrentFeatureNo & ") AND ((" & TableName & "." & WhereClause & ")));"
+88	0	                    End If
+89	0	                End If
+90	0	                
+91	0	                Set CalcIndividuals = mydb.OpenRecordset(sql, dbOpenSnapshot)
+92	0	                If Not CalcIndividuals.EOF And Not CalcIndividuals.BOF Then
+93	0	                    AbleToCalc = True
+94	0	                    CalcIndividuals.MoveFirst
+95	0	                    Do Until CalcIndividuals.EOF
+96	0	                        If AgeCategory = "juvenile" Then
+97	0	                            If CurrentJuvenileCount < CalcIndividuals![CountOfIn_Feature] Then
+98	0	                                CurrentJuvenileCount = CalcIndividuals![CountOfIn_Feature]
+99	0	                                JuvfldWithMost = FieldName
+100	0	                            End If
+101	0	                        ElseIf AgeCategory = "neonate" Then
+102	0	                            If CurrentNeonateCount < CalcIndividuals![CountOfIn_Feature] Then
+103	0	                                CurrentNeonateCount = CalcIndividuals![CountOfIn_Feature]
+104	0	                                NeofldWithMost = FieldName
+105	0	                            End If
+106	1	                        Else 'adult
+107	1	                            'If CalcIndividuals![CountOfIn_Feature] > 50 Then
+108	1	                           '     MsgBox "here"
+109	1	                            'End If
+110	0	                            
+111	0	                            If CurrentAdultCount < CalcIndividuals![CountOfIn_Feature] Then
+112	0	                                CurrentAdultCount = CalcIndividuals![CountOfIn_Feature]
+113	0	                                AdultfldWithMost = FieldName
+114	0	                            End If
+115	0	                        End If
+116	0	                    CalcIndividuals.MoveNext
+117	0	                    Loop
+118	0	                Else
+119	2	                    'if no records = no count for this query so don't do anything, nothing has changed from previous counts
+120	0	                End If
+121	0	                CalcIndividuals.Close
+122	0	                Set CalcIndividuals = Nothing
+123	0	            
+124	0	            MNIQueryBuilder.MoveNext
+125	0	            Loop
+126	1	            'ok gathered so write it into our table
+127	1	            'was it able to calc and MNI - ie: are the skeletons present in the HR DB to able to do this
+128	0	            If AbleToCalc = True Then
+129	4	                sqlInsert = "INSERT INTO [HR_Feature_MNI] ([FeatureNumber], [MNI], [Adults], [Juveniles], [Neonates], [Notes], [LastGenerated]) VALUES (" & CurrentFeatureNo & ", " & CurrentAdultCount + CurrentJuvenileCount + CurrentNeonateCount & "," & CurrentAdultCount & "," & CurrentJuvenileCount & ", " & CurrentNeonateCount & ", 'Adult highest count from: " & AdultfldWithMost & ", Juv highest count from: " & JuvfldWithMost & ", Neo highest count from: " & NeofldWithMost & "','" & Now() & "');"
+130	0	            Else
+131	4	                sqlInsert = "INSERT INTO [HR_Feature_MNI] ([FeatureNumber], [Notes], [LastGenerated]) VALUES (" & CurrentFeatureNo & ", 'Not enough data available yet to undertake calculation', '" & Now() & "');"
+132	0	            End If
+133	0	            DoCmd.RunSQL sqlInsert
+134	0	            
+135	0	            MNIQueryBuilder.Close
+136	0	            Set MNIQueryBuilder = Nothing
+137	1	            'MsgBox "For feature " & CurrentFeatureNo & " Adults = " & CurrentAdultCount & " Juveniles = " & CurrentJuvenileCount & " Neonates = " & CurrentNeonateCount & " therefore MNI = " & (CurrentAdultCount + CurrentJuvenileCount + CurrentNeonateCount)
+138	0	        Else
+139	0	            MsgBox "The MNI Query Builder table which is used to calculate the MNI is empty. The MNI calculation cannot be done without this information. Contact the DBA", vbExclamation, "Cannot proceed"
+140	0	            MNIQueryBuilder.Close
+141	0	            Set MNIQueryBuilder = Nothing
+142	0	            burials.Close
+143	0	            Set burials = Nothing
+144	0	            Exit Do
+145	0	        End If
+146	0	        burials.MoveNext
+147	0	    Loop
+148	0	    
+149	0	Else
+150	0	    MsgBox "No burial features have been found in the excavation database. No MNI can be calculated.", vbInformation, "No Burials found"
+151	0	    
+152	0	End If
+153	0	burials.Close
+154	0	Set burials = Nothing
+155	0	End Sub
+156	0	
+157	0	
+158	0	Sub CalcSpaceMNI()
+159	1	'Stressed by lack of time - urgent requirement to extend MNI to space numbers. Ideally want to adapt CalcMNI to take in
+160	1	'sql parametre so re-use same code but HR team in middle of working out how to include fragmentation into the calc so it will
+161	1	'change drastically anyway. Can make the alteration to generic at that time.
+162	2	'So in the meantime just cut and pasted the calcmni code and I've edited to take in space numbers here
+163	1	'Sorry ---- SAJ 27July2010
+164	0	Dim mydb As DAO.Database, spaces As DAO.Recordset, sql
+165	0	Dim CurrentSpaceNo, CurrentAdultCount, CurrentJuvenileCount, CurrentNeonateCount, CurrentMNI
+166	0	Dim MNIQueryBuilder As DAO.Recordset, TableName, FieldName, Criteria, WhereClause, AgeCategory
+167	0	Dim CalcIndividuals As DAO.Recordset, sqlInsert, sqlDelete, AbleToCalc, AdditionalWhere
+168	0	
+169	0	Set mydb = CurrentDb
+170	3	'Set spaces = mydb.OpenRecordset("Select [Feature Number] from [Exca: Features] WHERE [Feature Type] = 'burial' ORDER By [Feature Number];", dbOpenSnapshot)
+171	2	Set spaces = mydb.OpenRecordset("SELECT DISTINCT [dbo_Exca: Space Sheet].[Space number] FROM [Exca: Unit Sheet] INNER JOIN ([dbo_Exca: Units in Spaces] INNER JOIN [dbo_Exca: Space Sheet] ON [dbo_Exca: Units in Spaces].In_space = [dbo_Exca: Space Sheet].[Space number]) ON [Exca: Unit Sheet].[Unit Number] = [dbo_Exca: Units in Spaces].Unit WHERE ((([Exca: Unit Sheet].Category)='skeleton'));")
+172	0	
+173	1	'get space numbers that have skeleton units in them - loop through these
+174	0	If Not spaces.EOF And Not spaces.BOF Then
+175	1	    'there are spaces with skeletons so can loop
+176	1	     'delete the old data out of the MNI storage table
+177	0	    sqlDelete = "DELETE FROM [HR_Space_MNI];"
+178	0	    DoCmd.RunSQL sqlDelete
+179	0	    
+180	0	    spaces.MoveFirst
+181	0	    Do Until spaces.EOF
+182	0	        AbleToCalc = False
+183	0	        CurrentSpaceNo = spaces![Space Number]
+184	1	        'this is purely a txt box for a message - dont worry it says feature
+185	0	        Forms![FRM_MNI]![txtFeature] = "Calculating for Space " & CurrentSpaceNo
+186	0	        DoCmd.RepaintObject acForm, "FRM_MNI"
+187	0	                
+188	2	        'don't worry this says its Feature but actually its criteria for MNI in general - will rename in winter (hopefully)
+189	0	        Set MNIQueryBuilder = mydb.OpenRecordset("HR_Feature_MNI_QueryBuilder", dbOpenDynaset)
+190	0	        If Not MNIQueryBuilder.EOF And Not MNIQueryBuilder.BOF Then
+191	1	            'there are records in the MNI builder which can be used to query HR DB and get info
+192	0	            MNIQueryBuilder.MoveFirst
+193	0	            CurrentAdultCount = 0
+194	0	            CurrentJuvenileCount = 0
+195	0	            CurrentNeonateCount = 0
+196	0	            
+197	0	            Dim AdultfldWithMost, JuvfldWithMost, NeofldWithMost
+198	0	            AdultfldWithMost = ""
+199	0	            JuvfldWithMost = ""
+200	0	            NeofldWithMost = ""
+201	0	            
+202	0	            Do Until MNIQueryBuilder.EOF
+203	1	                'now must loop the MNIQueryBuilder table and extract info to build queries
+204	0	                TableName = "[" & MNIQueryBuilder![TableName] & "]"
+205	0	                FieldName = "[" & MNIQueryBuilder![FieldName] & "]"
+206	0	                Criteria = MNIQueryBuilder![Criteria]
+207	0	                WhereClause = FieldName & " " & Criteria
+208	0	                AgeCategory = MNIQueryBuilder![AgeCategory]
+209	0	                
+210	0	                Forms![FRM_MNI]![txtMsg] = "Checking " & TableName & " - " & FieldName & " for space number " & CurrentSpaceNo
+211	0	                DoCmd.RepaintObject acForm, "FRM_MNI"
+212	0	                
+213	0	                If TableName = "[HR_ageing and sexing]" Then
+214	1	                    'damn inconsistent field naming - this table uses Unit number not UnitNumber = difference is on inner join line
+215	0	                    sql = "SELECT Count([dbo_Exca: Units in Spaces].In_space) AS CountOfIn_space " & _
+216	0	                        "FROM ([Exca: Unit Sheet with Relationships] INNER JOIN [dbo_Exca: Units in Spaces] ON " & _
+217	0	                        "[Exca: Unit Sheet with Relationships].[Unit Number] = [dbo_Exca: Units in Spaces].Unit) " & _
+218	0	                        "INNER JOIN " & TableName & " ON [Exca: Unit Sheet with Relationships].[Unit Number] = " & TableName & ".[Unit Number] " & _
+219	0	                        "GROUP BY [dbo_Exca: Units in Spaces].In_space, " & TableName & "." & FieldName & _
+220	0	                        " HAVING ((([dbo_Exca: Units in Spaces].In_space)=" & CurrentSpaceNo & ") AND ((" & TableName & "." & WhereClause & ")));"
+221	0	                Else
+222	0	                    If InStr(TableName, "Measure") > 0 And AgeCategory <> "adult" Then
+223	1	                        'the measurement table for juveniles and neonates must be have age category criteria
+224	0	                        
+225	0	                        If AgeCategory = "neonate" Then
+226	1	                            'alteration 2010 with new pre-natal category
+227	1	                            'AdditionalWhere = "[HR_ageing and sexing].[age category]=0"
+228	0	                            AdditionalWhere = "[HR_ageing and sexing].[age category]=0 OR [HR_ageing and sexing].[age category]=9"
+229	0	                        ElseIf AgeCategory = "juvenile" Then
+230	1	                            'AdditionalWhere = "[HR_ageing and sexing].[age category]=1 OR [HR_ageing and sexing].[age category]=2 OR [HR_ageing and sexing].[age category]=3"
+231	1	                            'Basak change mind - take out 3
+232	0	                            AdditionalWhere = "[HR_ageing and sexing].[age category]=1 OR [HR_ageing and sexing].[age category]=2"
+233	0	                        End If
+234	0	                        sql = "SELECT Count([dbo_Exca: Units in Spaces].In_Space) AS CountOfIn_space  " & _
+235	0	                        "FROM (([Exca: Unit Sheet with Relationships] INNER JOIN [dbo_Exca: Units in Spaces] ON " & _
+236	0	                        "[Exca: Unit Sheet with Relationships].[Unit Number] = [dbo_Exca: Units in Spaces].Unit) " & _
+237	0	                        "INNER JOIN " & TableName & "  ON [Exca: Unit Sheet with Relationships].[Unit Number] = " & TableName & ".UnitNumber) " & _
+238	0	                        "INNER JOIN [HR_ageing and sexing] ON (" & TableName & ".[Individual number] = [HR_ageing and sexing].[Individual number]) " & _
+239	0	                        " AND (" & TableName & ".UnitNumber = [HR_ageing and sexing].[unit number]) " & _
+240	0	                        "GROUP BY [dbo_Exca: Units in Spaces].In_space, " & TableName & "." & FieldName & ", [HR_ageing and sexing].[age category] " & _
+241	0	                        "HAVING ((([dbo_Exca: Units in Spaces].In_space)=" & CurrentSpaceNo & ") AND (" & AdditionalWhere & ") AND ((" & TableName & "." & WhereClause & ")));"
+242	0	                    Else
+243	0	                        sql = "SELECT Count([dbo_Exca: Units in Spaces].In_space) AS CountOfIn_space " & _
+244	0	                        "FROM ([Exca: Unit Sheet with Relationships] INNER JOIN [dbo_Exca: Units in Spaces] ON " & _
+245	0	                        "[Exca: Unit Sheet with Relationships].[Unit Number] = [dbo_Exca: Units in Spaces].Unit) " & _
+246	0	                        "INNER JOIN " & TableName & " ON [Exca: Unit Sheet with Relationships].[Unit Number] = " & TableName & ".UnitNumber " & _
+247	0	                        "GROUP BY [dbo_Exca: Units in Spaces].In_space, " & TableName & "." & FieldName & _
+248	0	                        " HAVING ((([dbo_Exca: Units in Spaces].In_space)=" & CurrentSpaceNo & ") AND ((" & TableName & "." & WhereClause & ")));"
+249	0	                    End If
+250	0	                End If
+251	0	                
+252	0	                Set CalcIndividuals = mydb.OpenRecordset(sql, dbOpenSnapshot)
+253	0	                If Not CalcIndividuals.EOF And Not CalcIndividuals.BOF Then
+254	0	                    AbleToCalc = True
+255	0	                    CalcIndividuals.MoveFirst
+256	0	                    Do Until CalcIndividuals.EOF
+257	0	                        If AgeCategory = "juvenile" Then
+258	0	                            If CurrentJuvenileCount < CalcIndividuals![CountOfIn_Space] Then
+259	0	                                CurrentJuvenileCount = CalcIndividuals![CountOfIn_Space]
+260	0	                                JuvfldWithMost = FieldName
+261	0	                            End If
+262	0	                        ElseIf AgeCategory = "neonate" Then
+263	0	                            If CurrentNeonateCount < CalcIndividuals![CountOfIn_Space] Then
+264	0	                                CurrentNeonateCount = CalcIndividuals![CountOfIn_Space]
+265	0	                                NeofldWithMost = FieldName
+266	0	                            End If
+267	1	                        Else 'adult
+268	1	                            'If CalcIndividuals![CountOfIn_Feature] > 50 Then
+269	1	                           '     MsgBox "here"
+270	1	                            'End If
+271	0	                            
+272	0	                            If CurrentAdultCount < CalcIndividuals![CountOfIn_Space] Then
+273	0	                                CurrentAdultCount = CalcIndividuals![CountOfIn_Space]
+274	0	                                AdultfldWithMost = FieldName
+275	0	                            End If
+276	0	                        End If
+277	0	                    CalcIndividuals.MoveNext
+278	0	                    Loop
+279	0	                Else
+280	2	                    'if no records = no count for this query so don't do anything, nothing has changed from previous counts
+281	0	                End If
+282	0	                CalcIndividuals.Close
+283	0	                Set CalcIndividuals = Nothing
+284	0	            
+285	0	            MNIQueryBuilder.MoveNext
+286	0	            Loop
+287	1	            'ok gathered so write it into our table
+288	1	            'was it able to calc and MNI - ie: are the skeletons present in the HR DB to able to do this
+289	0	            If AbleToCalc = True Then
+290	4	                sqlInsert = "INSERT INTO [HR_Space_MNI] ([SpaceNumber], [MNI], [Adults], [Juveniles], [Neonates], [Notes], [LastGenerated]) VALUES (" & CurrentSpaceNo & ", " & CurrentAdultCount + CurrentJuvenileCount + CurrentNeonateCount & "," & CurrentAdultCount & "," & CurrentJuvenileCount & ", " & CurrentNeonateCount & ",'Adult highest count from: " & AdultfldWithMost & ", Juv highest count from: " & JuvfldWithMost & ", Neo highest count from: " & NeofldWithMost & "', '" & Now() & "');"
+291	0	            Else
+292	4	                sqlInsert = "INSERT INTO [HR_Space_MNI] ([SpaceNumber], [Notes], [LastGenerated]) VALUES (" & CurrentSpaceNo & ", 'Not enough data available yet to undertake calculation', '" & Now() & "');"
+293	0	            End If
+294	0	            DoCmd.RunSQL sqlInsert
+295	0	            
+296	0	            MNIQueryBuilder.Close
+297	0	            Set MNIQueryBuilder = Nothing
+298	1	            'MsgBox "For space " & CurrentSpaceNo & " Adults = " & CurrentAdultCount & " Juveniles = " & CurrentJuvenileCount & " Neonates = " & CurrentNeonateCount & " therefore MNI = " & (CurrentAdultCount + CurrentJuvenileCount + CurrentNeonateCount)
+299	0	        Else
+300	0	            MsgBox "The MNI Query Builder table which is used to calculate the MNI is empty. The MNI calculation cannot be done without this information. Contact the DBA", vbExclamation, "Cannot proceed"
+301	0	            MNIQueryBuilder.Close
+302	0	            Set MNIQueryBuilder = Nothing
+303	0	            spaces.Close
+304	0	            Set spaces = Nothing
+305	0	            Exit Do
+306	0	        End If
+307	0	        spaces.MoveNext
+308	0	    Loop
+309	0	    
+310	0	Else
+311	0	    MsgBox "No spaces containing skeleton units have been found in the excavation database. No MNI can be calculated.", vbInformation, "No spaces found"
+312	0	    
+313	0	End If
+314	0	spaces.Close
+315	0	Set spaces = Nothing
+316	0	End Sub
+317	0	
+318	0	Sub CalcBuildingMNI()
+319	1	'Stressed by lack of time - urgent requirement to extend MNI to building numbers. Ideally want to adapt CalcMNI to take in
+320	1	'sql parametre so re-use same code but HR team in middle of working out how to include fragmentation into the calc so it will
+321	1	'change drastically anyway. Can make the alteration to generic at that time.
+322	2	'So in the meantime just cut and pasted the calcmni code and I've edited to take in space numbers here
+323	1	'Sorry ---- SAJ 27July2010
+324	0	Dim mydb As DAO.Database, buildings As DAO.Recordset, sql
+325	0	Dim CurrentBuildingNo, CurrentAdultCount, CurrentJuvenileCount, CurrentNeonateCount, CurrentMNI
+326	0	Dim MNIQueryBuilder As DAO.Recordset, TableName, FieldName, Criteria, WhereClause, AgeCategory
+327	0	Dim CalcIndividuals As DAO.Recordset, sqlInsert, sqlDelete, AbleToCalc, AdditionalWhere
+328	0	
+329	0	Set mydb = CurrentDb
+330	3	'Set buildings = mydb.OpenRecordset("Select [Feature Number] from [Exca: Features] WHERE [Feature Type] = 'burial' ORDER By [Feature Number];", dbOpenSnapshot)
+331	2	Set buildings = mydb.OpenRecordset("SELECT DISTINCT [dbo_Exca: Units in Buildings].In_building As [Building number] FROM [Exca: Unit Sheet] INNER JOIN [dbo_Exca: Units in Buildings] ON [Exca: Unit Sheet].[Unit Number] = [dbo_Exca: Units in Buildings].Unit WHERE ((([Exca: Unit Sheet].Category)='skeleton'));")
+332	0	
+333	1	'get building numbers that have skeleton units in them - loop through these
+334	0	If Not buildings.EOF And Not buildings.BOF Then
+335	1	    'there are buildings with skeletons so can loop
+336	1	     'delete the old data out of the MNI storage table
+337	0	    sqlDelete = "DELETE FROM [HR_Building_MNI];"
+338	0	    DoCmd.RunSQL sqlDelete
+339	0	    
+340	0	    buildings.MoveFirst
+341	0	    Do Until buildings.EOF
+342	0	        AbleToCalc = False
+343	0	        CurrentBuildingNo = buildings![Building Number]
+344	1	        'this is purely a txt box for a message - dont worry it says feature
+345	0	        Forms![FRM_MNI]![txtFeature] = "Calculating for Building " & CurrentBuildingNo
+346	0	        DoCmd.RepaintObject acForm, "FRM_MNI"
+347	0	                
+348	2	        'don't worry this says its Feature but actually its criteria for MNI in general - will rename in winter (hopefully)
+349	0	        Set MNIQueryBuilder = mydb.OpenRecordset("HR_Feature_MNI_QueryBuilder", dbOpenDynaset)
+350	0	        If Not MNIQueryBuilder.EOF And Not MNIQueryBuilder.BOF Then
+351	1	            'there are records in the MNI builder which can be used to query HR DB and get info
+352	0	            MNIQueryBuilder.MoveFirst
+353	0	            CurrentAdultCount = 0
+354	0	            CurrentJuvenileCount = 0
+355	0	            CurrentNeonateCount = 0
+356	0	            
+357	0	            Dim AdultfldWithMost, JuvfldWithMost, NeofldWithMost
+358	0	            AdultfldWithMost = ""
+359	0	            JuvfldWithMost = ""
+360	0	            NeofldWithMost = ""
+361	0	            
+362	0	            Do Until MNIQueryBuilder.EOF
+363	1	                'now must loop the MNIQueryBuilder table and extract info to build queries
+364	0	                TableName = "[" & MNIQueryBuilder![TableName] & "]"
+365	0	                FieldName = "[" & MNIQueryBuilder![FieldName] & "]"
+366	0	                Criteria = MNIQueryBuilder![Criteria]
+367	0	                WhereClause = FieldName & " " & Criteria
+368	0	                AgeCategory = MNIQueryBuilder![AgeCategory]
+369	0	                
+370	0	                Forms![FRM_MNI]![txtMsg] = "Checking " & TableName & " - " & FieldName & " for Building number " & CurrentBuildingNo
+371	0	                DoCmd.RepaintObject acForm, "FRM_MNI"
+372	0	                
+373	0	                If TableName = "[HR_ageing and sexing]" Then
+374	1	                    'damn inconsistent field naming - this table uses Unit number not UnitNumber = difference is on inner join line
+375	0	                    sql = "SELECT Count([dbo_Exca: Units in buildings].In_Building) AS CountOfIn_Building " & _
+376	0	                        "FROM ([Exca: Unit Sheet with Relationships] INNER JOIN [dbo_Exca: Units in buildings] ON " & _
+377	0	                        "[Exca: Unit Sheet with Relationships].[Unit Number] = [dbo_Exca: Units in buildings].Unit) " & _
+378	0	                        "INNER JOIN " & TableName & " ON [Exca: Unit Sheet with Relationships].[Unit Number] = " & TableName & ".[Unit Number] " & _
+379	0	                        "GROUP BY [dbo_Exca: Units in buildings].In_Building, " & TableName & "." & FieldName & _
+380	0	                        " HAVING ((([dbo_Exca: Units in buildings].In_Building)=" & CurrentBuildingNo & ") AND ((" & TableName & "." & WhereClause & ")));"
+381	0	                Else
+382	0	                    If InStr(TableName, "Measure") > 0 And AgeCategory <> "adult" Then
+383	1	                        'the measurement table for juveniles and neonates must be have age category criteria
+384	0	                        
+385	0	                        If AgeCategory = "neonate" Then
+386	1	                            'alteration 2010 with new pre-natal category
+387	1	                            'AdditionalWhere = "[HR_ageing and sexing].[age category]=0"
+388	0	                            AdditionalWhere = "[HR_ageing and sexing].[age category]=0 OR [HR_ageing and sexing].[age category]=9"
+389	0	                        ElseIf AgeCategory = "juvenile" Then
+390	1	                            'AdditionalWhere = "[HR_ageing and sexing].[age category]=1 OR [HR_ageing and sexing].[age category]=2 OR [HR_ageing and sexing].[age category]=3"
+391	1	                            'Basak change mind - take out 3
+392	0	                            AdditionalWhere = "[HR_ageing and sexing].[age category]=1 OR [HR_ageing and sexing].[age category]=2"
+393	0	                        End If
+394	0	                        sql = "SELECT Count([dbo_Exca: Units in buildings].In_Building) AS CountOfIn_Building  " & _
+395	0	                        "FROM (([Exca: Unit Sheet with Relationships] INNER JOIN [dbo_Exca: Units in buildings] ON " & _
+396	0	                        "[Exca: Unit Sheet with Relationships].[Unit Number] = [dbo_Exca: Units in buildings].Unit) " & _
+397	0	                        "INNER JOIN " & TableName & "  ON [Exca: Unit Sheet with Relationships].[Unit Number] = " & TableName & ".UnitNumber) " & _
+398	0	                        "INNER JOIN [HR_ageing and sexing] ON (" & TableName & ".[Individual number] = [HR_ageing and sexing].[Individual number]) " & _
+399	0	                        " AND (" & TableName & ".UnitNumber = [HR_ageing and sexing].[unit number]) " & _
+400	0	                        "GROUP BY [dbo_Exca: Units in buildings].In_Building, " & TableName & "." & FieldName & ", [HR_ageing and sexing].[age category] " & _
+401	0	                        "HAVING ((([dbo_Exca: Units in buildings].In_Building)=" & CurrentBuildingNo & ") AND (" & AdditionalWhere & ") AND ((" & TableName & "." & WhereClause & ")));"
+402	0	                    Else
+403	0	                        sql = "SELECT Count([dbo_Exca: Units in buildings].In_Building) AS CountOfIn_Building " & _
+404	0	                        "FROM ([Exca: Unit Sheet with Relationships] INNER JOIN [dbo_Exca: Units in buildings] ON " & _
+405	0	                        "[Exca: Unit Sheet with Relationships].[Unit Number] = [dbo_Exca: Units in buildings].Unit) " & _
+406	0	                        "INNER JOIN " & TableName & " ON [Exca: Unit Sheet with Relationships].[Unit Number] = " & TableName & ".UnitNumber " & _
+407	0	                        "GROUP BY [dbo_Exca: Units in buildings].In_Building, " & TableName & "." & FieldName & _
+408	0	                        " HAVING ((([dbo_Exca: Units in buildings].In_Building)=" & CurrentBuildingNo & ") AND ((" & TableName & "." & WhereClause & ")));"
+409	0	                    End If
+410	0	                End If
+411	0	                
+412	0	                Set CalcIndividuals = mydb.OpenRecordset(sql, dbOpenSnapshot)
+413	0	                If Not CalcIndividuals.EOF And Not CalcIndividuals.BOF Then
+414	0	                    AbleToCalc = True
+415	0	                    CalcIndividuals.MoveFirst
+416	0	                    Do Until CalcIndividuals.EOF
+417	0	                        If AgeCategory = "juvenile" Then
+418	0	                            If CurrentJuvenileCount < CalcIndividuals![CountOfIn_Building] Then
+419	0	                                CurrentJuvenileCount = CalcIndividuals![CountOfIn_Building]
+420	0	                                JuvfldWithMost = FieldName
+421	0	                            End If
+422	0	                        ElseIf AgeCategory = "neonate" Then
+423	0	                            If CurrentNeonateCount < CalcIndividuals![CountOfIn_Building] Then
+424	0	                                CurrentNeonateCount = CalcIndividuals![CountOfIn_Building]
+425	0	                                NeofldWithMost = FieldName
+426	0	                            End If
+427	1	                        Else 'adult
+428	1	                            'If CalcIndividuals![CountOfIn_Feature] > 50 Then
+429	1	                           '     MsgBox "here"
+430	1	                            'End If
+431	0	                            
+432	0	                            If CurrentAdultCount < CalcIndividuals![CountOfIn_Building] Then
+433	0	                                CurrentAdultCount = CalcIndividuals![CountOfIn_Building]
+434	0	                                AdultfldWithMost = FieldName
+435	0	                            End If
+436	0	                        End If
+437	0	                    CalcIndividuals.MoveNext
+438	0	                    Loop
+439	0	                Else
+440	2	                    'if no records = no count for this query so don't do anything, nothing has changed from previous counts
+441	0	                End If
+442	0	                CalcIndividuals.Close
+443	0	                Set CalcIndividuals = Nothing
+444	0	            
+445	0	            MNIQueryBuilder.MoveNext
+446	0	            Loop
+447	1	            'ok gathered so write it into our table
+448	1	            'was it able to calc and MNI - ie: are the skeletons present in the HR DB to able to do this
+449	0	            If AbleToCalc = True Then
+450	4	                sqlInsert = "INSERT INTO [HR_Building_MNI] ([BuildingNumber], [MNI], [Adults], [Juveniles], [Neonates], [Notes], [LastGenerated]) VALUES (" & CurrentBuildingNo & ", " & CurrentAdultCount + CurrentJuvenileCount + CurrentNeonateCount & "," & CurrentAdultCount & "," & CurrentJuvenileCount & ", " & CurrentNeonateCount & ", 'Adult highest count from: " & AdultfldWithMost & ", Juv highest count from: " & JuvfldWithMost & ", Neo highest count from: " & NeofldWithMost & "','" & Now() & "');"
+451	0	            Else
+452	4	                sqlInsert = "INSERT INTO [HR_Building_MNI] ([BuildingNumber], [Notes], [LastGenerated]) VALUES (" & CurrentBuildingNo & ", 'Not enough data available yet to undertake calculation', '" & Now() & "');"
+453	0	            End If
+454	0	            DoCmd.RunSQL sqlInsert
+455	0	            
+456	0	            MNIQueryBuilder.Close
+457	0	            Set MNIQueryBuilder = Nothing
+458	1	            'MsgBox "For space " & CurrentBuildingNo & " Adults = " & CurrentAdultCount & " Juveniles = " & CurrentJuvenileCount & " Neonates = " & CurrentNeonateCount & " therefore MNI = " & (CurrentAdultCount + CurrentJuvenileCount + CurrentNeonateCount)
+459	0	        Else
+460	0	            MsgBox "The MNI Query Builder table which is used to calculate the MNI is empty. The MNI calculation cannot be done without this information. Contact the DBA", vbExclamation, "Cannot proceed"
+461	0	            MNIQueryBuilder.Close
+462	0	            Set MNIQueryBuilder = Nothing
+463	0	            buildings.Close
+464	0	            Set buildings = Nothing
+465	0	            Exit Do
+466	0	        End If
+467	0	        buildings.MoveNext
+468	0	    Loop
+469	0	    
+470	0	Else
+471	0	    MsgBox "No buildings containing skeleton units have been found in the excavation database. No MNI can be calculated.", vbInformation, "No buildings found"
+472	0	    
+473	0	End If
+474	0	buildings.Close
+475	0	Set buildings = Nothing
+476	0	End Sub

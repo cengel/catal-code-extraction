@@ -1,0 +1,50 @@
+1	0	Option Compare Database
+2	0	
+3	0	Private Sub Update_GID()
+4	0	Me![GID number] = Me![Unit Number] & "." & Me![X-Find Number]
+5	0	End Sub
+6	0	
+7	0	Private Sub Find_Number_AfterUpdate()
+8	0	Update_GID
+9	0	End Sub
+10	0	
+11	0	Private Sub Find_Number_Change()
+12	0	Update_GID
+13	0	End Sub
+14	0	
+15	0	
+16	0	Private Sub Find_Number_Enter()
+17	0	Update_GID
+18	0	End Sub
+19	0	
+20	0	Private Sub Find_Number_Exit(Cancel As Integer)
+21	0	Update_GID
+22	0	End Sub
+23	0	
+24	0	Private Sub Form_BeforeUpdate(Cancel As Integer)
+25	0	Me![Date changed] = Now()
+26	0	Forms![Exca: Unit Sheet]![dbo_Exca: UnitHistory].Form![lastmodify].Value = Now()
+27	0	End Sub
+28	0	
+29	0	
+30	0	Private Sub Form_Open(Cancel As Integer)
+31	1	'**********************************************************************
+32	1	' Set up form view depending on permissions
+33	1	' SAJ v9.1
+34	1	'**********************************************************************
+35	0	On Error GoTo err_Form_Open
+36	0	
+37	0	    Dim permiss
+38	0	    permiss = GetGeneralPermissions
+39	0	    If permiss = "ADMIN" Or permiss = "RW" Or permiss = "exsuper" Then
+40	0	        ToggleFormReadOnly Me, False
+41	0	    Else
+42	1	        'set read only form here, just once
+43	0	        ToggleFormReadOnly Me, True
+44	0	    End If
+45	0	Exit Sub
+46	0	
+47	0	err_Form_Open:
+48	0	    Call General_Error_Trap
+49	0	    Exit Sub
+50	0	End Sub

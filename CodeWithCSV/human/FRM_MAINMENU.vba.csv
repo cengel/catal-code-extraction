@@ -1,0 +1,260 @@
+1	0	Option Compare Database
+2	0	
+3	0	Private Sub cmdDLowerDisease_Click()
+4	0	On Error GoTo Err_cmdUnitDesc_Click
+5	0	
+6	0	    Dim stDocName As String
+7	0	    Dim stLinkCriteria As String
+8	0	
+9	0	    stDocName = "FRM_Deciduous_Lower_Teeth_Disease"
+10	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+11	0	    DoCmd.RunCommand acCmdRecordsGoToNew
+12	0	Exit_cmdUnitDesc_Click:
+13	0	    Exit Sub
+14	0	
+15	0	Err_cmdUnitDesc_Click:
+16	0	    MsgBox Err.Description
+17	0	    Resume Exit_cmdUnitDesc_Click
+18	0	End Sub
+19	0	
+20	0	Private Sub cmdDUpperDisease_Click()
+21	0	On Error GoTo Err_cmdUnitDesc_Click
+22	0	
+23	0	    Dim stDocName As String
+24	0	    Dim stLinkCriteria As String
+25	0	
+26	0	    stDocName = "FRM_Deciduous_Upper_Teeth_Disease"
+27	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+28	0	    DoCmd.RunCommand acCmdRecordsGoToNew
+29	0	Exit_cmdUnitDesc_Click:
+30	0	    Exit Sub
+31	0	
+32	0	Err_cmdUnitDesc_Click:
+33	0	    MsgBox Err.Description
+34	0	    Resume Exit_cmdUnitDesc_Click
+35	0	End Sub
+36	0	
+37	0	Private Sub cmdMNI_Click()
+38	1	'new 2 sept 09 - 2009 season
+39	0	On Error GoTo Err_cmdMNI
+40	0	
+41	1	    'DoCmd.OpenForm "FRM_MNI"
+42	0	    DoCmd.OpenForm "Frm_Pop_Choose_MNI"
+43	0	
+44	0	    Exit Sub
+45	0	
+46	0	Err_cmdMNI:
+47	0	    MsgBox Err.Description
+48	0	    Exit Sub
+49	0	End Sub
+50	0	
+51	0	Private Sub cmdPLowerDisease_Click()
+52	0	On Error GoTo Err_cmdUnitDesc_Click
+53	0	
+54	0	    Dim stDocName As String
+55	0	    Dim stLinkCriteria As String
+56	0	
+57	0	    stDocName = "FRM_Permanent_Lower_Teeth_Disease_v2"
+58	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+59	0	    DoCmd.RunCommand acCmdRecordsGoToNew
+60	0	Exit_cmdUnitDesc_Click:
+61	0	    Exit Sub
+62	0	
+63	0	Err_cmdUnitDesc_Click:
+64	0	    MsgBox Err.Description
+65	0	    Resume Exit_cmdUnitDesc_Click
+66	0	End Sub
+67	0	
+68	0	Private Sub cmdPUpperDisease_Click()
+69	0	On Error GoTo Err_cmdUnitDesc_Click
+70	0	
+71	0	    Dim stDocName As String
+72	0	    Dim stLinkCriteria As String
+73	0	
+74	0	    stDocName = "FRM_Permanent_Upper_Teeth_Disease_v7"
+75	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+76	0	    DoCmd.RunCommand acCmdRecordsGoToNew
+77	0	Exit_cmdUnitDesc_Click:
+78	0	    Exit Sub
+79	0	
+80	0	Err_cmdUnitDesc_Click:
+81	0	    MsgBox Err.Description
+82	0	    Resume Exit_cmdUnitDesc_Click
+83	0	End Sub
+84	0	
+85	0	Private Sub cmdUnitDesc_Click()
+86	0	On Error GoTo Err_cmdUnitDesc_Click
+87	0	
+88	0	    Dim stDocName As String
+89	0	    Dim stLinkCriteria As String
+90	0	
+91	0	    stDocName = "FRM_UnitDescription"
+92	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+93	0	    DoCmd.RunCommand acCmdRecordsGoToNew
+94	0	Exit_cmdUnitDesc_Click:
+95	0	    Exit Sub
+96	0	
+97	0	Err_cmdUnitDesc_Click:
+98	0	    MsgBox Err.Description
+99	0	    Resume Exit_cmdUnitDesc_Click
+100	0	    
+101	0	End Sub
+102	0	
+103	0	Private Sub cmdUnitDescription_Click()
+104	0	On Error GoTo Err_cmdUnitDescription_Click
+105	0	
+106	0	    Dim stDocName As String
+107	0	    Dim stLinkCriteria As String
+108	0	
+109	0	    stDocName = "FRM_SkeletonDescription"
+110	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+111	0	
+112	0	Exit_cmdUnitDescription_Click:
+113	0	    Exit Sub
+114	0	
+115	0	Err_cmdUnitDescription_Click:
+116	0	    MsgBox Err.Description
+117	0	    Resume Exit_cmdUnitDescription_Click
+118	0	    
+119	0	End Sub
+120	0	Private Sub cmdQuit_Click()
+121	0	On Error GoTo Err_cmdQuit_Click
+122	0	
+123	0	
+124	0	    DoCmd.Quit
+125	0	
+126	0	Exit_cmdQuit_Click:
+127	0	    Exit Sub
+128	0	
+129	0	Err_cmdQuit_Click:
+130	0	    MsgBox Err.Description
+131	0	    Resume Exit_cmdQuit_Click
+132	0	    
+133	0	End Sub
+134	0	Private Sub CmdOpenAgeSexFrm_Click()
+135	0	On Error GoTo Err_CmdOpenAgeSexFrm_Click
+136	0	
+137	0	    Dim stDocName As String
+138	0	    Dim stLinkCriteria As String
+139	0	
+140	0	    stDocName = "FRM_Ageing-sexing form"
+141	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+142	0	
+143	0	Exit_CmdOpenAgeSexFrm_Click:
+144	0	    Exit Sub
+145	0	
+146	0	Err_CmdOpenAgeSexFrm_Click:
+147	0	    MsgBox Err.Description
+148	0	    Resume Exit_CmdOpenAgeSexFrm_Click
+149	0	    
+150	0	End Sub
+151	0	Private Sub CmdOpenNeonateFrm_Click()
+152	0	On Error GoTo Err_CmdOpenNeonateFrm_Click
+153	0	
+154	0	    Dim stDocName As String
+155	0	    Dim stLinkCriteria As String
+156	1	    'unchanged start season 2007
+157	0	    stDocName = "FRM_simons NEONATAL FORM"
+158	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+159	0	
+160	0	Exit_CmdOpenNeonateFrm_Click:
+161	0	    Exit Sub
+162	0	
+163	0	Err_CmdOpenNeonateFrm_Click:
+164	0	    MsgBox Err.Description
+165	0	    Resume Exit_CmdOpenNeonateFrm_Click
+166	0	    
+167	0	End Sub
+168	0	Private Sub CmdOpenJuvenileFrm_Click()
+169	0	On Error GoTo Err_CmdOpenJuvenileFrm_Click
+170	0	
+171	0	    Dim stDocName As String
+172	0	    Dim stLinkCriteria As String
+173	0	
+174	2	    ''stDocName = "FRM_Simons juvenile form"
+175	2	    ''season 2007, saj
+176	0	    stDocName = "FRM_Juvenile"
+177	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+178	0	
+179	0	Exit_CmdOpenJuvenileFrm_Click:
+180	0	    Exit Sub
+181	0	
+182	0	Err_CmdOpenJuvenileFrm_Click:
+183	0	    MsgBox Err.Description
+184	0	    Resume Exit_CmdOpenJuvenileFrm_Click
+185	0	    
+186	0	End Sub
+187	0	Private Sub CmdOpenAdultFrm_Click()
+188	0	On Error GoTo Err_CmdOpenAdultFrm_Click
+189	0	
+190	0	    Dim stDocName As String
+191	0	    Dim stLinkCriteria As String
+192	0	
+193	2	    ''stDocName = "FRM_Simons adult form"
+194	2	    ''season 2007, saj
+195	0	    stDocName = "FRM_Adult"
+196	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+197	0	
+198	0	Exit_CmdOpenAdultFrm_Click:
+199	0	    Exit Sub
+200	0	
+201	0	Err_CmdOpenAdultFrm_Click:
+202	0	    MsgBox Err.Description
+203	0	    Resume Exit_CmdOpenAdultFrm_Click
+204	0	    
+205	0	End Sub
+206	0	Private Sub CmdOpenDecidTeethFrm_Click()
+207	0	On Error GoTo Err_CmdOpenDecidTeethFrm_Click
+208	0	
+209	0	    Dim stDocName As String
+210	0	    Dim stLinkCriteria As String
+211	0	
+212	2	    ''stDocName = "FRM_simons DECIDUOUS TEETH"
+213	2	    ''season 2007, saj
+214	0	    stDocName = "FRM_Deciduous_Teeth"
+215	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+216	0	
+217	0	Exit_CmdOpenDecidTeethFrm_Click:
+218	0	    Exit Sub
+219	0	
+220	0	Err_CmdOpenDecidTeethFrm_Click:
+221	0	    MsgBox Err.Description
+222	0	    Resume Exit_CmdOpenDecidTeethFrm_Click
+223	0	    
+224	0	End Sub
+225	0	Private Sub CmdOpenPermTeethFrm_Click()
+226	0	On Error GoTo Err_CmdOpenPermTeethFrm_Click
+227	0	
+228	0	    Dim stDocName As String
+229	0	    Dim stLinkCriteria As String
+230	0	
+231	2	    ''stDocName = "FRM_simons PERMANENT TEETH"
+232	2	    ''season 2007, saj
+233	0	    stDocName = "FRM_Permanent_Teeth"
+234	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+235	0	
+236	0	Exit_CmdOpenPermTeethFrm_Click:
+237	0	    Exit Sub
+238	0	
+239	0	Err_CmdOpenPermTeethFrm_Click:
+240	0	    MsgBox Err.Description
+241	0	    Resume Exit_CmdOpenPermTeethFrm_Click
+242	0	    
+243	0	End Sub
+244	0	Private Sub CmdOpenMeasFrm_Click()
+245	0	On Error GoTo Err_CmdOpenMeasFrm_Click
+246	0	
+247	0	    Dim stDocName As String
+248	0	    Dim stLinkCriteria As String
+249	0	
+250	0	    stDocName = "FRM_Measurement form version 2"
+251	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+252	0	
+253	0	Exit_CmdOpenMeasFrm_Click:
+254	0	    Exit Sub
+255	0	
+256	0	Err_CmdOpenMeasFrm_Click:
+257	0	    MsgBox Err.Description
+258	0	    Resume Exit_CmdOpenMeasFrm_Click
+259	0	    
+260	0	End Sub

@@ -1,0 +1,263 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	1	'******************************************************************************
+4	1	' New module to hold general procedures that are shared across the diff db -easy to overwrite
+5	1	'
+6	1	' Intro by SAJ v.1 (on)
+7	1	'******************************************************************************
+8	0	
+9	0	Function StartUp()
+10	1	'*****************************************************************************
+11	1	' All actions necessary to start the system as smoothly as possible
+12	1	'
+13	1	' SAJ v.1 - actions from autoexac macro plus addition of login/attachment check
+14	1	'*****************************************************************************
+15	0	On Error GoTo err_startup
+16	0	
+17	3	''DoCmd.RunCommand acCmdWindowHide 'hide the DB window from prying eyes
+18	0	
+19	0	DoCmd.OpenForm "Login", acNormal, , , acFormEdit, acDialog
+20	0	
+21	1	'you can hide the warning messages that Access popups up when
+22	1	'you do sql tasks in the background - however the negative side to
+23	1	'this is that you hide all these types of message which you may not
+24	1	'want to do - the options you have are:
+25	2	'   DoCmd.SetWarnings False 'turns off macro msgs
+26	1	'   Application.SetOption "Confirm Record Changes", False
+27	1	'   Application.SetOption "Confirm Document Deletions", False
+28	2	'   Application.SetOption "Confirm Action Queries", False  'this will hide behind the scences sql actions
+29	2	'you could of course turn this on an off around each statement - I'm undecided at present
+30	0	
+31	1	'now the tables are all ok find out the current version
+32	0	SetCurrentVersion
+33	0	
+34	1	'saj 8july07 - max screen
+35	0	DoCmd.Maximize
+36	0	
+37	1	'OPEN YOUR MAIN MENU HERE
+38	1	DoCmd.OpenForm "FrmMainMenu", acNormal, , , acFormReadOnly 'open main menu
+39	0	
+40	1	'refresh the main menu so the version number appears - REPLACE WITH YOUR MENU NAME
+41	0	Forms![FrmMainMenu].Refresh
+42	0	
+43	0	Exit Function
+44	0	
+45	0	err_startup:
+46	0	    Call General_Error_Trap
+47	1	    'now should the system quit out here?
+48	1	    'to be decided
+49	0	End Function
+50	0	
+51	0	
+52	0	Sub General_Error_Trap()
+53	1	'******************************************************************************
+54	1	' Display general error message
+55	1	'
+56	1	' SAJ v.1
+57	1	'******************************************************************************
+58	0	
+59	0	    MsgBox "The system has encountered an error. The message is as follows:" & Chr(13) & Chr(13) & Err.Description & Chr(13) & Chr(13) & "Error Code: " & Err.Number, vbOKOnly, "System Error"
+60	0	
+61	0	End Sub
+62	0	Function GetCurrentVersion()
+63	1	'******************************************************************************
+64	1	' Return current interface version number - if its empty its empty do not put
+65	1	' a trap to go set it as this is directly called by the main menu that appears
+66	1	' before the DB links have been checked and validated (therefore if you do this
+67	1	' the sql server login error will occur)
+68	1	'
+69	1	' SAJ v1
+70	1	'******************************************************************************
+71	0	On Error GoTo err_GetCurrentVersion
+72	0	
+73	0	    GetCurrentVersion = VersionNumber
+74	0	
+75	0	Exit Function
+76	0	
+77	0	err_GetCurrentVersion:
+78	0	    Call General_Error_Trap
+79	0	End Function
+80	0	
+81	0	Function SetCurrentVersion()
+82	1	'******************************************************************************
+83	1	' Return current interface version number stored in DB
+84	1	'
+85	1	' SAJ v9
+86	1	'******************************************************************************
+87	0	On Error GoTo err_SetCurrentVersion
+88	0	
+89	0	Dim retVal
+90	0	retVal = "v"
+91	0	If DBName <> "" Then
+92	0	    Dim mydb As Database, myrs As DAO.Recordset
+93	0	    Dim sql
+94	0	    Set mydb = CurrentDb()
+95	0	    
+96	2	    sql = "SELECT [Version_Num] FROM [Database_Interface_Version_History] WHERE [MDB_Name] = '" & DBName & "' AND not isnull([DATE_RELEASED]) ORDER BY [Version_Num] DESC;"
+97	0	    Set myrs = mydb.OpenRecordset(sql, dbOpenSnapshot)
+98	0	    
+99	2	     '' Dim myrs As New ADODB.Recordset
+100	2	   '' myrs.Open sql, CurrentProject.Connection, adOpenKeySet, adLockOptimistic
+101	0	    
+102	0	    If Not (myrs.BOF And myrs.EOF) Then
+103	0	        myrs.MoveFirst
+104	0	        retVal = retVal & myrs![Version_num]
+105	0	    End If
+106	0	    
+107	0	    myrs.Close
+108	0	    Set myrs = Nothing
+109	0	    mydb.Close
+110	0	    Set mydb = Nothing
+111	0	    
+112	0	  
+113	0	Else
+114	0	    retVal = retVal & "X"
+115	0	End If
+116	0	
+117	0	VersionNumber = retVal
+118	0	SetCurrentVersion = retVal
+119	0	
+120	0	Exit Function
+121	0	err_SetCurrentVersion:
+122	0	    Call General_Error_Trap
+123	0	End Function
+124	0	
+125	0	Sub SetGeneralPermissions(username, pwd, connStr)
+126	1	'******************************************************************************
+127	1	' To make the link clearer between whether a user has only read-only rights or
+128	1	' read write access this code assigns a global var to flag what it knows.
+129	1	' SAJ v9.1
+130	1	'******************************************************************************
+131	0	On Error GoTo err_SetGeneralPermissions
+132	0	
+133	0	Dim tempVal, msg, usr
+134	0	
+135	1	'If the naming convention for users is maintained then the method below should work ok
+136	1	' but it is not very safe so replaced below
+137	1	'   If username = "" Then
+138	1	'        tempVal = "RO"
+139	1	'        msg = "Your login name is unknown to the system, you have been assigned READ ONLY permissions from now on." & Chr(13) & Chr(13) & "If this is incorrect please re-start the application and then if problems persist contact the Database Administrator."
+140	1	'   Else
+141	1	'        usr = UCase(username)
+142	1	'        If InStr(usr, "RO") <> 0 Or UCase(usr) = "CATALHOYUK" Then
+143	1	'            tempVal = "RO"
+144	1	'        ElseIf InStr(usr, "ADMIN") <> 0 Or usr = "RICH" Or usr = "MIA" Or usr = "SHAHINA" Or usr = "SARAH" Then
+145	1	'            tempVal = "ADMIN"
+146	1	'        ElseIf InStr(usr, "RW") <> 0 Then
+147	1	'            tempVal = "RW"
+148	1	'        Else
+149	1	'            tempVal = "RO"
+150	1	'            msg = "The system is unsure of the rights of your login name so you have been assigned " & _
+151	1	'                "READ ONLY permissions on this occassion." & Chr(13) & Chr(13) & "Please contact" & _
+152	2	'                " the Database Administrator with the following message:" & Chr(13) & Chr(13) & "The login '" & _
+153	2	'                username & "' does not fall into any of the known types, please update the " & _
+154	1	'                "SetGeneralPermissions code"
+155	1	'        End If
+156	1	'
+157	1	'    End If
+158	0	
+159	0	
+160	1	' Alternative way to do this is to check the DB permissions tables for the user
+161	1	' using a stored procedure to obtain whether the user has select permissions = RO
+162	1	' if update = RW and if delete = Admin
+163	0	Dim mydb As DAO.Database
+164	0	Dim myq1 As QueryDef
+165	0	    Set mydb = CurrentDb
+166	0	    Set myq1 = mydb.CreateQueryDef("")
+167	0	    myq1.Connect = connStr & ";UID=" & username & ";PWD=" & pwd
+168	1	    'set the global spString to this conn string for use later in DeleteSampleRecord()
+169	0	    spString = connStr & ";UID=" & username & ";PWD=" & pwd
+170	0	    myq1.ReturnsRecords = True
+171	8	    ''myq1.sql = "sp_table_list_with_privileges_for_a_user '%%', 'dbo', null, '" & username & "'"
+172	6	    myq1.sql = "sp_table_privilege_overview_for_user '%%', 'dbo', null, '" & username & "'"
+173	0	
+174	0	    Dim myrs As DAO.Recordset
+175	0	    Set myrs = myq1.OpenRecordset
+176	2	    ''MsgBox myrs.Fields(0).Value
+177	0	    
+178	0	    If myrs.Fields(0).Value = "" Then
+179	0	        tempVal = "RO"
+180	0	        msg = "Your permissions on the database cannot be defined, you have been assigned READ ONLY permissions from now on." & Chr(13) & Chr(13) & "If this is incorrect please re-start the application and then if problems persist contact the Database Administrator."
+181	0	    Else
+182	0	        usr = UCase(myrs.Fields(0).Value)
+183	0	        If InStr(usr, "RO") <> 0 Then
+184	0	            tempVal = "RO"
+185	0	        ElseIf InStr(usr, "ADMIN") <> 0 Then
+186	0	            tempVal = "ADMIN"
+187	0	        ElseIf InStr(usr, "RW") <> 0 Then
+188	0	            tempVal = "RW"
+189	0	        Else
+190	0	            tempVal = "RO"
+191	0	            msg = "The system is unsure of the rights of your login name so you have been assigned " & _
+192	0	                "READ ONLY permissions on this occassion." & Chr(13) & Chr(13) & "Please contact" & _
+193	1	                " the Database Administrator with the following message:" & Chr(13) & Chr(13) & "The login '" & _
+194	1	                username & "' does not fall into any of the known types, please update the " & _
+195	0	                "SetGeneralPermissions code"
+196	0	        End If
+197	0	    End If
+198	0	    
+199	0	    
+200	0	myrs.Close
+201	0	Set myrs = Nothing
+202	0	myq1.Close
+203	0	Set myq1 = Nothing
+204	0	mydb.Close
+205	0	Set mydb = Nothing
+206	0	
+207	0	If msg <> "" Then
+208	0	    MsgBox msg, vbInformation, "Permissions setup"
+209	0	End If
+210	2	''MsgBox tempVal
+211	0	GeneralPermissions = tempVal
+212	0	Exit Sub
+213	0	
+214	0	err_SetGeneralPermissions:
+215	0	    GeneralPermissions = "RO"
+216	0	    msg = "An error has occurred in the procedure: SetGeneralPermissions " & Chr(13) & Chr(13)
+217	0	    msg = msg & "The system is unsure of the rights of your login name so you have been assigned " & _
+218	0	                "READ ONLY permissions on this occassion." & Chr(13) & Chr(13) & "Please contact" & _
+219	1	                " the Database Administrator with the following message:" & Chr(13) & Chr(13) & "The login '" & _
+220	1	                username & "' does not fall into any of the known types"
+221	0	                
+222	0	    MsgBox msg, vbInformation, "Permissions setup"
+223	0	    Exit Sub
+224	0	End Sub
+225	0	Function GetGeneralPermissions()
+226	1	'******************************************************************************
+227	1	' Return the current users status - if its empty call set function to reset
+228	1	' but this will reset to RO
+229	1	'
+230	1	' SAJ v9
+231	1	'******************************************************************************
+232	0	On Error GoTo err_GetCurrentVersion
+233	0	
+234	0	    If GeneralPermissions = "" Then
+235	0	        SetGeneralPermissions "", "", ""
+236	0	    End If
+237	0	    
+238	0	    GetGeneralPermissions = GeneralPermissions
+239	0	
+240	0	Exit Function
+241	0	
+242	0	err_GetCurrentVersion:
+243	0	    Call General_Error_Trap
+244	0	End Function
+245	0	Sub test(KeyAscii As Integer)
+246	0	Dim strCharacter As String
+247	0	
+248	1	    ' Convert ANSI value to character string.
+249	1	    'strCharacter = Chr(KeyAscii)
+250	1	    ' Convert character to upper case, then to ANSI value.
+251	1	    'KeyAscii = Asc(UCase(strCharacter))
+252	0	    MsgBox KeyAscii
+253	0	End Sub
+254	0	
+255	0	Sub ListReferences()
+256	0	Dim refCurr As Reference
+257	0	
+258	0	  For Each refCurr In Application.References
+259	0	    Debug.Print refCurr.Name & ": " & refCurr.FullPath
+260	0	  Next
+261	0	
+262	0	End Sub
+263	0	

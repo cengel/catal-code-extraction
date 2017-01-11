@@ -1,0 +1,753 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	1	'******************************************************************************
+4	1	' New module to hold general procedures that are shared across the diff db -easy to overwrite
+5	1	'
+6	1	' Intro by SAJ v.1 (on)
+7	1	'******************************************************************************
+8	0	
+9	0	Function StartUp()
+10	1	'*****************************************************************************
+11	1	' All actions necessary to start the system as smoothly as possible
+12	1	'
+13	1	' SAJ v.1 - actions from autoexac macro plus addition of login/attachment check
+14	1	'*****************************************************************************
+15	0	On Error GoTo err_startup
+16	0	
+17	3	''DoCmd.RunCommand acCmdWindowHide 'hide the DB window from prying eyes
+18	0	
+19	0	DoCmd.OpenForm "Login", acNormal, , , acFormEdit, acDialog
+20	0	
+21	1	'you can hide the warning messages that Access popups up when
+22	1	'you do sql tasks in the background - however the negative side to
+23	1	'this is that you hide all these types of message which you may not
+24	1	'want to do - the options you have are:
+25	2	'   DoCmd.SetWarnings False 'turns off macro msgs
+26	1	'   Application.SetOption "Confirm Record Changes", False
+27	1	'   Application.SetOption "Confirm Document Deletions", False
+28	2	'   Application.SetOption "Confirm Action Queries", False  'this will hide behind the scences sql actions
+29	2	'you could of course turn this on an off around each statement - I'm undecided at present
+30	0	
+31	1	'now the tables are all ok find out the current version
+32	1	'SetCurrentVersion
+33	1	'DoCmd.Maximize
+34	1	'OPEN YOUR MAIN MENU HERE
+35	1	DoCmd.OpenForm "Frm_Menu", acNormal, , , acFormPropertySettings 'open main menu
+36	1	'refresh the main menu so the version number appears - REPLACE WITH YOUR MENU NAME
+37	1	'Forms![Frm_Main].Refresh
+38	0	
+39	0	Exit Function
+40	0	
+41	0	err_startup:
+42	0	    Call General_Error_Trap
+43	1	    'now should the system quit out here?
+44	1	    'to be decided
+45	0	End Function
+46	0	
+47	0	
+48	0	Sub General_Error_Trap()
+49	1	'******************************************************************************
+50	1	' Display general error message
+51	1	'
+52	1	' SAJ v.1
+53	1	'******************************************************************************
+54	0	
+55	0	    MsgBox "The system has encountered an error. The message is as follows:" & Chr(13) & Chr(13) & Err.Description & Chr(13) & Chr(13) & "Error Code: " & Err.Number, vbOKOnly, "System Error"
+56	0	
+57	0	End Sub
+58	0	Function GetCurrentVersion()
+59	1	'******************************************************************************
+60	1	' Return current interface version number - if its empty its empty do not put
+61	1	' a trap to go set it as this is directly called by the main menu that appears
+62	1	' before the DB links have been checked and validated (therefore if you do this
+63	1	' the sql server login error will occur)
+64	1	'
+65	1	' SAJ v1
+66	1	'******************************************************************************
+67	0	On Error GoTo err_GetCurrentVersion
+68	0	
+69	0	    GetCurrentVersion = VersionNumber
+70	0	
+71	0	Exit Function
+72	0	
+73	0	err_GetCurrentVersion:
+74	0	    Call General_Error_Trap
+75	0	End Function
+76	0	
+77	0	Function SetCurrentVersion()
+78	1	'******************************************************************************
+79	1	' Return current interface version number stored in DB
+80	1	'
+81	1	' SAJ v9
+82	1	'******************************************************************************
+83	0	On Error GoTo err_SetCurrentVersion
+84	0	
+85	0	Dim retVal, centralver
+86	0	retVal = "v"
+87	0	If DBName <> "" Then
+88	0	    Dim mydb As Database, myrs As DAO.Recordset
+89	0	    Dim sql, theVersionNumberLocal
+90	0	    Set mydb = CurrentDb()
+91	0	    
+92	2	    sql = "SELECT [Version_Num] FROM [Database_Interface_Version_History] WHERE [MDB_Name] = '" & DBName & "' AND not isnull([DATE_RELEASED]) ORDER BY [Version_Num] DESC;"
+93	0	    Set myrs = mydb.OpenRecordset(sql, dbOpenSnapshot)
+94	0	    
+95	2	     '' Dim myrs As New ADODB.Recordset
+96	2	   '' myrs.Open sql, CurrentProject.Connection, adOpenKeySet, adLockOptimistic
+97	0	    
+98	0	    If Not (myrs.BOF And myrs.EOF) Then
+99	0	        myrs.MoveFirst
+100	0	        centralver = myrs![Version_num]
+101	0	        retVal = retVal & myrs![Version_num]
+102	0	        
+103	1	        'check local constant value held in module Globals-shared to see if this interface
+104	1	        'matches current version of central copy, if not tell the user
+105	2	        '2009 was a problem on PC's with where comma showing as decimal so try to capture
+106	0	        theVersionNumberLocal = VersionNumberLocal
+107	0	        If InStr(centralver, ",") > 0 Then centralver = Replace(centralver, ",", ".")
+108	0	        If InStr(theVersionNumberLocal, ",") > 0 Then theVersionNumberLocal = Replace(theVersionNumberLocal, ",", ".")
+109	0	        
+110	1	        'If centralver <> VersionNumberLocal Then
+111	0	        If CDbl(centralver) <> CDbl(theVersionNumberLocal) Then
+112	0	            Dim msg
+113	0	            msg = "There is a new version of the Ceramics database file available. " & Chr(13) & Chr(13) & _
+114	2	                    "Please close this copy now and run 'Update Databases.bat' on your desktop or " & _
+115	2	                    "copy the file 'Ceramics_2009.mdb' from G:\" & Year(Date) & " Central Server Databases " & _
+116	2	                    " into the 'New Database Files folder' on your desktop." & Chr(13) & Chr(13) & "If you do not do this" & _
+117	0	                    " you may experience problems using this database and you will not be able to utilise any new functionaility that has been added."
+118	0	            MsgBox msg, vbExclamation + vbOKOnly, "New version available"
+119	0	        End If
+120	0	    End If
+121	0	    
+122	0	    myrs.Close
+123	0	    Set myrs = Nothing
+124	0	    mydb.Close
+125	0	    Set mydb = Nothing
+126	0	    
+127	0	  
+128	0	Else
+129	0	    retVal = retVal & "X"
+130	0	End If
+131	0	
+132	0	VersionNumber = retVal
+133	0	SetCurrentVersion = retVal
+134	0	
+135	0	Exit Function
+136	0	err_SetCurrentVersion:
+137	0	    Call General_Error_Trap
+138	0	End Function
+139	0	
+140	0	Sub SetGeneralPermissions(username, pwd, connStr)
+141	1	'******************************************************************************
+142	1	' To make the link clearer between whether a user has only read-only rights or
+143	1	' read write this code assigns a global var to flag what it knows. If the
+144	1	' naming convention for users is maintained then this should work ok
+145	1	'
+146	1	' Alternative way to do this might be to check the DB permissions tables for
+147	1	' each username
+148	1	'******************************************************************************
+149	0	On Error GoTo err_SetGeneralPermissions
+150	0	Dim tempVal, msg, usr
+151	0	
+152	1	'If username = "" Then
+153	1	'    tempVal = "RO"
+154	1	'    msg = "Your login name is unknown to the system, you have been assigned READ ONLY permissions from now on." & Chr(13) & Chr(13) & "If this is incorrect please re-start the application and then if problems persist contact the Database Administrator."
+155	1	'Else
+156	1	'    usr = UCase(username)
+157	1	'    If InStr(usr, "RO") <> 0 Or UCase(usr) = "CATALHOYUK" Then
+158	1	'        tempVal = "RO"
+159	1	'    ElseIf InStr(usr, "ADMIN") <> 0 Or usr = "RICH" Or usr = "MIA" Or usr = "SHAHINA" Or usr = "SARAH" Then
+160	1	'        tempVal = "ADMIN"
+161	1	'    ElseIf InStr(usr, "RW") <> 0 Then
+162	1	'        tempVal = "RW"
+163	1	'    Else
+164	1	 '       tempVal = "RO"
+165	1	'        msg = "The system is unsure of the rights of your login name so you have been assigned " & _
+166	1	'                "READ ONLY permissions on this occassion." & Chr(13) & Chr(13) & "Please contact" & _
+167	2	'                " the Database Administrator with the following message:" & Chr(13) & Chr(13) & "The login '" & _
+168	2	'                username & "' does not fall into any of the known types, please update the " & _
+169	1	'                "SetGeneralPermissions code"
+170	1	'    End If
+171	1	'
+172	1	'End If
+173	0	
+174	1	'If msg <> "" Then
+175	1	'    MsgBox msg, vbInformation, "Permissions setup"
+176	1	'End If
+177	0	
+178	1	' Alternative way to do this is to check the DB permissions tables for the user
+179	1	' using a stored procedure to obtain whether the user has select permissions = RO
+180	1	' if update = RW and if delete = Admin
+181	0	Dim mydb As DAO.Database
+182	0	Dim myq1 As QueryDef
+183	0	    Set mydb = CurrentDb
+184	0	    Set myq1 = mydb.CreateQueryDef("")
+185	0	    myq1.Connect = connStr & ";UID=" & username & ";PWD=" & pwd
+186	0	    spString = connStr & ";UID=" & username & ";PWD=" & pwd
+187	0	    myq1.ReturnsRecords = True
+188	8	    ''myq1.sql = "sp_table_list_with_privileges_for_a_user '%%', 'dbo', null, '" & username & "'"
+189	6	    myq1.sql = "sp_table_privilege_overview_for_user '%%', 'dbo', null, '" & username & "'"
+190	0	
+191	0	    Dim myrs As DAO.Recordset
+192	0	    Set myrs = myq1.OpenRecordset
+193	2	    ''MsgBox myrs.Fields(0).Value
+194	0	    If myrs.Fields(0).Value = "" Then
+195	0	        tempVal = "RO"
+196	0	        msg = "Your permissions on the database cannot be defined, you have been assigned READ ONLY permissions from now on." & Chr(13) & Chr(13) & "If this is incorrect please re-start the application and then if problems persist contact the Database Administrator."
+197	0	    Else
+198	0	        usr = UCase(myrs.Fields(0).Value)
+199	0	        If InStr(usr, "RO") <> 0 Then
+200	0	            tempVal = "RO"
+201	0	        ElseIf InStr(usr, "ADMIN") <> 0 Then
+202	0	            tempVal = "ADMIN"
+203	0	        ElseIf InStr(usr, "RW") <> 0 Then
+204	0	            tempVal = "RW"
+205	0	        Else
+206	0	            tempVal = "RO"
+207	0	            msg = "The system is unsure of the rights of your login name so you have been assigned " & _
+208	0	                "READ ONLY permissions on this occassion." & Chr(13) & Chr(13) & "Please contact" & _
+209	1	                " the Database Administrator with the following message:" & Chr(13) & Chr(13) & "The login '" & _
+210	1	                username & "' does not fall into any of the known types, please update the " & _
+211	0	                "SetGeneralPermissions code"
+212	0	        End If
+213	0	    End If
+214	0	    
+215	0	    
+216	0	myrs.Close
+217	0	Set myrs = Nothing
+218	0	myq1.Close
+219	0	Set myq1 = Nothing
+220	0	mydb.Close
+221	0	Set mydb = Nothing
+222	0	
+223	0	If msg <> "" Then
+224	0	    MsgBox msg, vbInformation, "Permissions setup"
+225	0	End If
+226	2	''MsgBox tempVal
+227	0	GeneralPermissions = tempVal
+228	0	Exit Sub
+229	0	
+230	0	err_SetGeneralPermissions:
+231	0	    GeneralPermissions = "RO"
+232	0	    msg = "An error has occurred in the procedure: SetGeneralPermissions " & Chr(13) & Chr(13)
+233	0	    msg = msg & "The system is unsure of the rights of your login name so you have been assigned " & _
+234	0	                "READ ONLY permissions on this occassion." & Chr(13) & Chr(13) & "Please contact" & _
+235	1	                " the Database Administrator with the following message:" & Chr(13) & Chr(13) & "The login '" & _
+236	1	                username & "' does not fall into any of the known types"
+237	0	                
+238	0	    MsgBox msg, vbInformation, "Permissions setup"
+239	0	    Exit Sub
+240	0	
+241	0	
+242	0	End Sub
+243	0	Function GetGeneralPermissions()
+244	1	'******************************************************************************
+245	1	' Return the current users status - if its empty call set function to reset
+246	1	' but this will reset to RO
+247	1	'
+248	1	' SAJ v9
+249	1	'******************************************************************************
+250	0	On Error GoTo err_GetCurrentVersion
+251	0	
+252	0	    If GeneralPermissions = "" Then
+253	0	        SetGeneralPermissions "", "", ""
+254	0	    End If
+255	0	    
+256	0	    GetGeneralPermissions = GeneralPermissions
+257	0	
+258	0	Exit Function
+259	0	
+260	0	err_GetCurrentVersion:
+261	0	    Call General_Error_Trap
+262	0	End Function
+263	0	
+264	0	Sub DeleteARecord(FromTable, criteria, mydb)
+265	1	'This is an admin function to delete records, as used within a transaction it must not
+266	1	'be error trapped. The db workspace is passed in for the transaction
+267	1	'Inputs -   Fromtable - delete from what table
+268	1	'           criteria - to select record to delete
+269	1	'           mydb - currentdb connection sent thro for transaction
+270	0	
+271	0	
+272	0	Dim sql, myq As QueryDef
+273	0	Set myq = mydb.CreateQueryDef("")
+274	0	           
+275	0	        
+276	0	        sql = "DELETE FROM [" & FromTable & "] WHERE " & criteria & ";"
+277	0	        
+278	0	                
+279	0	        myq.sql = sql
+280	1	        myq.Execute dbSeeChanges 'this was added as the elements tables was throwing error
+281	1	        'that it needed dbSeeChanges as it had identity column
+282	0	        
+283	0	                
+284	0	myq.Close
+285	0	Set myq = Nothing
+286	0	
+287	0	
+288	0	End Sub
+289	0	
+290	0	Function DeleteDiagnosticRecord(Unit, letter, FindNumber)
+291	0	
+292	0	Dim retVal, msg, msg1, strcriteria
+293	0	
+294	0	    msg = "Are you quite sure that you want to permanently delete sherd: " & Unit & "." & letter & FindNumber & "?"
+295	0	    retVal = MsgBox(msg, vbCritical + vbYesNoCancel, "Confirm Permanent Deletion")
+296	0	    If retVal = vbYes Then
+297	2	        strcriteria = "[Unit] = " & Unit & " AND [LetterCode] = '" & letter & "' AND [FindNumber] = " & FindNumber
+298	0	        On Error Resume Next
+299	0	        Dim mydb As DAO.Database, wrkdefault As Workspace
+300	0	        Set wrkdefault = DBEngine.Workspaces(0)
+301	0	        Set mydb = CurrentDb
+302	0	        
+303	1	        ' Start of outer transaction.
+304	0	        wrkdefault.BeginTrans
+305	0	       
+306	0	        Call DeleteARecord("Ceramics_Diagnostic_DrawingNumbers", strcriteria, mydb)
+307	0	        Call DeleteARecord("Ceramics_Diagnostic_InclusionsDetermined", strcriteria, mydb)
+308	0	        Call DeleteARecord("Ceramics_Diagnostic_PhotoNumbers", strcriteria, mydb)
+309	0	        Call DeleteARecord("Ceramics_Diagnostic_ResidueSamples", strcriteria, mydb)
+310	0	        Call DeleteARecord("Ceramics_Diagnostic_SecondaryUse", strcriteria, mydb)
+311	0	        Call DeleteARecord("Ceramics_Diagnostic_Slips", strcriteria, mydb)
+312	0	        Call DeleteARecord("Ceramics_Diagnostic_SurfaceTreatments", strcriteria, mydb)
+313	0	        Call DeleteARecord("Ceramics_Diagnostic_Technology", strcriteria, mydb)
+314	0	        Call DeleteARecord("Ceramics_Diagnostic_Elements", strcriteria, mydb)
+315	0	        Call DeleteARecord("Ceramics_Diagnostic", strcriteria, mydb)
+316	0	    
+317	0	        If Err.Number = 0 Then
+318	0	            wrkdefault.CommitTrans
+319	0	            MsgBox "Deletion has been successful"
+320	0	            Forms!Frm_Diagnostic.Requery
+321	0	            Forms!Frm_Diagnostic![cboFindUnit].Requery
+322	0	        Else
+323	0	            wrkdefault.Rollback
+324	1	            'MsgBox "A problem has occured and the deletion has been cancelled. The error message is: " & Err.Description
+325	0	
+326	0	            msg = "A problem has occured and the deletion has been cancelled. " & Chr(13) & Chr(13) & Err.Description
+327	0	            MsgBox msg
+328	0	        End If
+329	0	
+330	0	        mydb.Close
+331	0	        Set mydb = Nothing
+332	0	        wrkdefault.Close
+333	0	        Set wrkdefault = Nothing
+334	0	    Else
+335	0	        MsgBox "Deletion cancelled", vbInformation, "Action Cancelled"
+336	0	    
+337	0	    End If
+338	0	    
+339	0	Exit_cmdDelete_Click:
+340	0	    Exit Function
+341	0	
+342	0	Err_cmdDelete_Click:
+343	0	    Call General_Error_Trap
+344	0	    Exit Function
+345	0	End Function
+346	0	
+347	0	Function ReNumberDiagnostic(Unit, letter, FindNumber)
+348	1	'new season 2009 - saj
+349	0	On Error GoTo err_cmdReNumber
+350	0	
+351	0	    Dim retUnit, retLetter, retNumber, findGID, sql, Response, msg
+352	0	    retUnit = InputBox("Please enter the new Unit number for sherd " & Unit & "." & letter & FindNumber & ":", "Enter new unit number")
+353	0	    If retUnit = "" Then
+354	0	        MsgBox "No unit number entered, action cancelled"
+355	0	    Else
+356	1	        'check valid entry
+357	0	        If Not IsNumeric(retUnit) Then
+358	0	            MsgBox "Invalid Unit number, please try again", vbExclamation, "Action Cancelled"
+359	0	            Exit Function
+360	0	        End If
+361	0	        
+362	0	        retLetter = InputBox("Please enter the new letter code for Unit " & Unit & "." & letter & FindNumber & " (S or X):", "Enter new letter code")
+363	0	        
+364	0	        If retLetter = "" Then
+365	0	            MsgBox "No letter code entered, action cancelled"
+366	0	        Else
+367	1	            retLetter = UCase(retLetter) 'always capitals on this form
+368	0	            retNumber = InputBox("Please enter the new number for Unit " & Unit & "." & letter & FindNumber & " (was number " & FindNumber & "):", "Enter new number")
+369	0	            If retNumber = "" Then
+370	0	                MsgBox "No number entered, action cancelled"
+371	0	            Else
+372	0	                
+373	1	                'now check if this sherd already exist already exists
+374	2	                findGID = DLookup("[GID]", "[Q_Diagnostic_GIDs]", "[GID] = '" & retUnit & "." & retLetter & retNumber & "'")
+375	0	                If Not IsNull(findGID) Then
+376	0	                    MsgBox "Sorry but this Sherd GID (" & retUnit & "." & retLetter & retNumber & ") already exists. You must delete it first before you can alter " & Unit & "." & letter & FindNumber, vbExclamation, "Sherd GID already exists"
+377	0	                    Exit Function
+378	0	                Else
+379	0	            
+380	1	                    'new GID, does not exist so allow alteration
+381	0	                    msg = "Are you quite sure that you want to renumber sherd " & Unit & "." & letter & FindNumber & " to " & retUnit & "." & retLetter & retNumber & "?"
+382	0	                    Response = MsgBox(msg, vbExclamation + vbYesNoCancel, "Confirm Sherd Re-Number")
+383	0	                    If Response = vbYes Then
+384	0	                        On Error Resume Next
+385	0	                        Dim mydb As DAO.Database, wrkdefault As Workspace, wrkdefault1 As Workspace
+386	0	                        Set wrkdefault = DBEngine.Workspaces(0)
+387	0	                        Set mydb = CurrentDb
+388	0	        
+389	2	                        '' Start of transaction.
+390	0	                        wrkdefault.BeginTrans
+391	0	        
+392	1	                        'change unit number
+393	4	                        Call RenumARecord("Ceramics_Diagnostic", "[Unit] = " & retUnit & ", [LetterCode] = '" & retLetter & "', [FindNumber] = " & retNumber, "[Unit] = " & Unit & " AND [LetterCode] = '" & letter & "' AND [FindNumber] = " & FindNumber, mydb)
+394	1	                        'these should all be done by cascade - but do here to
+395	4	                        Call RenumARecord("Ceramics_Diagnostic_Elements", "[Unit] = " & retUnit & ", [LetterCode] = '" & retLetter & "', [FindNumber] = " & retNumber, "[Unit] = " & Unit & " AND [LetterCode] = '" & letter & "' AND [FindNumber] = " & FindNumber, mydb)
+396	4	                        Call RenumARecord("Ceramics_Diagnostic_DrawingNumbers", "[Unit] = " & retUnit & ", [LetterCode] = '" & retLetter & "', [FindNumber] = " & retNumber, "[Unit] = " & Unit & " AND [LetterCode] = '" & letter & "' AND [FindNumber] = " & FindNumber, mydb)
+397	4	                        Call RenumARecord("Ceramics_Diagnostic_InclusionsDetermined", "[Unit] = " & retUnit & ", [LetterCode] = '" & retLetter & "', [FindNumber] = " & retNumber, "[Unit] = " & Unit & " AND [LetterCode] = '" & letter & "' AND [FindNumber] = " & FindNumber, mydb)
+398	4	                        Call RenumARecord("Ceramics_Diagnostic_PhotoNumbers", "[Unit] = " & retUnit & ", [LetterCode] = '" & retLetter & "', [FindNumber] = " & retNumber, "[Unit] = " & Unit & " AND [LetterCode] = '" & letter & "' AND [FindNumber] = " & FindNumber, mydb)
+399	4	                        Call RenumARecord("Ceramics_Diagnostic_ResidueSamples", "[Unit] = " & retUnit & ", [LetterCode] = '" & retLetter & "', [FindNumber] = " & retNumber, "[Unit] = " & Unit & " AND [LetterCode] = '" & letter & "' AND [FindNumber] = " & FindNumber, mydb)
+400	4	                        Call RenumARecord("Ceramics_Diagnostic_SecondaryUse", "[Unit] = " & retUnit & ", [LetterCode] = '" & retLetter & "', [FindNumber] = " & retNumber, "[Unit] = " & Unit & " AND [LetterCode] = '" & letter & "' AND [FindNumber] = " & FindNumber, mydb)
+401	4	                        Call RenumARecord("Ceramics_Diagnostic_Slips", "[Unit] = " & retUnit & ", [LetterCode] = '" & retLetter & "', [FindNumber] = " & retNumber, "[Unit] = " & Unit & " AND [LetterCode] = '" & letter & "' AND [FindNumber] = " & FindNumber, mydb)
+402	4	                        Call RenumARecord("Ceramics_Diagnostic_SurfaceTreatments", "[Unit] = " & retUnit & ", [LetterCode] = '" & retLetter & "', [FindNumber] = " & retNumber, "[Unit] = " & Unit & " AND [LetterCode] = '" & letter & "' AND [FindNumber] = " & FindNumber, mydb)
+403	4	                        Call RenumARecord("Ceramics_Diagnostic_Technology", "[Unit] = " & retUnit & ", [LetterCode] = '" & retLetter & "', [FindNumber] = " & retNumber, "[Unit] = " & Unit & " AND [LetterCode] = '" & letter & "' AND [FindNumber] = " & FindNumber, mydb)
+404	0	                        
+405	0	                        If Err.Number = 0 Then
+406	0	                            wrkdefault.CommitTrans
+407	0	                            Forms!Frm_Diagnostic.Requery
+408	0	                            Forms!Frm_Diagnostic![cboFindUnit].Requery
+409	0	                            Forms!Frm_Diagnostic![cboFindUnit] = retUnit & "." & retLetter & retNumber
+410	0	                            MsgBox "Renumbering has been successful. Renumbered record will be displayed."
+411	0	                        Else
+412	0	                            wrkdefault.Rollback
+413	0	                            MsgBox "A problem has occured and the re-numbering has been cancelled. The error message is: " & Err.Description
+414	0	                        End If
+415	0	                        mydb.Close
+416	0	                        Set mydb = Nothing
+417	0	                        wrkdefault.Close
+418	0	                        Set wrkdefault = Nothing
+419	0	                        
+420	0	                    Else
+421	0	                        MsgBox "Re-numbering cancelled", vbInformation, "Action Cancelled"
+422	0	    
+423	0	                    End If
+424	0	                End If
+425	0	            End If
+426	0	        End If
+427	0	    End If
+428	0	
+429	0	Exit Function
+430	0	
+431	0	err_cmdReNumber:
+432	0	    Call General_Error_Trap
+433	0	    Exit Function
+434	0	End Function
+435	0	
+436	0	Sub RenumARecord(FromTable, setStatement, whereStatement, mydb)
+437	1	'This is an admin function to renum records, used within a transaction if must not
+438	1	'be error trapped. The db workspace is passed in for the transaction
+439	1	'Inputs -   Fromtable - renum in what table
+440	1	'           setStatement -
+441	1	'           whereStatement -
+442	1	'           mydb - currentdb connection sent thro for transaction
+443	0	
+444	0	
+445	0	Dim sql, myq As QueryDef
+446	0	Set myq = mydb.CreateQueryDef("")
+447	0	           
+448	0	        
+449	0	        sql = "UPDATE [" & FromTable & "] SET " & setStatement & " WHERE " & whereStatement & ";"
+450	0	        
+451	0	                
+452	0	        myq.sql = sql
+453	0	        myq.Execute
+454	0	                
+455	0	myq.Close
+456	0	Set myq = Nothing
+457	0	
+458	0	
+459	0	End Sub
+460	0	
+461	0	
+462	0	Function DeleteBodySherdRecord(Unit, WareCode, surftreat)
+463	0	
+464	0	Dim retVal, msg, msg1, strcriteria, strcriteria2
+465	0	
+466	0	    msg = "Are you quite sure that you want to permanently delete sherd group: " & Unit & "." & WareCode & "-" & surftreat & "?"
+467	0	    retVal = MsgBox(msg, vbCritical + vbYesNoCancel, "Confirm Permanent Deletion")
+468	0	    If retVal = vbYes Then
+469	4	        strcriteria = "[Unit] = " & Unit & " AND [Ware Code] = '" & WareCode & "' AND [SurfaceTreatment] = '" & surftreat & "'"
+470	0	        On Error Resume Next
+471	0	        Dim mydb As DAO.Database, wrkdefault As Workspace
+472	0	        Set wrkdefault = DBEngine.Workspaces(0)
+473	0	        Set mydb = CurrentDb
+474	0	        
+475	1	        ' Start of outer transaction.
+476	0	        wrkdefault.BeginTrans
+477	0	       
+478	0	        Call DeleteARecord("Ceramics_Body_Sherd_Technology", strcriteria, mydb)
+479	0	        Call DeleteARecord("Ceramics_Body_Sherd_SurfaceTreatment", strcriteria, mydb)
+480	0	        Call DeleteARecord("Ceramics_Body_Sherd_SecondaryUse", strcriteria, mydb)
+481	0	        Call DeleteARecord("Ceramics_Body_Sherd_SampleNumbers", strcriteria, mydb)
+482	0	        Call DeleteARecord("Ceramics_Body_Sherd_Residues", strcriteria, mydb)
+483	0	        
+484	1	        'a record can have more than one inclusion group
+485	0	        Dim myrs2 As DAO.Recordset
+486	0	        strcriteria2 = "SELECT InclusionGroupID FROM Ceramics_Body_Sherd_Inclusion_Group WHERE " & strcriteria & ";"
+487	0	        Set myrs2 = mydb.OpenRecordset(strcriteria2, dbOpenDynaset, dbSeeChanges)
+488	0	        If Not (myrs2.BOF And myrs2.EOF) Then
+489	0	            myrs2.MoveFirst
+490	0	            Do Until myrs2.EOF
+491	0	                strcriteria2 = "[Inclusion_Group_ID] = " & myrs2![InclusionGroupID]
+492	0	                Call DeleteARecord("Ceramics_Body_Sherd_InclusionsDetermined", strcriteria2, mydb)
+493	0	                myrs2.MoveNext
+494	0	            Loop
+495	0	        End If
+496	0	        myrs2.Close
+497	0	        Set myrs2 = Nothing
+498	0	        Call DeleteARecord("Ceramics_Body_Sherd_Inclusion_Group", strcriteria, mydb)
+499	0	        Call DeleteARecord("Ceramics_Body_Sherds", strcriteria, mydb)
+500	0	    
+501	0	        If Err.Number = 0 Then
+502	0	            wrkdefault.CommitTrans
+503	0	            MsgBox "Deletion has been successful"
+504	0	            Forms!Frm_BodySherd.Requery
+505	0	            Forms!Frm_BodySherd![cboFindUnit].Requery
+506	0	        Else
+507	0	            wrkdefault.Rollback
+508	1	            'MsgBox "A problem has occured and the deletion has been cancelled. The error message is: " & Err.Description
+509	0	
+510	0	            msg = "A problem has occured and the deletion has been cancelled. " & Chr(13) & Chr(13) & Err.Description
+511	0	            MsgBox msg
+512	0	        End If
+513	0	
+514	0	        mydb.Close
+515	0	        Set mydb = Nothing
+516	0	        wrkdefault.Close
+517	0	        Set wrkdefault = Nothing
+518	0	    Else
+519	0	        MsgBox "Deletion cancelled", vbInformation, "Action Cancelled"
+520	0	    
+521	0	    End If
+522	0	    
+523	0	Exit_cmdDelete_Click:
+524	0	    Exit Function
+525	0	
+526	0	Err_cmdDelete_Click:
+527	0	    Call General_Error_Trap
+528	0	    Exit Function
+529	0	End Function
+530	0	
+531	0	Function ReNumberBodySherd(Unit, WareCode, surftreat)
+532	1	'new season 2009 - saj
+533	0	On Error GoTo err_cmdReNumber
+534	0	
+535	0	    Dim retUnit, retWare, retSurf, findGID, sql, Response, msg
+536	0	    retUnit = InputBox("Please enter the new Unit number for sherd group: " & Unit & "." & WareCode & surftreat & ":", "Enter new unit number", Unit)
+537	0	    If retUnit = "" Then
+538	0	        MsgBox "No unit number entered, action cancelled"
+539	0	    Else
+540	1	        'check valid entry
+541	0	        If Not IsNumeric(retUnit) Then
+542	0	            MsgBox "Invalid Unit number, please try again", vbExclamation, "Action Cancelled"
+543	0	            Exit Function
+544	0	        End If
+545	0	        
+546	0	        retWare = InputBox("Please change the ware code if necessary, for sherd group:  " & Unit & "." & WareCode & surftreat & ":", "Enter ware code", WareCode)
+547	0	        
+548	0	        If retWare = "" Then
+549	0	            MsgBox "No ware code entered, action cancelled"
+550	0	        Else
+551	0	            retSurf = InputBox("Please change the surface treatment if necessary, for sherd group " & Unit & "." & WareCode & surftreat & ":", "Enter surface treatment", surftreat)
+552	0	            If retSurf = "" Then
+553	0	                MsgBox "No number entered, action cancelled"
+554	0	            Else
+555	0	               
+556	1	                'now check if this sherd already exist already exists
+557	2	                findGID = DLookup("[GID]", "[Q_BodySherd_GIDs]", "[GID] = '" & retUnit & "." & retWare & retSurf & "'")
+558	0	                If Not IsNull(findGID) Then
+559	0	                    MsgBox "Sorry but this Sherd GID (" & retUnit & "." & retWare & retSurf & ") already exists. You must delete it first before you can alter " & Unit & "." & WareCode & surftreat, vbExclamation, "Sherd GID already exists"
+560	0	                    Exit Function
+561	0	                Else
+562	0	            
+563	1	                    'new GID, does not exist so allow alteration
+564	0	                    msg = "Are you quite sure that you want to renumber sherd " & Unit & "." & WareCode & surftreat & " to " & retUnit & "." & retWare & retSurf & "?"
+565	0	                    Response = MsgBox(msg, vbExclamation + vbYesNoCancel, "Confirm Sherd Re-Number")
+566	0	                    If Response = vbYes Then
+567	0	                         
+568	0	                        MsgBox "The re-numbering will now take place - it can be quite slow. Please just wait for the next message, the system has not hung", vbInformation, "Patience..."
+569	0	                
+570	0	                        On Error Resume Next
+571	0	                        Dim mydb As DAO.Database, wrkdefault As Workspace, wrkdefault1 As Workspace
+572	0	                        Set wrkdefault = DBEngine.Workspaces(0)
+573	0	                        Set mydb = CurrentDb
+574	0	        
+575	2	                        '' Start of transaction.
+576	0	                        wrkdefault.BeginTrans
+577	0	                        
+578	1	                        'these should all be done by cascade - but do here to
+579	8	                        Call RenumARecord("Ceramics_Body_Sherd_Residues", "[Unit] = " & retUnit & ", [ware code] = '" & retWare & "', [surfacetreatment] = '" & retSurf & "'", "[Unit] = " & Unit & " AND [ware Code] = '" & WareCode & "' AND [surfacetreatment] = '" & surftreat & "'", mydb)
+580	8	                        Call RenumARecord("Ceramics_Body_Sherd_SampleNumbers", "[Unit] = " & retUnit & ", [ware code] = '" & retWare & "', [surfacetreatment] = '" & retSurf & "'", "[Unit] = " & Unit & " AND [ware Code] = '" & WareCode & "' AND [surfacetreatment] = '" & surftreat & "'", mydb)
+581	8	                        Call RenumARecord("Ceramics_Body_Sherd_SecondaryUse", "[Unit] = " & retUnit & ", [ware code] = '" & retWare & "', [surfacetreatment] = '" & retSurf & "'", "[Unit] = " & Unit & " AND [ware Code] = '" & WareCode & "' AND [surfacetreatment] = '" & surftreat & "'", mydb)
+582	2	                        'more complicated - it wants to do multiple updates to surface treatment table and can't do
+583	1	                        'those in single transaction so must move out to trans
+584	1	                        'Call UpdateSurfaceTreatment(surftreat, retSurf, Unit, warecode, mydb)
+585	9	                        'Call RenumARecord("Ceramics_Body_Sherd_Surfacetreatment", "[Unit] = " & retUnit & ", [ware code] = '" & retWare & "', [surfacetreatment] = '" & retSurf & "'", "[Unit] = " & Unit & " AND [ware Code] = '" & warecode & "' AND [surfacetreatment] = '" & surftreat & "'", mydb)
+586	9	                        'Call RenumARecord("Ceramics_Body_Sherd_Surfacetreatment", "[Unit] = " & retUnit & ", [ware code] = '" & retWare & "', [surfacetreatment] = '" & retSurf & "'", "[Unit] = " & Unit & " AND [ware Code] = '" & warecode & "' AND [surfacetreatment] = '" & retSurf & "'", mydb)
+587	0	                        
+588	0	                        
+589	8	                        Call RenumARecord("Ceramics_Body_Sherd_Technology", "[Unit] = " & retUnit & ", [ware code] = '" & retWare & "', [surfacetreatment] = '" & retSurf & "'", "[Unit] = " & Unit & " AND [ware Code] = '" & WareCode & "' AND [surfacetreatment] = '" & surftreat & "'", mydb)
+590	8	                        Call RenumARecord("Ceramics_Body_Sherd_Inclusion_Group", "[Unit] = " & retUnit & ", [ware code] = '" & retWare & "', [surfacetreatment] = '" & retSurf & "'", "[Unit] = " & Unit & " AND [ware Code] = '" & WareCode & "' AND [surfacetreatment] = '" & surftreat & "'", mydb)
+591	1	                        'this must be last has had it first before and it would stall on second change (timeout)
+592	8	                        Call RenumARecord("Ceramics_Body_Sherds", "[Unit] = " & retUnit & ", [ware code] = '" & retWare & "', [surfacetreatment] = '" & retSurf & "'", "[Unit] = " & Unit & " AND [ware Code] = '" & WareCode & "' AND [surfacetreatment] = '" & surftreat & "'", mydb)
+593	0	                        If Err.Number = 0 Then
+594	0	                            wrkdefault.CommitTrans
+595	0	                            
+596	1	                            'cant do two processes on one table within transaction so if succeeds need to finally update surf treat table
+597	1	                            'as unit or ware code might have altered - had to be done in 2 steps - hope it doesnt fail!!
+598	0	                            Call UpdateSurfaceTreatment(surftreat, retSurf, Unit, WareCode, mydb)
+599	8	                            Call RenumARecord("Ceramics_Body_Sherd_Surfacetreatment", "[Unit] = " & retUnit & ", [ware code] = '" & retWare & "', [surfacetreatment] = '" & retSurf & "'", "[Unit] = " & Unit & " AND [ware Code] = '" & WareCode & "' AND [surfacetreatment] = '" & retSurf & "'", mydb)
+600	0	                            
+601	0	                            Forms!Frm_BodySherd.Requery
+602	0	                            Forms!Frm_BodySherd![cboFindUnit].Requery
+603	0	                            Forms!Frm_BodySherd![cboFindUnit] = retUnit & "." & retWare & "-" & retSurf
+604	0	                            MsgBox "Renumbering has been successful. Renumbered record will be displayed."
+605	0	                        Else
+606	0	                            wrkdefault.Rollback
+607	0	                            MsgBox "A problem has occured and the re-numbering has been cancelled. The error message is: " & Err.Description
+608	0	                        End If
+609	0	                        mydb.Close
+610	0	                        Set mydb = Nothing
+611	0	                        wrkdefault.Close
+612	0	                        Set wrkdefault = Nothing
+613	0	                        
+614	0	                    Else
+615	0	                        MsgBox "Re-numbering cancelled", vbInformation, "Action Cancelled"
+616	0	    
+617	0	                    End If
+618	0	                End If
+619	0	            End If
+620	0	        End If
+621	0	    End If
+622	0	
+623	0	Exit Function
+624	0	
+625	0	err_cmdReNumber:
+626	0	    Call General_Error_Trap
+627	0	    Exit Function
+628	0	End Function
+629	0	
+630	0	Sub UpdateSurfaceTreatment(oldvalue, newvalue, Unit, WareCode, mydb)
+631	0	Dim newval, Count, sql, wasPassedIn
+632	0	Dim myq1 As QueryDef
+633	0	
+634	1	'check for value
+635	0	If newvalue = "" Or IsNull(newvalue) Then
+636	0	    MsgBox "Surface Treatment must be entered"
+637	0	    If oldvalue <> "" Then
+638	0	        newvalue = oldvalue
+639	0	    Else
+640	0	        SendKeys "{ESC}"
+641	0	        DoCmd.GoToControl "total"
+642	0	        DoCmd.GoToControl "txtSurfTreat"
+643	0	    End If
+644	0	Else
+645	0	    Dim checkexists
+646	4	    checkexists = DLookup("[Unit]", "Ceramics_Body_Sherd_SurfaceTreatment", "[Unit] = " & Unit & " AND [Ware Code] ='" & WareCode & "' AND [SurfaceTreatment] = '" & oldvalue & "'")
+647	0	    If Not IsNull(checkexists) Then
+648	1	        'does exist alter
+649	1	        '1.delete whats there
+650	0	        If spString <> "" Then
+651	0	            If IsNull(mydb) Then
+652	0	                wasPassedIn = False
+653	1	                'Dim mydb As DAO.Database
+654	0	                Set mydb = CurrentDb
+655	0	            Else
+656	0	                wasPassedIn = True
+657	0	            End If
+658	0	    
+659	0	            Set myq1 = mydb.CreateQueryDef("")
+660	0	     
+661	0	            If wasPassedIn = False Then
+662	0	                myq1.Connect = spString
+663	0	    
+664	0	                myq1.ReturnsRecords = False
+665	2	                myq1.sql = "sp_Ceramics_Delete_BodySherd_SurfaceTreatment " & Unit & ", '" & WareCode & "', " & oldvalue
+666	0	            Else
+667	4	                myq1.sql = "DELETE FROM [Ceramics_Body_Sherd_SurfaceTreatment] WHERE [Unit] = " & Unit & " AND [Ware Code] = '" & WareCode & "' AND surfacetreatment = '" & oldvalue & "';"
+668	0	                myq1.Execute
+669	0	            End If
+670	1	            'myq1.Close
+671	1	            'Set myq1 = Nothing
+672	0	            
+673	1	            '2. Add new value
+674	0	            If InStr(newvalue, ",") > 0 Then
+675	1	                '>1 treatment to add
+676	0	                newval = Split(newvalue, ",")
+677	0	                For Count = 0 To UBound(newval)
+678	5	                    'sql = "INSERT INTO [Ceramics_Body_Sherd_SurfaceTreatment] ([Unit], [Ware code], [SurfaceTreatment], [IndividualTreatment]) VALUES (" & Unit & ", '" & warecode & "', '" & newvalue & "'," & newval(count) & ")"
+679	1	                    'DoCmd.RunSQL sql
+680	4	                    myq1.sql = "INSERT INTO [Ceramics_Body_Sherd_SurfaceTreatment] ([Unit], [Ware code], [SurfaceTreatment], [IndividualTreatment]) VALUES (" & Unit & ", '" & WareCode & "', '" & newvalue & "'," & newval(Count) & ")"
+681	0	                    myq1.Execute
+682	0	                Next
+683	0	
+684	0	            Else
+685	1	                'just one value
+686	5	                'sql = "INSERT INTO [Ceramics_Body_Sherd_SurfaceTreatment] ([Unit], [Ware code], [SurfaceTreatment], [IndividualTreatment]) VALUES (" & Unit & ", '" & warecode & "', '" & newvalue & "'," & newvalue & ")"
+687	1	                'DoCmd.RunSQL sql
+688	4	                myq1.sql = "INSERT INTO [Ceramics_Body_Sherd_SurfaceTreatment] ([Unit], [Ware code], [SurfaceTreatment], [IndividualTreatment]) VALUES (" & Unit & ", '" & WareCode & "', '" & newvalue & "'," & newvalue & ")"
+689	0	                myq1.Execute
+690	0	            End If
+691	0	            
+692	0	             myq1.Close
+693	0	            Set myq1 = Nothing
+694	0	            
+695	0	            If wasPassedIn = False Then
+696	0	                mydb.Close
+697	0	                Set mydb = Nothing
+698	0	            End If
+699	0	        Else
+700	1	            'it failed and this should be handled better than this but I have no time, please fix this - SAJ sept 08
+701	0	            MsgBox "The existing surface treatment record has not been deleted, please contact the administrator.", vbCritical, "Error"
+702	0	            Exit Sub
+703	0	        End If
+704	0	    Else
+705	1	        'does not exist - add
+706	0	            If IsNull(mydb) Then
+707	0	                wasPassedIn = False
+708	1	                'Dim mydb As DAO.Database
+709	0	                Set mydb = CurrentDb
+710	0	            Else
+711	0	                wasPassedIn = True
+712	0	            End If
+713	0	    
+714	0	            Set myq1 = mydb.CreateQueryDef("")
+715	0	        
+716	0	            If InStr(newvalue, ",") > 0 Then
+717	1	                '>1 treatment to add
+718	0	                newval = Split(newvalue, ",")
+719	0	                For Count = 0 To UBound(newval)
+720	5	                    'sql = "INSERT INTO [Ceramics_Body_Sherd_SurfaceTreatment] ([Unit], [Ware code], [SurfaceTreatment], [IndividualTreatment]) VALUES (" & Unit & ", '" & warecode & "', '" & newvalue & "'," & newval(count) & ")"
+721	1	                    'DoCmd.RunSQL sql
+722	4	                    myq1.sql = "INSERT INTO [Ceramics_Body_Sherd_SurfaceTreatment] ([Unit], [Ware code], [SurfaceTreatment], [IndividualTreatment]) VALUES (" & Unit & ", '" & WareCode & "', '" & newvalue & "'," & newval(Count) & ")"
+723	0	                    myq1.Execute
+724	0	                Next
+725	0	
+726	0	            Else
+727	1	                'just one value
+728	5	                'sql = "INSERT INTO [Ceramics_Body_Sherd_SurfaceTreatment] ([Unit], [Ware code], [SurfaceTreatment], [IndividualTreatment]) VALUES (" & Unit & ", '" & warecode & "', '" & newvalue & "'," & newvalue & ")"
+729	1	                'DoCmd.RunSQL sql
+730	4	                myq1.sql = "INSERT INTO [Ceramics_Body_Sherd_SurfaceTreatment] ([Unit], [Ware code], [SurfaceTreatment], [IndividualTreatment]) VALUES (" & Unit & ", '" & WareCode & "', '" & newvalue & "'," & newvalue & ")"
+731	0	                myq1.Execute
+732	0	            End If
+733	0	            
+734	0	            myq1.Close
+735	0	            Set myq1 = Nothing
+736	0	            
+737	0	            If wasPassedIn = False Then
+738	0	                mydb.Close
+739	0	                Set mydb = Nothing
+740	0	            End If
+741	0	    End If
+742	1	    'Me!Frm_sub_bodysherd_surfacetreatment.Requery
+743	0	    
+744	0	End If
+745	0	Exit Sub
+746	0	
+747	0	err_SurfTreat:
+748	0	    Call General_Error_Trap
+749	0	    Exit Sub
+750	0	    
+751	0	
+752	0	End Sub
+753	0	

@@ -1,0 +1,157 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	0	Option Explicit
+3	1	'**************************************************
+4	1	' This form is new in v9.2 - SAJ
+5	1	'**************************************************
+6	0	
+7	0	
+8	0	
+9	0	
+10	0	Private Sub cmdAddNew_Click()
+11	1	'v9.2 SAJ - add a new record
+12	0	On Error GoTo err_cmdAddNew_Click
+13	0	
+14	0	    DoCmd.RunCommand acCmdRecordsGoToNew
+15	0	
+16	0	Exit Sub
+17	0	
+18	0	err_cmdAddNew_Click:
+19	0	    Call General_Error_Trap
+20	0	    Exit Sub
+21	0	End Sub
+22	0	
+23	0	Private Sub Excavation_Click()
+24	1	'v9.2 SAJ - close the form
+25	0	    DoCmd.Close acForm, Me.Name
+26	0	End Sub
+27	0	
+28	0	
+29	0	
+30	0	Private Sub cmdEdit_Click()
+31	1	'v9.2 SAJ - check if user can edit this record
+32	1	' The level value is used in 3 potential places on the Space Sheet - certain level
+33	1	' Uncertain level start and uncertain level end so must check all these values to see
+34	1	' if this level is used before allow edit
+35	1	' At present not offering global edits - this can be extended to offer this if required
+36	0	
+37	0	On Error GoTo Err_cmdEdit_Click
+38	0	
+39	0	Dim checkValidAction, checkValidAction2, checkValidAction3, retval
+40	0	
+41	1	    'check space sheet level field
+42	0	    checkValidAction = CheckIfLOVValueUsed("Exca:LevelLOV", "Level", Me![txtLevel], "Exca: Space Sheet", "Space Number", "Level", "edit")
+43	0	    
+44	0	    If checkValidAction = "ok" Then
+45	2	        ''check space sheet uncertain level start field
+46	0	        checkValidAction2 = CheckIfLOVValueUsed("Exca:LevelLOV", "Level", Me![txtLevel], "Exca: Space Sheet", "Space Number", "UncertainLevelStart", "edit")
+47	0	        
+48	0	        If checkValidAction2 = "ok" Then
+49	1	        'check space sheet uncertain level end field
+50	0	            checkValidAction3 = CheckIfLOVValueUsed("Exca:LevelLOV", "Level", Me![txtLevel], "Exca: Space Sheet", "Space Number", "UncertainLevelEnd", "edit")
+51	0	        
+52	0	            If checkValidAction3 = "ok" Then
+53	1	                'edit action can go ahead - at present simply offer an input box for this
+54	0	                retval = InputBox("No records refer to this Level (" & Me![txtLevel] & ") so an edit is allowed." & Chr(13) & Chr(13) & "Please enter the edited Level that you wish to replace this entry with:", "Enter edited Level")
+55	0	                If retval <> "" Then
+56	0	                    Me![txtLevel] = retval
+57	0	                End If
+58	0	                
+59	0	            ElseIf checkValidAction3 = "fail" Then
+60	0	                MsgBox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+61	0	            Else
+62	0	                MsgBox checkValidAction3, vbExclamation, "Action Report"
+63	0	            End If
+64	0	        ElseIf checkValidAction2 = "fail" Then
+65	0	            MsgBox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+66	0	        Else
+67	0	            MsgBox checkValidAction2, vbExclamation, "Action Report"
+68	0	        End If
+69	0	        
+70	0	    ElseIf checkValidAction = "fail" Then
+71	0	        MsgBox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+72	0	    Else
+73	0	        MsgBox checkValidAction, vbExclamation, "Action Report"
+74	0	    End If
+75	0	    
+76	0	Exit_cmdEdit_Click:
+77	0	    Exit Sub
+78	0	
+79	0	Err_cmdEdit_Click:
+80	0	    Call General_Error_Trap
+81	0	    Exit Sub
+82	0	    
+83	0	End Sub
+84	0	
+85	0	Private Sub cmdDelete_Click()
+86	1	'v9.2 SAJ - check if user can delete this record
+87	1	' The level value is used in 3 potential places on the Space Sheet - certain level
+88	1	' Uncertain level start and uncertain level end so must check all these values to see
+89	1	' if this level is used before allow deletion
+90	1	' At present not offering global edits - this can be extended to offer this if required
+91	0	
+92	0	On Error GoTo Err_cmdDelete_Click
+93	0	
+94	0	Dim checkValidAction, checkValidAction2, checkValidAction3, retval
+95	0	
+96	1	    'check space sheet level field
+97	0	    checkValidAction = CheckIfLOVValueUsed("Exca:LevelLOV", "Level", Me![txtLevel], "Exca: Space Sheet", "Space Number", "Level", "delete")
+98	0	    
+99	0	    If checkValidAction = "ok" Then
+100	2	        ''check space sheet uncertain level start field
+101	0	        checkValidAction2 = CheckIfLOVValueUsed("Exca:LevelLOV", "Level", Me![txtLevel], "Exca: Space Sheet", "Space Number", "UncertainLevelStart", "delete")
+102	0	        
+103	0	        If checkValidAction2 = "ok" Then
+104	1	        'check space sheet uncertain level end field
+105	0	            checkValidAction3 = CheckIfLOVValueUsed("Exca:LevelLOV", "Level", Me![txtLevel], "Exca: Space Sheet", "Space Number", "UncertainLevelEnd", "delete")
+106	0	        
+107	0	            If checkValidAction3 = "ok" Then
+108	1	                'delete action can go ahead - at present simply offer an input box for this
+109	0	                retval = MsgBox("No records refer to this Level (" & Me![txtLevel] & ") so deletion is allowed." & Chr(13) & Chr(13) & "Are you sure you want to delete " & Me![txtLevel] & " from the list of available levels?", vbExclamation + vbYesNo, "Confirm Deletion")
+110	0	                If retval = vbYes Then
+111	0	                    Me.AllowDeletions = True
+112	0	                    DoCmd.RunCommand acCmdDeleteRecord
+113	0	                    Me.AllowDeletions = False
+114	0	                End If
+115	0	                
+116	0	            ElseIf checkValidAction3 = "fail" Then
+117	0	                MsgBox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+118	0	            Else
+119	0	                MsgBox checkValidAction3, vbExclamation, "Action Report"
+120	0	            End If
+121	0	        ElseIf checkValidAction2 = "fail" Then
+122	0	            MsgBox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+123	0	        Else
+124	0	            MsgBox checkValidAction2, vbExclamation, "Action Report"
+125	0	        End If
+126	0	        
+127	0	    ElseIf checkValidAction = "fail" Then
+128	0	        MsgBox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+129	0	    Else
+130	0	        MsgBox checkValidAction, vbExclamation, "Action Report"
+131	0	    End If
+132	0	    
+133	0	Exit_cmdDelete_Click:
+134	0	    Exit Sub
+135	0	
+136	0	Err_cmdDelete_Click:
+137	0	    Call General_Error_Trap
+138	0	    Exit Sub
+139	0	    
+140	0	End Sub
+141	0	
+142	0	Private Sub Form_Open(Cancel As Integer)
+143	1	'v9.2 SAJ - only adminstrators are allowed in here
+144	0	On Error GoTo err_Form_Open
+145	0	
+146	0	    Dim permiss
+147	0	    permiss = GetGeneralPermissions
+148	0	    If permiss <> "ADMIN" Then
+149	0	        MsgBox "Sorry but only Administrators have access to this form"
+150	0	        DoCmd.Close acForm, Me.Name
+151	0	    End If
+152	0	Exit Sub
+153	0	
+154	0	err_Form_Open:
+155	0	    Call General_Error_Trap
+156	0	    Exit Sub
+157	0	End Sub

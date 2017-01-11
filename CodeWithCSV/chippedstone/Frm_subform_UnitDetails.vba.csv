@@ -1,0 +1,22 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdGoToBuilding_Click()
+5	1	'new 2009 as excavation db too slow when 2 copies of access 2007 open on their machines
+6	0	On Error GoTo err_cmd
+7	0	
+8	0	If Not IsNull(Me![Unit Number]) Then
+9	0	    DoCmd.OpenForm "Frm_pop_UnitDetails_Expanded", acNormal, , "[unit number] = " & Me![Unit Number], acFormReadOnly, acDialog
+10	0	Else
+11	0	    MsgBox "No unit number to show", vbInformation, "No unit"
+12	0	End If
+13	0	
+14	0	
+15	0	
+16	0	Exit Sub
+17	0	
+18	0	err_cmd:
+19	0	    Call General_Error_Trap
+20	0	    Exit Sub
+21	0	
+22	0	End Sub

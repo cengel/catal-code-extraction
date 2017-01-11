@@ -1,0 +1,76 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdAddRelation_Click()
+5	1	'new 2009 end of season
+6	1	'allow relationship to be entered = this individual came down off site as an X find - link it to this x find number
+7	0	On Error GoTo err_skel
+8	0	
+9	1	    'obtain X find number
+10	0	    Dim getXFind, getNotes, sql
+11	0	    getXFind = InputBox("Enter the X find number that this individual number relates to:", "X Find Number Required")
+12	0	    If getXFind <> "" Then
+13	0	        getNotes = InputBox("Enter any notes or comments about this relationship:", "Notes or Comments")
+14	0	        
+15	0	        If getNotes <> "" Then
+16	2	            sql = "INSERT INTO [HR_Skeleton_RelatedTo_XFind] ([Unit], [IndividualNumber], [XfindNumber], [Notes]) VALUES (" & Forms![FRM_SkeletonDescription]![txtUnit] & ", " & Forms![FRM_SkeletonDescription]![txtIndivid] & ", " & getXFind & ", '" & getNotes & "');"
+17	0	        Else
+18	0	            sql = "INSERT INTO [HR_Skeleton_RelatedTo_XFind] ([Unit], [IndividualNumber], [XfindNumber]) VALUES (" & Forms![FRM_SkeletonDescription]![txtUnit] & ", " & Forms![FRM_SkeletonDescription]![txtIndivid] & ", " & getXFind & ");"
+19	0	        End If
+20	0	        DoCmd.RunSQL sql
+21	0	        
+22	0	        Me.Requery
+23	0	    End If
+24	0	    DoCmd.GoToControl "cmdAddRelation"
+25	0	
+26	0	Exit Sub
+27	0	
+28	0	err_skel:
+29	0	    MsgBox Err.Description
+30	0	    Exit Sub
+31	0	
+32	0	End Sub
+33	0	Private Sub cmdDelete_Click()
+34	1	'delete relationship
+35	0	On Error GoTo err_cmdDelete
+36	0	
+37	1	    'first check they really want to delete
+38	0	    Dim resp
+39	0	    resp = MsgBox("Do you really want to delete the relationship between skeleton " & Me![Unit] & ".B" & Me![IndividualNumber] & " and X find number" & Me![Unit] & ".X" & Me![XFindNumber] & "?", vbCritical + vbYesNo, "Confirm Deletion")
+40	0	    If resp = vbYes Then
+41	1	        'ok delete this relationship - must do it both ways
+42	0	        Dim sql
+43	0	        sql = "Delete FROM [HR_Skeleton_RelatedTo_XFind] WHERE [Unit] = " & Me![Unit] & " AND [IndividualNumber] = " & Me![IndividualNumber] & " AND [XFindNumber] = " & Me![XFindNumber] & ";"
+44	0	        DoCmd.RunSQL sql
+45	0	        
+46	0	        Me.Requery
+47	1	        'remove focus from the delete button
+48	0	        DoCmd.GoToControl "cmdAddRelation"
+49	0	        
+50	0	    End If
+51	0	    
+52	0	Exit Sub
+53	0	
+54	0	err_cmdDelete:
+55	0	    Call General_Error_Trap
+56	0	    Exit Sub
+57	0	End Sub
+58	0	
+59	0	Private Sub Form_Open(Cancel As Integer)
+60	1	'new 2009 - disable delete button where not permissions
+61	0	On Error GoTo err_open
+62	0	
+63	0	Dim permiss
+64	0	    permiss = GetGeneralPermissions
+65	0	    If (permiss = "ADMIN") Then
+66	0	        Me![cmdDelete].Enabled = True
+67	0	    Else
+68	0	        Me![cmdDelete].Enabled = False
+69	0	    End If
+70	0	
+71	0	Exit Sub
+72	0	
+73	0	err_open:
+74	0	    Call General_Error_Trap
+75	0	    Exit Sub
+76	0	End Sub

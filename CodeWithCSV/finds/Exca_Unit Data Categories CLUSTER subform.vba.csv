@@ -1,0 +1,41 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	
+5	0	
+6	0	Private Sub Form_Current()
+7	0	
+8	1	'data category is cluster
+9	1	'location rowsource is defined
+10	1	'location may already be present
+11	0	
+12	0	Select Case Me.Location
+13	0	            Case "cut"
+14	0	            Me.Description.RowSource = " ; burial; ditch; foundation cut; gully; pit; posthole; scoop; stakehole"
+15	0	            Me.Description.Enabled = True
+16	0	            Case "feature"
+17	0	            Me.Description.RowSource = " ; basin; bin; hearth; niche; oven"
+18	0	            Me.Description.Enabled = True
+19	0	            Case Else
+20	0	            Me.Description.RowSource = ""
+21	0	            Me.Description.Enabled = False
+22	0	End Select
+23	0	        
+24	0	End Sub
+25	0	
+26	0	Private Sub Location_Change()
+27	1	'description blank again, others stay
+28	0	    Me.Description = ""
+29	0	    
+30	0	    Select Case Me.Location
+31	0	        Case "cut"
+32	0	        Me.Description.RowSource = " ; burial; ditch; foundation cut; gully; pit; posthole; scoop; stakehole"
+33	0	        Me.Description.Enabled = True
+34	0	        Case "feature"
+35	0	        Me.Description.RowSource = " ; basin; bin; hearth; niche; oven"
+36	0	        Me.Description.Enabled = True
+37	0	        Case Else
+38	0	        Me.Description.RowSource = ""
+39	0	        Me.Description.Enabled = False
+40	0	    End Select
+41	0	End Sub

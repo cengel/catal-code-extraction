@@ -1,0 +1,206 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	1	' Copyright Lebans Holdings 1999 Ltd.
+4	0	
+5	0	
+6	0	Private Sub cmdLoadPicture_Click()
+7	1	' You must supply the reference to an Image Control
+8	1	' when you call this Function. The FileName is Optional.
+9	1	' If not supplied the File Dialog Window is called.
+10	0	fLoadPicture Me.JGSForm.Form.Image1, , True
+11	1	' To pass a FileName including the path
+12	1	' call the Function like:
+13	1	'fLoadPicture Me.Image1 , "C:\test.jpg"
+14	1	' Set ScrollBars back to 0,0
+15	1	' Scroll the Form back to X:0,Y:0
+16	0	ScrollToHome Me.JGSForm.Form.Image1
+17	0	End Sub
+18	0	
+19	0	Private Sub CmdClip_Click()
+20	0	With Me.JGSForm.Form.Image1
+21	0	    If .ImageWidth <= Me.JGSForm.Form.Width - 200 Then
+22	0	        .Width = .ImageWidth
+23	0	    Else
+24	0	        .Width = Me.JGSForm.Form.Width - 200
+25	0	    End If
+26	0	    
+27	0	    If .ImageHeight <= Me.JGSForm.Form.Detail.Height - 200 Then
+28	0	        .Height = .ImageHeight
+29	0	    Else
+30	0	        .Height = Me.JGSForm.Form.Detail.Height - 200
+31	0	    End If
+32	0	    
+33	1	    .SizeMode = acOLESizeClip '0
+34	0	End With
+35	0	
+36	1	' Force ScrollBars back to Top and Left
+37	0	ScrollToHome Me.JGSForm.Form.Image1
+38	0	End Sub
+39	0	
+40	0	Private Sub cmdSave_Click()
+41	1	' Save Enhanced Metafile to disk
+42	0	Dim blRet As Boolean
+43	0	blRet = fSaveImagetoDisk(Me.JGSForm.Form.Image1)
+44	0	End Sub
+45	0	
+46	0	Private Sub CmdStretch_Click()
+47	0	With Me.JGSForm.Form.Image1
+48	0	    .Width = Me.JGSForm.Form.Width - 200
+49	0	    .Height = Me.JGSForm.Form.Detail.Height - 200
+50	1	    .SizeMode = acOLESizeStretch '3
+51	0	End With
+52	0	End Sub
+53	0	
+54	0	Private Sub CmdZoom_Click()
+55	0	With Me.JGSForm.Form.Image1
+56	0	    .Width = Me.JGSForm.Form.Width - 200
+57	0	    .Height = Me.JGSForm.Form.Detail.Height - 200
+58	1	    .SizeMode = acOLESizeZoom '1
+59	0	End With
+60	0	End Sub
+61	0	
+62	0	Private Sub Command46_Click()
+63	1	'close this form
+64	0	On Error GoTo err_cmd46
+65	0	
+66	0	    DoCmd.Close acForm, Me.Name
+67	0	Exit Sub
+68	0	
+69	0	err_cmd46:
+70	0	    Call General_Error_Trap
+71	0	    Exit Sub
+72	0	End Sub
+73	0	
+74	0	Private Sub Form_Activate()
+75	1	'DoCmd.MoveSize 5, 5, 8500, 7000
+76	0	DoCmd.MoveSize 5, 5, 12500, 10000
+77	0	End Sub
+78	0	
+79	0	Private Sub Form_Load()
+80	1	'DoCmd.MoveSize 5, 5, 8500, 7000
+81	0	DoCmd.MoveSize 5, 5, 12500, 10000
+82	0	
+83	0	End Sub
+84	0	
+85	0	Private Sub CmdBig_Click()
+86	0	
+87	0	Dim intWidth As Integer
+88	0	Dim intHeight As Integer
+89	0	
+90	0	With Me.JGSForm.Form.Image1
+91	0	    intWidth = .Width * 1.05
+92	0	    intHeight = .Height * 1.05
+93	0	
+94	0	    If intWidth < .Parent.Width Then
+95	0	        .Width = intWidth
+96	0	    Else
+97	0	        MsgBox "Sorry, that is as Big as you can go!", vbOKOnly, "Maximum Zoom"
+98	0	        Exit Sub
+99	0	    End If
+100	0	    
+101	0	    If intHeight < .Parent.Detail.Height Then
+102	0	        .Height = intHeight
+103	0	    Else
+104	0	        MsgBox "Sorry, that is as Big as you can go!", vbOKOnly, "Maximum Zoom"
+105	0	        Exit Sub
+106	0	    End If
+107	1	     ' Set size mode
+108	0	    .SizeMode = acOLESizeZoom
+109	0	End With
+110	1	' Allow Access time to Repaint Screen
+111	1	' since we have Autorepeat set to TRUE for
+112	1	' this Command Button
+113	0	DoEvents
+114	0	   
+115	0	End Sub
+116	0	
+117	0	Private Sub CmdSmall_Click()
+118	0	
+119	0	Dim intWidth As Integer
+120	0	Dim intHeight As Integer
+121	0	
+122	0	
+123	0	With Me.JGSForm.Form.Image1
+124	0	    intWidth = .Width * 0.95
+125	0	    intHeight = .Height * 0.95
+126	0	
+127	0	    If intWidth > 200 Then
+128	0	        .Width = intWidth
+129	0	    Else
+130	0	        MsgBox "Sorry, that is as small as you can go!", vbOKOnly, "Minimum Zoom"
+131	0	        Exit Sub
+132	0	    End If
+133	0	    
+134	0	    If intHeight > 200 Then
+135	0	        .Height = intHeight
+136	0	    Else
+137	0	        MsgBox "Sorry, that is as small as you can go!", vbOKOnly, "Minimum Zoom"
+138	0	        Exit Sub
+139	0	    End If
+140	0	
+141	0	    .SizeMode = acOLESizeZoom
+142	0	End With
+143	1	' Allow Access time to Repaint Screen
+144	1	' since we have Autorepeat set to TRUE for
+145	1	' this Command Button
+146	0	DoEvents
+147	0	End Sub
+148	0	
+149	0	Private Sub Form_Open(Cancel As Integer)
+150	1	'**********************************************************************
+151	1	' Display images within the image box - update image control with correct
+152	1	' image for this record based on name passed in. This is only a prototype
+153	1	' so at present path is hardcoded.
+154	1	' SAJ july 2007
+155	1	'
+156	1	' reused here to open daily sketch CE July 2012
+157	1	'**********************************************************************
+158	0	On Error GoTo err_open
+159	0	
+160	0	Dim Path, FileName
+161	0	
+162	0	Path = "\\catal\DailySketches\"
+163	0	
+164	0	If Me.OpenArgs <> "" Then
+165	0	
+166	0	    FileName = Me.OpenArgs
+167	0	    Path = Path & FileName
+168	0	    Me![txtImagePath] = Path
+169	0	    
+170	0	    If Dir(Path) = "" Then
+171	1	            'directory not exist
+172	0	            MsgBox "The image cannot be found. The database is looking for: " & Path & " please check it exists."
+173	0	            DoCmd.Close acForm, Me.Name
+174	0	    Else
+175	1	        'Me.Picture = path
+176	1	        ' You must supply the reference to an Image Control
+177	1	        ' when you call this Function. The FileName is Optional.
+178	1	        ' If not supplied the File Dialog Window is called.
+179	0	        fLoadPicture Me.JGSForm.Form.Image1, Me![txtImagePath], True
+180	1	        ' To pass a FileName including the path
+181	1	        ' call the Function like:
+182	1	        'fLoadPicture Me.Image1 , "C:\test.jpg"
+183	1	        ' Set ScrollBars back to 0,0
+184	1	        ' Scroll the Form back to X:0,Y:0
+185	0	        ScrollToHome Me.JGSForm.Form.Image1
+186	0	    End If
+187	0	Else
+188	0	    MsgBox "No image name was passed in to this form when it was opened, system does not know which image to display. Please open from Diary form only", vbInformation, "No image to display"
+189	0	End If
+190	0	Exit Sub
+191	0	
+192	0	err_open:
+193	0	    If Err.Number = 2220 Then
+194	1	        'this is the error thrown if file not found
+195	0	        If Dir(Path) = "" Then
+196	1	            'directory not exist
+197	0	            MsgBox "The image cannot be found. The database is looking for: " & Path & " please check it exists."
+198	0	        Else
+199	0	            MsgBox "The image file cannot be found - check the file exists"
+200	1	            'DoCmd.GoToControl "txtSketch"
+201	0	        End If
+202	0	    Else
+203	0	        Call General_Error_Trap
+204	0	    End If
+205	0	    Exit Sub
+206	0	End Sub

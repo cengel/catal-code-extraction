@@ -1,0 +1,604 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	Private Sub Update_GID()
+4	0	If Not IsNull(Me![Unit]) And Not IsNull(Me![Sample]) And Not IsNull(Me![findletter]) Then
+5	0	    Me![GID] = Me![Unit] & "." & Me![findletter] & Me![Sample]
+6	0	Else
+7	0	    Debug.Print "GID is not valid"
+8	0	End If
+9	0	End Sub
+10	0	
+11	0	
+12	0	
+13	0	Private Sub button_Clay_Click()
+14	0	On Error GoTo err_button_clay_Click
+15	0	Dim checknum
+16	0	Dim sql
+17	0	        
+18	0	If Me![clay_object] <> "" Then
+19	1	    'check that unit num not exist
+20	0	    checknum = DLookup("[clay_object]", "[ClayObjects_Clay]", "[clay_object] = " & Me![clay_object])
+21	0	    If Not IsNull(checknum) Then
+22	1	        'the number does exist so the subform will behave fine
+23	0	    Else
+24	0	        sql = "INSERT INTO [ClayObjects_Clay] ([clay_object]) VALUES (" & Me![clay_object] & ");"
+25	0	        DoCmd.RunSQL sql
+26	0	        
+27	1	        'ToggleFormReadOnly Me, False
+28	0	    End If
+29	0	End If
+30	0	Me.Form!sub_Postproduction.Visible = False
+31	0	Me.Form!sub_Clay.Visible = True
+32	0	Me.Form!sub_Measure.Visible = False
+33	0	Me.Form!sub_Shape.Visible = False
+34	0	Me.Form!sub_Markings.Visible = False
+35	0	Me.Form!sub_Manufacture.Visible = False
+36	0	Me!button_dim.Enabled = True
+37	0	Me!button_shape.Enabled = True
+38	0	Me!button_markings.Enabled = True
+39	0	Me!button_Clay.Enabled = False
+40	0	Me!button_manufacture.Enabled = True
+41	0	Me!button_post.Enabled = True
+42	0	Me.Form!sub_Clay.Requery
+43	0	Exit Sub
+44	0	
+45	0	err_button_clay_Click:
+46	0	    Call General_Error_Trap
+47	0	    Exit Sub
+48	0	
+49	0	End Sub
+50	0	
+51	0	Private Sub button_dim_Click()
+52	0	Me.Form!sub_Postproduction.Visible = False
+53	0	Me.Form!sub_Clay.Visible = False
+54	0	Me.Form!sub_Measure.Visible = True
+55	0	Me.Form!sub_Shape.Visible = False
+56	0	Me.Form!sub_Markings.Visible = False
+57	0	Me.Form!sub_Manufacture.Visible = False
+58	0	Me!button_dim.Enabled = False
+59	0	Me!button_shape.Enabled = True
+60	0	Me!button_markings.Enabled = True
+61	0	Me!button_Clay.Enabled = True
+62	0	Me!button_manufacture.Enabled = True
+63	0	Me!button_post.Enabled = True
+64	0	Me.Form!sub_Measure.Requery
+65	0	End Sub
+66	0	
+67	0	Private Sub button_manufacture_Click()
+68	0	On Error GoTo err_button_manufacture_Click
+69	0	Dim checknum
+70	0	Dim sql
+71	0	        
+72	0	If Me![clay_object] <> "" Then
+73	1	    'check that unit num not exist
+74	0	    checknum = DLookup("[clay_object]", "[ClayObjects_Manufacture]", "[clay_object] = " & Me![clay_object])
+75	0	    If Not IsNull(checknum) Then
+76	1	        'the number does exist so the subform will behave fine
+77	0	    Else
+78	0	        sql = "INSERT INTO [ClayObjects_Manufacture] ([clay_object]) VALUES (" & Me![clay_object] & ");"
+79	0	        DoCmd.RunSQL sql
+80	0	        
+81	1	        'ToggleFormReadOnly Me, False
+82	0	    End If
+83	0	End If
+84	0	Me.Form!sub_Postproduction.Visible = False
+85	0	Me.Form!sub_Manufacture.Visible = True
+86	0	Me.Form!sub_Clay.Visible = False
+87	0	Me.Form!sub_Measure.Visible = False
+88	0	Me.Form!sub_Shape.Visible = False
+89	0	Me.Form!sub_Markings.Visible = False
+90	0	Me!button_dim.Enabled = True
+91	0	Me!button_shape.Enabled = True
+92	0	Me!button_markings.Enabled = True
+93	0	Me!button_manufacture.Enabled = False
+94	0	Me!button_Clay.Enabled = True
+95	0	Me!button_post.Enabled = True
+96	0	Me.Form!sub_Manufacture.Requery
+97	0	Exit Sub
+98	0	
+99	0	err_button_manufacture_Click:
+100	0	    Call General_Error_Trap
+101	0	    Exit Sub
+102	0	
+103	0	End Sub
+104	0	
+105	0	Private Sub button_markings_Click()
+106	0	On Error GoTo err_button_markings_Click
+107	0	Dim checknum
+108	0	Dim sql
+109	0	        
+110	0	If Me![clay_object] <> "" Then
+111	1	    'check that unit num not exist
+112	0	    checknum = DLookup("[clay_object]", "[ClayObjects_Markings]", "[clay_object] = " & Me![clay_object])
+113	0	    If Not IsNull(checknum) Then
+114	1	        'the number does exist so the subform will behave fine
+115	0	    Else
+116	0	        sql = "INSERT INTO [ClayObjects_Markings] ([clay_object]) VALUES (" & Me![clay_object] & ");"
+117	0	        DoCmd.RunSQL sql
+118	0	        
+119	1	        'ToggleFormReadOnly Me, False
+120	0	    End If
+121	0	End If
+122	0	Me.Form!sub_Postproduction.Visible = False
+123	0	Me.Form!sub_Clay.Visible = False
+124	0	Me.Form!sub_Markings.Visible = True
+125	0	Me.Form!sub_Measure.Visible = False
+126	0	Me.Form!sub_Shape.Visible = False
+127	0	Me.Form!sub_Manufacture.Visible = False
+128	0	Me!button_dim.Enabled = True
+129	0	Me!button_shape.Enabled = True
+130	0	Me!button_markings.Enabled = False
+131	0	Me!button_Clay.Enabled = True
+132	0	Me!button_manufacture.Enabled = True
+133	0	Me!button_post.Enabled = True
+134	0	Me.Form!sub_Markings.Requery
+135	0	Exit Sub
+136	0	
+137	0	err_button_markings_Click:
+138	0	    Call General_Error_Trap
+139	0	    Exit Sub
+140	0	
+141	0	End Sub
+142	0	
+143	0	Private Sub button_post_Click()
+144	0	Me.Form!sub_Postproduction.Visible = True
+145	0	Me.Form!sub_Clay.Visible = False
+146	0	Me.Form!sub_Markings.Visible = False
+147	0	Me.Form!sub_Shape.Visible = False
+148	0	Me.Form!sub_Measure.Visible = False
+149	0	Me.Form!sub_Manufacture.Visible = False
+150	0	Me!button_dim.Enabled = True
+151	0	Me!button_shape.Enabled = True
+152	0	Me!button_markings.Enabled = True
+153	0	Me!button_Clay.Enabled = True
+154	0	Me!button_manufacture.Enabled = True
+155	0	Me!button_post.Enabled = False
+156	0	Me.Form!sub_Postproduction.Requery
+157	0	End Sub
+158	0	
+159	0	Private Sub button_shape_Click()
+160	0	On Error GoTo err_button_shape_Click
+161	0	Dim checknum
+162	0	Dim sql
+163	0	        
+164	0	If Me![clay_object] <> "" Then
+165	1	    'check that unit num not exist
+166	0	    checknum = DLookup("[clay_object]", "[ClayObjects_Shape]", "[clay_object] = " & Me![clay_object])
+167	0	    If Not IsNull(checknum) Then
+168	1	        'the number does exist so the subform will behave fine
+169	0	    Else
+170	0	        sql = "INSERT INTO [ClayObjects_Shape] ([clay_object]) VALUES (" & Me![clay_object] & ");"
+171	0	        DoCmd.RunSQL sql
+172	0	        
+173	1	        'ToggleFormReadOnly Me, False
+174	0	    End If
+175	0	End If
+176	0	
+177	0	Me.Form!sub_Postproduction.Visible = False
+178	0	Me.Form!sub_Clay.Visible = False
+179	0	Me.Form!sub_Markings.Visible = False
+180	0	Me.Form!sub_Shape.Visible = True
+181	0	Me.Form!sub_Measure.Visible = False
+182	0	Me.Form!sub_Manufacture.Visible = False
+183	0	Me!button_dim.Enabled = True
+184	0	Me!button_shape.Enabled = False
+185	0	Me!button_markings.Enabled = True
+186	0	Me!button_Clay.Enabled = True
+187	0	Me!button_manufacture.Enabled = True
+188	0	Me!button_post.Enabled = True
+189	0	Me.Form!sub_Shape.Requery
+190	0	Exit Sub
+191	0	
+192	0	err_button_shape_Click:
+193	0	    Call General_Error_Trap
+194	0	    Exit Sub
+195	0	
+196	0	End Sub
+197	0	
+198	0	Private Sub cboFilterUnit_AfterUpdate()
+199	1	'filter - new 2011
+200	0	On Error GoTo err_filter
+201	0	
+202	0	    If Me![cboFilterUnit] <> "" Then
+203	0	        Me.Filter = "[Unit] = " & Me![cboFilterUnit]
+204	0	        Me.FilterOn = True
+205	0	        Me![cboFilterUnit] = ""
+206	0	        Me![cmdRemoveFilter].Visible = True
+207	0	    End If
+208	0	
+209	0	Exit Sub
+210	0	
+211	0	err_filter:
+212	0	    Call General_Error_Trap
+213	0	    Exit Sub
+214	0	End Sub
+215	0	
+216	0	Private Sub cboFilterUnit_NotInList(NewData As String, response As Integer)
+217	1	'stop not in list msg loop - new 2011
+218	0	On Error GoTo err_cbofilterNot
+219	0	
+220	0	    MsgBox "Sorry this Unit does not exist in this database yet", vbInformation, "No Match"
+221	0	    response = acDataErrContinue
+222	0	    
+223	0	    Me![cboFilterUnit].Undo
+224	0	Exit Sub
+225	0	
+226	0	err_cbofilterNot:
+227	0	    Call General_Error_Trap
+228	0	    Exit Sub
+229	0	End Sub
+230	0	
+231	0	Private Sub cboFind_AfterUpdate()
+232	1	'new 2011
+233	0	On Error GoTo err_cboFind
+234	0	
+235	0	If Me![cboFind] <> "" Then
+236	0	    DoCmd.GoToControl "GID"
+237	0	    DoCmd.FindRecord Me![cboFind]
+238	2	    ''DoCmd.GoToControl "Analyst"
+239	0	    Me![cboFind] = ""
+240	0	End If
+241	0	
+242	0	
+243	0	Exit Sub
+244	0	
+245	0	err_cboFind:
+246	0	    Call General_Error_Trap
+247	0	    Exit Sub
+248	0	End Sub
+249	0	
+250	0	
+251	0	
+252	0	
+253	0	Private Sub cboFind_NotInList(NewData As String, response As Integer)
+254	1	'stop not in list msg loop - new 2011
+255	0	On Error GoTo err_cbofindNot
+256	0	
+257	0	    MsgBox "Sorry this GID does not exist in the database", vbInformation, "No Match"
+258	0	    response = acDataErrContinue
+259	0	    
+260	0	    Me![cboFind].Undo
+261	0	Exit Sub
+262	0	
+263	0	err_cbofindNot:
+264	0	    Call General_Error_Trap
+265	0	    Exit Sub
+266	0	End Sub
+267	0	
+268	0	
+269	0	
+270	0	Private Sub clay_object_AfterUpdate()
+271	0	On Error GoTo err_clay_object_AfterUpdate
+272	0	Dim checknum
+273	0	Dim sql
+274	0	
+275	0	If Me![clay_object] <> "" Then
+276	1	    'check that unit num not exist
+277	0	    checknum = DLookup("[clay_object]", "[ClayObjects_Basic]", "[clay_object] = " & Me![clay_object])
+278	0	    If Not IsNull(checknum) Then
+279	0	        MsgBox "Sorry but the clay object " & Me![clay_object] & " already exists, please enter another number.", vbInformation, "Duplicate Unit Number"
+280	0	        
+281	0	        If Not IsNull(Me![clay_object].OldValue) Then
+282	1	            'return field to old value if there was one
+283	0	            Me![clay_object] = Me![clay_object].OldValue
+284	0	        Else
+285	1	            'oh the joys, to keep the focus on unit have to flip to year then back
+286	1	            'otherwise if will ignore you and go straight to year - dont believe me, comment out the gotocontrol year then!
+287	0	            DoCmd.GoToControl "Unit"
+288	0	            DoCmd.GoToControl "clay_object"
+289	0	            Me![clay_object].SetFocus
+290	0	            
+291	0	            DoCmd.RunCommand acCmdUndo
+292	0	        End If
+293	0	    Else
+294	1	        'the number does not exist so allow rest of data entry
+295	1	        'ToggleFormReadOnly Me, False
+296	0	        checknum = DLookup("[clay_object]", "[ClayObjects_Shape]", "[clay_object] = " & Me![clay_object])
+297	0	         If Not IsNull(checknum) Then
+298	1	                'the number does exist so the subform will behave fine
+299	0	        Else
+300	0	            sql = "INSERT INTO [ClayObjects_Shape] ([clay_object]) VALUES (" & Me![clay_object] & ");"
+301	0	            DoCmd.RunSQL sql
+302	0	        
+303	1	        'ToggleFormReadOnly Me, False
+304	0	    End If
+305	0	    End If
+306	0	End If
+307	0	
+308	0	Exit Sub
+309	0	
+310	0	err_clay_object_AfterUpdate:
+311	0	    Call General_Error_Trap
+312	0	    Exit Sub
+313	0	
+314	0	
+315	0	End Sub
+316	0	
+317	0	Private Sub cmdAddNew_Click()
+318	1	'********************************************************************
+319	1	' Create new record
+320	1	' SAJ
+321	1	'********************************************************************
+322	0	On Error GoTo Err_cmdgonew_Click
+323	0	
+324	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+325	0	    DoCmd.GoToRecord , , acNewRec
+326	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Form![Analyst].Name
+327	0	    DoCmd.GoToControl Me![Unit].Name
+328	0	    Exit Sub
+329	0	
+330	0	Err_cmdgonew_Click:
+331	0	    Call General_Error_Trap
+332	0	    Exit Sub
+333	0	End Sub
+334	0	
+335	0	Private Sub cmdDelete_Click()
+336	1	'new 2011 - control the delete of a record to ensure both tables are clear
+337	0	On Error GoTo err_del
+338	0	
+339	0	Dim response
+340	0	    response = MsgBox("Do you really want to remove GID " & Me!GID & " (DB Id " & Me![clay_object] & ") and all its related material records from your database?", vbYesNo + vbQuestion, "Remove Record")
+341	0	    If response = vbYes Then
+342	0	        Dim sql
+343	0	        
+344	0	    sql = "Delete FROM [ClayObjects_Basic] WHERE [clay_object] = " & Me![clay_object] & ";"
+345	0	        DoCmd.RunSQL sql
+346	0	    sql = "Delete FROM [ClayObjects_Shape_plan_2d] WHERE [clay_object] = " & Me![clay_object] & ";"
+347	0	        DoCmd.RunSQL sql
+348	0	    sql = "Delete FROM [ClayObjects_Shape_section_2d] WHERE [clay_object] = " & Me![clay_object] & ";"
+349	0	        DoCmd.RunSQL sql
+350	0	    sql = "Delete FROM [ClayObjects_Shape_long] WHERE [clay_object] = " & Me![clay_object] & ";"
+351	0	        DoCmd.RunSQL sql
+352	0	    sql = "Delete FROM [ClayObjects_Shape_plan_2d_sidescorners] WHERE [clay_object] = " & Me![clay_object] & ";"
+353	0	        DoCmd.RunSQL sql
+354	0	    sql = "Delete FROM [ClayObjects_Shape_section_2d_sidescorners] WHERE [clay_object] = " & Me![clay_object] & ";"
+355	0	        DoCmd.RunSQL sql
+356	0	    sql = "Delete FROM [ClayObjects_Shape_long_sidescorners] WHERE [clay_object] = " & Me![clay_object] & ";"
+357	0	        DoCmd.RunSQL sql
+358	0	    sql = "Delete FROM [ClayObjects_Shape_long_basetop] WHERE [clay_object] = " & Me![clay_object] & ";"
+359	0	        DoCmd.RunSQL sql
+360	0	    sql = "Delete FROM [ClayObjects_Shape_section_2d_basetop] WHERE [clay_object] = " & Me![clay_object] & ";"
+361	0	        DoCmd.RunSQL sql
+362	0	    sql = "Delete FROM [ClayObjects_Shape_detail_pinched] WHERE [clay_object] = " & Me![clay_object] & ";"
+363	0	        DoCmd.RunSQL sql
+364	0	    sql = "Delete FROM [ClayObjects_Shape_detail_depressions] WHERE [clay_object] = " & Me![clay_object] & ";"
+365	0	        DoCmd.RunSQL sql
+366	0	    sql = "Delete FROM [ClayObjects_Shape] WHERE [clay_object] = " & Me![clay_object] & ";"
+367	0	        DoCmd.RunSQL sql
+368	0	    sql = "Delete FROM [ClayObjects_Measure] WHERE [clay_object] = " & Me![clay_object] & ";"
+369	0	        DoCmd.RunSQL sql
+370	0	    sql = "Delete FROM [ClayObjects_Markings] WHERE [clay_object] = " & Me![clay_object] & ";"
+371	0	        DoCmd.RunSQL sql
+372	0	    sql = "Delete FROM [ClayObjects_Clay] WHERE [clay_object] = " & Me![clay_object] & ";"
+373	0	        DoCmd.RunSQL sql
+374	0	    sql = "Delete FROM [ClayObjects_Manufacture] WHERE [clay_object] = " & Me![clay_object] & ";"
+375	0	        DoCmd.RunSQL sql
+376	0	    sql = "Delete FROM [ClayObjects_Postproduction] WHERE [clay_object] = " & Me![clay_object] & ";"
+377	0	        DoCmd.RunSQL sql
+378	0	    sql = "Delete FROM [ClayObjects_Markings_location] WHERE [clay_object] = " & Me![clay_object] & ";"
+379	0	        DoCmd.RunSQL sql
+380	0	    sql = "Delete FROM [ClayObjects_Markings_clarity] WHERE [clay_object] = " & Me![clay_object] & ";"
+381	0	        DoCmd.RunSQL sql
+382	0	    sql = "Delete FROM [ClayObjects_Markings_application] WHERE [clay_object] = " & Me![clay_object] & ";"
+383	0	        DoCmd.RunSQL sql
+384	0	    sql = "Delete FROM [ClayObjects_Markings_type] WHERE [clay_object] = " & Me![clay_object] & ";"
+385	0	        DoCmd.RunSQL sql
+386	0	    sql = "Delete FROM [ClayObjects_Clay_primary_colour] WHERE [clay_object] = " & Me![clay_object] & ";"
+387	0	        DoCmd.RunSQL sql
+388	0	    sql = "Delete FROM [ClayObjects_Clay_texture] WHERE [clay_object] = " & Me![clay_object] & ";"
+389	0	        DoCmd.RunSQL sql
+390	0	    sql = "Delete FROM [ClayObjects_Clay_surface] WHERE [clay_object] = " & Me![clay_object] & ";"
+391	0	        DoCmd.RunSQL sql
+392	0	    sql = "Delete FROM [ClayObjects_Clay_inclusions] WHERE [clay_object] = " & Me![clay_object] & ";"
+393	0	        DoCmd.RunSQL sql
+394	0	    sql = "Delete FROM [ClayObjects_Clay_inclusions_specified] WHERE [clay_object] = " & Me![clay_object] & ";"
+395	0	        DoCmd.RunSQL sql
+396	0	    sql = "Delete FROM [ClayObjects_Manufacture_craft] WHERE [clay_object] = " & Me![clay_object] & ";"
+397	0	        DoCmd.RunSQL sql
+398	0	    sql = "Delete FROM [ClayObjects_Manufacture_applied] WHERE [clay_object] = " & Me![clay_object] & ";"
+399	0	        DoCmd.RunSQL sql
+400	0	    sql = "Delete FROM [ClayObjects_Post_burning] WHERE [clay_object] = " & Me![clay_object] & ";"
+401	0	        
+402	0	        Me.Requery
+403	0	        MsgBox "Deletion completed", vbInformation, "Done"
+404	0	        
+405	0	        Me![cboFind].Requery
+406	0	        Me![cboFilterUnit].Requery
+407	0	        
+408	0	    End If
+409	0	Exit Sub
+410	0	
+411	0	err_del:
+412	0	    Call General_Error_Trap
+413	0	    Exit Sub
+414	0	End Sub
+415	0	
+416	0	Private Sub cmdGoFirst_Click()
+417	1	'********************************************************************
+418	1	' Go to first record
+419	1	' SAJ
+420	1	'********************************************************************
+421	0	On Error GoTo Err_cmdgofirst_Click
+422	0	
+423	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+424	0	    DoCmd.GoToRecord , , acFirst
+425	0	
+426	0	    Exit Sub
+427	0	
+428	0	Err_cmdgofirst_Click:
+429	0	    Call General_Error_Trap
+430	0	    Exit Sub
+431	0	End Sub
+432	0	
+433	0	Private Sub cmdGoLast_Click()
+434	1	'********************************************************************
+435	1	' Go to last record
+436	1	' SAJ
+437	1	'********************************************************************
+438	0	On Error GoTo Err_cmdgoLast_Click
+439	0	
+440	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+441	0	    DoCmd.GoToRecord , , acLast
+442	0	
+443	0	    Exit Sub
+444	0	
+445	0	Err_cmdgoLast_Click:
+446	0	    Call General_Error_Trap
+447	0	    Exit Sub
+448	0	End Sub
+449	0	
+450	0	Private Sub cmdGoNext_Click()
+451	1	'********************************************************************
+452	1	' Go to next record
+453	1	' SAJ
+454	1	'********************************************************************
+455	0	On Error GoTo Err_cmdgoNext_Click
+456	0	
+457	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+458	0	    DoCmd.GoToRecord , , acNext
+459	0	
+460	0	    Exit Sub
+461	0	
+462	0	Err_cmdgoNext_Click:
+463	0	    If Err.Number = 2105 Then
+464	0	        MsgBox "No more records to show", vbInformation, "End of records"
+465	0	    Else
+466	0	        Call General_Error_Trap
+467	0	    End If
+468	0	    Exit Sub
+469	0	End Sub
+470	0	
+471	0	Private Sub cmdGoPrev_Click()
+472	1	'********************************************************************
+473	1	' Go to previous record
+474	1	' SAJ
+475	1	'********************************************************************
+476	0	On Error GoTo Err_cmdgoprevious_Click
+477	0	
+478	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+479	0	    DoCmd.GoToRecord , , acPrevious
+480	0	
+481	0	    Exit Sub
+482	0	
+483	0	Err_cmdgoprevious_Click:
+484	0	    If Err.Number = 2105 Then
+485	0	        MsgBox "Already at the begining of the recordset", vbInformation, "Begining of records"
+486	0	    Else
+487	0	        Call General_Error_Trap
+488	0	    End If
+489	0	    Exit Sub
+490	0	End Sub
+491	0	
+492	0	
+493	0	
+494	0	Private Sub cmdRemoveFilter_Click()
+495	1	'remove unit filter - new 2011
+496	0	On Error GoTo err_Removefilter
+497	0	
+498	0	    Me![cboFilterUnit] = ""
+499	0	    Me.Filter = ""
+500	0	    Me.FilterOn = False
+501	0	    
+502	0	    DoCmd.GoToControl "cboFind"
+503	0	    Me![cmdRemoveFilter].Visible = False
+504	0	   
+505	0	
+506	0	Exit Sub
+507	0	
+508	0	err_Removefilter:
+509	0	    Call General_Error_Trap
+510	0	    Exit Sub
+511	0	End Sub
+512	0	
+513	0	Private Sub Flot_Sample_number_AfterUpdate()
+514	1	'new season 2006 - get soil vol from flot log
+515	0	On Error GoTo err_sample
+516	0	
+517	0	Update_GID
+518	0	
+519	0	
+520	0	Exit Sub
+521	0	
+522	0	err_sample:
+523	0	    Call General_Error_Trap
+524	0	    Exit Sub
+525	0	End Sub
+526	0	
+527	0	
+528	0	
+529	0	Private Sub Form_Load()
+530	0	Me.Form!sub_Postproduction.Visible = False
+531	0	Me.Form!sub_Clay.Visible = False
+532	0	Me.Form!sub_Markings.Visible = False
+533	0	Me.Form!sub_Shape.Visible = True
+534	0	Me.Form!sub_Measure.Visible = False
+535	0	Me.Form!sub_Manufacture.Visible = False
+536	0	Me!button_dim.Enabled = True
+537	0	Me!button_shape.Enabled = False
+538	0	Me!button_markings.Enabled = True
+539	0	Me!button_Clay.Enabled = True
+540	0	Me!button_manufacture.Enabled = True
+541	0	Me!button_post.Enabled = True
+542	0	End Sub
+543	0	
+544	0	Private Sub Sample_AfterUpdate()
+545	0	On Error GoTo err_Sample_AfterUpdate
+546	0	Dim checknum
+547	0	
+548	0	If Me![Sample] <> "" Then
+549	1	    'check that unit num not exist
+550	2	    checknum = DLookup("[findnumber]", "[ClayObjects_Basic]", "[findnumber] = " & Me![Sample] & " AND [unit] = " & Me![Unit] & " AND [findsampleletter] = '" & Me![findletter] & "'")
+551	0	    If Not IsNull(checknum) Then
+552	0	        MsgBox "Sorry but the find " & Me![Unit] & "." & Me![findletter] & "" & Me![Sample] & " already exists, please enter another number.", vbInformation, "Duplicate gid Number"
+553	0	        
+554	0	        If Not IsNull(Me![Sample].OldValue) Then
+555	1	            'return field to old value if there was one
+556	0	            Me![Sample] = Me![Sample].OldValue
+557	0	        Else
+558	1	            'oh the joys, to keep the focus on unit have to flip to year then back
+559	1	            'otherwise if will ignore you and go straight to year - dont believe me, comment out the gotocontrol year then!
+560	0	            DoCmd.GoToControl "Unit"
+561	0	            Me![Unit].SetFocus
+562	0	            
+563	0	            DoCmd.RunCommand acCmdUndo
+564	0	        End If
+565	0	    Else
+566	1	        'the number does not exist so allow rest of data entry
+567	1	        'ToggleFormReadOnly Me, False
+568	0	    End If
+569	0	End If
+570	0	
+571	0	Update_GID
+572	0	
+573	0	Exit Sub
+574	0	
+575	0	err_Sample_AfterUpdate:
+576	0	    Call General_Error_Trap
+577	0	    Exit Sub
+578	0	    
+579	0	End Sub
+580	0	
+581	0	Private Sub Sample_Change()
+582	1	'comment out saj
+583	1	'Update_GID
+584	0	End Sub
+585	0	
+586	0	
+587	0	Private Sub Sample_Enter()
+588	1	'SAJ before versioning - this causes sql update error to be returned to user even
+589	1	'they have not tried to edit anything, most confusing and unnecessary so removed
+590	1	' 11/01/05
+591	1	'Update_GID
+592	0	End Sub
+593	0	
+594	0	
+595	0	Private Sub Unit_AfterUpdate()
+596	0	Update_GID
+597	0	End Sub
+598	0	
+599	0	Private Sub Unit_Change()
+600	1	'Update_GID
+601	0	End Sub
+602	0	
+603	0	
+604	0	

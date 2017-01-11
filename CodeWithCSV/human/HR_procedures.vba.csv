@@ -1,0 +1,124 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Sub ReturnToMenu(frm)
+5	1	'global return to main menu routine - SAJ
+6	0	On Error GoTo err_menu
+7	0	
+8	0	    DoCmd.OpenForm "FRM_MAINMENU"
+9	0	    DoCmd.Close acForm, frm.Name
+10	0	Exit Sub
+11	0	
+12	0	err_menu:
+13	0	    MsgBox Err.Description
+14	0	    Exit Sub
+15	0	End Sub
+16	0	
+17	0	Sub DoRecordCheck(tblName, Unit, Individ, UnitfldName)
+18	1	'check if a skeleton number exists in the table related to the form being opened, if not
+19	1	'add it
+20	1	'SAJ
+21	0	On Error GoTo err_check
+22	0	    Dim mydb As DAO.Database, myrs As DAO.Recordset, sql As String, sql2 As String
+23	0	    sql = "SELECT [" & UnitfldName & "], [Individual Number] FROM [" & tblName & "] WHERE [" & UnitfldName & "] = " & Unit & " AND [Individual Number] = " & Individ & ";"
+24	0	    Set mydb = CurrentDb
+25	0	    Set myrs = mydb.OpenRecordset(sql)
+26	0	    
+27	0	    If myrs.BOF And myrs.EOF Then
+28	0	        sql2 = "INSERT INTO [" & tblName & "] ([" & UnitfldName & "], [Individual Number]) VALUES (" & Unit & "," & Individ & ");"
+29	0	        DoCmd.RunSQL sql2
+30	0	    End If
+31	0	    
+32	0	    myrs.Close
+33	0	    Set myrs = Nothing
+34	0	    mydb.Close
+35	0	    Set mydb = Nothing
+36	0	
+37	0	Exit Sub
+38	0	
+39	0	err_check:
+40	0	    MsgBox Err.Description
+41	0	    Exit Sub
+42	0	End Sub
+43	0	
+44	0	Sub SortOutButtons(frm As Form)
+45	0	On Error GoTo err_Sort
+46	0	
+47	0	If frm![cboAgeCategory] <> "" Then
+48	0	    
+49	1	        '2010 or =9 added for prenatal
+50	0	        If frm![cboAgeCategory] = 0 Or frm![cboAgeCategory] = 9 Then
+51	0	            If frm.Name <> "FRM_Permanent_Teeth" Then frm![CmdOpenNeonateFrm].Enabled = True
+52	0	            frm![CmdOpenJuvenileFrm].Enabled = False
+53	0	            If frm.Name <> "FRM_Deciduous_Teeth" Then frm![CmdOpenAdultFrm].Enabled = False
+54	0	        ElseIf frm![cboAgeCategory] = 1 Or frm![cboAgeCategory] = 2 Or frm![cboAgeCategory] = 3 Then
+55	0	            If frm.Name <> "FRM_Permanent_Teeth" Then frm![CmdOpenNeonateFrm].Enabled = False
+56	0	            frm![CmdOpenJuvenileFrm].Enabled = True
+57	0	            If frm.Name <> "FRM_Deciduous_Teeth" Then frm![CmdOpenAdultFrm].Enabled = False
+58	0	        ElseIf frm![cboAgeCategory] = 4 Or frm![cboAgeCategory] = 5 Or frm![cboAgeCategory] = 6 Or frm![cboAgeCategory] = 7 Or frm![cboAgeCategory] = 8 Then
+59	1	            'march 2009 - SH decide all unknowns treated as adult - category 8 added to end of if statement above
+60	0	            If frm.Name <> "FRM_Permanent_Teeth" Then frm![CmdOpenNeonateFrm].Enabled = False
+61	0	            frm![CmdOpenJuvenileFrm].Enabled = False
+62	0	            If frm.Name <> "FRM_Deciduous_Teeth" Then frm![CmdOpenAdultFrm].Enabled = True
+63	0	        Else
+64	0	            If frm.Name <> "FRM_Permanent_Teeth" Then frm![CmdOpenNeonateFrm].Enabled = True
+65	0	            frm![CmdOpenJuvenileFrm].Enabled = True
+66	0	            If frm.Name <> "FRM_Deciduous_Teeth" Then frm![CmdOpenAdultFrm].Enabled = True
+67	0	        End If
+68	0	        
+69	0	   Else
+70	0	            If frm.Name <> "FRM_Permanent_Teeth" Then frm![CmdOpenNeonateFrm].Enabled = False
+71	0	            frm![CmdOpenJuvenileFrm].Enabled = False
+72	0	            If frm.Name <> "FRM_Deciduous_Teeth" Then frm![CmdOpenAdultFrm].Enabled = False
+73	0	    End If
+74	0	
+75	0	Exit Sub
+76	0	err_Sort:
+77	0	    MsgBox Err.Description
+78	0	    Exit Sub
+79	0	End Sub
+80	0	
+81	0	
+82	0	Function GetSkeletonAge(frm As Form)
+83	1	'******************************************************************************
+84	1	' Return age category of current skeleton
+85	1	'
+86	1	' SAJ v9
+87	1	'******************************************************************************
+88	0	On Error GoTo err_GetSkeletonAge
+89	0	
+90	0	Dim retVal
+91	0	retVal = ""
+92	0	If DBName <> "" Then
+93	0	    Dim mydb As DAO.Database, myrs As DAO.Recordset
+94	0	    Dim sql
+95	0	    Set mydb = CurrentDb()
+96	0	    
+97	0	    sql = "SELECT [age category] FROM [Q_Retrieve_Age_of_Skeleton] WHERE [unit number] = " & frm![txtUnit] & " AND [individual number] = " & frm![txtIndivid] & ";"
+98	0	    Set myrs = mydb.OpenRecordset(sql, dbOpenSnapshot)
+99	0	    
+100	2	     '' Dim myrs As New ADODB.Recordset
+101	2	   '' myrs.Open sql, CurrentProject.Connection, adOpenKeySet, adLockOptimistic
+102	0	    
+103	0	    If Not (myrs.BOF And myrs.EOF) Then
+104	0	        myrs.MoveFirst
+105	0	        retVal = retVal & myrs![age category]
+106	0	    End If
+107	0	    
+108	0	    myrs.Close
+109	0	    Set myrs = Nothing
+110	0	    mydb.Close
+111	0	    Set mydb = Nothing
+112	0	    
+113	0	  
+114	0	Else
+115	0	    retVal = retVal & "X"
+116	0	End If
+117	0	
+118	0	GetSkeletonAge = retVal
+119	0	
+120	0	Exit Function
+121	0	err_GetSkeletonAge:
+122	0	    Call General_Error_Trap
+123	0	End Function
+124	0	

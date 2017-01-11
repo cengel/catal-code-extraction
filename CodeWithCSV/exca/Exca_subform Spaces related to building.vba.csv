@@ -1,0 +1,34 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	1	'*********************************************************
+4	1	' This form is new in v9.1 to give read only view of spaces
+5	1	'*********************************************************
+6	0	
+7	0	Private Sub cmdGoToSpace_Click()
+8	1	'***********************************************************
+9	1	' Open space form with a filter on the space number related
+10	1	' to the button. Open as readonly.
+11	1	'
+12	1	' SAJ v9.1
+13	1	'***********************************************************
+14	0	On Error GoTo Err_cmdGoToSpace_Click
+15	0	
+16	0	    Dim stDocName As String
+17	0	    Dim stLinkCriteria As String
+18	0	
+19	0	    stDocName = "Exca: Space Sheet"
+20	0	    
+21	1	    'if int data type
+22	0	    stLinkCriteria = "[Space Number]= " & Me![Space number]
+23	1	    'char datatype
+24	3	    'stLinkCriteria = "[Space Number]= '" & Me![Space Number] & "'"
+25	0	    
+26	1	    DoCmd.OpenForm stDocName, acNormal, , stLinkCriteria, acFormReadOnly ', acDialog
+27	1	    'decided against dialog as there may be other windows that can be opened from this form
+28	1	    'and if this is dialog they appear beneath it
+29	0	    Exit Sub
+30	0	
+31	0	Err_cmdGoToSpace_Click:
+32	0	    Call General_Error_Trap
+33	0	    Exit Sub
+34	0	End Sub

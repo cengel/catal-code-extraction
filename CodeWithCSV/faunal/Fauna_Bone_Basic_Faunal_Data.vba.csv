@@ -1,0 +1,586 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	1	Option Explicit 'added by saj
+3	0	
+4	1	Dim WhereGo 'SAJ this var is used to track where the user goes to when they close form, used by form deactivate
+5	0	
+6	0	Private Sub UpdateGID()
+7	1	'this is called by this form to update the GID field if either the
+8	1	'Unit, find letter or number fields are altered
+9	1	'replaces calls to macro bone.Update GID
+10	1	' SAJ
+11	0	On Error GoTo err_UpdateGID
+12	0	
+13	0	 Me![GID] = [Forms]![Fauna_Bone_Basic_Faunal_Data]![Unit number] & "." & [Forms]![Fauna_Bone_Basic_Faunal_Data]![letter code] & [Forms]![Fauna_Bone_Basic_Faunal_Data]![find number]
+14	0	    
+15	0	
+16	0	Exit Sub
+17	0	
+18	0	err_UpdateGID:
+19	0	    Call General_Error_Trap
+20	0	    Exit Sub
+21	0	End Sub
+22	0	
+23	0	Sub button_goto_unitdescription_Click()
+24	0	On Error GoTo Err_button_goto_unitdescription_Click
+25	0	
+26	0	    Dim stDocName As String
+27	0	    Dim stLinkCriteria As String
+28	0	    
+29	0	If Me![Unit number] <> "" Then
+30	1	    'new check for unit number entered by saj
+31	0	    stDocName = "Fauna_Bone_Faunal_Unit_Description"
+32	0	    
+33	0	    stLinkCriteria = "[Unit number]=" & Me![Unit number]
+34	0	    
+35	0	        
+36	0	    DoCmd.Minimize
+37	0	
+38	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+39	0	Else
+40	0	    MsgBox "Please enter or select a Unit Number first", vbInformation, "No Unit Number"
+41	0	End If
+42	0	
+43	0	Exit_button_goto_unitdescription_Click:
+44	0	    Exit Sub
+45	0	
+46	0	Err_button_goto_unitdescription_Click:
+47	0	    Call General_Error_Trap
+48	0	    Resume Exit_button_goto_unitdescription_Click
+49	0	
+50	0	End Sub
+51	0	Sub button_goto_cran_postcran_Click()
+52	0	On Error GoTo Err_button_goto_cran_postcran_Click
+53	0	
+54	1	'new season 2006 - track movement
+55	0	WhereGo = "Post/Cran"
+56	0	
+57	0	    Dim stDocCranial As String
+58	0	    Dim stDocPostCranial As String
+59	0	    Dim stLinkCriteria As String
+60	1	    Dim stElementType As String 'was not declared before option explicit SAJ
+61	0	    Dim checknum, sql
+62	0	    
+63	0	    stDocCranial = "Fauna_Bone_Cranial"
+64	0	    stDocPostCranial = "Fauna_Bone_Postcranial"
+65	0	    stElementType = "Fauna_Bone_Basic_Faunal_Data.Field40"
+66	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+67	0	    
+68	1	    ' MR July 18, 2005
+69	2	    'DoCmd.Save 'commented out by saj placed below
+70	0	    
+71	0	    If Me![GID] <> "" Then
+72	1	        'new check for GID entered by saj
+73	1	        'the form is only minimised so must save data manually here - saj
+74	0	        DoCmd.RunCommand acCmdSaveRecord
+75	1	        'new 2006 saj - dont let go anywhere until picked element
+76	0	        If Field40 <> "" Then
+77	0	            If Field40 < 24 Then
+78	1	                'new for season 2006 - see if the cranial record exists if not create it - SAJ
+79	2	                checknum = DLookup("[GID]", "[Fauna_Bone_Cranial]", "[GID] = '" & Me![GID] & "'")
+80	0	                If IsNull(checknum) Then
+81	1	                    'gid not exist there yet so create it ready for data entry
+82	4	                    sql = "INSERT INTO [Fauna_Bone_Cranial] ([GID], [Unit number], [Letter code], [Find number]) VALUES ('" & Me![GID] & "'," & Me![Unit number] & ", '" & Me![letter code] & "', " & Me![find number] & ");"
+83	0	                    DoCmd.RunSQL sql
+84	0	                End If
+85	0	            
+86	0	                DoCmd.Minimize
+87	0	                DoCmd.OpenForm stDocCranial, , , stLinkCriteria
+88	0	            Else
+89	1	                'new for season 2006 - see if the cranial record exists if not create it - SAJ
+90	2	                checknum = DLookup("[GID]", "[Fauna_Bone_PostCranial]", "[GID] = '" & Me![GID] & "'")
+91	0	                If IsNull(checknum) Then
+92	1	                    'gid not exist there yet so create it ready for data entry
+93	4	                    sql = "INSERT INTO [Fauna_Bone_PostCranial] ([GID], [Unit number], [Letter code], [Find number]) VALUES ('" & Me![GID] & "'," & Me![Unit number] & ", '" & Me![letter code] & "', " & Me![find number] & ");"
+94	0	                    DoCmd.RunSQL sql
+95	0	                End If
+96	0	                DoCmd.Minimize
+97	0	                DoCmd.OpenForm stDocPostCranial, , , stLinkCriteria
+98	0	            End If
+99	0	        Else
+100	0	            MsgBox "Please fill in the Element field for this record first", vbInformation, "No Element"
+101	0	        End If
+102	0	    Else
+103	0	        MsgBox "Please enter the GID fields for this record or select a GID first", vbInformation, "No Unit Number"
+104	0	    End If
+105	0	
+106	0	Exit_button_goto_cran_postcran_Click:
+107	0	    Exit Sub
+108	0	
+109	0	Err_button_goto_cran_postcran_Click:
+110	0	    If Err.Number = 2046 And Me.Dirty = False Then
+111	1	        'save record has failed  - DB might be Read only, added dirty check to make sure nothing added
+112	0	        Resume Next
+113	0	    Else
+114	0	        Call General_Error_Trap
+115	0	        Resume Exit_button_goto_cran_postcran_Click
+116	0	    End If
+117	0	End Sub
+118	0	
+119	0	Private Sub Button23_Click()
+120	1	' This event used to call the macro Bone.new basic record, translated to code
+121	1	' sets the field [Forms]![Fauna_Bone_Basic_Faunal_Data]![Unit number] to
+122	2	' [Forms]![Fauna_Bone_Faunal_Unit_Description]![Unit number] - I've extended this
+123	1	' to trap poss the Unit desc form not open and to cope with it
+124	1	' SAJ
+125	0	On Error GoTo err_but23
+126	0	Dim oldnum
+127	0	
+128	0	oldnum = Me![Unit number]
+129	0	
+130	0	DoCmd.RunCommand acCmdRecordsGoToNew
+131	0	Me![Unit number] = Forms![Fauna_Bone_Faunal_Unit_Description]![Unit number]
+132	0	DoCmd.GoToControl "Find number"
+133	0	Exit Sub
+134	0	
+135	0	getUnitNo:
+136	0	    Dim retVal, checknum, sql, retVal2
+137	0	    If oldnum <> "" Then
+138	0	        retVal = MsgBox("Does the new record apply to Unit " & oldnum & "?", vbQuestion + vbYesNo, "New Record for Unit")
+139	0	        If retVal = vbYes Then
+140	0	            Me![Unit number] = oldnum
+141	0	            Me![Unit number].Locked = False
+142	0	            Me![Unit number].BackColor = 16777215
+143	0	            Me![letter code].Locked = False
+144	0	            Me![letter code].BackColor = 16777215
+145	0	            Me![find number].Locked = False
+146	0	            Me![find number].BackColor = 16777215
+147	0	        Else
+148	0	            retVal = InputBox("Please enter the Unit number below:", "Unit number")
+149	0	            If retVal = "" Then
+150	0	                MsgBox "New record entry cancelled", vbCritical, "No Unit Number Entered"
+151	0	                DoCmd.RunCommand acCmdRecordsGoToLast
+152	0	                Exit Sub
+153	0	            Else
+154	1	                'ok unit number entered by user, check if its in Unit descrip table
+155	0	                checknum = DLookup("[Unit Number]", "[Fauna_Bone_Faunal_Unit_Description]", "[Unit number] = " & retVal)
+156	0	                If IsNull(checknum) Then
+157	0	                    retVal2 = MsgBox("The Unit Number " & retVal & " does not exist in the FUD, if you wish to continue with this entry you will be passed back to the FUD now." & Chr(13) & Chr(13) & "Do you want to continue with this entry?", vbExclamation + vbYesNo, "No Matching FUD")
+158	0	                    If retVal2 = vbYes Then
+159	1	                        'insert unit into FUD
+160	0	                        sql = "INSERT INTO [Fauna_Bone_Faunal_Unit_Description] ([Unit Number]) VALUES (" & retVal & ");"
+161	0	                        DoCmd.RunSQL sql
+162	0	                        DoCmd.OpenForm "Fauna_Bone_Faunal_Unit_Description", acNormal, , "[Unit Number] = " & retVal
+163	0	                        Exit Sub
+164	0	                    Else
+165	1	                        'cancel op
+166	0	                        DoCmd.RunCommand acCmdRecordsGoToLast
+167	0	                        Exit Sub
+168	0	                    End If
+169	0	                Else
+170	1	                    'new 2009 - never did anything with entered value before!
+171	0	                    Me![Unit number] = retVal
+172	0	                    Me![Unit number].Locked = False
+173	0	                    Me![Unit number].BackColor = 16777215
+174	0	                    Me![letter code].Locked = False
+175	0	                    Me![letter code].BackColor = 16777215
+176	0	                    Me![find number].Locked = False
+177	0	                    Me![find number].BackColor = 16777215
+178	0	                End If
+179	1	                'Me![Unit number] = retVal
+180	1	                'DoCmd.GoToControl "Find number"
+181	0	            End If
+182	0	        End If
+183	0	    End If
+184	0	Exit Sub
+185	0	err_but23:
+186	0	    If Err.Number = 2450 Then
+187	0	        GoTo getUnitNo
+188	0	    Else
+189	0	        Call General_Error_Trap
+190	0	    End If
+191	0	    Exit Sub
+192	0	End Sub
+193	0	
+194	0	Private Sub cboFind_AfterUpdate()
+195	1	'new find combo by SAJ - filter remove request NR 5/7/06
+196	0	On Error GoTo err_cboFind
+197	0	
+198	0	If Me![cboFind] <> "" Then
+199	0	    
+200	0	        If Me.Filter <> "" Then
+201	2	            If Me.Filter <> "[GID] = '" & Me![cboFind].Column(1) & "'" Then
+202	1	            '    MsgBox "This form was opened to only show the record " & Me.Filter & ". This action has removed the filter and all records are available to view.", vbInformation, "Filter Removed"
+203	0	                Me.FilterOn = False
+204	0	                Me.Filter = ""
+205	0	            End If
+206	0	        End If
+207	0	
+208	0	    DoCmd.GoToControl "GID"
+209	0	    DoCmd.FindRecord Me![cboFind]
+210	0	    Me!cboFind = ""
+211	0	
+212	0	End If
+213	0	
+214	0	Exit Sub
+215	0	
+216	0	err_cboFind:
+217	0	    Call General_Error_Trap
+218	0	    Exit Sub
+219	0	End Sub
+220	0	
+221	0	Private Sub cboFind_NotInList(NewData As String, response As Integer)
+222	1	'stop not in list msg loop
+223	0	On Error GoTo err_cbofindNot
+224	0	
+225	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+226	0	    response = acDataErrContinue
+227	0	    
+228	0	    Me![cboFind].Undo
+229	0	Exit Sub
+230	0	
+231	0	err_cbofindNot:
+232	0	    Call General_Error_Trap
+233	0	    Exit Sub
+234	0	End Sub
+235	0	
+236	0	Private Sub cmdMenu_Click()
+237	1	'new menu button
+238	0	On Error GoTo err_cmdMenu
+239	0	
+240	0	    DoCmd.OpenForm "Bone", acNormal
+241	0	    DoCmd.Close acForm, Me.Name
+242	0	Exit Sub
+243	0	
+244	0	err_cmdMenu:
+245	0	    Call General_Error_Trap
+246	0	    Exit Sub
+247	0	End Sub
+248	0	
+249	0	Private Sub Comments_LostFocus()
+250	1	'new 2010 - take focus up to post/cran button - focus movement still not quite wrking
+251	1	'to teams satisfaction, this might help but can be taken out if not
+252	0	On Error GoTo err_Comments
+253	0	
+254	0	    DoCmd.GoToControl "button.goto.cran/postcran"
+255	0	Exit Sub
+256	0	
+257	0	err_Comments:
+258	0	    Call General_Error_Trap
+259	0	    Exit Sub
+260	0	End Sub
+261	0	
+262	0	Private Sub Field34_AfterUpdate()
+263	0	On Error GoTo err_field34
+264	0	
+265	1	'new season 2009 = for post ex field
+266	0	PostEx_BFD_BodyPortion False, Me![Field34], Me![Field40]
+267	0	PostEx_BFD_SizeClass False, Me![Field34]
+268	0	
+269	0	Exit Sub
+270	0	
+271	0	err_field34:
+272	0	    Call General_Error_Trap
+273	0	    Exit Sub
+274	0	
+275	0	End Sub
+276	0	
+277	0	Private Sub Field40_AfterUpdate()
+278	1	'New code to replace call to macro Bone.on element update. The macro used to open the cranial
+279	1	' / post cranial form and delete the record that way - no need to do this in code just run sql to delete
+280	1	' SAJ
+281	0	On Error GoTo err_field40
+282	0	Dim sql, retVal
+283	0	    If [Forms]![Fauna_Bone_Basic_Faunal_Data]![Element] < 24 And DCount("*", "Fauna_Bone_Postcranial", "[GID]=[Forms]![Fauna_Bone_Basic_Faunal_Data]![GID]") > 0 Then
+284	1	        'if the element val < 24 and GID exist in table post cranial remove it as its now a cranial record
+285	0	        retVal = MsgBox("A post cranial record for this GID already exists and this action will remove it as the element you have chosen is Cranial. Are you sure you want to continue?", vbQuestion + vbYesNo, "Change of Element")
+286	0	        If retVal = vbNo Then
+287	0	            Me![Field40] = Me![Field40].OldValue
+288	0	            Exit Sub
+289	0	        Else
+290	1	            'if local run sql here
+291	2	            sql = "DELETE FROM [Fauna_Bone_Postcranial] WHERE [GID] = '" & Me![GID] & "';"
+292	0	            DoCmd.RunSQL sql
+293	0	        End If
+294	0	    ElseIf [Forms]![Fauna_Bone_Basic_Faunal_Data]![Element] > 23 And DCount("*", "Fauna_Bone_Cranial", "[GID]=[Forms]![Fauna_Bone_Basic_Faunal_Data]![GID]") > 0 Then
+295	1	        'if element > 23 and GID exist in table cranial then remove it as its not post cranial
+296	0	        retVal = MsgBox("A cranial record for this GID already exists and this action will remove it as the element you have chosen is Post-Cranial. Are you sure you want to continue?", vbQuestion + vbYesNo, "Change of Element")
+297	0	        If retVal = vbNo Then
+298	0	            Me![Field40] = Me![Field40].OldValue
+299	0	            Exit Sub
+300	0	        Else
+301	2	            sql = "DELETE FROM [Fauna_Bone_Cranial] WHERE [GID] = '" & Me![GID] & "';"
+302	0	            DoCmd.RunSQL sql
+303	0	        End If
+304	0	   End If
+305	0	
+306	1	    'new season 2009 = for post ex field
+307	0	    PostEx_BFD_BodyPortion False, Me![Field34], Me![Field40]
+308	0	
+309	0	Exit Sub
+310	0	
+311	0	err_field40:
+312	0	    Call General_Error_Trap
+313	0	    Exit Sub
+314	0	
+315	0	End Sub
+316	0	
+317	0	Private Sub Find_number_AfterUpdate()
+318	0	On Error GoTo err_findnum
+319	0	
+320	1	    'check existence of GID - new 2008 wishlist - saj
+321	0	    If IsNull(Me![Unit number].OldValue) Then
+322	0	        Dim checknum, GID, unit
+323	0	        GID = [Forms]![Fauna_Bone_Basic_Faunal_Data]![Unit number] & "." & [Forms]![Fauna_Bone_Basic_Faunal_Data]![letter code] & [Forms]![Fauna_Bone_Basic_Faunal_Data]![find number]
+324	2	        checknum = DLookup("[GID]", "[Fauna_Bone_Basic_Faunal_Data]", "[GID] = '" & GID & "'")
+325	0	        If Not IsNull(checknum) Then
+326	1	            'exists
+327	0	            MsgBox "This gid number exists already, entry cancelled", vbInformation, "Duplicate GID"
+328	0	            unit = Me![Unit number]
+329	0	            Me.Undo
+330	0	            
+331	0	            Me![Unit number] = unit
+332	0	            DoCmd.GoToControl "unit number"
+333	2	            'why won't going to the find number field work? it just skips onto sample number??
+334	1	            'DoCmd.GoToControl "find number"
+335	1	            'Me.[find number].SetFocus
+336	0	            Exit Sub
+337	0	        End If
+338	0	    End If
+339	0	    
+340	1	     'replaces call to bone.Update GID (used to be called OnChange also but this unecess)
+341	1	    'SAJ
+342	1	    Call UpdateGID 'this is private sub above
+343	0	
+344	0	Exit Sub
+345	0	
+346	0	err_findnum:
+347	0	    Call General_Error_Trap
+348	0	    Exit Sub
+349	0	End Sub
+350	0	
+351	0	
+352	0	Private Sub Form_Activate()
+353	1	'season 2006 - to track movement from this screen set a local module var here
+354	0	On Error GoTo err_act
+355	0	
+356	0	   WhereGo = ""
+357	0	   
+358	0	Exit Sub
+359	0	
+360	0	err_act:
+361	0	    Call General_Error_Trap
+362	0	    Exit Sub
+363	0	End Sub
+364	0	
+365	0	
+366	0	
+367	0	Private Sub Form_Current()
+368	1	'new 2009 lock unit number field if not a new entry
+369	0	On Error GoTo err_current
+370	0	
+371	0	If Me![Unit number] <> "" And Me![letter code] <> "" And Me![find number] Then
+372	0	    Me![Unit number].Locked = True
+373	2	    'Me![Unit number].BackColor = 10079487 'kathy not like color same as background
+374	0	    Me![Unit number].BackColor = 26367
+375	0	    Me![letter code].Locked = True
+376	1	    'Me![letter code].BackColor = 10079487
+377	0	    Me![letter code].BackColor = 26367
+378	0	    Me![find number].Locked = True
+379	1	    'Me![find number].BackColor = 10079487
+380	0	    Me![find number].BackColor = 26367
+381	0	Else
+382	1	    'this code is repeated in button23_click - the addnew button
+383	0	    Me![Unit number].Locked = False
+384	0	    Me![Unit number].BackColor = 16777215
+385	0	    Me![letter code].Locked = False
+386	0	    Me![letter code].BackColor = 16777215
+387	0	    Me![find number].Locked = False
+388	0	    Me![find number].BackColor = 16777215
+389	0	End If
+390	0	Exit Sub
+391	0	
+392	0	err_current:
+393	0	    If Err.Number = 2447 Then
+394	1	        'for some reason when FUD not open and new record created
+395	1	        'the if statement crashes on first line
+396	2	        'message about invalid use of !. - can't get why - something to do with it
+397	1	        'getting the value from the FUD on new record. So simply trapping
+398	0	        Resume Next
+399	0	    Else
+400	0	        Call General_Error_Trap
+401	0	    End If
+402	0	    Exit Sub
+403	0	End Sub
+404	0	
+405	0	Private Sub Form_Deactivate()
+406	1	'new season 2006 - request that if user closes without entering cran or post cran record
+407	1	'there be some form of warning, this event used to cal macro: saverecord
+408	0	On Error GoTo err_deact
+409	0	
+410	1	    'only force save if can
+411	1	   ' If Not IsNull(Me![Find Number]) And Not IsNull(Me![Unit Number]) And Not IsNull(Me![letter code]) Then
+412	1	   '     DoCmd.RunCommand acCmdSaveRecord
+413	1	   ' Else
+414	2	   '     'DoCmd.RunCommand acCmdUndo
+415	1	   ' End If
+416	0	    
+417	0	    If WhereGo <> "Post/Cran" Then
+418	1	        'only do this check if not heading off to cran or post cran form
+419	1	        'MsgBox "must check"
+420	1	        'If Me![Field40] <> 1 Or Me![Field40] <> 117 Or Me![Field40] <> 118 Or Me![Field40] <> 119 Then - whoops wrong operator
+421	1	        'If Me![Field40] <> 1 And Me![Field40] <> 117 And Me![Field40] <> 118 And Me![Field40] <> 119 Then
+422	1	            'applies to all elements except 1, 117, 118, 119
+423	1	        'change july 2007, saj - add 116
+424	0	        If Me![Field40] <> 1 And Me![Field40] <> 117 And Me![Field40] <> 118 And Me![Field40] <> 119 And Me![Field40] <> 116 Then
+425	1	            'applies to all elements except 1, 117, 118, 119, 116
+426	0	            
+427	0	            Dim numcheck, tablename, msgname
+428	0	            If Me![Field40] < 24 Then
+429	0	                tablename = "Fauna_Bone_Cranial"
+430	0	                msgname = "Cranial"
+431	0	            Else
+432	0	                tablename = "Fauna_Bone_Postcranial"
+433	0	                msgname = "Post Cranial"
+434	0	            End If
+435	2	            numcheck = DLookup("[GID]", tablename, "[GID] = '" & Me![GID] & "'")
+436	0	            If IsNull(numcheck) Then
+437	1	                'no cran/post cran msg so flag up
+438	0	                MsgBox "A " & msgname & " record has not been entered for this GID. Please do not forget.", vbInformation, "Data Reminder"
+439	0	            End If
+440	0	
+441	0	        End If
+442	0	    Else
+443	1	        'MsgBox "no check"
+444	0	    End If
+445	0	Exit Sub
+446	0	
+447	0	err_deact:
+448	0	    Call General_Error_Trap
+449	0	    Exit Sub
+450	0	End Sub
+451	0	
+452	0	Private Sub Form_Error(DataErr As Integer, response As Integer)
+453	1	'2008 wishlist, stop error message coming up
+454	1	'this is not going to stop a message but trying to control it.
+455	1	    'MsgBox DataErr
+456	1	    'Response = acDataErrDisplay
+457	0	
+458	0	    Const conInvalidKey = 3146
+459	0	    Const conNullValue = 3162
+460	0	    Dim strMsg As String
+461	0	    Dim msgresp
+462	0	
+463	0	    If DataErr = conInvalidKey Then
+464	0	        response = acDataErrContinue
+465	0	        strMsg = "Missing unit number, letter code or sample number. Do wish to cancel this entry?"
+466	0	        msgresp = MsgBox(strMsg, vbExclamation + vbYesNo, "Primary Key Violation")
+467	0	        If msgresp = vbYes Then
+468	0	            Me.Undo
+469	0	        End If
+470	0	    ElseIf DataErr = conNullValue Then
+471	1	        'invalid use of null might be unit number blank so undo record
+472	0	        response = acDataErrContinue
+473	0	        strMsg = "There is a value missing preventing this record from being saved. Do wish to cancel this entry?"
+474	0	        msgresp = MsgBox(strMsg, vbExclamation + vbYesNo, "Primary Key Violation")
+475	0	        If msgresp = vbYes Then
+476	0	            Me.Undo
+477	0	        End If
+478	0	        
+479	0	    End If
+480	0	
+481	0	
+482	0	End Sub
+483	0	
+484	0	Private Sub Form_GotFocus()
+485	1	'this was a macro call to Bone.Update BFD Unit. It traps the scenario that the form is opened
+486	1	' and the unit number is 0 but it relies on Unit Desc form being open to gather the unit number
+487	1	'from there, if opened from the main menu Unit Desc will not be opened so this is trapped
+488	1	' SAJ
+489	0	On Error GoTo err_frmfocus
+490	0	
+491	0	    If Me![Unit number] = 0 Then
+492	0	        Me![Unit number] = Forms![Fauna_Bone_Faunal_Unit_Description]![Unit number]
+493	0	    
+494	0	    End If
+495	0	
+496	0	Exit Sub
+497	0	
+498	0	err_frmfocus:
+499	0	    If Err.Number = 2450 Then
+500	1	        'form not open so ignore this action
+501	0	        Exit Sub
+502	0	    Else
+503	0	        Call General_Error_Trap
+504	0	    End If
+505	0	    Exit Sub
+506	0	End Sub
+507	0	
+508	0	
+509	0	
+510	0	Private Sub Form_LostFocus()
+511	1	'new season 2006 - requesst that if user closes
+512	1	'saverecord
+513	1	'MsgBox "here"
+514	0	End Sub
+515	0	
+516	0	
+517	0	
+518	0	Private Sub Form_Open(Cancel As Integer)
+519	1	'new 2009 - show/hide post ex fields
+520	0	On Error GoTo err_open
+521	0	
+522	1	If GetGeneralPermissions = "Admin" Then 'rissa request change from visible only to admin 21july09
+523	0	    Me![txtBodyPortion].Locked = False
+524	0	    Me![txtSizeClass].Locked = False
+525	0	    Me![txtBodyPortion].BackColor = 16777215
+526	0	    Me![txtSizeClass].BackColor = 16777215
+527	0	Else
+528	0	   Me![txtBodyPortion].Locked = True
+529	0	   Me![txtBodyPortion].BackColor = 26367
+530	0	    Me![txtSizeClass].Locked = True
+531	0	    Me![txtSizeClass].BackColor = 26367
+532	0	End If
+533	0	
+534	0	Exit Sub
+535	0	
+536	0	err_open:
+537	0	    Call General_Error_Trap
+538	0	    Exit Sub
+539	0	End Sub
+540	0	
+541	0	Private Sub Letter_code_AfterUpdate()
+542	1	'replaces call to bone.Update GID (used to be called OnChange also but this unecess)
+543	1	'SAJ
+544	1	Call UpdateGID 'this is private sub above
+545	0	End Sub
+546	0	
+547	0	Private Sub OpenDZInstructions_Click()
+548	0	On Error GoTo Err_OpenDZInstructions_Click
+549	0	
+550	0	    Dim stDocName As String
+551	0	    Dim stLinkCriteria As String
+552	0	
+553	0	    stDocName = "DZ_instructions"
+554	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+555	0	
+556	0	Exit_OpenDZInstructions_Click:
+557	0	    Exit Sub
+558	0	
+559	0	Err_OpenDZInstructions_Click:
+560	0	    MsgBox Err.Description
+561	0	    Resume Exit_OpenDZInstructions_Click
+562	0	    
+563	0	End Sub
+564	0	Private Sub Command86_Click()
+565	0	On Error GoTo Err_Command86_Click
+566	0	
+567	0	    Dim stDocName As String
+568	0	    Dim stLinkCriteria As String
+569	0	
+570	0	    stDocName = "DZ_instructions"
+571	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+572	0	
+573	0	Exit_Command86_Click:
+574	0	    Exit Sub
+575	0	
+576	0	Err_Command86_Click:
+577	0	    MsgBox Err.Description
+578	0	    Resume Exit_Command86_Click
+579	0	    
+580	0	End Sub
+581	0	
+582	0	Private Sub Unit_number_AfterUpdate()
+583	1	'replaces call to bone.Update GID (used to be called onEnter and OnChange also but this unecess)
+584	1	'SAJ
+585	1	Call UpdateGID 'this is private sub above
+586	0	End Sub

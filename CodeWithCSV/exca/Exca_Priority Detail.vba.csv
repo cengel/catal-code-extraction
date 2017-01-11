@@ -1,0 +1,136 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	1	'**************************************************************************
+4	1	' This form has been reformatted - only allow entry of priority data, no
+5	1	' editing of data from unit sheet allowed. Formatted to show what can be
+6	1	' edited.
+7	1	'
+8	1	' SAJ v9.1
+9	1	'***************************************************************************
+10	0	
+11	0	Private Sub cboFindPriority_AfterUpdate()
+12	1	'********************************************
+13	1	'Find the selected priority unit number from the list
+14	1	'
+15	1	'SAJ v9.1
+16	1	'********************************************
+17	0	On Error GoTo err_cboFindPriority_AfterUpdate
+18	0	
+19	0	    If Me![cboFindPriority] <> "" Then
+20	1	        'if field disabled, enable it for find then disable again
+21	0	        If Me![Unit Number].Enabled = False Then Me![Unit Number].Enabled = True
+22	0	        DoCmd.GoToControl "Unit Number"
+23	0	        DoCmd.FindRecord Me![cboFindPriority]
+24	1	        'send focus down to the main editable field here - enabling if necessary
+25	1	        'If Me![Short Description].Enabled = False Then Me![Short Description].Enabled = True
+26	1	        'DoCmd.GoToControl "Short Description"
+27	2	        '2009 - no don't as it might get overwritten by mistake so keep focus here
+28	0	        DoCmd.GoToControl "cboFindPriority"
+29	0	        Me![Unit Number].Enabled = False
+30	0	        Me![cboFindPriority] = ""
+31	0	    End If
+32	0	Exit Sub
+33	0	
+34	0	err_cboFindPriority_AfterUpdate:
+35	0	    Call General_Error_Trap
+36	0	    Exit Sub
+37	0	End Sub
+38	0	
+39	0	
+40	0	
+41	0	Private Sub cmdClose_Click()
+42	1	'***************************************************************
+43	1	' original closing form pic replaced by common trowel close
+44	1	' and gen error trap intro, clse specified as this form - rest is orig code
+45	1	' SAJ v9.1
+46	1	'***************************************************************
+47	0	On Error GoTo err_close_Click
+48	0	
+49	0	
+50	0	    DoCmd.Close acForm, "Exca: Priority Detail", acSaveYes
+51	0	
+52	0	Exit_close_Click:
+53	0	    Exit Sub
+54	0	
+55	0	err_close_Click:
+56	0	    Call General_Error_Trap
+57	0	    Resume Exit_close_Click
+58	0	    
+59	0	End Sub
+60	0	
+61	0	
+62	0	
+63	0	Private Sub Form_Open(Cancel As Integer)
+64	1	'***************************************************************
+65	1	' New permissions check
+66	1	' SAJ v9.1
+67	1	'***************************************************************
+68	0	On Error GoTo err_Form_Open
+69	0	Dim permiss
+70	0	    permiss = GetGeneralPermissions
+71	1	    'due to amount of field always locked on this form not going to use togglformreadonly
+72	1	    'but set it here
+73	0	    If permiss = "ADMIN" Or permiss = "RW" Or permiss = "exsuper" Then
+74	2	        ''ToggleFormReadOnly Me, False
+75	0	        Me![Priority].Locked = False
+76	0	        Me![Priority].Enabled = True
+77	0	        Me![Priority].BackColor = 16777215
+78	0	        Me![Discussion].Locked = False
+79	0	        Me![Discussion].Enabled = True
+80	0	        Me![Discussion].BackColor = 16777215
+81	0	        Me![Short Description].Locked = False
+82	0	        Me![Short Description].Enabled = True
+83	0	        Me![Short Description].BackColor = 16777215
+84	0	    Else
+85	1	        'set read only form here, just once
+86	2	        ''ToggleFormReadOnly Me, True
+87	0	        Me![Priority].Locked = True
+88	0	        Me![Priority].Enabled = False
+89	0	        Me![Priority].BackColor = Me.Section(0).BackColor
+90	0	        Me![Discussion].Locked = True
+91	0	        Me![Discussion].Enabled = False
+92	0	        Me![Discussion].BackColor = Me.Section(0).BackColor
+93	0	        Me![Short Description].Locked = True
+94	0	        Me![Short Description].Enabled = False
+95	0	        Me![Short Description].BackColor = Me.Section(0).BackColor
+96	0	    End If
+97	0	
+98	1	    'new 2009 to ensure when opened from unit sheet it disables the search as filter is on
+99	0	    If Me.FilterOn = True Or Me.AllowEdits = False Then
+100	1	        'disable find and add new in this instance
+101	0	        Me![cboFindPriority].Enabled = False
+102	0	        Me.AllowAdditions = False
+103	0	        DoCmd.GoToControl "cmdClose"
+104	0	        
+105	0	    Else
+106	1	        'new end of season 2008 to ensure not within record when opened, try and prevent overwriting
+107	0	        DoCmd.GoToControl "cboFindPriority"
+108	0	    End If
+109	0	
+110	0	Exit Sub
+111	0	
+112	0	err_Form_Open:
+113	0	    Call General_Error_Trap
+114	0	    Exit Sub
+115	0	End Sub
+116	0	
+117	0	Sub prevrep_Click()
+118	1	'***************************************************************
+119	1	' preview report existing code - gen error trap intro
+120	1	' SAJ v9.1 (BTW the report has not been touched in this version)
+121	1	'***************************************************************
+122	0	On Error GoTo Err_prevrep_Click
+123	0	
+124	0	    Dim stDocName As String
+125	0	
+126	0	    stDocName = "Exca: Priority Units"
+127	0	    DoCmd.OpenReport stDocName, acPreview
+128	0	
+129	0	Exit_prevrep_Click:
+130	0	    Exit Sub
+131	0	
+132	0	Err_prevrep_Click:
+133	0	    Call General_Error_Trap
+134	0	    Resume Exit_prevrep_Click
+135	0	    
+136	0	End Sub

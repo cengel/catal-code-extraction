@@ -1,0 +1,28 @@
+1	0	Option Compare Database
+2	0	
+3	0	Private Sub Update_GID()
+4	0	Me![GID number] = Me![Unit number] & "." & Me![X-Find Number]
+5	0	End Sub
+6	0	
+7	0	Private Sub Find_Number_AfterUpdate()
+8	0	Update_GID
+9	0	End Sub
+10	0	
+11	0	Private Sub Find_Number_Change()
+12	0	Update_GID
+13	0	End Sub
+14	0	
+15	0	
+16	0	Private Sub Find_Number_Enter()
+17	0	Update_GID
+18	0	End Sub
+19	0	
+20	0	Private Sub Find_Number_Exit(Cancel As Integer)
+21	0	Update_GID
+22	0	End Sub
+23	0	
+24	0	Private Sub Form_BeforeUpdate(Cancel As Integer)
+25	0	Me![Date Changed] = Now()
+26	0	End Sub
+27	0	
+28	0	

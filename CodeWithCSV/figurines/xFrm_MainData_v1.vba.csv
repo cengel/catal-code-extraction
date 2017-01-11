@@ -1,0 +1,313 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cboFind_AfterUpdate()
+5	0	On Error GoTo err_cboFind
+6	0	
+7	0	If Me![cboFind] <> "" Then
+8	1	    'me![txtIdnumber].Enabled = true
+9	0	    DoCmd.GoToControl Me![txtIDnumber].Name
+10	0	    DoCmd.FindRecord Me![cboFind]
+11	0	    Me![cboFind] = ""
+12	0	End If
+13	0	
+14	0	Exit Sub
+15	0	
+16	0	err_cboFind:
+17	0	    Call General_Error_Trap
+18	0	    Exit Sub
+19	0	End Sub
+20	0	
+21	0	Private Sub cboFind_NotInList(NewData As String, Response As Integer)
+22	0	On Error GoTo err_notUnit
+23	0	    
+24	0	    MsgBox "GID number not found", vbInformation, "Not In List"
+25	0	    Response = acDataErrContinue
+26	0	    Me![cboFind].Undo
+27	0	
+28	0	Exit Sub
+29	0	
+30	0	err_notUnit:
+31	0	    Call General_Error_Trap
+32	0	    Exit Sub
+33	0	End Sub
+34	0	
+35	0	Private Sub cboFindUnit_AfterUpdate()
+36	0	On Error GoTo err_cboFindUnit
+37	0	
+38	0	If Me![cboFindUnit] <> "" Then
+39	0	    DoCmd.GoToControl Me![UnitNumber].Name
+40	0	    DoCmd.FindRecord Me![cboFindUnit]
+41	0	    Me![cboFindUnit] = ""
+42	0	End If
+43	0	
+44	0	Exit Sub
+45	0	
+46	0	err_cboFindUnit:
+47	0	    Call General_Error_Trap
+48	0	    Exit Sub
+49	0	End Sub
+50	0	
+51	0	Private Sub cboFindUnit_NotInList(NewData As String, Response As Integer)
+52	0	On Error GoTo err_notUnit
+53	0	    
+54	0	    MsgBox "Unit number not found", vbInformation, "Not In List"
+55	0	    Response = acDataErrContinue
+56	0	    Me![cboFindUnit].Undo
+57	0	
+58	0	Exit Sub
+59	0	
+60	0	err_notUnit:
+61	0	    Call General_Error_Trap
+62	0	    Exit Sub
+63	0	End Sub
+64	0	
+65	0	Private Sub chkFreeStanding_Click()
+66	1	'update the text in the free standing field
+67	0	On Error GoTo err_chkFree
+68	0	    
+69	0	    If Me![chkFreeStanding] = True Then
+70	0	        Me![free-standing] = "free-standing"
+71	0	        
+72	0	    Else
+73	0	        Me![free-standing] = ""
+74	0	    End If
+75	0	
+76	0	    
+77	0	Exit Sub
+78	0	
+79	0	err_chkFree:
+80	0	    Call General_Error_Trap
+81	0	    Exit Sub
+82	0	End Sub
+83	0	
+84	0	
+85	0	
+86	0	Private Sub cmdImage1_Click()
+87	0	Application.FollowHyperlink "http://10.2.1.1/Fig_Images/displayimage.asp?size=full_size&img=" & Me![Image ids], , True
+88	0	End Sub
+89	0	
+90	0	Private Sub cmdAddNew_Click()
+91	0	On Error GoTo err_cmdAddNew_Click
+92	0	
+93	0	    DoCmd.GoToRecord acActiveDataObject, , acNewRec
+94	0	    Me![txtIDnumber].Locked = False
+95	0	    DoCmd.GoToControl "txtIDnumber"
+96	0	Exit Sub
+97	0	
+98	0	err_cmdAddNew_Click:
+99	0	    Call General_Error_Trap
+100	0	    Exit Sub
+101	0	End Sub
+102	0	
+103	0	Private Sub cmdGoFirst_Click()
+104	0	On Error GoTo Err_gofirst_Click
+105	0	
+106	0	
+107	0	    DoCmd.GoToRecord , , acFirst
+108	0	
+109	0	    Exit Sub
+110	0	
+111	0	Err_gofirst_Click:
+112	0	    Call General_Error_Trap
+113	0	End Sub
+114	0	
+115	0	Private Sub cmdGoNext_Click()
+116	0	On Error GoTo Err_goNext_Click
+117	0	
+118	0	
+119	0	    DoCmd.GoToRecord , , acNext
+120	0	
+121	0	    Exit Sub
+122	0	
+123	0	Err_goNext_Click:
+124	0	    Call General_Error_Trap
+125	0	End Sub
+126	0	
+127	0	Private Sub cmdGoPrev_Click()
+128	0	On Error GoTo Err_goPrev_Click
+129	0	
+130	0	
+131	0	    DoCmd.GoToRecord , , acPrevious
+132	0	
+133	0	    Exit Sub
+134	0	
+135	0	Err_goPrev_Click:
+136	0	    Call General_Error_Trap
+137	0	End Sub
+138	0	
+139	0	Private Sub Form_Current()
+140	1	'ImageLocationOnSite
+141	0	On Error GoTo err_current
+142	0	
+143	0	Dim fullimagepath, imagename
+144	0	
+145	1	'this will work for on-site if you want to have an image control - one is hidden on this form
+146	1	'If Me![Image small ids] <> "" Or Not IsNull(Me![Image small ids]) Then
+147	1	'    If InStr(Me![Image small ids], ".jpg") = 0 Then
+148	1	'        fullimagepath = ImageLocationOnSite & Me![Image small ids] & ".jpg"
+149	1	'    Else
+150	1	'        fullimagepath = ImageLocationOnSite & Me![Image small ids]
+151	2	''    End If
+152	1	'
+153	1	'    Me!Image1.Picture = fullimagepath
+154	1	'End If
+155	0	
+156	1	'this will work on site
+157	0	Me![WebBrowser1].Navigate URL:="http://10.2.1.1/Fig_Images/displayimage.asp?img=" & Me![Image small ids] & "&size=thumbnail&height=100&width=100"
+158	0	Me![WebBrowser2].Navigate URL:="http://10.2.1.1/Fig_Images/displayimage.asp?img=" & Me![image 2 small id] & "&size=thumbnail&height=100&width=100"
+159	0	Me![WebBrowser3].Navigate URL:="http://10.2.1.1/Fig_Images/displayimage.asp?img=" & Me![image 3 small id] & "&size=thumbnail&height=100&width=100"
+160	0	Me![WebBrowser4].Navigate URL:="http://10.2.1.1/Fig_Images/displayimage.asp?img=" & Me![image 4 small id] & "&size=thumbnail&height=100&width=100"
+161	1	'this will work off site
+162	2	''Me![WebBrowser1].Navigate URL:="http://www.catalhoyuk.com/Fig_Images/displayimage.asp?img=" & Me![Image small ids] & "&size=thumbnail&height=80&width=80"
+163	2	''MsgBox Me![WebBrowser1].LocationURL
+164	0	
+165	0	If Me![free-standing] <> "" Then
+166	0	    Me![chkFreeStanding] = True
+167	0	Else
+168	0	    Me![chkFreeStanding] = False
+169	0	End If
+170	0	
+171	1	'lock id number so not overwritten
+172	0	If Me![txtIDnumber] <> "" Then
+173	0	    Me![txtIDnumber].Locked = True
+174	0	End If
+175	0	
+176	0	Exit Sub
+177	0	
+178	0	err_current:
+179	0	    If Err.Number = 2220 Then
+180	1	        'Me!Image1Picture = ""
+181	0	    Else
+182	0	        Call General_Error_Trap
+183	0	    End If
+184	0	End Sub
+185	0	
+186	0	Private Sub frmComplete_Click()
+187	0	On Error GoTo err_frmComplete
+188	0	
+189	0	    If Me![frmComplete] = 1 Then
+190	0	        Me![Data Entry] = "complete"
+191	0	    ElseIf Me![frmComplete] = 2 Then
+192	0	        Me![Data Entry] = "incomplete"
+193	0	    Else
+194	0	        Me![Data Entry] = ""
+195	0	    End If
+196	0	    
+197	0	
+198	0	Exit Sub
+199	0	
+200	0	err_frmComplete:
+201	0	    Call General_Error_Trap
+202	0	    Exit Sub
+203	0	End Sub
+204	0	
+205	0	Private Sub Form_Open(Cancel As Integer)
+206	1	'make sure focus in search combo
+207	0	On Error GoTo err_open
+208	0	
+209	0	    DoCmd.GoToControl "cbofind"
+210	0	
+211	0	Exit Sub
+212	0	
+213	0	err_open:
+214	0	    Call General_Error_Trap
+215	0	    Exit Sub
+216	0	End Sub
+217	0	
+218	0	Private Sub image_2_id_Click()
+219	1	'open hyperlink?
+220	0	
+221	0	Application.FollowHyperlink "http://10.2.1.1/Fig_Images/displayimage.asp?size=full_size&img=" & Me![image 2 id], , True
+222	0	End Sub
+223	0	
+224	0	Private Sub image_2_small_id_AfterUpdate()
+225	1	'get web browser control to refresh
+226	0	On Error GoTo err_img_sm_2
+227	0	   
+228	0	   Me![WebBrowser2].Navigate URL:="http://10.2.1.1/Fig_Images/displayimage.asp?img=" & Me![image 2 small id] & "&size=thumbnail&height=100&width=100"
+229	0	err_img_sm_2:
+230	0	    Call General_Error_Trap
+231	0	    Exit Sub
+232	0	
+233	0	End Sub
+234	0	
+235	0	Private Sub image_3_id_Click()
+236	1	'open hyperlink?
+237	0	
+238	0	Application.FollowHyperlink "http://10.2.1.1/Fig_Images/displayimage.asp?size=full_size&img=" & Me![image 3 id], , True
+239	0	End Sub
+240	0	
+241	0	Private Sub image_3_small_id_AfterUpdate()
+242	1	'get web browser control to refresh
+243	0	On Error GoTo err_img_sm_3
+244	0	   
+245	0	   Me![WebBrowser3].Navigate URL:="http://10.2.1.1/Fig_Images/displayimage.asp?img=" & Me![image 3 small id] & "&size=thumbnail&height=100&width=100"
+246	0	err_img_sm_3:
+247	0	    Call General_Error_Trap
+248	0	    Exit Sub
+249	0	End Sub
+250	0	
+251	0	Private Sub image_4_id_Click()
+252	1	'open hyperlink?
+253	0	
+254	0	Application.FollowHyperlink "http://10.2.1.1/Fig_Images/displayimage.asp?size=full_size&img=" & Me![image 4 id], , True
+255	0	End Sub
+256	0	
+257	0	Private Sub image_4_small_id_AfterUpdate()
+258	1	'get web browser control to refresh
+259	0	On Error GoTo err_img_sm_4
+260	0	   
+261	0	   Me![WebBrowser4].Navigate URL:="http://10.2.1.1/Fig_Images/displayimage.asp?img=" & Me![image 4 small id] & "&size=thumbnail&height=100&width=100"
+262	0	
+263	0	err_img_sm_4:
+264	0	    Call General_Error_Trap
+265	0	    Exit Sub
+266	0	End Sub
+267	0	
+268	0	Private Sub Image_ids_Click()
+269	1	'open hyperlink?
+270	1	'Me![WebBrowser1].Navigate URL:="http://10.2.1.1/Fig_Images/displayimage.asp?img=" & Me![Image small ids] & "&size=thumbnail&height=100&width=100"
+271	0	
+272	0	Application.FollowHyperlink "http://10.2.1.1/Fig_Images/displayimage.asp?size=full_size&img=" & Me![Image ids], , True
+273	0	
+274	0	End Sub
+275	0	
+276	0	Private Sub Image_small_ids_AfterUpdate()
+277	1	'get web browser control to refresh
+278	0	On Error GoTo err_img_sm_1
+279	0	
+280	0	    Me![WebBrowser1].Navigate URL:="http://10.2.1.1/Fig_Images/displayimage.asp?img=" & Me![Image small ids] & "&size=thumbnail&height=100&width=100"
+281	0	
+282	0	Exit Sub
+283	0	
+284	0	err_img_sm_1:
+285	0	    Call General_Error_Trap
+286	0	    Exit Sub
+287	0	    
+288	0	End Sub
+289	0	
+290	0	Private Sub txtIDnumber_AfterUpdate()
+291	1	'make sure GID is entered
+292	0	On Error GoTo err_ID
+293	0	
+294	0	    If Me![txtIDnumber] = "" Or IsNull(Me![txtIDnumber]) Then
+295	0	        MsgBox "ID number must be entered", vbCritical, "Missing ID"
+296	0	        If Me![txtIDnumber].OldValue <> "" Then Me![txtIDnumber] = Me![txtIDnumber].OldValue
+297	0	        DoCmd.GoToControl "Unitnumber"
+298	0	        DoCmd.GoToControl "txtIDNumber"
+299	0	        
+300	0	    End If
+301	0	    
+302	0	Exit Sub
+303	0	
+304	0	err_ID:
+305	0	    Call General_Error_Trap
+306	0	    Exit Sub
+307	0	End Sub
+308	0	
+309	0	Private Sub txtIDnumber_LostFocus()
+310	0	
+311	1	'txtIDnumber_AfterUpdate
+312	0	
+313	0	End Sub

@@ -1,0 +1,60 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdClose_Click()
+5	1	'close this pop up
+6	0	On Error GoTo err_close
+7	0	    Forms![Store: Crate Register]![Store: subform Units in Crates].Requery
+8	0	    Forms![Store: find unit in crate2].Requery
+9	1	    'Forms![Store: Crate Register]![Store: subform Units in Crates].Refresh
+10	0	    DoCmd.Close acForm, Me.Name
+11	0	    
+12	0	Exit Sub
+13	0	
+14	0	err_close:
+15	0	    If Err.Number = 2450 Then
+16	1	        'cant find form ie: not called from the find form, its not open
+17	0	        Resume Next
+18	0	    Else
+19	0	        Call General_Error_Trap
+20	0	    End If
+21	0	    Exit Sub
+22	0	    
+23	0	End Sub
+24	0	
+25	0	Private Sub cmdReturn_Click()
+26	1	'2011 track movement in the tracker table
+27	0	        Dim sql, crateLet, crateNum, counter, strLen
+28	1	        'the crate letter and number are held in one field - split it into its parts
+29	0	        strLen = Len(Me![MovedFromCrate])
+30	0	        counter = 1
+31	0	        Do Until counter = strLen + 1
+32	1	            'loop thro str
+33	0	            If IsNumeric(Mid(Me![MovedFromCrate], counter, 1)) Then
+34	1	                'when hit a number stop as this is the begining of the crate number
+35	1	                'crate letter is the part of the field to the left of this number
+36	0	                crateLet = Left(Me![MovedFromCrate], counter - 1)
+37	1	                'crate number is the part to the right, start at number and work out len to bring back
+38	0	                crateNum = Mid(Me![MovedFromCrate], counter, strLen - (counter - 1))
+39	0	                Exit Do
+40	0	            End If
+41	0	        
+42	0	        counter = counter + 1
+43	0	        Loop
+44	0	        
+45	1	        'insert the movement into the tracker
+46	0	        sql = "INSERT INTO [Store: Crate Movement by Teams] ([OriginalRowID], [Unit Number], [FindSampleLetter], [FindNumber], [SampleNumber], [MovedFromCrate], [MovedToCrate], [MovedBy], [MovedOn]) "
+47	6	        sql = sql & "SELECT [RowID] as OriginalRowID, [Unit number], [FindSampleLetter], [FindNumber], [SampleNumber], [CrateLetter] & [CrateNumber] as MovedFromCrate, '" & Me![MovedFromCrate] & "' as MovedToCrate, '" & logon & "', '" & Now & "' "
+48	0	        sql = sql & " FROM [Store: Units in Crates] "
+49	0	        sql = sql & " WHERE [RowID] = " & Me![OriginalRowID] & ";"
+50	0	        DoCmd.RunSQL sql
+51	0	        
+52	1	        'change the crate number/letter to the movedtocrate value (ie: previous value)
+53	2	        sql = "UPDATE [Store: Units in Crates] SET [CrateNumber] = " & crateNum & ", [CrateLetter] = '" & crateLet & "' WHERE [RowID] = " & Me![OriginalRowID] & ";"
+54	0	        DoCmd.RunSQL sql
+55	0	        
+56	1	        'Me.Requery
+57	1	        'Me![cboMoveCrate] = ""
+58	0	        MsgBox "Move has been successful from " & Me![MovedToCrate] & " back to " & Me![MovedFromCrate]
+59	0	        Me.Requery
+60	0	End Sub

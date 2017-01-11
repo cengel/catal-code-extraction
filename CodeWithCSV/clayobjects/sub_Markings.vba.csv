@@ -1,0 +1,23 @@
+1	0	Option Compare Database
+2	0	
+3	0	Private Sub Form_Current()
+4	0	If Me.Parent![cbo_year_studied].Value = 6 Then
+5	0	    Me!location_detail.Enabled = False
+6	0	    Me!add_clarity.Enabled = False
+7	0	    Me.sub_Markings_location.Enabled = False
+8	0	    Me.sub_Markings_clarity.Enabled = False
+9	0	    Me.sub_Markings_application.Enabled = False
+10	0	    Me!markings_depth.Enabled = False
+11	0	    Me!cbo_fingernails.Enabled = False
+12	0	Else
+13	0	    Me!location_detail.Enabled = True
+14	0	    Me!add_clarity.Enabled = True
+15	0	    Me.sub_Markings_location.Enabled = True
+16	0	    Me.sub_Markings_clarity.Enabled = True
+17	0	    Me.sub_Markings_application.Enabled = True
+18	0	    Me!markings_depth.Enabled = True
+19	0	    Me!cbo_fingernails.Enabled = True
+20	0	
+21	0	
+22	0	End If
+23	0	End Sub

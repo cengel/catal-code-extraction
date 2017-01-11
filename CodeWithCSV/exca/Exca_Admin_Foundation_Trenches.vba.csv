@@ -1,0 +1,218 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	0	Option Explicit
+3	0	
+4	0	
+5	0	
+6	0	
+7	0	
+8	0	
+9	0	
+10	0	Private Sub cboFindFT_AfterUpdate()
+11	1	'********************************************
+12	1	'Find the selected space number from the list
+13	1	'
+14	1	'SAJ v9.1
+15	1	'********************************************
+16	0	On Error GoTo err_cboFindFT_AfterUpdate
+17	0	
+18	0	    If Me![cboFindFT] <> "" Then
+19	1	        'if number is disabled then must enable if for the search
+20	1	        'it will be reset to disabled by the code in form oncurrent
+21	0	        If Me![FTName].Enabled = False Then Me![FTName].Enabled = True
+22	0	        DoCmd.GoToControl "FTName"
+23	0	        DoCmd.FindRecord Me![cboFindFT]
+24	0	        Me![cboFindFT] = ""
+25	1	        '2009 dont move focus back so not cause accidental overwrite
+26	0	        DoCmd.GoToControl "cboFindFT"
+27	0	    End If
+28	0	Exit Sub
+29	0	
+30	0	err_cboFindFT_AfterUpdate:
+31	0	    Call General_Error_Trap
+32	0	    Exit Sub
+33	0	End Sub
+34	0	
+35	0	Private Sub Excavation_Click()
+36	1	'********************************************
+37	1	'This is the trowel button to close the form
+38	1	' Error trap added v9.1
+39	1	'********************************************
+40	0	On Error GoTo err_Excavation_Click
+41	0	
+42	0	    Dim stDocName As String
+43	0	    Dim stLinkCriteria As String
+44	0	
+45	0	    stDocName = "Excavation"
+46	1	    'DoCmd.OpenForm stDocName, , , stLinkCriteria
+47	0	    DoCmd.Close acForm, Me.Name
+48	0	Exit Sub
+49	0	
+50	0	err_Excavation_Click:
+51	0	    Call General_Error_Trap
+52	0	    Exit Sub
+53	0	End Sub
+54	0	
+55	0	
+56	0	Private Sub Form_Current()
+57	0	
+58	0	If Me![FTName] <> "" Then
+59	1	    'FT exists, lock field
+60	0	        Me![FTName].Locked = True
+61	0	        Me![FTName].Enabled = False
+62	0	        Me![FTName].BackColor = Me.Section(0).BackColor
+63	0	        
+64	0	        
+65	0	    Else
+66	1	    'no FT - new record allow entry
+67	0	        Me![FTName].Locked = False
+68	0	        Me![FTName].Enabled = True
+69	0	        Me![FTName].BackColor = 16777215
+70	0	        
+71	0	        Me![FTName].SetFocus
+72	0	    End If
+73	1	'new for v11.1 intro of LevelLOV and certain/uncertain option
+74	2	    ''MsgBox Me![LevelCertain]
+75	0	    If Me![LevelCertain] = True Then
+76	1	        'if level is certain then enable level list
+77	0	        Me![Level].Enabled = True
+78	0	        Me![cboUncertainLevelStart].Enabled = False
+79	0	        Me![cboUnCertainLevelEnd].Enabled = False
+80	0	    Else
+81	1	        'level is uncertain, allow edits to level start and end but not level
+82	0	        Me![Level].Enabled = False
+83	0	        Me![cboUncertainLevelStart].Enabled = True
+84	0	        Me![cboUnCertainLevelEnd].Enabled = True
+85	0	    End If
+86	0	End Sub
+87	0	
+88	0	Private Sub Form_Open(Cancel As Integer)
+89	1	'*************************************************************
+90	1	' Check permissions of user to define how to display form
+91	1	' v9.1 SAJ
+92	1	'*************************************************************
+93	0	On Error GoTo err_Form_Open
+94	0	
+95	0	If Me.FilterOn = True Or Me.AllowEdits = False Then
+96	1	    'disable find and add new in this instance find will not work
+97	1	    'and should not be able to add records
+98	0	    Me![cboFindFT].Enabled = False
+99	2	    ''Me![cmdAddNew].Enabled = False
+100	0	    Me.AllowAdditions = False
+101	0	Else
+102	1	    'new end of season 2008 to ensure not within record when opened, try and prevent overwriting
+103	0	    DoCmd.GoToControl "cboFindFT"
+104	0	End If
+105	0	   
+106	1	'now sort out view depending on permissions
+107	0	Dim permiss
+108	0	permiss = GetGeneralPermissions
+109	0	If (permiss = "ADMIN") And (Me.AllowAdditions = True Or Me.AllowDeletions = True Or Me.AllowEdits = True) Then
+110	2	    'SAJ season 2006 - don't allow deletions from this screen
+111	0	    ToggleFormReadOnly Me, False, "NoDeletions"
+112	0	Else
+113	0	    ToggleFormReadOnly Me, True
+114	2	    ''Me![cmdAddNew].Enabled = False
+115	0	End If
+116	0	Exit Sub
+117	0	
+118	0	err_Form_Open:
+119	0	    Call General_Error_Trap
+120	0	    Exit Sub
+121	0	    
+122	0	End Sub
+123	0	
+124	0	Private Sub frmLevelCertain_AfterUpdate()
+125	1	'*************************************************************************
+126	1	' levels can now be certain or uncertain. Uncertain levels
+127	1	' can have a start and end entry. If the user changes their mind the value must
+128	1	' be moved between these lists.
+129	1	'SAJ v11.1
+130	1	'*************************************************************************
+131	0	On Error GoTo err_frmLevelCertain_AfterUpdate
+132	0	Dim retval
+133	0	
+134	0	If Me![frmLevelCertain] = -1 Then
+135	1	    'user has selected level as certain, allow them to choose a level from the list
+136	1	    'and disable the start end combos
+137	0	    If Me![cboUncertainLevelStart] <> "" And Me![cboUnCertainLevelEnd] <> "" Then
+138	0	        retval = MsgBox("Do you want the Start Level to become the certain level for this FT?", vbQuestion + vbYesNo, "Set Level")
+139	0	        If retval = vbYes Then
+140	0	            Me![Level] = Me![cboUncertainLevelStart]
+141	0	        Else
+142	0	            retval = MsgBox("Do you want the End Level to become the certain level for this FT?", vbQuestion + vbYesNo, "Set Level")
+143	0	            If retval = vbYes Then
+144	0	                Me![Level] = Me![cboUnCertainLevelEnd]
+145	0	            Else
+146	0	                retval = MsgBox("The start and end level fields will now be cleared and you will have to select the Certain level from that list. Are you sure you want to continue?", vbQuestion + vbYesNo, "Uncertain Levels will be cleared")
+147	0	                If retval = vbYes Then
+148	0	                    Me![cboUncertainLevelStart] = ""
+149	0	                    Me![cboUnCertainLevelEnd] = ""
+150	0	                Else
+151	0	                    Me![frmLevelCertain] = 0
+152	0	                End If
+153	0	            End If
+154	0	        End If
+155	0	    ElseIf Me![cboUncertainLevelStart] <> "" Then
+156	0	        retval = MsgBox("Do you want the Start Level to become the certain level for this FT?", vbQuestion + vbYesNo, "Set Level")
+157	0	        If retval = vbYes Then Me![Level] = Me![cboUncertainLevelStart]
+158	0	        Me![cboUncertainLevelStart] = ""
+159	0	    ElseIf Me![cboUnCertainLevelEnd] <> "" Then
+160	0	        retval = MsgBox("Do you want the End Level to become the certain level for this FT?", vbQuestion + vbYesNo, "Set Level")
+161	0	        If retval = vbYes Then Me![Level] = Me![cboUnCertainLevelEnd]
+162	0	        Me![cboUnCertainLevelEnd] = ""
+163	0	    End If
+164	0	    
+165	1	    If Me![frmLevelCertain] = -1 Then 'they have decide not to change their mind
+166	0	        Me![Level].Enabled = True
+167	0	        Me![cboUncertainLevelStart].Enabled = False
+168	0	        Me![cboUnCertainLevelEnd].Enabled = False
+169	0	    End If
+170	0	Else
+171	1	    'level uncertain so allow start end but not certain level
+172	0	    Me![Level].Enabled = False
+173	0	    If Me![Level] <> "" Then
+174	0	        Me![cboUncertainLevelStart] = Me![Level]
+175	0	        Me![Level] = ""
+176	0	    End If
+177	0	    Me![cboUncertainLevelStart].Enabled = True
+178	0	    Me![cboUnCertainLevelEnd].Enabled = True
+179	0	End If
+180	0	Exit Sub
+181	0	
+182	0	err_frmLevelCertain_AfterUpdate:
+183	0	    Call General_Error_Trap
+184	0	    Exit Sub
+185	0	
+186	0	End Sub
+187	0	
+188	0	Private Sub FTName_AfterUpdate()
+189	1	'*************************************************
+190	1	' As foundation trenches names are actually stored in the Unit sheet table
+191	2	' don't allow them to altered after a unit sheet has been allocated to the name
+192	1	'
+193	1	' On screen msg tells user to contact DBA who can explain
+194	1	' what a problem the change could have, unless it really is just
+195	1	' an error done very recently.
+196	1	'
+197	1	' SAJ v11.1
+198	1	'*************************************************
+199	0	On Error GoTo err_FTNAME
+200	0	
+201	0	Dim resp
+202	0	
+203	0	If Not IsNull(Me!FTName.OldValue) Then
+204	1	    'a change - check FT name not used in unit sheet
+205	4	    resp = DLookup("[FoundationTrench]", "[Exca: Unit Sheet]", "[FoundationTrench] = '" & Me!FTName.OldValue & "' AND [Area] = '" & Me![cboArea] & "'")
+206	0	    If Not IsNull(resp) Then
+207	0	        MsgBox "This FT is assocated with a Unit so the name cannot be altered. Please enter this change as a new FT name and then re-allocate the units to the new record", vbExclamation, "Changed Cancelled"
+208	0	        Me!FTName = Me!FTName.OldValue
+209	0	    End If
+210	0	End If
+211	0	Exit Sub
+212	0	
+213	0	err_FTNAME:
+214	0	    Call General_Error_Trap
+215	0	    Exit Sub
+216	0	
+217	0	
+218	0	End Sub

@@ -1,0 +1,21 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Sub CheckUnitDescript(thisunit)
+5	1	'when a unit is entered in the diagnostic, unid diagnostic tables etc we must check
+6	1	'it is also entered into the unit description table
+7	0	On Error GoTo err_CheckUnitDescript
+8	0	
+9	0	Dim checknum
+10	0	checknum = DCount("[Unit]", "Ceramics_Unit_Description", "[Unit] = " & thisunit)
+11	0	If checknum = 0 Then
+12	0	    DoCmd.RunSQL "INSERT INTO Ceramics_Unit_Description ([Unit]) VALUES (" & thisunit & ");"
+13	0	End If
+14	0	
+15	0	
+16	0	Exit Sub
+17	0	
+18	0	err_CheckUnitDescript:
+19	0	    Call General_Error_Trap
+20	0	    Exit Sub
+21	0	End Sub

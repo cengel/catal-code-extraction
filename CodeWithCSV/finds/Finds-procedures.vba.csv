@@ -1,0 +1,32 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Function DeleteCrateRecord(num, mydb) As Boolean
+5	1	'when something is moved from crate to crate it must be inserted then deleted but RW users
+6	2	'don't have permissions to delete so need to use SP to do so
+7	1	'On Error GoTo err_delrec
+8	0	
+9	0	If spString <> "" Then
+10	0	    Dim myq1 As QueryDef
+11	0	    Set mydb = CurrentDb
+12	0	    Set myq1 = mydb.CreateQueryDef("")
+13	0	    myq1.Connect = spString
+14	0	    myq1.ReturnsRecords = False
+15	0	    myq1.sql = "sp_Store_Delete_CrateEntry " & num
+16	0	    myq1.Execute
+17	0	    myq1.Close
+18	0	    Set myq1 = Nothing
+19	0	    
+20	0	    DeleteCrateRecord = True
+21	0	
+22	0	Else
+23	0	    MsgBox "Sorry but the record cannot be deleted out of the this crate, restart the database and try again", vbCritical, "Error"
+24	0	    DeleteCrateRecord = False
+25	0	End If
+26	0	Exit Function
+27	0	
+28	1	'err_delrec:
+29	1	'    Call General_Error_Trap
+30	1	'    Exit Function
+31	0	End Function
+32	0	

@@ -1,0 +1,225 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	1	'**********************************************************
+4	1	' This subform is new in version 9.2 - as a feature can be
+5	1	' in many spaces the space field has been removed from the
+6	1	' Feature tables and normalised out int Exca: Features in Spaces
+7	1	' SAJ v9.2
+8	1	'**********************************************************
+9	0	
+10	0	Private Sub cmdGoToSpace_Click()
+11	1	'***********************************************************************
+12	1	' Open space form read only from here.
+13	1	' Also becuase they can enter a space num that not exist yet (SF requirement)
+14	1	' need to see if the record exists before opening the form (otherwise be blank)
+15	1	'
+16	1	' SAJ v9.2
+17	1	'***********************************************************************
+18	0	On Error GoTo Err_cmdGoToSpace_Click
+19	0	
+20	0	    Dim stDocName As String
+21	0	    Dim stLinkCriteria As String
+22	0	    Dim checknum, msg, retval, sql, insertArea, permiss
+23	0	    
+24	0	    stDocName = "Exca: Space Sheet"
+25	0	    
+26	0	    If Not IsNull(Me![txtIn_Space]) Or Me![txtIn_Space] <> "" Then
+27	1	        'check that space num does exist
+28	0	        checknum = DLookup("[Space Number]", "[Exca: Space Sheet]", "[Space Number] = " & Me![txtIn_Space])
+29	0	        If IsNull(checknum) Then
+30	1	            'number not exist - now see what permissions user has
+31	0	            permiss = GetGeneralPermissions
+32	0	            If permiss = "ADMIN" Or permiss = "RW" Or permiss = "exsuper" Then
+33	0	                msg = "This Space Number DOES NOT EXIST in the database."
+34	0	                msg = msg & Chr(13) & Chr(13) & "Would you like to enter it now?"
+35	0	                retval = MsgBox(msg, vbInformation + vbYesNo, "Space Number does not exist")
+36	0	        
+37	0	                If retval = vbNo Then
+38	0	                    MsgBox "No space record to view, please alert the your team leader about this.", vbExclamation, "Missing Space Record"
+39	0	                Else
+40	1	                    'add new records behind scences
+41	0	                    If Forms![Exca: Unit Sheet]![Area] <> "" Then
+42	2	                        insertArea = "'" & Forms![Exca: Unit Sheet]![Area] & "'"
+43	0	                    Else
+44	0	                        insertArea = Null
+45	0	                    End If
+46	0	                    sql = "INSERT INTO [Exca: Space Sheet] ([Space Number], [Area]) VALUES (" & Me![txtIn_Space] & ", " & insertArea & ");"
+47	0	                    DoCmd.RunSQL sql
+48	0	                    DoCmd.OpenForm "Exca: Space Sheet", acNormal, , "[Space Number] = " & Me![txtIn_Space], acFormEdit, acDialog
+49	0	                End If
+50	0	            Else
+51	1	                'user is readonly so just tell them record not exist
+52	0	                MsgBox "Sorry but this space record has not been added to the system yet, there is no record to view.", vbInformation, "Missing Space Record"
+53	0	            End If
+54	0	        Else
+55	1	            'record exists - open it
+56	0	            stLinkCriteria = "[Space Number]=" & Me![txtIn_Space]
+57	1	            'DoCmd.OpenForm stDocName, , , stLinkCriteria
+58	1	            'DoCmd.OpenForm stDocName, acNormal, , stLinkCriteria, acFormReadOnly, acDialog
+59	1	            'decided against dialog as can open other forms on the feature form and they would appear underneath it
+60	0	            DoCmd.OpenForm stDocName, acNormal, , stLinkCriteria, acFormReadOnly
+61	0	        End If
+62	0	    Else
+63	0	        MsgBox "No Space number to view", vbInformation, "No Space Number"
+64	0	    End If
+65	0	    
+66	0	Exit_cmdGoToSpace_Click:
+67	0	    Exit Sub
+68	0	
+69	0	
+70	0	Err_cmdGoToSpace_Click:
+71	0	    Call General_Error_Trap
+72	0	    Resume Exit_cmdGoToSpace_Click
+73	0	    
+74	0	
+75	0	End Sub
+76	0	
+77	0	Private Sub Form_BeforeUpdate(Cancel As Integer)
+78	0	Me![Date changed] = Now()
+79	0	Forms![Exca: Unit Sheet]![dbo_Exca: UnitHistory].Form![lastmodify].Value = Now()
+80	0	End Sub
+81	0	
+82	0	
+83	0	Private Sub Form_Current()
+84	1	'v9.2 - enable/disable button depending on contents of space field
+85	0	On Error GoTo err_Current
+86	0	    
+87	0	    If Me![txtIn_Space] = "" Or IsNull(Me![txtIn_Space]) Then
+88	0	        Me![cmdGoToSpace].Enabled = False
+89	0	    Else
+90	0	        Me![cmdGoToSpace].Enabled = True
+91	0	    End If
+92	0	
+93	0	
+94	0	Exit Sub
+95	0	err_Current:
+96	0	    Call General_Error_Trap
+97	0	    Exit Sub
+98	0	End Sub
+99	0	
+100	0	
+101	0	
+102	0	Private Sub Form_Open(Cancel As Integer)
+103	1	'**********************************************************************
+104	1	' Set up form view depending on permissions
+105	1	' SAJ v9.1
+106	1	'**********************************************************************
+107	0	On Error GoTo err_Form_Open
+108	0	
+109	0	    Dim permiss
+110	0	    permiss = GetGeneralPermissions
+111	0	    If permiss = "ADMIN" Or permiss = "RW" Or permiss = "exsuper" Then
+112	0	        ToggleFormReadOnly Me, False
+113	0	    Else
+114	1	        'set read only form here, just once
+115	0	        ToggleFormReadOnly Me, True
+116	0	    End If
+117	0	Exit Sub
+118	0	
+119	0	err_Form_Open:
+120	0	    Call General_Error_Trap
+121	0	    Exit Sub
+122	0	End Sub
+123	0	
+124	0	
+125	0	
+126	0	
+127	0	
+128	0	Private Sub txtIn_Space_AfterUpdate()
+129	1	'***********************************************************************
+130	1	' Validity check to ensure space num entered here is ok
+131	1	' if not tell the user and allow them to enter. SF not want it to restrict
+132	1	' entry and trusts excavators to enter space num when they can
+133	1	'
+134	1	' SAJ v9.2
+135	1	'***********************************************************************
+136	0	On Error GoTo err_txtIn_Space_AfterUpdate
+137	0	
+138	0	Dim checknum, msg, retval, sql, insertArea
+139	0	
+140	0	If Me![txtIn_Space] <> "" Then
+141	1	    'first check its valid
+142	0	    If IsNumeric(Me![txtIn_Space]) Then
+143	0	    
+144	1	        'check that space num does exist
+145	0	        checknum = DLookup("[Space Number]", "[Exca: Space Sheet]", "[Space Number] = " & Me![txtIn_Space])
+146	0	        If IsNull(checknum) Then
+147	0	            msg = "This Space Number DOES NOT EXIST in the database, you must remember to enter it."
+148	0	            msg = msg & Chr(13) & Chr(13) & "Would you like to enter it now?"
+149	0	            retval = MsgBox(msg, vbInformation + vbYesNo, "Space Number does not exist")
+150	0	        
+151	0	            If retval = vbNo Then
+152	1	                MsgBox "Ok, but you must remember to enter it soon otherwise you'll be chased!", vbExclamation, "Remember!"
+153	0	            Else
+154	1	                'add new records behind scences
+155	0	                If Forms![Exca: Unit Sheet]![Area] <> "" Then
+156	2	                    insertArea = "'" & Forms![Exca: Unit Sheet]![Area] & "'"
+157	0	                Else
+158	0	                    insertArea = Null
+159	0	                End If
+160	0	                sql = "INSERT INTO [Exca: Space Sheet] ([Space Number], [Area]) VALUES (" & Me![txtIn_Space] & ", " & insertArea & ");"
+161	0	                DoCmd.RunSQL sql
+162	0	                DoCmd.OpenForm "Exca: Space Sheet", acNormal, , "[Space Number] = " & Me![txtIn_Space], acFormEdit, acDialog
+163	2	                ''DoCmd.OpenForm "Exca: Feature Sheet", acNormal, , , acFormAdd, acDialog, "NEW,Num:" & Me![In_feature] & ",Area:" & Forms![Exca: Unit Sheet]![Area]
+164	0	            End If
+165	0	        Else
+166	1	            'valid number, enable view button
+167	0	            Me![cmdGoToSpace].Enabled = True
+168	0	        End If
+169	0	    
+170	0	    Else
+171	1	        'not a vaild numeric space number
+172	0	        MsgBox "The Space number is invalid, please enter a numeric value only", vbInformation, "Invalid Entry"
+173	0	    End If
+174	0	End If
+175	0	
+176	0	Exit Sub
+177	0	
+178	0	err_txtIn_Space_AfterUpdate:
+179	0	    Call General_Error_Trap
+180	0	    Exit Sub
+181	0	
+182	0	
+183	0	
+184	0	End Sub
+185	0	
+186	0	Private Sub txtIn_Space_BeforeUpdate(Cancel As Integer)
+187	2	'new 2009 winter - if a user gets number wrong they can't delete it and many then put 0
+188	2	'space 0 keeps appearing and we don't want it so put a check in
+189	0	On Error GoTo err_spacebefore
+190	0	
+191	0	If Me![txtIn_Space] = 0 Then
+192	0	        MsgBox "Space 0 is invalid, this entry will be removed", vbInformation, "Invalid Entry"
+193	0	      
+194	0	        Cancel = True
+195	1	        'Me![txtIn_Building].Undo
+196	1	        SendKeys "{ESC}" 'seems to need it done 3x
+197	0	        SendKeys "{ESC}"
+198	0	        SendKeys "{ESC}"
+199	0	End If
+200	0	Exit Sub
+201	0	
+202	0	err_spacebefore:
+203	0	    Call General_Error_Trap
+204	0	    Exit Sub
+205	0	End Sub
+206	0	
+207	0	Private Sub txtIn_Space_LostFocus()
+208	1	'May 2009 - when the form loses focus requery the subform that shows the building numbers as this
+209	1	'is dependant on the spaces entered
+210	0	On Error GoTo err_lost
+211	0	
+212	0	    Forms![Exca: Unit Sheet]![Exca: subform Units  in Buildings].Form.Requery
+213	0	
+214	0	Exit Sub
+215	0	
+216	0	err_lost:
+217	0	    Call General_Error_Trap
+218	0	    Exit Sub
+219	0	End Sub
+220	0	
+221	0	Private Sub Unit_AfterUpdate()
+222	0	Me.Requery
+223	0	DoCmd.GoToRecord , , acLast
+224	0	End Sub
+225	0	

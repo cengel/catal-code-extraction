@@ -1,0 +1,14 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdRefreshCount_Click()
+5	1	'requery subform to refresh count of bags
+6	0	On Error GoTo err_refreshcount
+7	0	    Me.Requery
+8	0	    
+9	0	Exit Sub
+10	0	
+11	0	err_refreshcount:
+12	0	    Call General_Error_Trap
+13	0	    Exit Sub
+14	0	End Sub

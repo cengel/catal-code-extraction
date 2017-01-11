@@ -1,0 +1,320 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	1	'module level variable to hold report source
+5	0	Dim g_reportfilter
+6	0	
+7	0	Private Sub Close_Click()
+8	1	'***************************************************
+9	1	' Standard close
+10	1	'***************************************************
+11	0	On Error GoTo err_close_Click
+12	0	
+13	0	    DoCmd.Close acForm, Me.Name
+14	0	    
+15	0	    Exit Sub
+16	0	
+17	0	err_close_Click:
+18	0	    Call General_Error_Trap
+19	0	    Exit Sub
+20	0	End Sub
+21	0	
+22	0	Private Sub cmdBuildSQL_Click()
+23	1	'This takes the criteria entered at the top of the screen and builds the sql string that
+24	1	'will be used as the recordsource for the sub form that displays the results.
+25	0	
+26	0	On Error GoTo err_buildsql
+27	1	'remember to replace * with %%
+28	0	Dim selectsql, wheresql, orderbysql, fullsql
+29	0	
+30	0	selectsql = "SELECT * FROM [Exca: Unit Sheet with Relationships] "
+31	0	
+32	0	wheresql = ""
+33	0	
+34	0	If Me![txtBuildingNumbers] <> "" Then
+35	3	    'wheresql = "[Building] like '%%" & Me![txtBuildingNumbers] & "%%'"
+36	0	    wheresql = wheresql & "(" & Me![txtBuildingNumbers] & ")"
+37	0	End If
+38	0	
+39	0	If Me![txtSpaceNumbers] <> "" Then
+40	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+41	3	    'wheresql = wheresql & "[Space] like '%%" & Me![txtSpaceNumbers] & "%%'"
+42	0	    wheresql = wheresql & "(" & Me![txtSpaceNumbers] & ")"
+43	0	End If
+44	0	
+45	0	If Me![txtFeatureNumbers] <> "" Then
+46	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+47	3	    'wheresql = wheresql & "[Feature] like '%%" & Me![txtFeatureNumbers] & "%%'"
+48	0	    wheresql = wheresql & "(" & Me![txtFeatureNumbers] & ")"
+49	0	End If
+50	0	
+51	0	If Me![txtLevels] <> "" Then
+52	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+53	3	    'wheresql = wheresql & "[Levels] like '%%" & Me![txtLevels] & "%%'"
+54	0	    wheresql = wheresql & "(" & Me![txtLevels] & ")"
+55	0	End If
+56	0	
+57	1	'new 2010
+58	0	If Me![txtHodderLevel] <> "" Then
+59	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+60	3	    'wheresql = wheresql & "[Levels] like '%%" & Me![txtLevels] & "%%'"
+61	0	    wheresql = wheresql & "(" & Me![txtHodderLevel] & ")"
+62	0	End If
+63	0	
+64	0	If Me![txtCategory] <> "" Then
+65	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+66	2	    wheresql = wheresql & "[Category] like '%%" & Me![txtCategory] & "%%'"
+67	0	End If
+68	0	
+69	0	If Me![cboArea] <> "" Then
+70	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+71	2	    wheresql = wheresql & "[Area] = '" & Me![cboArea] & "'"
+72	0	End If
+73	0	
+74	0	If Me![cboYear] <> "" Then
+75	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+76	0	    wheresql = wheresql & "[Year] = " & Me![cboYear]
+77	0	End If
+78	0	
+79	0	If Me![txtUnitNumbers] <> "" Then
+80	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+81	0	    wheresql = wheresql & "(" & Me![txtUnitNumbers] & ")"
+82	0	End If
+83	0	
+84	0	If Me![txtText] <> "" Then
+85	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+86	1	    'actually description is not in unit sheet with relationships
+87	5	    'wheresql = wheresql & "([Description] like '*" & Me![txtText] & "*' OR [Discussion] like '*" & Me![txtText] & "*')"
+88	4	    wheresql = wheresql & "([Discussion] like '%%" & Me![txtText] & "%%' OR [Exca: Unit Sheet with Relationships].[Description] like '%%" & Me![txtText] & "%%')"
+89	0	End If
+90	0	
+91	0	If Me![cboDataCategory] <> "" Then
+92	1	    'change select statement when a data category has been entered
+93	0	    selectsql = "SELECT [Exca: Unit Sheet with Relationships].[Unit Number], [Exca: Unit Sheet with Relationships].Year, " & _
+94	0	                "[Exca: Unit Sheet with Relationships].Area, [Exca: Unit Sheet with Relationships].Category, " & _
+95	0	                "[Exca: Unit Sheet with Relationships].[Grid X], [Exca: Unit Sheet with Relationships].[Grid Y], " & _
+96	0	                "[Exca: Unit Sheet with Relationships].Description, [Exca: Unit Sheet with Relationships].Discussion, [Exca: Unit Sheet with Relationships].[Priority Unit], " & _
+97	0	                "[Exca: Unit Sheet with Relationships].ExcavationStatus, [Exca: Unit Sheet with Relationships].HodderLevel, [Exca: Unit Sheet with Relationships].MellaartLevels," & _
+98	0	                "[Exca: Unit Sheet with Relationships].Building, [Exca: Unit Sheet with Relationships].Space, [Exca: Unit Sheet with Relationships].Feature, " & _
+99	0	                "[Exca: Unit Sheet with Relationships].TimePeriod, [Exca: Unit Data Categories].[Data Category]" & _
+100	0	                " FROM [Exca: Unit Sheet with Relationships] INNER JOIN [Exca: Unit Data Categories] ON [Exca: Unit Sheet with Relationships].[Unit Number] = [Exca: Unit Data Categories].[Unit Number]"
+101	0	    If wheresql <> "" Then wheresql = wheresql & " AND "
+102	2	    wheresql = wheresql & "[Data Category] = '" & Me![cboDataCategory] & "'"
+103	0	End If
+104	0	
+105	1	'end of where clause if it contains info add the where
+106	0	If wheresql <> "" Then selectsql = selectsql & " WHERE "
+107	0	
+108	0	orderbysql = " ORDER BY [Exca: Unit Sheet with Relationships].[Unit Number];"
+109	0	
+110	1	'create full sql string
+111	0	fullsql = selectsql & wheresql & orderbysql
+112	1	'the where clause will be used as the filter if a report is produced
+113	0	g_reportfilter = wheresql
+114	0	Me!txtSQL = fullsql
+115	1	'make the sql the recordsource for the subform of results
+116	0	Me![frm_subSearch].Form.RecordSource = fullsql
+117	0	If Me![frm_subSearch].Form.RecordsetClone.RecordCount = 0 Then
+118	1	    'if no records returned then tell the user
+119	0	    MsgBox "No records match the criteria you entered.", 48, "No Records Found"
+120	0	    Me![cmdClearSQL].SetFocus
+121	0	End If
+122	0	
+123	0	Exit Sub
+124	0	
+125	0	err_buildsql:
+126	0	    Call General_Error_Trap
+127	0	    Exit Sub
+128	0	End Sub
+129	0	
+130	0	Private Sub cmdClear_Click()
+131	0	On Error GoTo err_clear
+132	0	
+133	0	Me![txtBuildingNumbers] = ""
+134	0	
+135	0	Exit Sub
+136	0	err_clear:
+137	0	    Call General_Error_Trap
+138	0	    Exit Sub
+139	0	End Sub
+140	0	
+141	0	Private Sub cmdClearFeature_Click()
+142	0	On Error GoTo err_feature
+143	0	
+144	0	Me![txtFeatureNumbers] = ""
+145	0	Exit Sub
+146	0	err_feature:
+147	0	    Call General_Error_Trap
+148	0	    Exit Sub
+149	0	End Sub
+150	0	
+151	0	Private Sub cmdClearHodder_Click()
+152	0	On Error GoTo err_cmdClearHodder
+153	0	Me![txtHodderLevel] = ""
+154	0	Exit Sub
+155	0	err_cmdClearHodder:
+156	0	    Call General_Error_Trap
+157	0	    Exit Sub
+158	0	End Sub
+159	0	
+160	0	Private Sub cmdCLearLevel_Click()
+161	0	On Error GoTo err_level
+162	0	Me![txtLevels] = ""
+163	0	Exit Sub
+164	0	err_level:
+165	0	    Call General_Error_Trap
+166	0	    Exit Sub
+167	0	End Sub
+168	0	
+169	0	Private Sub cmdClearSpace_Click()
+170	0	On Error GoTo err_space
+171	0	Me![txtSpaceNumbers] = ""
+172	0	Exit Sub
+173	0	err_space:
+174	0	    Call General_Error_Trap
+175	0	    Exit Sub
+176	0	End Sub
+177	0	
+178	0	Private Sub cmdClearSQL_Click()
+179	0	On Error GoTo err_clearsql
+180	1	'clear all criteria and reset sql
+181	0	Dim sql
+182	0	
+183	0	Me![txtBuildingNumbers] = ""
+184	0	Me![txtSpaceNumbers] = ""
+185	0	Me![txtFeatureNumbers] = ""
+186	0	Me![txtLevels] = ""
+187	0	Me![txtHodderLevel] = ""
+188	0	Me![txtCategory] = ""
+189	0	Me![cboArea] = ""
+190	0	Me![cboYear] = ""
+191	0	Me![txtUnitNumbers] = ""
+192	0	Me![txtText] = ""
+193	0	Me![cboDataCategory] = ""
+194	0	sql = "SELECT * FROM [Exca: Unit Sheet with Relationships] ORDER BY [Unit Number];"
+195	0	Me!txtSQL = sql
+196	0	Me![frm_subSearch].Form.RecordSource = sql
+197	0	Exit Sub
+198	0	err_clearsql:
+199	0	    Call General_Error_Trap
+200	0	    Exit Sub
+201	0	End Sub
+202	0	
+203	0	Private Sub cmdClearUnit_Click()
+204	0	On Error GoTo err_unit
+205	0	Me![txtUnitNumbers] = ""
+206	0	Exit Sub
+207	0	err_unit:
+208	0	    Call General_Error_Trap
+209	0	    Exit Sub
+210	0	End Sub
+211	0	
+212	0	Private Sub cmdEnterBuilding_Click()
+213	0	On Error GoTo err_building
+214	0	Dim openarg
+215	0	openarg = "Building"
+216	0	
+217	0	If Me![txtBuildingNumbers] <> "" Then openarg = "Building;" & Me![txtBuildingNumbers]
+218	0	DoCmd.OpenForm "frm_popsearch", , , , , acDialog, openarg
+219	0	Exit Sub
+220	0	err_building:
+221	0	    Call General_Error_Trap
+222	0	    Exit Sub
+223	0	End Sub
+224	0	
+225	0	Private Sub cmdEnterFeature_Click()
+226	0	On Error GoTo err_enterfeature
+227	0	Dim openarg
+228	0	openarg = "Feature"
+229	0	
+230	0	If Me![txtFeatureNumbers] <> "" Then openarg = "Feature;" & Me![txtFeatureNumbers]
+231	0	DoCmd.OpenForm "frm_popsearch", , , , , acDialog, openarg
+232	0	Exit Sub
+233	0	err_enterfeature:
+234	0	    Call General_Error_Trap
+235	0	    Exit Sub
+236	0	End Sub
+237	0	
+238	0	Private Sub cmdEnterHodder_Click()
+239	0	On Error GoTo err_enterHlevel
+240	0	Dim openarg
+241	0	openarg = "HodderLevel"
+242	0	
+243	0	If Me![txtHodderLevel] <> "" Then openarg = "HodderLevel;" & Me![txtHodderLevel]
+244	0	DoCmd.OpenForm "frm_popsearch", , , , , acDialog, openarg
+245	0	Exit Sub
+246	0	err_enterHlevel:
+247	0	    Call General_Error_Trap
+248	0	    Exit Sub
+249	0	End Sub
+250	0	
+251	0	Private Sub cmdEnterLevel_Click()
+252	0	On Error GoTo err_enterlevel
+253	0	Dim openarg
+254	0	openarg = "MellaartLevels"
+255	0	
+256	0	If Me![txtLevels] <> "" Then openarg = "MellaartLevels;" & Me![txtLevels]
+257	0	DoCmd.OpenForm "frm_popsearch", , , , , acDialog, openarg
+258	0	Exit Sub
+259	0	err_enterlevel:
+260	0	    Call General_Error_Trap
+261	0	    Exit Sub
+262	0	End Sub
+263	0	
+264	0	Private Sub cmdEnterSpace_Click()
+265	0	On Error GoTo err_enterspace
+266	0	Dim openarg
+267	0	openarg = "Space"
+268	0	
+269	0	If Me![txtSpaceNumbers] <> "" Then openarg = "Space;" & Me![txtSpaceNumbers]
+270	0	DoCmd.OpenForm "frm_popsearch", , , , , acDialog, openarg
+271	0	Exit Sub
+272	0	err_enterspace:
+273	0	    Call General_Error_Trap
+274	0	    Exit Sub
+275	0	End Sub
+276	0	
+277	0	Private Sub cmdPrint_Click()
+278	0	On Error GoTo err_cmdPrint
+279	0	    Call cmdBuildSQL_Click
+280	0	    
+281	0	    If Me![frm_subSearch].Form.RecordsetClone.RecordCount = 0 Then
+282	1	        'MsgBox "No records match the criteria you entered.", 48, "No Records Found"
+283	0	        Me![cmdClearSQL].SetFocus
+284	0	        Exit Sub
+285	0	    Else
+286	0	        DoCmd.OpenReport "R_unit_search_report", acViewPreview
+287	0	        If Not IsNull(g_reportfilter) Then
+288	2	            ''MsgBox g_reportfilter
+289	0	            
+290	0	            Reports![R_unit_search_report].FilterOn = True
+291	0	            Reports![R_unit_search_report].Filter = g_reportfilter
+292	0	        End If
+293	0	    
+294	0	    End If
+295	0	
+296	1	    'g_reportsource = Me![frm_subSearch].Form.RecordSource
+297	1	    'DoCmd.OpenReport "rpt_unit_search_report", acViewPreview
+298	1	    'Reports![rpt_unit_search_report].RecordSource = Me![frm_subSearch].Form.RecordSource
+299	0	
+300	0	Exit Sub
+301	0	
+302	0	err_cmdPrint:
+303	0	    Call General_Error_Trap
+304	0	    Exit Sub
+305	0	End Sub
+306	0	
+307	0	Private Sub cmdUnit_Click()
+308	0	On Error GoTo err_unitclick
+309	0	Dim openarg
+310	0	openarg = "unit number"
+311	0	
+312	0	If Me![txtUnitNumbers] <> "" Then openarg = "unit number;" & Me![txtUnitNumbers]
+313	0	DoCmd.OpenForm "frm_popsearch", , , , , acDialog, openarg
+314	0	Exit Sub
+315	0	err_unitclick:
+316	0	    Call General_Error_Trap
+317	0	    Exit Sub
+318	0	End Sub
+319	0	
+320	0	

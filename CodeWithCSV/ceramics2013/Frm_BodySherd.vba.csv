@@ -1,0 +1,585 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cboFilterUnit_AfterUpdate()
+5	1	'new 2010 filter for unit
+6	0	On Error GoTo err_filterunit
+7	0	
+8	0	If Me![cboFilterUnit] <> "" Then
+9	0	    Me.Filter = "[Unit] = " & Me![cboFilterUnit]
+10	0	    Me.FilterOn = True
+11	0	    Me![cmdRemoveFilter].Visible = True
+12	0	End If
+13	0	
+14	0	Exit Sub
+15	0	
+16	0	err_filterunit:
+17	0	    Call General_Error_Trap
+18	0	    Exit Sub
+19	0	End Sub
+20	0	
+21	1	'Private Sub UpdateSurfaceTreatment(oldvalue, newvalue)
+22	1	'Dim newval, count, sql
+23	1	'
+24	2	''check for value
+25	1	'If newvalue = "" Or IsNull(newvalue) Then
+26	1	'    MsgBox "Surface Treatment must be entered"
+27	1	'    If oldvalue <> "" Then
+28	1	'        newvalue = oldvalue
+29	1	'    Else
+30	1	'        SendKeys "{ESC}"
+31	1	'        DoCmd.GoToControl "total"
+32	1	'        DoCmd.GoToControl "txtSurfTreat"
+33	1	'    End If
+34	1	'Else
+35	1	'    Dim checkexists
+36	5	'    checkexists = DLookup("[Unit]", "Ceramics_Body_Sherd_SurfaceTreatment", "[Unit] = " & Me![txtUnit] & " AND [Ware Code] ='" & Me![WARE CODE] & "' AND [SurfaceTreatment] = '" & oldvalue & "'")
+37	1	'    If Not IsNull(checkexists) Then
+38	2	'        'does exist alter
+39	2	'        '1.delete whats there
+40	1	'        If spString <> "" Then
+41	1	'            Dim mydb As DAO.Database
+42	1	'            Dim myq1 As QueryDef
+43	1	'
+44	1	'            Set mydb = CurrentDb
+45	1	'            Set myq1 = mydb.CreateQueryDef("")
+46	1	'
+47	1	'            myq1.Connect = spString
+48	1	'
+49	1	'                myq1.ReturnsRecords = False
+50	3	 '               myq1.sql = "sp_Ceramics_Delete_BodySherd_SurfaceTreatment " & Me![txtUnit] & ", '" & Me![WARE CODE] & "', " & oldvalue
+51	1	'                myq1.Execute
+52	1	'
+53	1	'            myq1.Close
+54	1	'            Set myq1 = Nothing
+55	1	'            mydb.Close
+56	1	'            Set mydb = Nothing
+57	1	'
+58	2	'            '2. Add new value
+59	1	'            If InStr(newvalue, ",") > 0 Then
+60	2	'                '>1 treatment to add
+61	1	'                newval = Split(newvalue, ",")
+62	1	'                For count = 0 To UBound(newval)
+63	5	'                    sql = "INSERT INTO [Ceramics_Body_Sherd_SurfaceTreatment] ([Unit], [Ware code], [SurfaceTreatment], [IndividualTreatment]) VALUES (" & Me![txtUnit] & ", '" & Me![WARE CODE] & "', '" & newvalue & "'," & newval(count) & ")"
+64	1	'                    DoCmd.RunSQL sql
+65	1	'                Next
+66	1	'
+67	1	'            Else
+68	2	'                'just one value
+69	5	'                sql = "INSERT INTO [Ceramics_Body_Sherd_SurfaceTreatment] ([Unit], [Ware code], [SurfaceTreatment], [IndividualTreatment]) VALUES (" & Me![txtUnit] & ", '" & Me![WARE CODE] & "', '" & newvalue & "'," & newvalue & ")"
+70	1	'                DoCmd.RunSQL sql
+71	1	'            End If
+72	1	'        Else
+73	2	'            'it failed and this should be handled better than this but I have no time, please fix this - SAJ sept 08
+74	1	'            MsgBox "The existing surface treatment record has not been deleted, please contact the administrator.", vbCritical, "Error"
+75	1	'            Exit Sub
+76	1	'        End If
+77	1	'    Else
+78	2	'        'does not exist - add
+79	1	'            If InStr(newvalue, ",") > 0 Then
+80	2	'                '>1 treatment to add
+81	1	'                newval = Split(newvalue, ",")
+82	1	'                For count = 0 To UBound(newval)
+83	5	'                    sql = "INSERT INTO [Ceramics_Body_Sherd_SurfaceTreatment] ([Unit], [Ware code], [SurfaceTreatment], [IndividualTreatment]) VALUES (" & Me![txtUnit] & ", '" & Me![WARE CODE] & "', '" & newvalue & "'," & newval(count) & ")"
+84	1	'                    DoCmd.RunSQL sql
+85	1	'                Next
+86	1	'
+87	1	'            Else
+88	2	'                'just one value
+89	5	'                sql = "INSERT INTO [Ceramics_Body_Sherd_SurfaceTreatment] ([Unit], [Ware code], [SurfaceTreatment], [IndividualTreatment]) VALUES (" & Me![txtUnit] & ", '" & Me![WARE CODE] & "', '" & newvalue & "'," & newvalue & ")"
+90	1	'                DoCmd.RunSQL sql
+91	1	'            End If
+92	1	'    End If
+93	1	'    Me!Frm_sub_bodysherd_surfacetreatment.Requery
+94	1	'
+95	1	'End If
+96	1	'Exit Sub
+97	1	'
+98	1	'err_SurfTreat:
+99	1	'    Call General_Error_Trap
+100	1	'    Exit Sub
+101	1	'
+102	1	'
+103	1	'End Sub
+104	0	
+105	0	Private Sub cboFindUnit_AfterUpdate()
+106	1	'********************************************
+107	1	'Find the selected unit from the list
+108	1	'********************************************
+109	0	On Error GoTo err_cboFindUnit_AfterUpdate
+110	0	
+111	0	    If Me![cboFindUnit] <> "" Then
+112	1	         'if a filter is on - turn off
+113	0	         If Me.FilterOn = True Then
+114	0	            Me.FilterOn = False
+115	0	            Me![cmdRemoveFilter].Visible = False
+116	0	            Me![cboFilterUnit] = ""
+117	0	         End If
+118	0	         
+119	1	         'for existing number the field will be disabled, enable it as when find num
+120	1	        'is shown the on current event will deal with disabling it again
+121	0	        If Me![txtShowUnit].Enabled = False Then Me![txtShowUnit].Enabled = True
+122	0	        DoCmd.GoToControl "txtShowUnit"
+123	0	        DoCmd.FindRecord Me![cboFindUnit], , , , True
+124	0	        Me![cboFindUnit] = ""
+125	0	        DoCmd.GoToControl "cboFindUnit"
+126	0	        Me![txtShowUnit].Enabled = False
+127	0	    End If
+128	0	Exit Sub
+129	0	
+130	0	err_cboFindUnit_AfterUpdate:
+131	0	    Call General_Error_Trap
+132	0	    Exit Sub
+133	0	End Sub
+134	0	
+135	0	
+136	0	Private Sub Close_Click()
+137	0	On Error GoTo err_cmdAddNew_Click
+138	0	
+139	0	    DoCmd.Close acForm, Me.Name
+140	0	    DoCmd.Restore
+141	0	    
+142	0	Exit Sub
+143	0	
+144	0	err_cmdAddNew_Click:
+145	0	    Call General_Error_Trap
+146	0	    Exit Sub
+147	0	End Sub
+148	0	
+149	0	Private Sub cmdAddNew_Click()
+150	0	On Error GoTo err_cmdAddNew_Click
+151	0	
+152	0	    Dim thisunit
+153	0	    thisunit = Me![txtUnit]
+154	0	    
+155	2	    DoCmd.GoToControl "Period" 'seems to get focus into tab control and then error as says it can't hide control that has focus
+156	0	    DoCmd.GoToRecord acActiveDataObject, , acNewRec
+157	1	    'new record allow GID entry
+158	0	    If Not IsNull(thisunit) Then Me![txtUnit] = thisunit
+159	0	    Me![txtUnit].Enabled = True
+160	0	    Me![txtUnit].Locked = False
+161	0	    Me![txtUnit].BackColor = 16777215
+162	0	    Me![WareGroup].Enabled = True
+163	0	    Me![WareGroup].Locked = False
+164	0	    Me![WareGroup].BackColor = 16777215
+165	0	    DoCmd.GoToControl "txtUnit"
+166	0	Exit Sub
+167	0	
+168	0	err_cmdAddNew_Click:
+169	0	    Call General_Error_Trap
+170	0	    Exit Sub
+171	0	End Sub
+172	0	
+173	0	Private Sub cmdAddNewUnit_Click()
+174	0	On Error GoTo err_cmdAddNew_Click
+175	2	    DoCmd.GoToControl "Period" 'seems to get focus into tab control and then error as says it can't hide control that has focus
+176	0	    DoCmd.GoToRecord acActiveDataObject, , acNewRec
+177	1	    'new record allow GID entry
+178	0	    Me![txtUnit].Enabled = True
+179	0	    Me![txtUnit].Locked = False
+180	0	    Me![txtUnit].BackColor = 16777215
+181	0	    Me![WareGroup].Enabled = True
+182	0	    Me![WareGroup].Locked = False
+183	0	    Me![WareGroup].BackColor = 16777215
+184	0	    DoCmd.GoToControl "txtUnit"
+185	0	Exit Sub
+186	0	
+187	0	err_cmdAddNew_Click:
+188	0	    Call General_Error_Trap
+189	0	    Exit Sub
+190	0	End Sub
+191	0	
+192	0	Private Sub cmdAlterSurfTreat_Click()
+193	1	'5th aug 2010
+194	1	'request that surface treatment change - effect primary key so have implemented cascade update in sql server
+195	0	On Error GoTo err_alterSF
+196	0	
+197	0	Dim Response, response2
+198	0	Response = InputBox("Please enter the Surface Treatment:", "Surface Treatment change")
+199	0	If Response <> "" Then
+200	0	    response2 = MsgBox("Are you sure you want to change this records Surface Treatment from " & Me![txtSurfTreat] & " to " & Response & "?", vbExclamation + vbYesNo)
+201	0	    If response2 = vbYes Then
+202	1	        'hard work done by after update
+203	2	        'txtSurfTreat_AfterUpdate 'moved to private sub proc
+204	0	        Call UpdateSurfaceTreatment(Me![txtSurfTreat], Response, Me![txtUnit], Me![WARE CODE], Null)
+205	0	        Me![txtSurfTreat] = Response
+206	0	        Me.Refresh
+207	0	    End If
+208	0	Else
+209	2	    'can't do as cancel returns a "" as well, best ignore it
+210	1	    'MsgBox "A surface treatment value is required. Action cancelled", vbInformation, "No entry"
+211	0	End If
+212	0	
+213	0	Exit Sub
+214	0	err_alterSF:
+215	0	    If Err.Number = 3146 Then
+216	1	        'duplicate key ie unit warecode surface treat already matching rec exists already
+217	0	        MsgBox "This Unit-Ware code-Surface Treatment combination has already been entered. Change cancelled", vbCritical, "Record Exists"
+218	0	        Me![txtSurfTreat] = Me![txtSurfTreat].oldvalue
+219	0	    Else
+220	0	        Call General_Error_Trap
+221	0	    End If
+222	0	    Exit Sub
+223	0	End Sub
+224	0	
+225	0	Private Sub cmdAlterWareCode_Click()
+226	1	'29th june 2009
+227	1	'request that ware codes change - effect primary key so have implemented cascade update in sql server
+228	0	On Error GoTo err_alter
+229	0	
+230	0	Dim Response, response2
+231	0	Response = InputBox("Please enter the altered Ware code:", "Ware code change")
+232	0	If Response <> "" Then
+233	0	    response2 = MsgBox("Are you sure you want to change this records ware code from " & Me![WARE CODE] & " to " & Response & "?", vbExclamation + vbYesNo)
+234	0	    If response2 = vbYes Then
+235	0	        Me![WARE CODE] = Response
+236	0	        Me.Refresh
+237	0	    End If
+238	0	
+239	0	End If
+240	0	
+241	0	Exit Sub
+242	0	err_alter:
+243	0	    If Err.Number = 3146 Then
+244	1	        'duplicate key ie unit warecode surface treat already matching rec exists already
+245	0	        MsgBox "This Unit-Ware code-Surface Treatment combination has already been entered. Change cancelled", vbCritical, "Record Exists"
+246	0	        Me![WARE CODE] = Me![WARE CODE].oldvalue
+247	0	    Else
+248	0	        Call General_Error_Trap
+249	0	    End If
+250	0	    Exit Sub
+251	0	End Sub
+252	0	
+253	0	Private Sub cmdDelete_Click()
+254	1	'allow deletion of entire record
+255	0	On Error GoTo err_delete
+256	0	
+257	0	Call DeleteBodySherdRecord(Me![txtUnit], Me![WareGroup], Me![txtSurfTreat])
+258	0	
+259	0	Exit Sub
+260	0	
+261	0	err_delete:
+262	0	    Call General_Error_Trap
+263	0	    Exit Sub
+264	0	    
+265	0	End Sub
+266	0	
+267	0	Private Sub cmdReNum_Click()
+268	0	On Error GoTo err_ReNum
+269	0	Dim val
+270	0	
+271	0	    If Me![txtUnit] <> "" And Me![WareGroup] <> "" And Me![txtSurfTreat] <> "" Then
+272	0	        val = ReNumberBodySherd(Me![txtUnit], Me![WareGroup], Me![txtSurfTreat])
+273	1	        'new number if successful has been fed into find cbo so search to display.
+274	1	        'if failed to update then cbofind will be blank so nothing happens
+275	0	        cboFindUnit_AfterUpdate
+276	1	        'MsgBox val
+277	0	    Else
+278	0	        MsgBox "Incomplete GID to process", vbInformation, "Action Cancelled"
+279	0	    End If
+280	0	Exit Sub
+281	0	
+282	0	err_ReNum:
+283	0	    Call General_Error_Trap
+284	0	    Exit Sub
+285	0	End Sub
+286	0	
+287	0	Private Sub Form_Current()
+288	0	
+289	0	On Error GoTo err_current
+290	0	
+291	0	    If (Me![txtUnit] = "" Or IsNull(Me![txtUnit])) And (Me![WareGroup] = "" Or IsNull(Me![WareGroup])) Then
+292	2	    'don't include find number as defaults to x
+293	1	    'If (Me![txtUnit] = "" Or IsNull(Me![txtUnit])) Then
+294	1	        'new record allow GID entry
+295	0	        Me![txtUnit].Enabled = True
+296	0	        Me![txtUnit].Locked = False
+297	0	        Me![txtUnit].BackColor = 16777215
+298	0	        Me![WareGroup].Enabled = True
+299	0	        Me![WareGroup].Locked = False
+300	0	        Me![WareGroup].BackColor = 16777215
+301	0	        Me![txtSurfTreat].Enabled = True
+302	0	        Me![txtSurfTreat].Locked = False
+303	0	        Me![txtSurfTreat].BackColor = 16777215
+304	0	    Else
+305	1	        'existing entry lock -- removed lock for WareGroup per request CE June 2014
+306	0	        Me![txtUnit].Enabled = False
+307	0	        Me![txtUnit].Locked = True
+308	0	        Me![txtUnit].BackColor = Me.Section(0).BackColor
+309	1	        'Me![WareGroup].Enabled = False
+310	1	        'Me![WareGroup].Locked = True
+311	1	        'Me![WareGroup].BackColor = Me.Section(0).BackColor
+312	0	        Me![txtSurfTreat].Enabled = False
+313	0	        Me![txtSurfTreat].Locked = True
+314	0	        Me![txtSurfTreat].BackColor = Me.Section(0).BackColor
+315	0	        
+316	0	    End If
+317	0	
+318	1	'set focus to top
+319	0	If Me![txtUnit].Enabled = True Then DoCmd.GoToControl "txtUnit"
+320	0	
+321	0	Exit Sub
+322	0	
+323	0	err_current:
+324	1	    'when setting a new record the focus can be in the tab element and then the code above fails - trap this
+325	2	    If Err.Number = 2165 Then 'you can't hide a control that has the focus.
+326	0	        Resume Next
+327	0	    Else
+328	0	        Call General_Error_Trap
+329	0	    End If
+330	0	    Exit Sub
+331	0	
+332	0	
+333	0	End Sub
+334	0	
+335	0	Private Sub Form_Open(Cancel As Integer)
+336	1	'new to disable admin features to non admin users
+337	0	On Error GoTo er_open
+338	0	
+339	0	If GetGeneralPermissions = "Admin" Then
+340	1	    'Me!cmdAlterWareCode.Enabled = True
+341	1	    'Me!cmdAlterSurfTreat.Enabled = True
+342	1	    'renumber button taken over above
+343	0	    Me![LabelChange1].Visible = True
+344	0	    Me![LabelChange2].Visible = True
+345	0	    Me!cmdDelete.Enabled = True
+346	0	    Me!cmdReNum.Enabled = True
+347	0	Else
+348	1	    'Me!cmdAlterWareCode.Enabled = False
+349	1	    'Me!cmdAlterSurfTreat.Enabled = False
+350	0	    Me![LabelChange1].Visible = False
+351	0	    Me![LabelChange2].Visible = False
+352	0	    Me!cmdDelete.Enabled = False
+353	0	    Me!cmdReNum.Enabled = False
+354	0	End If
+355	0	
+356	0	If Me.FilterOn = True Then
+357	0	    Me![cmdRemoveFilter].Visible = True
+358	0	End If
+359	0	
+360	0	Exit Sub
+361	0	
+362	0	er_open:
+363	0	    Call General_Error_Trap
+364	0	    Exit Sub
+365	0	End Sub
+366	0	
+367	0	Private Sub go_next_Click()
+368	0	On Error GoTo Err_go_next_Click
+369	0	
+370	0	
+371	0	    DoCmd.GoToRecord , , acNext
+372	0	
+373	0	Exit_go_next_Click:
+374	0	    Exit Sub
+375	0	
+376	0	Err_go_next_Click:
+377	0	
+378	0	    If Err.Number = 2105 Then
+379	0	        MsgBox "Entry for Waregroup in this Unit already exists"
+380	0	    Else
+381	0	        MsgBox Err.Description
+382	0	        Resume Exit_go_next_Click
+383	0	    End If
+384	0	End Sub
+385	0	
+386	0	Private Sub go_previous2_Click()
+387	0	On Error GoTo Err_go_previous2_Click
+388	0	
+389	0	
+390	0	    DoCmd.GoToRecord , , acPrevious
+391	0	
+392	0	Exit_go_previous2_Click:
+393	0	    Exit Sub
+394	0	
+395	0	Err_go_previous2_Click:
+396	0	    If Err.Number = 2105 Then
+397	0	        MsgBox "Entry for Waregroup in this Unit already exists"
+398	0	    Else
+399	0	        Call General_Error_Trap
+400	0	        Resume Exit_go_previous2_Click
+401	0	    End If
+402	0	End Sub
+403	0	
+404	0	Private Sub go_to_first_Click()
+405	0	On Error GoTo Err_go_to_first_Click
+406	0	
+407	0	
+408	0	    DoCmd.GoToRecord , , acFirst
+409	0	
+410	0	Exit_go_to_first_Click:
+411	0	    Exit Sub
+412	0	
+413	0	Err_go_to_first_Click:
+414	0	    Call General_Error_Trap
+415	0	    Resume Exit_go_to_first_Click
+416	0	End Sub
+417	0	
+418	0	Private Sub go_to_last_Click()
+419	0	On Error GoTo Err_go_last_Click
+420	0	
+421	0	
+422	0	    DoCmd.GoToRecord , , acLast
+423	0	
+424	0	Exit_go_last_Click:
+425	0	    Exit Sub
+426	0	
+427	0	Err_go_last_Click:
+428	0	    Call General_Error_Trap
+429	0	    Resume Exit_go_last_Click
+430	0	End Sub
+431	0	
+432	0	Private Sub txtSurfTreat_AfterUpdate()
+433	1	'new 2010 - instead of team having to write in the surface treatment into sep table the system will deal with this
+434	0	Call UpdateSurfaceTreatment(Me![txtSurfTreat].oldvalue, Me![txtSurfTreat], Me![txtUnit], Me![WareGroup], Null)
+435	0	
+436	0	If Me![txtSurfTreat] <> "" And Not IsNull(Me![txtSurfTreat]) Then
+437	0	    DoCmd.RunCommand acCmdSaveRecord
+438	0	End If
+439	0	
+440	0	Me!Frm_sub_bodysherd_surfacetreatment.Form.Requery
+441	0	Me!Frm_sub_bodysherd_surfacetreatment.Form.Refresh
+442	0	
+443	1	'On Error GoTo err_SurfTreat
+444	1	'Dim newval, count, sql
+445	1	'
+446	1	'check for value
+447	2	''If Me![txtSurfTreat] = "" Or IsNull(Me![txtSurfTreat]) Then
+448	1	'    MsgBox "Surface Treatment must be entered"
+449	1	'    If Me![txtSurfTreat].oldvalue <> "" Then
+450	1	'        Me![txtSurfTreat] = Me![txtSurfTreat].oldvalue
+451	1	'    Else
+452	1	'        SendKeys "{ESC}"
+453	1	'        DoCmd.GoToControl "total"
+454	1	'        DoCmd.GoToControl "txtSurfTreat"
+455	1	'    End If
+456	1	'Else
+457	1	'    Dim checkexists
+458	5	'    checkexists = DLookup("[Unit]", "Ceramics_Body_Sherd_SurfaceTreatment", "[Unit] = " & Me![txtUnit] & " AND [Ware Code] ='" & Me![WARE CODE] & "' AND [SurfaceTreatment] = '" & Me![txtSurfTreat] & "'")
+459	1	'    If Not IsNull(checkexists) Then
+460	2	'        'does exist alter
+461	2	'        '1.delete whats there
+462	1	'        If spString <> "" Then
+463	1	'            Dim mydb As DAO.Database
+464	1	'            Dim myq1 As QueryDef
+465	1	'
+466	1	'            Set mydb = CurrentDb
+467	1	'            Set myq1 = mydb.CreateQueryDef("")
+468	1	'
+469	1	'            myq1.Connect = spString
+470	1	'
+471	1	'                myq1.ReturnsRecords = False
+472	3	'                myq1.sql = "sp_Ceramics_Delete_BodySherd_SurfaceTreatment " & Me![txtUnit] & ", '" & Me![WARE CODE] & "', " & Me![txtSurfTreat]
+473	1	'                myq1.Execute
+474	1	'
+475	1	'            myq1.Close
+476	1	'            Set myq1 = Nothing
+477	1	'            mydb.Close
+478	1	'            Set mydb = Nothing
+479	1	'
+480	2	'            '2. Add new value
+481	1	'            If InStr(Me![txtSurfTreat], ",") > 0 Then
+482	2	'                '>1 treatment to add
+483	1	'                newval = Split(Me![txtSurfTreat], ",")
+484	1	'                For count = 0 To UBound(newval)
+485	5	'                    sql = "INSERT INTO [Ceramics_Body_Sherd_SurfaceTreatment] ([Unit], [Ware code], [SurfaceTreatment], [IndividualTreatment]) VALUES (" & Me![txtUnit] & ", '" & Me![WARE CODE] & "', '" & Me![txtSurfTreat] & "'," & newval(count) & ")"
+486	1	'                    DoCmd.RunSQL sql
+487	1	'                Next
+488	1	'
+489	1	'            Else
+490	2	'                'just one value
+491	5	'                sql = "INSERT INTO [Ceramics_Body_Sherd_SurfaceTreatment] ([Unit], [Ware code], [SurfaceTreatment], [IndividualTreatment]) VALUES (" & Me![txtUnit] & ", '" & Me![WARE CODE] & "', '" & Me![txtSurfTreat] & "'," & Me![txtSurfTreat] & ")"
+492	1	'                DoCmd.RunSQL sql
+493	1	'            End If
+494	1	'        Else
+495	2	'            'it failed and this should be handled better than this but I have no time, please fix this - SAJ sept 08
+496	1	'            MsgBox "The existing surface treatment record has not been deleted, please contact the administrator.", vbCritical, "Error"
+497	1	'            Exit Sub
+498	1	'        End If
+499	1	'    Else
+500	2	'        'does not exist - add
+501	1	'            If InStr(Me![txtSurfTreat], ",") > 0 Then
+502	2	'                '>1 treatment to add
+503	1	'                newval = Split(Me![txtSurfTreat], ",")
+504	1	'                For count = 0 To UBound(newval)
+505	5	'                    sql = "INSERT INTO [Ceramics_Body_Sherd_SurfaceTreatment] ([Unit], [Ware code], [SurfaceTreatment], [IndividualTreatment]) VALUES (" & Me![txtUnit] & ", '" & Me![WARE CODE] & "', '" & Me![txtSurfTreat] & "'," & newval(count) & ")"
+506	1	'                    DoCmd.RunSQL sql
+507	1	'                Next
+508	1	'
+509	1	'            Else
+510	2	'                'just one value
+511	5	'                sql = "INSERT INTO [Ceramics_Body_Sherd_SurfaceTreatment] ([Unit], [Ware code], [SurfaceTreatment], [IndividualTreatment]) VALUES (" & Me![txtUnit] & ", '" & Me![WARE CODE] & "', '" & Me![txtSurfTreat] & "'," & Me![txtSurfTreat] & ")"
+512	1	'                DoCmd.RunSQL sql
+513	1	'            End If
+514	1	'    End If
+515	1	'    Me!Frm_sub_bodysherd_surfacetreatment.Requery
+516	1	'
+517	1	'End If
+518	1	'Exit Sub
+519	1	'
+520	1	'err_SurfTreat:
+521	1	'    Call General_Error_Trap
+522	1	'    Exit Sub
+523	0	    
+524	0	End Sub
+525	0	
+526	0	Private Sub txtSurfTreat_LostFocus()
+527	0	Me!Frm_sub_bodysherd_surfacetreatment.Form.Requery
+528	0	End Sub
+529	0	
+530	0	Private Sub txtUnit_AfterUpdate()
+531	0	Call CheckUnitDescript(Me![txtUnit])
+532	0	
+533	0	End Sub
+534	0	
+535	0	Private Sub WARE_CODE_NotInList(NewData As String, Response As Integer)
+536	0	On Error GoTo err_warecode_NotInList
+537	0	
+538	0	Dim retVal, sql
+539	0	retVal = MsgBox("This Ware Code does not appear in the pre-defined list. Have you checked the list to make sure there is no match?", vbQuestion + vbYesNo, "New ware code")
+540	0	If retVal = vbYes Then
+541	0	    MsgBox "Ok this ware code will now be added to the list", vbInformation, "New Ware Code Allowed"
+542	1	    'allow value,
+543	0	     Response = acDataErrAdded
+544	0	    
+545	0	    Dim desc
+546	0	    desc = InputBox("Please enter the description for this new code eg: DMS-fine", "Ware Code Description")
+547	0	    If desc <> "" Then
+548	4	        sql = "INSERT INTO [Ceramics_Code_Warecode_LOV] ([WareCode], [Description]) VALUES ('" & NewData & "', '" & desc & "');"
+549	0	    Else
+550	2	        sql = "INSERT INTO [Ceramics_Code_Warecode_LOV] ([WareCode]) VALUES ('" & NewData & "');"
+551	0	    End If
+552	0	    DoCmd.RunSQL sql
+553	0	    
+554	0	Else
+555	1	    'no leave it so they can edit it
+556	0	    Response = acDataErrContinue
+557	0	End If
+558	0	Exit Sub
+559	0	
+560	0	err_warecode_NotInList:
+561	0	    Call General_Error_Trap
+562	0	
+563	0	    Exit Sub
+564	0	
+565	0	End Sub
+566	0	Private Sub cmdRemoveFilter_Click()
+567	0	On Error GoTo Err_cmdRemoveFilter
+568	0	
+569	0	    Me.Filter = ""
+570	0	    Me.FilterOn = False
+571	0	    Me![cboFilterUnit] = ""
+572	0	    DoCmd.GoToControl "cboFindUnit"
+573	0	    Me![cmdRemoveFilter].Visible = False
+574	0	
+575	0	    Exit Sub
+576	0	
+577	0	Err_cmdRemoveFilter:
+578	0	    Call General_Error_Trap
+579	0	    Exit Sub
+580	0	    
+581	0	End Sub
+582	0	
+583	0	Private Sub WareGroup_NotInList(NewData As String, Response As Integer)
+584	0	
+585	0	End Sub

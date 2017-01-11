@@ -1,0 +1,91 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	Private which
+4	0	
+5	0	Private Sub cmdRecalc_Click()
+6	1	'Wow - 1st Sept 2009 - SAJ - this is good!
+7	0	On Error GoTo err_cmdRecalc
+8	0	
+9	0	If which <> "" Then
+10	0	    Dim response
+11	1	    response = MsgBox("This process will re-calculate all the MNI's shown below and you will loose any comments." & Chr(13) & Chr(13) & "Are you sure you want to continue?", vbQuestion + vbYesNo, "Confirm Re-Calculation")
+12	0	    If response = vbYes Then
+13	0	    
+14	0	        Me![FRM_SUBFORM_MNI].Visible = False
+15	0	        Me![txtFeature].Visible = True
+16	0	        Me![txtMsg].Visible = True
+17	0	        
+18	1	        If which = 1 Then 'feature
+19	0	            CalcMNI
+20	1	        ElseIf which = 2 Then 'space
+21	0	            CalcSpaceMNI
+22	1	        ElseIf which = 3 Then 'building
+23	0	            CalcBuildingMNI
+24	0	        End If
+25	0	        Me![FRM_SUBFORM_MNI].Requery
+26	0	        Me![FRM_SUBFORM_MNI].Visible = True
+27	0	        Me![txtMsg] = "Re-calculation complete"
+28	0	    End If
+29	0	Else
+30	0	    MsgBox "The form does not know which MNI to calculate and cannot proceed", vbCritical, "Error"
+31	0	End If
+32	0	Exit Sub
+33	0	
+34	0	err_cmdRecalc:
+35	0	    If Err.Number = 3156 Then
+36	0	        MsgBox "Sorry but you are logged in as HumanRemains and cannot perform this function as it includes a delete. You must be logged in as HumanRemainsLeader.", vbExclamation, "Permission Denied"
+37	0	        Me![FRM_SUBFORM_MNI].Visible = True
+38	0	    
+39	0	    Else
+40	0	        Call General_Error_Trap
+41	0	    End If
+42	0	    Exit Sub
+43	0	End Sub
+44	0	
+45	0	Private Sub Form_Open(Cancel As Integer)
+46	0	
+47	0	On Error GoTo err_open
+48	0	which = ""
+49	1	'cut in here in 2010 with different options for which MNI
+50	0	If IsNull(Me.OpenArgs) Then
+51	0	    MsgBox "Form opened without selecting which MNI, operation cancelled", vbExclamation, "Invalid Call"
+52	0	    DoCmd.Close acForm, Me.Name
+53	0	Else
+54	1	    'openargs specify which MNI
+55	0	    which = Me.OpenArgs
+56	0	    
+57	0	    If which = 1 Then
+58	0	        Me![lblTitle].Caption = "Calculate MNI for Burial Features"
+59	0	        Me![FRM_SUBFORM_MNI].SourceObject = "FRM_SUBFORM_MNI"
+60	1	        'Q_MNI_LastGenerated
+61	0	        Me![FRM_SUBFORM_MNI_LastGenerated].Form.RecordSource = "Q_MNI_LastGenerated"
+62	0	    ElseIf which = 2 Then
+63	0	        Me![lblTitle].Caption = "Calculate MNI for Spaces with skeleton units"
+64	0	        Me![FRM_SUBFORM_MNI].SourceObject = "FRM_SUBFORM_MNI_SPACE"
+65	0	        Me![FRM_SUBFORM_MNI_LastGenerated].Form.RecordSource = "Q_MNI_LastGenerated_Space"
+66	0	    ElseIf which = 3 Then
+67	0	        Me![lblTitle].Caption = "Calculate MNI for Buildings with skeleton units"
+68	0	        Me![FRM_SUBFORM_MNI].SourceObject = "FRM_SUBFORM_MNI_BUILDING"
+69	0	        Me![FRM_SUBFORM_MNI_LastGenerated].Form.RecordSource = "Q_MNI_LastGenerated_Building"
+70	0	    End If
+71	0	    
+72	1	    'added jan 2010 when catalhoyuk allowed access to this bit of the database
+73	0	    Dim permiss
+74	0	    permiss = GetGeneralPermissions
+75	0	    If (permiss = "ADMIN") Then
+76	0	        Me![cmdRecalc].Enabled = True
+77	0	    Else
+78	0	        Me![cmdRecalc].Enabled = False
+79	0	    End If
+80	0	
+81	0	    Me![txtMsg].Visible = False
+82	0	    Me![txtFeature].Visible = False
+83	0	    Me![FRM_SUBFORM_MNI].Visible = True
+84	0	End If
+85	0	Exit Sub
+86	0	
+87	0	err_open:
+88	0	    Call General_Error_Trap
+89	0	    Exit Sub
+90	0	
+91	0	End Sub

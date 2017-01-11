@@ -1,0 +1,77 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Function CheckIfLOVValueUsed(LOVName, LOVField, LOVValue, CheckTable, CheckTableKeyField, CheckTableField, task, Optional extracrit)
+5	1	'******************************************************************************
+6	1	' This function is used by the Administration area of the site - it checks if
+7	1	' a LOV value can be edited or deleted by checking dependant tables
+8	1	' Inputs:   LOVName = lov table name
+9	1	'           LOVField = lov field name being checked
+10	1	'           LOVVAlue = LOV value being checked out
+11	1	'           CheckTable = dependant table name to check if value exists in
+12	1	'           CheckTableKeyField = key of dependant table
+13	1	'           CheckTAbleField = field name where LOV value stored in dependant table
+14	1	'           task = edit or delete
+15	1	'           extracrit = any extra criteria for record search, optional
+16	1	' Outputs:  msg back to user or OK
+17	1	' v9.2 SAJ
+18	1	'*****************************************************************************
+19	0	On Error GoTo err_CheckIFLOVValueUsed
+20	0	
+21	1	'only proceed if all inputs are present
+22	0	If LOVName <> "" And LOVField <> "" And LOVValue <> "" And CheckTable <> "" And CheckTableKeyField <> "" And CheckTableField <> "" And task <> "" Then
+23	0	
+24	0	    Dim mydb As Database, myrs As Recordset, sql As String, msg As String, msg1 As String, keyfld As Field, count As Integer
+25	0	    Set mydb = CurrentDb
+26	0	    
+27	0	    If Not IsMissing(extracrit) Then
+28	2	        sql = "SELECT [" & CheckTableKeyField & "], [" & CheckTableField & "] FROM [" & CheckTable & "] WHERE [" & CheckTableField & "] = '" & LOVValue & "' " & extracrit & " ORDER BY [" & CheckTableKeyField & "];"
+29	0	    Else
+30	2	        sql = "SELECT [" & CheckTableKeyField & "], [" & CheckTableField & "] FROM [" & CheckTable & "] WHERE [" & CheckTableField & "] = '" & LOVValue & "' ORDER BY [" & CheckTableKeyField & "];"
+31	0	    End If
+32	0	    Set myrs = mydb.OpenRecordset(sql, dbOpenSnapshot)
+33	0	
+34	0	    If myrs.BOF And myrs.EOF Then
+35	0	        msg = "ok"
+36	0	    Else
+37	0	        myrs.MoveFirst
+38	0	        count = 0
+39	0	        msg = "You cannot " & task & " this " & LOVField & " because the following records in the table " & CheckTable & " use it: "
+40	0	        msg1 = ""
+41	0	        Do Until myrs.EOF
+42	0	            Set keyfld = myrs.Fields(CheckTableKeyField)
+43	0	            If msg1 <> "" Then msg1 = msg1 & ", "
+44	0	            msg1 = msg1 & keyfld
+45	0	            count = count + 1
+46	1	            'there is a limit to amount of text in msgbox so may not be able to show more
+47	0	            If count > 50 Then
+48	0	                msg1 = msg1 & ".....etc"
+49	0	                Exit Do
+50	0	            End If
+51	0	        myrs.MoveNext
+52	0	        Loop
+53	0	        
+54	0	        msg = msg & Chr(13) & Chr(13) & CheckTableKeyField & ": " & msg1
+55	0	        If task = "edit" Then
+56	1	            msg = msg & Chr(13) & Chr(13) & "It is suggested you add a new " & LOVField & " to the list and then change all records that refer to '"
+57	1	            msg = msg & LOVValue & "' to your new " & LOVField & ". You will then be able to delete it from the list."
+58	0	        ElseIf task = "delete" Then
+59	0	             msg = msg & Chr(13) & Chr(13) & "You must change all records that refer to this " & LOVField
+60	2	            msg = msg & " '" & LOVValue & "' before you will be able to delete it from the list."
+61	0	        End If
+62	0	    End If
+63	0	    myrs.Close
+64	0	    Set myrs = Nothing
+65	0	    mydb.Close
+66	0	    Set mydb = Nothing
+67	0	    
+68	0	    CheckIfLOVValueUsed = msg
+69	0	Else
+70	0	    CheckIfLOVValueUsed = "fail"
+71	0	End If
+72	0	Exit Function
+73	0	
+74	0	err_CheckIFLOVValueUsed:
+75	0	    Call General_Error_Trap
+76	0	    Exit Function
+77	0	End Function

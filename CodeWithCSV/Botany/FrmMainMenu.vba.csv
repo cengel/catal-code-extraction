@@ -1,0 +1,100 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	
+5	0	
+6	0	Private Sub cmdBasicData_Click()
+7	1	' Open Basic data form
+8	0	On Error GoTo err_Basic
+9	0	
+10	0	    DoCmd.OpenForm "FrmBasicData", acNormal, , , acFormEdit
+11	0	Exit Sub
+12	0	
+13	0	err_Basic:
+14	0	    Call General_Error_Trap
+15	0	    Exit Sub
+16	0	End Sub
+17	0	
+18	0	Private Sub cmdHistoric_Click()
+19	1	' Open Basic data form
+20	0	On Error GoTo err_Historic
+21	0	
+22	0	    DoCmd.OpenForm "Bots98: Main", acNormal, , , acFormReadOnly
+23	0	Exit Sub
+24	0	
+25	0	err_Historic:
+26	0	    Call General_Error_Trap
+27	0	    Exit Sub
+28	0	End Sub
+29	0	
+30	0	Private Sub cmdPriorityReport_Click()
+31	1	' Open Basic data form
+32	0	On Error GoTo err_PR
+33	0	
+34	0	    DoCmd.OpenForm "FrmPriorityReport", acNormal, , , acFormEdit
+35	0	Exit Sub
+36	0	
+37	0	err_PR:
+38	0	    Call General_Error_Trap
+39	0	    Exit Sub
+40	0	End Sub
+41	0	
+42	0	Private Sub cmdQuit_Click()
+43	1	' Quit app
+44	0	On Error GoTo err_Quit
+45	0	    DoCmd.Quit acQuitSaveAll
+46	0	
+47	0	Exit Sub
+48	0	
+49	0	err_Quit:
+50	0	    Call General_Error_Trap
+51	0	    Exit Sub
+52	0	End Sub
+53	0	
+54	0	Private Sub cmdScan_Click()
+55	1	' open scanning form
+56	0	On Error GoTo err_Scan
+57	0	
+58	0	    DoCmd.OpenForm "FrmSampleScan", acNormal, , , acFormEdit
+59	0	Exit Sub
+60	0	
+61	0	err_Scan:
+62	0	    Call General_Error_Trap
+63	0	    Exit Sub
+64	0	End Sub
+65	0	
+66	0	Private Sub cmdSieveScan_Click()
+67	1	' open scanning form
+68	0	On Error GoTo err_Scan
+69	0	
+70	0	    DoCmd.OpenForm "FrmSieveScan", acNormal, , , acFormEdit
+71	0	Exit Sub
+72	0	
+73	0	err_Scan:
+74	0	    Call General_Error_Trap
+75	0	    Exit Sub
+76	0	End Sub
+77	0	
+78	0	Private Sub cmdUnit_Click()
+79	1	' new on site 2006
+80	0	On Error GoTo err_Unit
+81	0	
+82	0	    DoCmd.OpenForm "FrmBotUnitDescription", acNormal, , , acFormEdit
+83	0	Exit Sub
+84	0	
+85	0	err_Unit:
+86	0	    Call General_Error_Trap
+87	0	    Exit Sub
+88	0	End Sub
+89	0	
+90	0	Private Sub Command3_Click()
+91	1	' open priority form
+92	0	On Error GoTo err_Priority
+93	0	
+94	0	    DoCmd.OpenForm "FrmPriority", acNormal, , , acFormEdit
+95	0	Exit Sub
+96	0	
+97	0	err_Priority:
+98	0	    Call General_Error_Trap
+99	0	    Exit Sub
+100	0	End Sub

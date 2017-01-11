@@ -1,0 +1,13 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	1	'renamed
+4	1	'Public Const DBName = "ArchaeoBotanyDatabase"
+5	0	
+6	0	Public Const DBName = "Botany Central Database"
+7	0	
+8	0	Public VersionNumber
+9	1	Public Const VersionNumberLocal = "6" 'NEW 2009 TO FLAG UPDATE MESSAGE TO USER - see SetCurrentVersion in module General Procedures-shared
+10	0	
+11	0	Public GeneralPermissions
+12	0	
+13	1	Public spString 'var to hold call to sp used in DeleteSampleRecord()

@@ -1,0 +1,92 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdAdmin_Click()
+5	1	'open the pub data screen
+6	0	On Error GoTo err_Admin
+7	0	
+8	0	    DoCmd.OpenForm "Frm_GS_AdminMenu", acNormal
+9	0	
+10	0	Exit Sub
+11	0	
+12	0	err_Admin:
+13	0	    Call General_Error_Trap
+14	0	    Exit Sub
+15	0	End Sub
+16	0	
+17	0	Private Sub cmdOpenData_Click()
+18	1	'open the main data screen
+19	0	On Error GoTo err_OpenData
+20	0	
+21	0	    DoCmd.OpenForm "Frm_MainData", acNormal, , , acFormPropertySettings
+22	0	    DoCmd.Close acForm, Me.Name
+23	0	    
+24	0	
+25	0	Exit Sub
+26	0	
+27	0	err_OpenData:
+28	0	    Call General_Error_Trap
+29	0	    Exit Sub
+30	0	End Sub
+31	0	
+32	0	Private Sub cmdPub_Click()
+33	1	'open the pub data screen
+34	0	On Error GoTo err_pub
+35	0	
+36	0	    DoCmd.OpenForm "Frm_GS_Publications", acNormal
+37	0	
+38	0	Exit Sub
+39	0	
+40	0	err_pub:
+41	0	    Call General_Error_Trap
+42	0	    Exit Sub
+43	0	End Sub
+44	0	
+45	0	Private Sub cmdQuit_Click()
+46	1	'quit system
+47	0	On Error GoTo err_Quit
+48	0	
+49	0	    DoCmd.Quit acQuitSaveAll
+50	0	    
+51	0	
+52	0	Exit Sub
+53	0	
+54	0	err_Quit:
+55	0	    Call General_Error_Trap
+56	0	    Exit Sub
+57	0	End Sub
+58	0	
+59	0	
+60	0	
+61	0	Private Sub cmdStageTwo_Click()
+62	1	'open the sample data screen
+63	0	On Error GoTo err_Sample
+64	0	
+65	0	    DoCmd.OpenForm "Frm_Search", acNormal, , , acFormPropertySettings
+66	0	      DoCmd.Close acForm, Me.Name
+67	0	
+68	0	Exit Sub
+69	0	
+70	0	err_Sample:
+71	0	    Call General_Error_Trap
+72	0	    Exit Sub
+73	0	End Sub
+74	0	
+75	0	Private Sub Form_Open(Cancel As Integer)
+76	1	'v9.2 SAJ - only adminstrators are allowed in here
+77	0	On Error GoTo err_Form_Open
+78	0	
+79	0	    Dim permiss
+80	1	'    permiss = GetGeneralPermissions
+81	1	'    If permiss <> "ADMIN" Then
+82	1	'        me![cmdAdmin].visible = true
+83	1	'        DoCmd.close acForm, Me.Name
+84	1	'    else
+85	1	'       me![cmdAdmin].visible = false
+86	1	'    End If
+87	0	Exit Sub
+88	0	
+89	0	err_Form_Open:
+90	0	    Call General_Error_Trap
+91	0	    Exit Sub
+92	0	End Sub

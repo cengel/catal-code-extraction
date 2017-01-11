@@ -1,0 +1,117 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	0	Option Explicit
+3	1	'**************************************************
+4	1	' This form is new in v9.2 - SAJ
+5	1	'**************************************************
+6	0	
+7	0	
+8	0	
+9	0	
+10	0	Private Sub cmdAddNew_Click()
+11	1	'v9.2 SAJ - add a new record
+12	0	On Error GoTo err_cmdAddNew_Click
+13	0	
+14	0	    DoCmd.RunCommand acCmdRecordsGoToNew
+15	0	
+16	0	Exit Sub
+17	0	
+18	0	err_cmdAddNew_Click:
+19	0	    Call General_Error_Trap
+20	0	    Exit Sub
+21	0	End Sub
+22	0	
+23	0	Private Sub Excavation_Click()
+24	1	'SAJ - close the form
+25	0	    DoCmd.Close acForm, Me.Name
+26	0	End Sub
+27	0	
+28	0	
+29	0	
+30	0	Private Sub cmdEdit_Click()
+31	1	'v9.2 SAJ - check if user can edit this record
+32	1	' The fraction value is used in the basic data table
+33	1	' so must check all this to see if is used before allow edit
+34	1	' At present not offering global edits - this can be extended to offer this if required
+35	0	
+36	1	'On Error GoTo Err_cmdEdit_Click
+37	1	'
+38	1	'Dim checkValidAction, checkValidAction2, checkValidAction3, retVal
+39	1	'
+40	2	'    'check basic data for fraction field
+41	1	'    checkValidAction = CheckIfLOVValueUsed("GroundStone List of Values: FlotFraction", "FlotFraction", Me![txtFraction], "GroundStone 1: Basic Data", "GID", "Fraction", "edit", False)
+42	1	'
+43	1	'    If checkValidAction = "ok" Then
+44	2	'        'edit action can go ahead - at present simply offer an input box for this
+45	1	'        retVal = InputBox("No records refer to this Fraction (" & Me![txtFraction] & ") so an edit is allowed." & Chr(13) & Chr(13) & "Please enter the edited Fraction that you wish to replace this entry with:", "Enter edited Fraction")
+46	1	'        If retVal <> "" Then
+47	1	'             Me![txtFraction] = retVal
+48	1	'        End If
+49	1	'
+50	1	'    ElseIf checkValidAction = "fail" Then
+51	1	'        MsgBox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+52	1	'    Else
+53	1	'        MsgBox checkValidAction, vbExclamation, "Action Report"
+54	1	'    End If
+55	1	'
+56	1	'Exit_cmdEdit_Click:
+57	1	'    Exit Sub
+58	0	
+59	1	'Err_cmdEdit_Click:
+60	1	'    Call General_Error_Trap
+61	1	'    Exit Sub
+62	0	    
+63	0	End Sub
+64	0	
+65	0	Private Sub cmdDelete_Click()
+66	1	'SAJ - check if user can delete this record
+67	1	' The fraction value is used in the basic data table
+68	1	' so must check all this to see if is used before allow delete
+69	1	' At present not offering global edits - this can be extended to offer this if required
+70	0	
+71	1	'On Error GoTo Err_cmdDelete_Click
+72	1	'
+73	1	'Dim checkValidAction, checkValidAction2, checkValidAction3, retVal
+74	1	'
+75	2	'    'check basic data for fraction field
+76	1	'    checkValidAction = CheckIfLOVValueUsed("GroundStone List of Values: FlotFraction", "FlotFraction", Me![txtFraction], "GroundStone 1: Basic Data", "GID", "Fraction", "delete", False)
+77	1	'
+78	1	'    If checkValidAction = "ok" Then
+79	2	'                'delete action can go ahead - at present simply offer an input box for this
+80	1	'                retVal = MsgBox("No records refer to this Fraction (" & Me![txtFraction] & ") so deletion is allowed." & Chr(13) & Chr(13) & "Are you sure you want to delete " & Me![txtFraction] & " from the list of available fractions?", vbExclamation + vbYesNo, "Confirm Deletion")
+81	1	'                If retVal = vbYes Then
+82	1	'                    Me.AllowDeletions = True
+83	1	'                    DoCmd.RunCommand acCmdDeleteRecord
+84	1	'                    Me.AllowDeletions = False
+85	1	'                End If
+86	1	'
+87	1	'    ElseIf checkValidAction = "fail" Then
+88	1	'        MsgBox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+89	1	'    Else
+90	1	'        MsgBox checkValidAction, vbExclamation, "Action Report"
+91	1	'    End If
+92	1	'
+93	1	'Exit_cmdDelete_Click:
+94	1	'    Exit Sub
+95	0	
+96	1	'Err_cmdDelete_Click:
+97	1	'    Call General_Error_Trap
+98	1	'    Exit Sub
+99	0	    
+100	0	End Sub
+101	0	
+102	0	Private Sub Form_Open(Cancel As Integer)
+103	1	'v9.2 SAJ - only adminstrators are allowed in here
+104	0	On Error GoTo err_Form_Open
+105	0	
+106	0	    Dim permiss
+107	0	    permiss = GetGeneralPermissions
+108	0	    If permiss <> "ADMIN" Then
+109	0	        MsgBox "Sorry but only Administrators have access to this form"
+110	0	        DoCmd.Close acForm, Me.Name
+111	0	    End If
+112	0	Exit Sub
+113	0	
+114	0	err_Form_Open:
+115	0	    Call General_Error_Trap
+116	0	    Exit Sub
+117	0	End Sub

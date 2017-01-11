@@ -1,0 +1,41 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub Crate_Number_DblClick(Cancel As Integer)
+5	1	'new 2008, allow double click to got to crates form to view for this crate
+6	0	On Error GoTo err_crate
+7	0	
+8	0	    If Me![Crate Number] <> "" Then
+9	2	        DoCmd.OpenForm "Store: Crate Register", acNormal, , "[Crate Number] = '" & Me![Crate Number] & "'"
+10	0	    End If
+11	0	Exit Sub
+12	0	
+13	0	err_crate:
+14	0	    Call General_Error_Trap
+15	0	    Exit Sub
+16	0	End Sub
+17	0	
+18	0	Private Sub Form_Current()
+19	0	On Error GoTo err_Form_Current
+20	0	
+21	0	If GetGeneralPermissions = "Admin" Then
+22	1	    '[Store: Units in Crates subform]
+23	0	    Me.AllowEdits = True
+24	0	    Me![Crate Letter].Enabled = True
+25	0	    Me![Crate Letter].Locked = False
+26	0	    Me![Crate Number].Enabled = True
+27	0	    Me![Crate Number].Locked = False
+28	0	    Me![Material].Locked = False
+29	0	    Me![Material].Enabled = True
+30	0	    Me![Description].Locked = False
+31	0	    Me![Description].Enabled = True
+32	0	Else
+33	1	    'no permissions to modify crate material and description
+34	0	End If
+35	0	
+36	0	Exit Sub
+37	0	
+38	0	err_Form_Current:
+39	0	    Call General_Error_Trap
+40	0	    Exit Sub
+41	0	End Sub

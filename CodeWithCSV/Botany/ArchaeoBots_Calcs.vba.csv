@@ -1,0 +1,210 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Function Calc_WoodParenceDung_ml_per_litre(flot, fldVal, FractionVal)
+5	1	'*************************************************************************************
+6	1	'this function takes the Priority Sample table 4mm wood/parenc/dung field and the fraction
+7	1	'field, gathers the basic data soil vol field and then calc the wood/parenc/dung per litre figure.
+8	1	' Inputs:   Flot = Priority Sample flot number
+9	1	'           fldVal = Priority Sample 4mm Wood or 4mm Parenc or 4mm dung field
+10	1	'           FractionVal = Priority Sample 4mm Fraction Field
+11	1	'
+12	1	' Outputs: wood ml per litre or parenc ml per litre or dung ml per litre
+13	1	' Called from: FRM_Priority - cmdAddtoPReport_Click
+14	1	'              FRM_PriorityReport - cmdRecalc_Click
+15	1	'
+16	1	'SAJ season 2006, request from AB
+17	1	'************************************************************************************
+18	0	On Error GoTo err_catch
+19	0	
+20	1	    'first check correct values passed in
+21	0	    If (fldVal <> "" And Not IsNull(fldVal)) And (FractionVal <> "" And Not IsNull(FractionVal)) And (flot <> "" And Not IsNull(flot)) Then
+22	1	        'values passed in ok now proceed
+23	1	        'go off and get the soil vol field
+24	0	        Dim firstpart, result, SoilVol
+25	0	        SoilVol = DLookup("[Soil Volume]", "[Bot: Basic data]", "[Flot Number] = " & flot)
+26	0	        If Not IsNull(SoilVol) Then
+27	0	            firstpart = fldVal / FractionVal
+28	0	            result = firstpart / SoilVol
+29	0	            Calc_WoodParenceDung_ml_per_litre = result
+30	0	        Else
+31	0	            MsgBox "The calculation function Wood_ml_per_litre within Module ArchaeoBots_Calcs has been unable to gather the Soil Volume for this flot to undertake the calculation", vbExclamation, "Insufficient Information"
+32	0	            Exit Function
+33	0	        End If
+34	0	    Else
+35	0	        MsgBox "The calculation function Wood_ml_per_litre within Module ArchaeoBots_Calcs has not received the necessary values to undertake the calculation", vbExclamation, "Insufficient Information"
+36	0	        Exit Function
+37	0	    End If
+38	0	
+39	0	Exit Function
+40	0	
+41	0	err_catch:
+42	0	    Call General_Error_Trap
+43	0	    Exit Function
+44	0	End Function
+45	0	
+46	0	Function Calc_seedchaff_per_litre(flot)
+47	1	'*****************************************************************************
+48	1	'this function takes the Priority Sample table 4mm and 1mm fraction
+49	1	'field, gathers the basic data soil vol field and then calc the seeds/chaff per litre figure.
+50	1	' Inputs:   Flot = Priority Sample flot number
+51	1	' all other values are gathered from the recordset
+52	1	'
+53	1	' Outputs: seeds/chaff per litre
+54	1	' Called from: FRM_Priority - cmdAddtoPReport_Click
+55	1	'              FRM_PriorityReport - cmdRecalc_Click
+56	1	'
+57	1	'SAJ season 2006, request from AB
+58	1	'*****************************************************************************
+59	0	On Error GoTo err_seedchaff
+60	0	
+61	1	    'first check correct values passed in
+62	0	    If (flot <> "" And Not IsNull(flot)) Then
+63	1	        'values passed in ok now proceed
+64	1	        'go off and get the soil vol field
+65	0	        Dim firstpart, result, SoilVol, runningAdd, runningAdd2, FourmmCalcPart, OnemmCalcPart, AddBothCalcParts
+66	1	        'get soil vol
+67	0	        SoilVol = DLookup("[Soil Volume]", "[Bot: Basic data]", "[Flot Number] = " & flot)
+68	0	        If Not IsNull(SoilVol) Then
+69	1	            'first step add together all the 4mm values EXCEPT dung, parenc, wood, celtis
+70	0	            Dim mydb As DAO.Database, myrs As DAO.Recordset
+71	0	            Set mydb = CurrentDb
+72	0	            Set myrs = mydb.OpenRecordset("SELECT * FROM [Bot: Priority Sample] WHERE [Flot Number] = " & flot & ";", dbOpenSnapshot)
+73	0	            
+74	0	            If Not (myrs.BOF And myrs.EOF) Then
+75	0	                myrs.MoveFirst
+76	1	                'get out 4mm fields required and add them together
+77	1	                'if you need to add more simply cut and paste and edit fieldname
+78	0	                If Not IsNull(myrs![4 mm barley grain]) Then runningAdd = myrs![4 mm barley grain]
+79	0	                If Not IsNull(myrs![4 mm glume wheat grain]) Then runningAdd = runningAdd + myrs![4 mm glume wheat grain]
+80	0	                If Not IsNull(myrs![4 mm glume wheat glume bases]) Then runningAdd = runningAdd + myrs![4 mm glume wheat glume bases]
+81	0	                If Not IsNull(myrs![4 mm cereal indeterminate grain]) Then runningAdd = runningAdd + myrs![4 mm cereal indeterminate grain]
+82	0	                If Not IsNull(myrs![4 mm nutshell]) Then runningAdd = runningAdd + myrs![4 mm nutshell]
+83	0	                If Not IsNull(myrs![4 mm pea]) Then runningAdd = runningAdd + myrs![4 mm pea]
+84	0	                If Not IsNull(myrs![4 mm culm node]) Then runningAdd = runningAdd + myrs![4 mm culm node]
+85	0	                If Not IsNull(myrs![4 mm reed culm node]) Then runningAdd = runningAdd + myrs![4 mm reed culm node]
+86	0	                If Not IsNull(myrs![4 mm cereal culm node]) Then runningAdd = runningAdd + myrs![4 mm cereal culm node]
+87	0	                
+88	0	                If Not IsNull(myrs![4 mm fraction]) Then
+89	0	                    FourmmCalcPart = runningAdd / myrs![4 mm fraction]
+90	0	                End If
+91	0	                
+92	0	                If Not IsNull(myrs![1 mm barley grain]) Then runningAdd2 = myrs![1 mm barley grain]
+93	0	                If Not IsNull(myrs![1 mm barley rachis]) Then runningAdd2 = runningAdd2 + myrs![1 mm barley rachis]
+94	0	                If Not IsNull(myrs![1 mm glume wheat grain]) Then runningAdd2 = runningAdd2 + myrs![1 mm glume wheat grain]
+95	0	                If Not IsNull(myrs![1 mm glume wheat glume bases]) Then runningAdd2 = runningAdd2 + myrs![1 mm glume wheat glume bases]
+96	0	                If Not IsNull(myrs![1 mm free-threshing wheat grain]) Then runningAdd2 = runningAdd2 + myrs![1 mm free-threshing wheat grain]
+97	0	                If Not IsNull(myrs![1 mm free-threshing cereal rachis]) Then runningAdd2 = runningAdd2 + myrs![1 mm free-threshing cereal rachis]
+98	0	                If Not IsNull(myrs![1 mm basal wheat rachis]) Then runningAdd2 = runningAdd2 + myrs![1 mm basal wheat rachis]
+99	0	                If Not IsNull(myrs![1 mm cereal indeterminate grain]) Then runningAdd2 = runningAdd2 + myrs![1 mm cereal indeterminate grain]
+100	0	                If Not IsNull(myrs![1 mm culm nodes]) Then runningAdd2 = runningAdd2 + myrs![1 mm culm nodes]
+101	0	                If Not IsNull(myrs![1 mm reed culm node]) Then runningAdd2 = runningAdd2 + myrs![1 mm reed culm node]
+102	0	                If Not IsNull(myrs![1 mm cereal culm node]) Then runningAdd2 = runningAdd2 + myrs![1 mm cereal culm node]
+103	0	                If Not IsNull(myrs![1 mm lentil]) Then runningAdd2 = runningAdd2 + myrs![1 mm lentil]
+104	0	                If Not IsNull(myrs![1 mm pea]) Then runningAdd2 = runningAdd2 + myrs![1 mm pea]
+105	0	                If Not IsNull(myrs![1 mm chickpea]) Then runningAdd2 = runningAdd2 + myrs![1 mm chickpea]
+106	0	                If Not IsNull(myrs![1 mm bitter vetch]) Then runningAdd2 = runningAdd2 + myrs![1 mm bitter vetch]
+107	0	                If Not IsNull(myrs![1 mm pulse indeterminate]) Then runningAdd2 = runningAdd2 + myrs![1 mm pulse indeterminate]
+108	0	                If Not IsNull(myrs![1 mm weed/wild seed]) Then runningAdd2 = runningAdd2 + myrs![1 mm weed/wild seed]
+109	0	                If Not IsNull(myrs![1 mm Cyperaceae]) Then runningAdd2 = runningAdd2 + myrs![1 mm Cyperaceae]
+110	0	                If Not IsNull(myrs![1 mm nutshell/fruitstone]) Then runningAdd2 = runningAdd2 + myrs![1 mm nutshell/fruitstone]
+111	0	                If Not IsNull(myrs![1 mm fruitstone]) Then runningAdd2 = runningAdd2 + myrs![1 mm fruitstone]
+112	0	
+113	0	                If Not IsNull(myrs![1 mm fraction]) Then
+114	0	                    OnemmCalcPart = runningAdd2 / myrs![1 mm fraction]
+115	0	                End If
+116	0	                
+117	0	                If Not IsNull(OnemmCalcPart) And Not IsNull(FourmmCalcPart) Then
+118	0	                    AddBothCalcParts = OnemmCalcPart + FourmmCalcPart
+119	0	                    
+120	0	                    result = AddBothCalcParts / SoilVol
+121	0	                    Calc_seedchaff_per_litre = result
+122	0	                End If
+123	0	            
+124	0	            
+125	0	            
+126	0	            Else
+127	0	                MsgBox "Flot number record cannot be found", vbCritical, "Record cannot be found"
+128	0	                
+129	0	            End If
+130	0	            
+131	0	            myrs.Close
+132	0	            Set myrs = Nothing
+133	0	            mydb.Close
+134	0	            Set mydb = Nothing
+135	0	        Else
+136	0	            MsgBox "The calculation function Wood_ml_per_litre within Module ArchaeoBots_Calcs has been unable to gather the Soil Volume for this flot to undertake the calculation", vbExclamation, "Insufficient Information"
+137	0	            Exit Function
+138	0	        End If
+139	0	    Else
+140	0	        MsgBox "The calculation function Calc_seedchaff_per_litre within Module ArchaeoBots_Calcs has been unable to gather all the information for this flot to undertake the calculation", vbExclamation, "Insufficient Information"
+141	0	        Exit Function
+142	0	    End If
+143	0	
+144	0	Exit Function
+145	0	
+146	0	err_seedchaff:
+147	0	    Call General_Error_Trap
+148	0	    Exit Function
+149	0	End Function
+150	0	
+151	0	Function Calculate_AllPreviousPriorityRecords()
+152	1	'*******************************************************************
+153	1	' run once to calc historic data for new priority report table
+154	1	' SAJ
+155	1	'*******************************************************************
+156	0	On Error GoTo err_cmdcalc
+157	0	    
+158	0	    Dim mydb As DAO.Database, myrs As DAO.Recordset
+159	0	    Set mydb = CurrentDb
+160	0	    Set myrs = mydb.OpenRecordset("SELECT * FROM [Bot: Priority Report]")
+161	0	    
+162	0	    If Not (myrs.EOF And myrs.BOF) Then
+163	0	        myrs.MoveFirst
+164	0	        Do Until myrs.EOF
+165	0	            myrs.Edit
+166	0	            Dim getFourmmFraction, getWood, getParenc, getDung, result1, result2, result3, result4
+167	0	            getFourmmFraction = DLookup("[4 mm Fraction]", "[Bot: Priority Sample]", "[Flot Number] = " & myrs![Flot Number])
+168	0	            If Not IsNull(getFourmmFraction) Then
+169	1	                'calc the values required
+170	0	                getWood = DLookup("[4 mm Wood]", "[Bot: Priority Sample]", "[Flot Number] = " & myrs![Flot Number])
+171	0	                If Not IsNull(getWood) Then
+172	0	                    result1 = Calc_WoodParenceDung_ml_per_litre(myrs![Flot Number], getWood, getFourmmFraction)
+173	0	                    myrs![Wood_ml_Per_Litre] = Round(result1, 2)
+174	0	                End If
+175	0	    
+176	0	                getParenc = DLookup("[4 mm Parenc]", "[Bot: Priority Sample]", "[Flot Number] = " & myrs![Flot Number])
+177	0	                If Not IsNull(getParenc) Then
+178	0	                    result2 = Calc_WoodParenceDung_ml_per_litre(myrs![Flot Number], getParenc, getFourmmFraction)
+179	0	                   myrs![Parenc_ml_Per_Litre] = Round(result2, 2)
+180	0	                End If
+181	0	    
+182	0	                getDung = DLookup("[4 mm Dung]", "[Bot: Priority Sample]", "[Flot Number] = " & myrs![Flot Number])
+183	0	                If Not IsNull(getDung) Then
+184	0	                    result3 = Calc_WoodParenceDung_ml_per_litre(myrs![Flot Number], getDung, getFourmmFraction)
+185	0	                    myrs![Dung_ml_Per_Litre] = Round(result3, 2)
+186	0	                End If
+187	0	        
+188	0	                result4 = Calc_seedchaff_per_litre(myrs![Flot Number])
+189	0	                myrs![Seeds_Chaff_Per_Litre] = Round(result4, 2)
+190	0	        
+191	0	            Else
+192	0	                MsgBox "The system cannot obtain the 4mm fraction value so cannot recalculate the fields", vbCritical, "Error Obtaining Fraction"
+193	0	            End If
+194	0	    myrs.Update
+195	0	    myrs.MoveNext
+196	0	    Loop
+197	0	    End If
+198	0	    
+199	0	    
+200	0	    myrs.Close
+201	0	    Set myrs = Nothing
+202	0	    mydb.Close
+203	0	    Set mydb = Nothing
+204	0	Exit Function
+205	0	
+206	0	err_cmdcalc:
+207	0	    Call General_Error_Trap
+208	0	    Exit Function
+209	0	End Function
+210	0	

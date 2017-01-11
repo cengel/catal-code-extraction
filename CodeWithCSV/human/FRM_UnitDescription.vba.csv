@@ -1,0 +1,284 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	
+5	0	
+6	0	Private Sub cboFind_AfterUpdate()
+7	1	'find skeleton record - SAJ
+8	0	On Error GoTo err_cboFind
+9	0	
+10	0	    If Me![cboFind] <> "" Then
+11	0	        Me.Filter = "[UnitNumber] = " & Me![cboFind]
+12	0	        Me.FilterOn = True
+13	0	    End If
+14	0	Exit Sub
+15	0	
+16	0	err_cboFind:
+17	0	    MsgBox Err.Description
+18	0	    Exit Sub
+19	0	End Sub
+20	0	
+21	0	Private Sub cboFind_NotInList(NewData As String, response As Integer)
+22	1	'stop not in list msg loop
+23	0	On Error GoTo err_cbofindNot
+24	0	
+25	0	    MsgBox "This unit number has not been entered yet", vbInformation, "No Match"
+26	0	    response = acDataErrContinue
+27	0	    
+28	0	    Me![cboFind].Undo
+29	0	    DoCmd.GoToControl "cmdAddNewUnit"
+30	0	Exit Sub
+31	0	
+32	0	err_cbofindNot:
+33	0	    Call General_Error_Trap
+34	0	    Exit Sub
+35	0	End Sub
+36	0	
+37	0	Private Sub cmdAddNew_Click()
+38	1	'open skeleton description form and add a new record
+39	0	On Error GoTo err_cmdAddNew
+40	0	Dim sql
+41	1	    'to add new individ must get last individ num allocated and increment
+42	0	    If Me![txtUnit] <> "" Then
+43	1	        'new may 2009 - table relationships set up so now must save this record to allow insert into basicskeletondata
+44	0	        DoCmd.RunCommand acCmdSaveRecord
+45	1	        'check if there are any individuals added for the unit yet
+46	0	        Dim checknum
+47	0	        checknum = DLookup("[UnitNumber]", "[HR_BasicSkeletonData]", "[UnitNumber] = " & Me![txtUnit])
+48	0	        If IsNull(checknum) Then
+49	1	            'it is not there, add number 1
+50	0	            sql = "INSERT INTO [HR_BasicSkeletonData] ([UnitNumber], [Individual Number]) VALUES (" & Me![txtUnit] & ", 1);"
+51	0	            DoCmd.RunSQL sql
+52	0	            Me.Refresh
+53	0	            MsgBox "Individual number 1 added for Unit " & Me![txtUnit], vbInformation, "Record added"
+54	0	        Else
+55	1	            'there is already a skeleton so now must get last individ number and +1
+56	0	            Dim mydb As Database, myrs As DAO.Recordset, lastnumber, nextnumber
+57	0	            Set mydb = CurrentDb()
+58	0	            sql = "SELECT HR_BasicSkeletonData.UnitNumber, HR_BasicSkeletonData.[Individual number] FROM HR_BasicSkeletonData WHERE HR_BasicSkeletonData.UnitNumber = " & Me![txtUnit] & " ORDER BY HR_BasicSkeletonData.UnitNumber, HR_BasicSkeletonData.[Individual number];"
+59	0	            Set myrs = mydb.OpenRecordset(sql, dbOpenSnapshot)
+60	0	            If Not myrs.BOF And Not myrs.EOF Then
+61	0	                myrs.MoveLast
+62	0	                lastnumber = myrs![Individual number]
+63	0	                nextnumber = lastnumber + 1
+64	0	                sql = "INSERT INTO [HR_BasicSkeletonData] ([UnitNumber], [Individual Number]) VALUES (" & Me![txtUnit] & ", " & nextnumber & ");"
+65	0	                DoCmd.RunSQL sql
+66	0	                Me.Refresh
+67	0	                MsgBox "Individual number " & nextnumber & " added for Unit " & Me![txtUnit], vbInformation, "Record added"
+68	0	            Else
+69	2	                'shouldn't get here but just in case, no record exists for this unit so create
+70	0	                 sql = "INSERT INTO [HR_BasicSkeletonData] ([UnitNumber], [Individual Number]) VALUES (" & Me![txtUnit] & ", 1);"
+71	0	                DoCmd.RunSQL sql
+72	0	                Me.Refresh
+73	0	            End If
+74	0	        End If
+75	0	        
+76	1	        'DoCmd.OpenForm "FRM_SkeletonDescription", acNormal, , , acFormAdd
+77	1	        'Forms![FRM_SkeletonDEscription]![txtUnit] = Me![txtUnit]
+78	2	        '' DoCmd.GoToControl "txtUnit"
+79	1	        'DoCmd.Close acForm, Me.Name
+80	0	        
+81	0	    Else
+82	0	        MsgBox "You must enter a unit number first", vbInformation, "Unit Number Missing"
+83	0	    End If
+84	0	
+85	0	    
+86	0	Exit Sub
+87	0	
+88	0	err_cmdAddNew:
+89	0	    MsgBox Err.Description
+90	0	Exit Sub
+91	0	End Sub
+92	0	
+93	0	Private Sub cmdAddNewUnit_Click()
+94	1	'add a new unit here
+95	0	On Error GoTo err_cmdAddNewUnit
+96	0	
+97	0	    DoCmd.GoToRecord acActiveDataObject, , acNewRec
+98	0	    DoCmd.GoToControl "txtUnit"
+99	0	Exit Sub
+100	0	
+101	0	err_cmdAddNewUnit:
+102	0	    MsgBox Err.Description
+103	0	    Exit Sub
+104	0	End Sub
+105	0	
+106	0	Private Sub cmdAll_Click()
+107	1	'take off any filter - saj
+108	0	On Error GoTo err_all
+109	0	
+110	0	    Me.FilterOn = False
+111	0	    Me.Filter = ""
+112	0	Exit Sub
+113	0	
+114	0	err_all:
+115	0	    MsgBox Err.Description
+116	0	    Exit Sub
+117	0	End Sub
+118	0	
+119	0	Private Sub CmdOpenAgeSexFrm_Click()
+120	1	'check if record exists in age sext table first, if not create it
+121	0	On Error GoTo Err_CmdOpenAgeSexFrm_Click
+122	0	
+123	0	    Call DoRecordCheck("HR_ageing and sexing", Me![txtUnit], Me![txtIndivid], "Unit Number")
+124	0	
+125	0	    Dim stDocName As String
+126	0	    Dim stLinkCriteria As String
+127	0	
+128	0	    stDocName = "FRM_Ageing-sexing form"
+129	0	    DoCmd.OpenForm stDocName, , , "[Unit Number] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+130	0	    DoCmd.Close acForm, Me.Name
+131	0	Exit_CmdOpenAgeSexFrm_Click:
+132	0	    Exit Sub
+133	0	
+134	0	Err_CmdOpenAgeSexFrm_Click:
+135	0	    MsgBox Err.Description
+136	0	    Resume Exit_CmdOpenAgeSexFrm_Click
+137	0	    
+138	0	End Sub
+139	0	Private Sub CmdOpenMainMenuFrm_Click()
+140	0	On Error GoTo Err_CmdOpenMainMenuFrm_Click
+141	0	
+142	0	    Dim stDocName As String
+143	0	    Dim stLinkCriteria As String
+144	0	
+145	0	    stDocName = "FRM_MAINMENU"
+146	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+147	1	    'saj
+148	0	    DoCmd.Close acForm, Me.Name
+149	0	Exit_CmdOpenMainMenuFrm_Click:
+150	0	    Exit Sub
+151	0	
+152	0	Err_CmdOpenMainMenuFrm_Click:
+153	0	    MsgBox Err.Description
+154	0	    Resume Exit_CmdOpenMainMenuFrm_Click
+155	0	    
+156	0	End Sub
+157	0	
+158	0	Private Sub Combo28_BeforeUpdate(Cancel As Integer)
+159	0	
+160	0	End Sub
+161	0	
+162	0	Private Sub cmdReNumber_Click()
+163	0	On Error GoTo err_renum
+164	0	Dim permiss
+165	0	permiss = GetGeneralPermissions
+166	0	If (permiss = "ADMIN") Then
+167	0	    Dim newnum, check
+168	0	    newnum = InputBox("Please enter the unit number you would like to change ALL the references of unit " & Me![txtUnit] & " to:", "Re-number unit records")
+169	0	    If newnum <> "" Then
+170	1	        'must check number not already exit
+171	0	        check = DLookup("[UnitNumber]", "[HR_UnitDescription]", "[Unitnumber] = " & newnum)
+172	0	        If Not IsNull(check) Then
+173	0	            MsgBox "Sorry but the unit number " & newnum & " already exists. You must delete/renumber that first before you can alter " & Me![txtUnit], vbExclamation, "Unit already exists"
+174	0	            Exit Sub
+175	0	        Else
+176	0	            Me![txtUnit] = newnum
+177	0	            MsgBox "Re-numbering has been performed", vbInformation, "Complete"
+178	0	        End If
+179	0	    End If
+180	0	Else
+181	0	    MsgBox "You do not have permissions to renumber units, please talk to your team leader£"
+182	0	End If
+183	0	Exit Sub
+184	0	
+185	0	err_renum:
+186	0	    Call General_Error_Trap
+187	0	    Exit Sub
+188	0	End Sub
+189	0	
+190	0	Private Sub Form_Current()
+191	1	'new 2009 - lock unit number field where it exists
+192	0	On Error GoTo err_current
+193	0	    
+194	0	    If Me![txtUnit] <> "" Or Not IsNull(Me![txtUnit]) Then
+195	0	        Me![txtUnit].Locked = True
+196	0	        Me![txtUnit].BackColor = 8454143
+197	0	    Else
+198	0	        Me![txtUnit].Locked = False
+199	0	        Me![txtUnit].BackColor = 16777215
+200	0	    End If
+201	0	
+202	0	    Dim permiss
+203	0	    permiss = GetGeneralPermissions
+204	0	    If (permiss = "ADMIN") Then
+205	0	        Me![cmdReNumber].Enabled = True
+206	0	    Else
+207	0	        Me![cmdReNumber].Enabled = False
+208	0	    End If
+209	0	Exit Sub
+210	0	
+211	0	err_current:
+212	0	    Call General_Error_Trap
+213	0	    Exit Sub
+214	0	End Sub
+215	0	
+216	0	Private Sub Form_Delete(Cancel As Integer)
+217	1	'new may 2009, now cascade delete setup this is a dangerous operation - warn user
+218	0	On Error GoTo err_delete
+219	0	
+220	0	Dim permiss
+221	0	permiss = GetGeneralPermissions
+222	0	If (permiss = "ADMIN") Then
+223	0	    Dim response
+224	0	    response = MsgBox("Deleting this unit will mean permanent deletion of any skeleton records associated with it in this database." & Chr(13) & Chr(13) & "Do you really want to delete unit " & Me![txtUnit] & " and its skeleton records?", vbCritical + vbYesNo, "Critical Delete")
+225	0	    If response = vbNo Then
+226	0	        Cancel = True
+227	0	    Else
+228	0	        Cancel = False
+229	0	    End If
+230	0	Else
+231	0	    MsgBox "You do not have permission to delete this record, please contact your team leader"
+232	0	    Cancel = True
+233	0	End If
+234	0	
+235	0	Exit Sub
+236	0	
+237	0	err_delete:
+238	0	    Call General_Error_Trap
+239	0	    Exit Sub
+240	0	End Sub
+241	0	
+242	0	Private Sub Form_Open(Cancel As Integer)
+243	1	'saj season 2007 - Basak suggested its best to open this form ready for a new record
+244	0	On Error GoTo err_open
+245	0	
+246	1	   ' DoCmd.RunCommand acCmdRecordsGoToNew
+247	2	   ' as this form can be opened to see the descript of a unit from else where can't set the new rec
+248	1	   ' here, instead moved it to the menu button that opens tihs form as its those instances where
+249	1	   ' they need a new record
+250	0	
+251	0	Exit Sub
+252	0	
+253	0	err_open:
+254	0	    Call General_Error_Trap
+255	0	    Exit Sub
+256	0	
+257	0	End Sub
+258	0	
+259	0	Private Sub txtUnit_AfterUpdate()
+260	1	'if this is being updated it should be a new unit therefore we need to create a new
+261	1	'record in skeletondescription as obviously this new record will have at least one skeleton
+262	1	'season 2007, saj
+263	0	On Error GoTo err_txtUnit
+264	0	     
+265	1	'MsgBox Me![txtUnit].OldValue
+266	0	
+267	1	'If IsNull(Me![txtUnit].OldValue) And (Me![txtUnit] <> "" And Not IsNull(Me![txtUnit])) Then
+268	2	'    'check there is no entry first for this unit in skeleton description already
+269	1	'    Dim checknum
+270	1	'    checknum = DLookup("[UnitNumber]", "[HR_BasicSkeletonData]", "[UnitNumber] = " & Me![txtUnit])
+271	1	'    If IsNull(checknum) Then
+272	2	'        'it is not there, add it
+273	1	'        Dim sql
+274	1	'        sql = "INSERT INTO [HR_BasicSkeletonData] ([UnitNumber], [Individual Number]) VALUES (" & Me![txtUnit] & ", 1);"
+275	1	'        DoCmd.RunSQL sql
+276	1	'        Me.Refresh
+277	1	'    End If
+278	1	'End If
+279	0	Exit Sub
+280	0	
+281	0	err_txtUnit:
+282	0	    Call General_Error_Trap
+283	0	    Exit Sub
+284	0	End Sub

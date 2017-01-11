@@ -1,0 +1,170 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub Form_BeforeUpdate(Cancel As Integer)
+5	1	'Existing date change update - added error trap v9.1
+6	0	On Error GoTo err_Form_BeforeUpdate
+7	0	
+8	0	Me![Date changed] = Now()
+9	0	Forms![Exca: Feature Sheet]![dbo_Exca: FeatureHistory].Form![lastmodify].Value = Now()
+10	0	
+11	0	Exit Sub
+12	0	err_Form_BeforeUpdate:
+13	0	    Call General_Error_Trap
+14	0	    Exit Sub
+15	0	End Sub
+16	0	
+17	0	
+18	0	
+19	0	
+20	0	Private Sub Form_Open(Cancel As Integer)
+21	1	'**********************************************************************
+22	1	' Set up form view depending on permissions
+23	1	' SAJ v9.1
+24	1	'**********************************************************************
+25	0	On Error GoTo err_Form_Open
+26	0	
+27	0	    Dim permiss
+28	0	    permiss = GetGeneralPermissions
+29	0	    If permiss = "ADMIN" Or permiss = "RW" Then
+30	0	        ToggleFormReadOnly Me, False
+31	0	    Else
+32	1	        'set read only form here, just once
+33	0	        ToggleFormReadOnly Me, True
+34	0	    End If
+35	0	Exit Sub
+36	0	
+37	0	err_Form_Open:
+38	0	    Call General_Error_Trap
+39	0	    Exit Sub
+40	0	End Sub
+41	0	
+42	0	Private Sub Unit_AfterUpdate()
+43	1	'***********************************************************************
+44	1	' Intro of a validity check to ensure unit num entered here is exists and
+45	1	' that it has the data category - floors (use) OR construction/makeup/packaging
+46	1	'
+47	1	' SAJ v9.1
+48	1	'***********************************************************************
+49	0	On Error GoTo err_Unit_AfterUpdate
+50	0	
+51	1	'old code that was here
+52	1	'Me.Requery
+53	1	'DoCmd.GoToRecord , , acLast
+54	0	Dim checknum, msg, retval, checknum2
+55	0	
+56	0	If Me![Unit] <> "" Then
+57	1	    'first check its valid
+58	0	    If IsNumeric(Me![Unit]) Then
+59	0	    
+60	1	        'check that Unit num does exist
+61	0	        checknum = DLookup("[Unit Number]", "[Exca: Unit Sheet]", "[Unit Number] = " & Me![Unit])
+62	0	        If IsNull(checknum) Then
+63	0	            msg = "This Unit Number DOES NOT EXIST in the database, it cannot be used here until it has been entered."
+64	1	            'retVal = MsgBox(msg, vbInformation + vbOK, "Unit Number does not exist")
+65	0	            MsgBox msg, vbInformation, "Unit Number does not exist"
+66	0	            If Not IsNull(Me![Unit].OldValue) Then
+67	0	                Me![Unit] = Me![Unit].OldValue
+68	0	            Else
+69	0	                Me.Undo
+70	0	            End If
+71	0	            DoCmd.GoToControl "Unit"
+72	0	        Else
+73	1	            'valid number, now check its data category
+74	0	            checknum2 = DLookup("[Data Category]", "[Exca: Unit Data Categories]", "[Unit Number] = " & Me![Unit])
+75	1	                If Not IsNull(checknum2) Then 'there is a space for this related feature
+76	0	                    If UCase(checknum2) <> "FLOORS (USE)" And UCase(checknum2) <> "CONSTRUCTION/MAKE-UP/PACKING" Then
+77	1	                        'do not allow entry if units datacategory is not floor or construction
+78	0	                        msg = "This entry is not allowed:  Unit (" & Me![Unit] & ")"
+79	4	                        msg = msg & " has the data category " & checknum2 & ", only Units with the category 'Floor(use)' or 'construction/make-up/packing' are valid here."
+80	0	                        msg = msg & Chr(13) & Chr(13) & "This entry cannot be allowed. Please double check this issue with your Supervisor."
+81	0	                        MsgBox msg, vbExclamation, "Data Category problem"
+82	0	                        
+83	2	                        ''MsgBox "To remove this Associated Floors link completely press ESC", vbInformation, "Help Tip"
+84	0	                        
+85	1	                        'reset val to previous val if is one or else remove it completely
+86	0	                        If Not IsNull(Me![Unit].OldValue) Then
+87	0	                            Me![Unit] = Me![Unit].OldValue
+88	0	                        Else
+89	0	                            Me.Undo
+90	0	                        End If
+91	0	                        DoCmd.GoToControl "Unit"
+92	0	                    End If
+93	0	                Else
+94	1	                    'the data category for this unit has not been filled out yet, again do not allow link
+95	1	                     'other possible actions here would be to allow the link therefore no code here
+96	1	                     'or to fill out the datacategory automatically in code, but would have to know which one of the 2 cats
+97	0	                    msg = "This entry is not allowed as Unit (" & Me![Unit] & ")"
+98	4	                    msg = msg & " has no data category entered" & checknum2 & ", only Units with the category 'Floor(use)' or 'construction/make-up/packing' are valid here."
+99	0	                    msg = msg & Chr(13) & Chr(13) & "This entry cannot be allowed. Please update the Unit record first."
+100	0	                    MsgBox msg, vbExclamation, "No Data Category"
+101	0	                        
+102	2	                    ''MsgBox "To remove this Associated Floors link completely press ESC", vbInformation, "Help Tip"
+103	0	                        
+104	1	                    'reset val to previous val if is one or else remove it completely
+105	0	                    If Not IsNull(Me![Unit].OldValue) Then
+106	0	                        Me![Unit] = Me![Unit].OldValue
+107	0	                    Else
+108	0	                        Me.Undo
+109	0	                    End If
+110	0	                    DoCmd.GoToControl "Unit"
+111	0	                End If
+112	0	        End If
+113	0	    
+114	0	    Else
+115	1	        'not a vaild numeric unit number
+116	0	        MsgBox "The Unit number is invalid, please enter a numeric value only", vbInformation, "Invalid Entry"
+117	0	    End If
+118	0	End If
+119	0	
+120	0	Exit Sub
+121	0	
+122	0	err_Unit_AfterUpdate:
+123	0	    Call General_Error_Trap
+124	0	    Exit Sub
+125	0	
+126	0	End Sub
+127	0	
+128	0	Sub Command5_Click()
+129	1	'v9.1 - this control not seem to exist - comment out
+130	1	'On Error GoTo Err_Command5_Click
+131	0	
+132	0	
+133	1	'    DoCmd.GoToRecord , , acLast
+134	0	
+135	1	'Exit_Command5_Click:
+136	1	'    Exit Sub
+137	0	
+138	1	'Err_Command5_Click:
+139	1	'    MsgBox Err.Description
+140	1	'    Resume Exit_Command5_Click
+141	0	    
+142	0	End Sub
+143	0	Sub go_to_unit_Click()
+144	1	'********************************************
+145	1	'Existing code for go to unit button, added
+146	1	'general error trap and check that Unit num there
+147	1	' now open readonly
+148	1	'SAJ v9.1
+149	1	'********************************************
+150	0	On Error GoTo Err_go_to_unit_Click
+151	0	
+152	0	    Dim stDocName As String
+153	0	    Dim stLinkCriteria As String
+154	0	
+155	0	    stDocName = "Exca: Unit Sheet"
+156	0	    
+157	0	    If Me![Unit] <> "" Then
+158	0	        stLinkCriteria = "[Unit Number]=" & Me![Unit]
+159	0	        DoCmd.OpenForm stDocName, , , stLinkCriteria, acFormReadOnly
+160	0	    Else
+161	0	        MsgBox "No Unit number to show", vbInformation, "No Unit Number"
+162	0	    End If
+163	0	Exit_go_to_unit_Click:
+164	0	    Exit Sub
+165	0	
+166	0	Err_go_to_unit_Click:
+167	0	    Call General_Error_Trap
+168	0	    Resume Exit_go_to_unit_Click
+169	0	    
+170	0	End Sub

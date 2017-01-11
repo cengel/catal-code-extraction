@@ -1,0 +1,38 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdCancel_Click()
+5	0	On Error GoTo err_cancel
+6	0	
+7	0	    DoCmd.Close acForm, Me.Name
+8	0	Exit Sub
+9	0	
+10	0	err_cancel:
+11	0	    Call General_Error_Trap
+12	0	    Exit Sub
+13	0	End Sub
+14	0	
+15	0	Private Sub cmdOpen_Click()
+16	0	On Error GoTo err_open
+17	0	
+18	0	    If Me![frmWhich] = 1 Then
+19	0	        DoCmd.OpenForm "Frm_MNI", acNormal, , , , , 1
+20	0	        DoCmd.Close acForm, Me.Name
+21	0	        
+22	0	    ElseIf Me![frmWhich] = 2 Then
+23	0	        DoCmd.OpenForm "Frm_MNI", acNormal, , , , , 2
+24	0	        DoCmd.Close acForm, Me.Name
+25	0	    ElseIf Me![frmWhich] = 3 Then
+26	0	        DoCmd.OpenForm "Frm_MNI", acNormal, , , , , 3
+27	0	        DoCmd.Close acForm, Me.Name
+28	0	    Else
+29	0	        MsgBox "No MNI option selected", vbInformation, "Choose MNI"
+30	0	    End If
+31	0	
+32	0	Exit Sub
+33	0	
+34	0	err_open:
+35	0	    Call General_Error_Trap
+36	0	    Exit Sub
+37	0	
+38	0	End Sub

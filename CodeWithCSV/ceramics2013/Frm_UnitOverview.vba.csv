@@ -1,0 +1,253 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	
+5	0	Private Sub cboFindUnit_AfterUpdate()
+6	1	'********************************************
+7	1	'Find the selected unit from the list
+8	1	'********************************************
+9	0	On Error GoTo err_cboFindUnit_AfterUpdate
+10	0	
+11	0	    If Me![cboFindUnit] <> "" Then
+12	1	'        Me![txtUnit] = Me![cboFindUnit]
+13	0	        Me![frm_sub_X-finds].Requery
+14	0	        Me![fmr_sub_Exca_Samples].Requery
+15	0	        Me![frm_subform_UnitDetails].Requery
+16	0	        Me![Frm_Sub_Diagnostic_Totals].Requery
+17	0	        Me![Frm_Sub_Unidentified_Sherds_Totals].Requery
+18	0	        Me![Frm_Sub_BodySherds_Totals].Requery
+19	0	        Me![Frm_Sub_NonNeolithics_Totals].Requery
+20	0	 
+21	1	        'if a filter is on - turn off
+22	0	        If Me.FilterOn = True Then Me.FilterOn = False
+23	1	        'for existing number the field will be disabled, enable it as when find num
+24	1	        'is shown the on current event will deal with disabling it again
+25	0	        If Me![txtUnit].Enabled = False Then Me![txtUnit].Enabled = True
+26	0	        DoCmd.GoToControl "txtUnit"
+27	0	        DoCmd.FindRecord Me![cboFindUnit], , , , True
+28	0	        Me![cboFindUnit] = ""
+29	0	        DoCmd.GoToControl "cboFindUnit"
+30	0	        Me![txtUnit].Enabled = False
+31	0	    End If
+32	0	Exit Sub
+33	0	
+34	0	err_cboFindUnit_AfterUpdate:
+35	0	    Call General_Error_Trap
+36	0	    Exit Sub
+37	0	End Sub
+38	0	
+39	0	Private Sub cboViewBodySherds_AfterUpdate()
+40	0	On Error GoTo err_cboViewBodysherds
+41	0	    Dim where
+42	2	    where = "[Unit] = " & Me![cboViewBodySherds].Column(1) & " AND [Ware Code] = '" & Me![cboViewBodySherds].Column(2) & "'"
+43	0	    
+44	0	    DoCmd.OpenForm "Frm_BodySherd", acNormal, , where
+45	0	    Me![cboViewBodySherds] = ""
+46	0	Exit Sub
+47	0	
+48	0	err_cboViewBodysherds:
+49	0	    Call General_Error_Trap
+50	0	    Exit Sub
+51	0	End Sub
+52	0	
+53	0	Private Sub cboViewBody_AfterUpdate()
+54	0	On Error GoTo err_cboViewBody
+55	0	    Dim where
+56	2	    where = "[Unit] = " & Me![cboViewBody].Column(1) & " AND [WareGroup] = '" & Me![cboViewBody].Column(2) & "'"
+57	0	    DoCmd.OpenForm "Frm_BodySherd", acNormal, , where
+58	0	    Me![cboViewBody] = ""
+59	0	Exit Sub
+60	0	
+61	0	err_cboViewBody:
+62	0	    Call General_Error_Trap
+63	0	    Exit Sub
+64	0	End Sub
+65	0	
+66	0	Private Sub cboViewDiagnostic_AfterUpdate()
+67	0	On Error GoTo err_cboViewDiag
+68	0	    Dim where
+69	2	    where = "[Unit] = " & Me![cboViewDiagnostic].Column(1) & " AND [LetterCode] = '" & Me![cboViewDiagnostic].Column(2) & "' AND [FindNumber] = " & Me![cboViewDiagnostic].Column(3)
+70	0	    
+71	0	    DoCmd.OpenForm "Frm_Diagnostic", acNormal, , where
+72	0	    Me![cboViewDiagnostic] = ""
+73	0	Exit Sub
+74	0	
+75	0	err_cboViewDiag:
+76	0	    Call General_Error_Trap
+77	0	    Exit Sub
+78	0	End Sub
+79	0	
+80	0	Private Sub cboViewUnIdBodySherds_AfterUpdate()
+81	0	On Error GoTo err_cboViewUnIDBody
+82	0	    Dim where
+83	2	    where = "[Unit] = " & Me![cboViewUnIdBodySherds].Column(1) & " AND [Period] = '" & Me![cboViewUnIdBodySherds].Column(2) & "'"
+84	0	    
+85	0	    DoCmd.OpenForm "Frm_Unidentified_Body_Sherds", acNormal, , where
+86	0	    Me![cboViewUnIdBodySherds] = ""
+87	0	Exit Sub
+88	0	
+89	0	err_cboViewUnIDBody:
+90	0	    Call General_Error_Trap
+91	0	    Exit Sub
+92	0	End Sub
+93	0	
+94	0	Private Sub cboViewUnIDDiag_AfterUpdate()
+95	0	On Error GoTo err_cboViewUnIDDiag
+96	0	    Dim where
+97	2	    where = "[Unit] = " & Me![cboViewUnIDDiag].Column(1) & " AND [Element] = '" & Me![cboViewUnIDDiag].Column(2) & "'"
+98	0	    
+99	0	    DoCmd.OpenForm "Frm_Unidentified_Diagnostic", acNormal, , where
+100	0	    Me![cboViewUnIDDiag] = ""
+101	0	Exit Sub
+102	0	
+103	0	err_cboViewUnIDDiag:
+104	0	    Call General_Error_Trap
+105	0	    Exit Sub
+106	0	End Sub
+107	0	
+108	0	Private Sub Close_Click()
+109	0	On Error GoTo err_cmdAddNew_Click
+110	0	
+111	0	    DoCmd.Close acForm, Me.Name
+112	0	    DoCmd.Restore
+113	0	Exit Sub
+114	0	
+115	0	err_cmdAddNew_Click:
+116	0	    Call General_Error_Trap
+117	0	    Exit Sub
+118	0	End Sub
+119	0	
+120	0	Private Sub cmdAdd_Click()
+121	0	On Error GoTo err_cmdAdd
+122	0	    If Not IsNull(Me![txtUnit]) Then
+123	0	        DoCmd.OpenForm "Frm_Diagnostic", acNormal, , , acFormAdd
+124	0	        Forms![Frm_Diagnostic]![txtUnit] = Me![txtUnit]
+125	0	    Else
+126	0	        MsgBox "Please select a unit number first", vbInformation
+127	0	    End If
+128	0	Exit Sub
+129	0	
+130	0	err_cmdAdd:
+131	0	    Call General_Error_Trap
+132	0	    Exit Sub
+133	0	End Sub
+134	0	
+135	0	Private Sub cmdAddNewUnID_Click()
+136	0	On Error GoTo err_cmdAddUnID
+137	0	    If Not IsNull(Me![txtUnit]) Then
+138	0	        DoCmd.OpenForm "Frm_Unidentified_Diagnostic", acNormal, , , acFormAdd
+139	0	        Forms![Frm_Unidentified_Diagnostic]![txtUnit] = Me![txtUnit]
+140	0	    Else
+141	0	        MsgBox "Please select a unit number first", vbInformation
+142	0	    End If
+143	0	Exit Sub
+144	0	
+145	0	err_cmdAddUnID:
+146	0	    Call General_Error_Trap
+147	0	    Exit Sub
+148	0	End Sub
+149	0	
+150	0	Private Sub cmdAddNewUnIDBody_Click()
+151	0	On Error GoTo err_cmdAddUnIDBody
+152	0	    If Not IsNull(Me![txtUnit]) Then
+153	0	        DoCmd.OpenForm "Frm_Unidentified_Body_Sherds", acNormal, , , acFormAdd
+154	0	        Forms![Frm_Unidentified_Body_Sherds]![txtUnit] = Me![txtUnit]
+155	0	    Else
+156	0	        MsgBox "Please select a unit number first", vbInformation
+157	0	    End If
+158	0	Exit Sub
+159	0	
+160	0	err_cmdAddUnIDBody:
+161	0	    Call General_Error_Trap
+162	0	    Exit Sub
+163	0	End Sub
+164	0	
+165	0	Private Sub cmdNewBodySherd_Click()
+166	0	On Error GoTo err_cmdNewBodySherd
+167	0	    If Not IsNull(Me![txtUnit]) Then
+168	0	        DoCmd.OpenForm "Frm_BodySherd", acNormal, , , acFormAdd
+169	0	        Forms![Frm_BodySherd]![txtUnit] = Me![txtUnit]
+170	0	    Else
+171	0	        MsgBox "Please select a unit number first", vbInformation
+172	0	    End If
+173	0	Exit Sub
+174	0	
+175	0	err_cmdNewBodySherd:
+176	0	    Call General_Error_Trap
+177	0	    Exit Sub
+178	0	End Sub
+179	0	
+180	0	Private Sub cmdAddNew_Click()
+181	0	
+182	0	End Sub
+183	0	
+184	0	Private Sub cmdAddNewBody_Click()
+185	0	On Error GoTo err_cmdAddNewBody
+186	0	    If Not IsNull(Me![txtUnit]) Then
+187	0	        DoCmd.OpenForm "Frm_BodySherd", acNormal, , , acFormAdd
+188	0	        Forms![Frm_BodySherd]![txtUnit] = Me![txtUnit]
+189	0	    Else
+190	0	        MsgBox "Please select a unit number first", vbInformation
+191	0	    End If
+192	0	    Exit Sub
+193	0	err_cmdAddNewBody:
+194	0	    Call General_Error_Trap
+195	0	    Exit Sub
+196	0	End Sub
+197	0	
+198	0	Private Sub cmdAddNewNonNeolithic_Click()
+199	0	On Error GoTo err_cmdNewNonNeolithic
+200	0	    If Not IsNull(Me![txtUnit]) Then
+201	0	        DoCmd.OpenForm "Frm_NonNeolithic_Sherds", acNormal, , , acFormAdd
+202	0	        Forms![Frm_NonNeolithic_Sherds]![txtUnit] = Me![txtUnit]
+203	0	    Else
+204	0	        MsgBox "Please select a unit number first", vbInformation
+205	0	    End If
+206	0	    Exit Sub
+207	0	err_cmdNewNonNeolithic:
+208	0	    Call General_Error_Trap
+209	0	    Exit Sub
+210	0	End Sub
+211	0	
+212	0	Private Sub cmdAddNewUnidSherd_Click()
+213	0	On Error GoTo err_cmdAddUnidSherd
+214	0	    If Not IsNull(Me![txtUnit]) Then
+215	0	        DoCmd.OpenForm "Frm_Unidentified_Diagnostic", acNormal, , , acFormAdd
+216	0	        Forms![Frm_Unidentified_Diagnostic]![txtUnit] = Me![txtUnit]
+217	0	    Else
+218	0	        MsgBox "Please select a unit number first", vbInformation
+219	0	    End If
+220	0	Exit Sub
+221	0	
+222	0	err_cmdAddUnidSherd:
+223	0	    Call General_Error_Trap
+224	0	    Exit Sub
+225	0	End Sub
+226	0	
+227	0	Private Sub Form_Current()
+228	0	On Error GoTo err_current
+229	0	
+230	0	    If (Me![txtUnit] = "" Or IsNull(Me![txtUnit])) Then
+231	2	    'don't include find number as defaults to x
+232	1	    'If (Me![txtUnit] = "" Or IsNull(Me![txtUnit])) Then
+233	1	        'new record allow GID entry
+234	0	        Me![txtUnit].Enabled = True
+235	0	        Me![txtUnit].Locked = False
+236	0	        Me![txtUnit].BackColor = 16777215
+237	0	    Else
+238	1	        'existing entry lock
+239	0	        Me![txtUnit].Enabled = False
+240	0	        Me![txtUnit].Locked = True
+241	0	        Me![txtUnit].BackColor = Me.Section(0).BackColor
+242	0	    End If
+243	1	    'Me![cboViewDiagnostic].Requery
+244	1	    'Me![cboViewUnIdBodySherds].Requery
+245	1	    'Me![cboViewUnIDDiag].Requery
+246	1	    'Me![cboViewBodySherds].Requery
+247	0	Exit Sub
+248	0	
+249	0	err_current:
+250	0	    Call General_Error_Trap
+251	0	    Exit Sub
+252	0	End Sub
+253	0	

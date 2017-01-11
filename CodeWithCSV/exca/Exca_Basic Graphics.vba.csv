@@ -1,0 +1,39 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub open_details_Click()
+5	0	On Error GoTo Err_open_details_Click
+6	0	
+7	0	    Dim stDocName As String
+8	0	    Dim stLinkCriteria As String
+9	0	
+10	0	    Me.refresh
+11	0	    stDocName = "Exca: Graphics list"
+12	0	    
+13	0	    
+14	2	    stLinkCriteria = "[Graphic Number]=" & "'" & Me![Graphic Number] & "'"
+15	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+16	0	
+17	0	Exit_open_details_Click:
+18	0	    Exit Sub
+19	0	
+20	0	Err_open_details_Click:
+21	0	    MsgBox Err.Description
+22	0	    Resume Exit_open_details_Click
+23	0	    
+24	0	End Sub
+25	0	Private Sub find_graph_Click()
+26	0	On Error GoTo Err_find_graph_Click
+27	0	
+28	0	
+29	0	    Forms![Exca: Basic Graphics].[Graphic Number].SetFocus
+30	0	    DoCmd.DoMenuItem acFormBar, acEditMenu, 10, , acMenuVer70
+31	0	
+32	0	Exit_find_graph_Click:
+33	0	    Exit Sub
+34	0	
+35	0	Err_find_graph_Click:
+36	0	    MsgBox Err.Description
+37	0	    Resume Exit_find_graph_Click
+38	0	    
+39	0	End Sub

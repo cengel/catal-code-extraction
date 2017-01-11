@@ -1,0 +1,20 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	Private Sub GID_DblClick(Cancel As Integer)
+4	1	'new season 2008. Allow record to be selected in Finds: Basic Data form
+5	0	On Error GoTo err_GID
+6	0	
+7	1	    'docmd.RunCommand acCmdSelectForm "Finds: Basic Data"
+8	0	    DoCmd.OpenForm "Finds: Basic Data"
+9	0	    If Forms![Finds: Basic Data]![GID].Enabled = False Then Forms![Finds: Basic Data]![txtUnit].Enabled = True
+10	0	    DoCmd.GoToControl "GID"
+11	0	    DoCmd.FindRecord Me![GID]
+12	1	    'Me![cboFindUnit] = ""
+13	0	
+14	0	Exit Sub
+15	0	
+16	0	err_GID:
+17	0	    Call General_Error_Trap
+18	0	    Exit Sub
+19	0	
+20	0	End Sub

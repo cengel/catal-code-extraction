@@ -1,0 +1,94 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	1	'**************************************************************
+4	1	' Functionality tightened in v9.1
+5	1	'**************************************************************
+6	0	Private Sub cboFindUnitToCopy_AfterUpdate()
+7	1	'**************************************************************
+8	3	' This combo has replaced the old 'Find unit' button that simply
+9	1	' brought up the Find/Replace dialog. This allows the user to select
+10	1	' the unit to copy from it then sets the control source of the
+11	1	' fields below (the form opens blank so there is nothing the user can do
+12	1	' until they select a Unit
+13	1	' SAJ v.91
+14	1	'**************************************************************
+15	0	On Error GoTo err_cboFindUnitToCopy_AfterUpdate
+16	0	
+17	0	If Me![cboFindUnitToCopy] <> "" Then
+18	0	    Me.RecordSource = "SELECT * FROM [Exca: Unit Sheet] WHERE [Unit Number] = " & Me![cboFindUnitToCopy]
+19	0	    Me![Unit Number].ControlSource = "Unit Number"
+20	0	    Me![Recognition].ControlSource = "Recognition"
+21	0	    Me![Definition].ControlSource = "Definition"
+22	0	    Me![Execution].ControlSource = "Execution"
+23	0	    Me![Condition].ControlSource = "Condition"
+24	0	    Me![copy data].Enabled = True
+25	0	End If
+26	0	
+27	0	Exit Sub
+28	0	
+29	0	err_cboFindUnitToCopy_AfterUpdate:
+30	0	    Call General_Error_Trap
+31	0	    Exit Sub
+32	0	End Sub
+33	0	
+34	0	Private Sub copy_data_Click()
+35	1	'**************************************************************
+36	1	' Mainly original code, intro more into message and error trap
+37	1	' SAJ v.91
+38	1	'**************************************************************
+39	0	On Error GoTo Err_copy_data_Click
+40	0	
+41	0	Dim msg, Style, Title, response
+42	0	msg = "This action will replace the unit sheet (" & Me![Text17] & ") "
+43	0	msg = msg & "fields: Recognition, Definition, Execution and Definition with those of unit " & Me![Unit Number] & " shown here." & Chr(13) & Chr(13)
+44	1	msg = msg & "This action cannot be undone. Do you want to continue?"   ' Define message.
+45	1	Style = vbYesNo + vbQuestion + vbDefaultButton2 ' Define buttons.
+46	1	Title = "Overwriting Records"  ' Define title.
+47	0	
+48	1	' Display message.
+49	0	response = MsgBox(msg, Style, Title)
+50	1	If response = vbYes Then    ' User chose Yes.
+51	1	    ' overwrite records
+52	0	    Forms![Exca: Unit Sheet]![Recognition] = Me![Recognition]
+53	0	    Forms![Exca: Unit Sheet]![Definition] = Me![Definition]
+54	0	    Forms![Exca: Unit Sheet]![Execution] = Me![Execution]
+55	0	    Forms![Exca: Unit Sheet]![Condition] = Me![Condition]
+56	0	  
+57	1	Else    ' User chose No.
+58	0	
+59	1	    ' do nothing.
+60	0	End If
+61	0	
+62	0	
+63	0	   
+64	0	
+65	0	Exit_copy_data_Click:
+66	0	    Exit Sub
+67	0	
+68	0	Err_copy_data_Click:
+69	0	    Call General_Error_Trap
+70	0	    Resume Exit_copy_data_Click
+71	0	End Sub
+72	0	
+73	0	
+74	0	
+75	0	
+76	0	
+77	0	Sub Close_Click()
+78	1	'**************************************************************
+79	1	' Mainly original code, intro name of form and error trap
+80	1	' SAJ v.91
+81	1	'**************************************************************
+82	0	On Error GoTo err_close_Click
+83	0	
+84	0	
+85	0	    DoCmd.Close acForm, "Exca: copy unit methodology"
+86	0	
+87	0	Exit_close_Click:
+88	0	    Exit Sub
+89	0	
+90	0	err_close_Click:
+91	0	    Call General_Error_Trap
+92	0	    Resume Exit_close_Click
+93	0	    
+94	0	End Sub

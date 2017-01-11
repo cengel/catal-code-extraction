@@ -1,0 +1,276 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cboFilterUnit_AfterUpdate()
+5	1	'put a where clause on the subform to only show that unit
+6	0	On Error GoTo err_filter
+7	0	
+8	0	    If Me![cboFilterUnit] <> "" Then
+9	0	        Me![frm_subform_level2].Form.RecordSource = "SELECT * FROM Q_GS_Level2_with_Excavation WHERE [Unit] = " & Me![cboFilterUnit]
+10	0	        Me![cmdRemoveFilter].Visible = True
+11	0	    End If
+12	0	
+13	0	Exit Sub
+14	0	
+15	0	err_filter:
+16	0	    Call General_Error_Trap
+17	0	    Exit Sub
+18	0	End Sub
+19	0	
+20	0	Private Sub cboFilterUnit_NotInList(NewData As String, Response As Integer)
+21	1	'stop not in list msg loop
+22	0	On Error GoTo err_cbofilterNot
+23	0	
+24	0	    MsgBox "Sorry this Unit does not exist in this database yet", vbInformation, "No Match"
+25	0	    Response = acDataErrContinue
+26	0	    
+27	0	    Me![cboFilterUnit].Undo
+28	0	Exit Sub
+29	0	
+30	0	err_cbofilterNot:
+31	0	    Call General_Error_Trap
+32	0	    Exit Sub
+33	0	End Sub
+34	0	
+35	0	Private Sub cboFind_AfterUpdate()
+36	0	On Error GoTo err_cboFind
+37	0	
+38	0	If Me![cboFind] <> "" Then
+39	0	    DoCmd.GoToControl "frm_subform_level2"
+40	0	    DoCmd.GoToControl "GID"
+41	0	    DoCmd.FindRecord Me![cboFind]
+42	0	    DoCmd.GoToControl "cboAnalyst"
+43	0	End If
+44	0	
+45	0	
+46	0	Exit Sub
+47	0	
+48	0	err_cboFind:
+49	0	    Call General_Error_Trap
+50	0	    Exit Sub
+51	0	End Sub
+52	0	
+53	0	Private Sub cboFind_NotInList(NewData As String, Response As Integer)
+54	1	'stop not in list msg loop
+55	0	On Error GoTo err_cbofindNot
+56	0	
+57	0	    MsgBox "Sorry this GID does not exist in the database", vbInformation, "No Match"
+58	0	    Response = acDataErrContinue
+59	0	    
+60	0	    Me![cboFind].Undo
+61	0	Exit Sub
+62	0	
+63	0	err_cbofindNot:
+64	0	    Call General_Error_Trap
+65	0	    Exit Sub
+66	0	End Sub
+67	0	
+68	0	Private Sub checkPriorityUnits_Click()
+69	0	On Error GoTo err_checkPriorityUnits
+70	0	
+71	0	If Me.checkPriorityUnits = True Then
+72	0	    Me![frm_subform_level2].Form.RecordSource = "SELECT * FROM Q_GS_Level2_with_Excavation WHERE [Priority Unit] = 1"
+73	0	Else
+74	0	    Me![frm_subform_level2].Form.RecordSource = "Q_GS_Level2_with_Excavation"
+75	0	End If
+76	0	    
+77	1	' check if there is a filter for units (ie if the reset button is visible)and for now just reset it.
+78	0	If Me![cmdRemoveFilter].Visible = True Then
+79	0	    Me![cboFilterUnit] = ""
+80	0	    Me![cmdRemoveFilter].Visible = False
+81	0	End If
+82	0	    
+83	0	Exit Sub
+84	0	
+85	0	err_checkPriorityUnits:
+86	0	    Call General_Error_Trap
+87	0	    Exit Sub
+88	0	End Sub
+89	0	
+90	0	Private Sub Close_Click()
+91	0	On Error GoTo err_close
+92	0	
+93	0	    DoCmd.OpenForm "Frm_GS_MainMenu", acNormal, , , acFormPropertySettings
+94	0	    DoCmd.Close acForm, Me.Name
+95	0	    
+96	0	
+97	0	Exit Sub
+98	0	
+99	0	err_close:
+100	0	    Call General_Error_Trap
+101	0	    Exit Sub
+102	0	End Sub
+103	0	
+104	0	Private Sub cmdAddNew_Click()
+105	1	'********************************************************************
+106	1	' Create new record
+107	1	' SAJ
+108	1	' added locks to disable entry of other fields until we control for duplicate GID
+109	1	' in Level 1 and Level 2 tables when new GID is added
+110	1	' we remove the locks later when we do the check after updating
+111	1	' the three fields that allow for entry: Unit, Lettercode, Fieldnumber
+112	1	' CE June 2014
+113	1	'********************************************************************
+114	0	On Error GoTo Err_cmdgonew_Click
+115	0	Dim ctl As Control
+116	0	    DoCmd.GoToControl Me![frm_subform_level2].Name
+117	0	    DoCmd.GoToRecord , , acNewRec
+118	0	    DoCmd.GoToControl Me![frm_subform_level2].Form![Unit].Name
+119	0	    
+120	1	    'lock all fields except Unit, Letter, FindNo - CE June 2014
+121	0	    For Each ctl In Me.frm_subform_level2.Controls
+122	0	        
+123	0	        If (ctl.ControlType = acTextBox Or ctl.ControlType = acComboBox) And Not (ctl.Name = "Unit" Or ctl.Name = "cboLettercode" Or ctl.Name = "FindNumber") Then
+124	0	            ctl.Locked = True
+125	0	        End If
+126	0	        
+127	1	'        If ctl.Name = "Unit" Or ctl.Name = "cboLettercode" Or ctl.Name = "FindNumber" Then
+128	1	'            ctl.Locked = False
+129	1	'        End If
+130	0	            
+131	1	        'If (ctl.Name = "cboAnalyst" Or ctl.ControlType = acTextBox) And Not (ctl.Name = "Unit" Or ctl.Name = "Lettercode" Or ctl.Name = "FindNumber") Then
+132	1	        '    ctl.Locked = True
+133	1	        'End If
+134	0	    
+135	0	    Next ctl
+136	0	
+137	0	    Exit Sub
+138	0	
+139	0	Err_cmdgonew_Click:
+140	0	    Call General_Error_Trap
+141	0	    Exit Sub
+142	0	End Sub
+143	0	
+144	0	Private Sub cmdGoFirst_Click()
+145	1	'********************************************************************
+146	1	' Go to first record
+147	1	' SAJ
+148	1	'********************************************************************
+149	0	On Error GoTo Err_cmdgofirst_Click
+150	0	
+151	0	    DoCmd.GoToControl Me![frm_subform_level2].Name
+152	0	    DoCmd.GoToRecord , , acFirst
+153	0	
+154	0	    Exit Sub
+155	0	
+156	0	Err_cmdgofirst_Click:
+157	0	    Call General_Error_Trap
+158	0	    Exit Sub
+159	0	End Sub
+160	0	
+161	0	Private Sub cmdGoLast_Click()
+162	1	'********************************************************************
+163	1	' Go to last record
+164	1	' SAJ
+165	1	'********************************************************************
+166	0	On Error GoTo Err_cmdgoLast_Click
+167	0	
+168	0	    DoCmd.GoToControl Me![frm_subform_level2].Name
+169	0	    DoCmd.GoToRecord , , acLast
+170	0	
+171	0	    Exit Sub
+172	0	
+173	0	Err_cmdgoLast_Click:
+174	0	    Call General_Error_Trap
+175	0	    Exit Sub
+176	0	End Sub
+177	0	
+178	0	Private Sub cmdGoNext_Click()
+179	1	'********************************************************************
+180	1	' Go to next record
+181	1	' SAJ
+182	1	'********************************************************************
+183	0	On Error GoTo Err_cmdgoNext_Click
+184	0	
+185	0	    DoCmd.GoToControl Me![frm_subform_level2].Name
+186	0	    DoCmd.GoToRecord , , acNext
+187	0	
+188	0	    Exit Sub
+189	0	
+190	0	Err_cmdgoNext_Click:
+191	0	    If Err.Number = 2105 Then
+192	0	        MsgBox "No more records to show", vbInformation, "End of records"
+193	0	    Else
+194	0	        Call General_Error_Trap
+195	0	    End If
+196	0	    Exit Sub
+197	0	End Sub
+198	0	
+199	0	Private Sub cmdGoPrev_Click()
+200	1	'********************************************************************
+201	1	' Go to previous record
+202	1	' SAJ
+203	1	'********************************************************************
+204	0	On Error GoTo Err_cmdgoprevious_Click
+205	0	
+206	0	    DoCmd.GoToControl Me![frm_subform_level2].Name
+207	0	    DoCmd.GoToRecord , , acPrevious
+208	0	
+209	0	    Exit Sub
+210	0	
+211	0	Err_cmdgoprevious_Click:
+212	0	    If Err.Number = 2105 Then
+213	0	        MsgBox "Already at the begining of the recordset", vbInformation, "Begining of records"
+214	0	    Else
+215	0	        Call General_Error_Trap
+216	0	    End If
+217	0	    Exit Sub
+218	0	End Sub
+219	0	
+220	0	Private Sub cmdOutput_Click()
+221	1	'open output options pop up
+222	0	On Error GoTo err_Output
+223	0	
+224	0	    If Me![frm_subform_level2].Form.[GID] <> "" Then
+225	0	        DoCmd.OpenForm "Frm_Pop_DataOutLevel2", acNormal, , , acFormPropertySettings, , Me![frm_subform_level2].Form![GID]
+226	0	    Else
+227	0	        MsgBox "The output options form cannot be shown when there is no record selected", vbInformation, "Action Cancelled"
+228	0	    End If
+229	0	
+230	0	Exit Sub
+231	0	
+232	0	err_Output:
+233	0	    Call General_Error_Trap
+234	0	    Exit Sub
+235	0	End Sub
+236	0	
+237	0	Private Sub cmdRemoveFilter_Click()
+238	1	'remove the where clause on the subform acting as a unit filter
+239	0	On Error GoTo err_Removefilter
+240	0	
+241	0	    Me![cboFilterUnit] = ""
+242	0	    Me![frm_subform_level2].Form.RecordSource = "Q_GS_Level2_with_Excavation"
+243	0	    DoCmd.GoToControl "cboFind"
+244	0	    Me![cmdRemoveFilter].Visible = False
+245	0	   
+246	0	
+247	0	Exit Sub
+248	0	
+249	0	err_Removefilter:
+250	0	    Call General_Error_Trap
+251	0	    Exit Sub
+252	0	End Sub
+253	0	
+254	0	Private Sub Form_Open(Cancel As Integer)
+255	0	DoCmd.Maximize
+256	0	
+257	0	End Sub
+258	0	
+259	0	Private Sub tglForm_Click()
+260	0	On Error GoTo err_tglForm_Click
+261	0	
+262	0	Debug.Print Me.frm_subform_level2.Form.CurrentView
+263	0	
+264	0	    If Me.frm_subform_level2.Form.CurrentView = 1 Then
+265	0	        Forms![Frm_Level2].[frm_subform_level2].SetFocus
+266	0	        RunCommand acCmdSubformDatasheetView
+267	0	    Else
+268	0	        Forms![Frm_Level2].[frm_subform_level2].SetFocus
+269	0	        RunCommand acCmdSubformFormView
+270	0	    End If
+271	0	Exit Sub
+272	0	
+273	0	err_tglForm_Click:
+274	0	    Call General_Error_Trap
+275	0	    Exit Sub
+276	0	End Sub

@@ -1,0 +1,384 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	
+5	0	
+6	0	Private Sub Data_Category_AfterUpdate()
+7	0	
+8	1	'all values should be blank again if you change
+9	0	
+10	0	    Me.In_Situ = ""
+11	0	    Me.Location = ""
+12	0	    Me.Description = ""
+13	0	    Me.Material = ""
+14	0	    Me.Deposition = ""
+15	0	    Me.basal_spit = ""
+16	0	    
+17	0	End Sub
+18	0	
+19	0	Private Sub Data_Category_Change()
+20	0	
+21	0	Select Case Me.Data_Category
+22	0	    Case "fill"
+23	1	    'set fields
+24	0	    Me.In_Situ.Enabled = False
+25	0	    Me.Location.Enabled = True
+26	0	    Me.Description.Enabled = True
+27	0	    Me.Material.Enabled = False
+28	0	    Me.Deposition.Enabled = True
+29	0	    Me.basal_spit.Enabled = True
+30	1	    'set values
+31	0	    Me.Location.RowSource = " ; between walls; building; cut; feature"
+32	1	    Me.Description.RowSource = "" 'depends on location
+33	0	    Me.Deposition.RowSource = " ; heterogeneous; homogeneous"
+34	0	    Me.basal_spit.RowSource = " ; basal deposit"
+35	0	           
+36	0	    Case "floors (use)"
+37	1	    'set fields
+38	0	    Me.In_Situ.Enabled = False
+39	0	    Me.Location.Enabled = True
+40	0	    Me.Description.Enabled = True
+41	0	    Me.Material.Enabled = True
+42	0	    Me.Deposition.Enabled = True
+43	0	    Me.basal_spit.Enabled = False
+44	1	    'set values
+45	0	    Me.Location.RowSource = " ;building; external; feature"
+46	1	    Me.Description.RowSource = "" 'depends on location
+47	0	    Me.Material.RowSource = " ;dark grey clay; mix (dark grey&white); occupation; white clay"
+48	0	    Me.Deposition.RowSource = " ; composite (floors/bedding/plaster/packing/occupation); multiple; single"
+49	0	    
+50	0	    Case "construction/make-up/packing"
+51	1	    'set fields
+52	0	    Me.In_Situ.Enabled = True
+53	0	    Me.Location.Enabled = True
+54	0	    Me.Description.Enabled = True
+55	0	    Me.Material.Enabled = True
+56	0	    Me.Deposition.Enabled = True
+57	0	    Me.basal_spit.Enabled = False
+58	1	    'set values
+59	0	    Me.Location.RowSource = " ; between walls; building; external; feature; floor (packing only); roof (building); wall/blocking"
+60	1	    Me.Description.RowSource = "" 'depends on location
+61	1	    Me.Material.RowSource = "" 'depends on location
+62	0	    Me.Deposition.RowSource = " ; heterogeneous; homogeneous; layered (wall plaster)"
+63	1	    'Me.In_Situ.SetFocus
+64	0	        
+65	0	    Case "midden"
+66	1	    'set fields
+67	0	    Me.In_Situ.Enabled = False
+68	0	    Me.Location.Enabled = True
+69	0	    Me.Description.Enabled = False
+70	0	    Me.Material.Enabled = False
+71	0	    Me.Deposition.Enabled = True
+72	0	    Me.basal_spit.Enabled = True
+73	0	
+74	1	    'values
+75	0	    Me.Location.RowSource = " ;external; in abandoned building"
+76	0	    Me.Deposition.RowSource = " ; alluviated dumps; coarsely bedded (dumps); finely bedded"
+77	0	    Me.basal_spit.RowSource = " ; basal deposit"
+78	0	    
+79	0	    Case "activity"
+80	1	    'set fields
+81	0	    Me.In_Situ.Enabled = False
+82	0	    Me.Location.Enabled = False
+83	0	    Me.Description.Enabled = True
+84	0	    Me.Material.Enabled = False
+85	0	    Me.Deposition.Enabled = True
+86	0	    Me.basal_spit.Enabled = True
+87	0	
+88	1	    'values
+89	0	    Me.Description.RowSource = " ;fire spots (non-structured); lime burning; penning"
+90	0	    Me.Deposition.RowSource = " ; heterogeneous; homogeneous"
+91	0	    Me.basal_spit.RowSource = " ; basal deposit"
+92	0	    
+93	0	    Case "natural"
+94	1	    'set fields
+95	0	    Me.In_Situ.Enabled = False
+96	0	    Me.Location.Enabled = False
+97	0	    Me.Description.Enabled = False
+98	0	    Me.Material.Enabled = False
+99	0	    Me.Deposition.Enabled = True
+100	0	    Me.basal_spit.Enabled = False
+101	0	
+102	1	    'values
+103	0	    Me.Deposition.RowSource = " ; alluvium; backswamp; buried soil; colluvium; marl"
+104	0	    
+105	0	    Case "arbitrary"
+106	1	    'set fields
+107	0	    Me.In_Situ.Enabled = False
+108	0	    Me.Location.Enabled = False
+109	0	    Me.Description.Enabled = True
+110	0	    Me.Material.Enabled = False
+111	0	    Me.Deposition.Enabled = False
+112	0	    Me.basal_spit.Enabled = False
+113	0	
+114	1	    'values
+115	1	    Me.Description.RowSource = " ; 60's; animal burrow; arbitrary allocation for samples; baulks; cleaning; not excavated; unstratified; very mixed; void (unused unit no)"
+116	0	    
+117	0	    Case Else
+118	0	    Me.In_Situ.Enabled = False
+119	0	    Me.Location.Enabled = False
+120	0	    Me.Description.Enabled = False
+121	0	    Me.Material.Enabled = False
+122	0	    Me.basal_spit.Enabled = False
+123	0	    
+124	0	End Select
+125	0	
+126	0	End Sub
+127	0	
+128	0	
+129	0	Private Sub Data_Category_Exit(Cancel As Integer)
+130	0	Me.Refresh
+131	0	
+132	0	End Sub
+133	0	
+134	0	Private Sub Description_AfterUpdate()
+135	1	'all should be blank again
+136	0	
+137	0	    Me.Material = ""
+138	0	    Me.Deposition = ""
+139	0	    Me.basal_spit = ""
+140	0	
+141	0	Select Case Me.Data_Category
+142	0	Case "floors (use)"
+143	0	    If Me.Description = "oven" Or Me.Description = "hearth" Then
+144	0	        Me.Material.RowSource = " ; baked; dark grey clay; mix (dark grey&white); occupation; white clay"
+145	0	        Else
+146	0	        Me.Material.RowSource = " ; dark grey clay; mix (dark grey&white); occupation; white clay"
+147	0	    End If
+148	0	End Select
+149	0	
+150	0	End Sub
+151	0	
+152	0	
+153	0	Private Sub Form_Current()
+154	0	
+155	0	Select Case Me.Data_Category
+156	1	'------------------------------------------------
+157	0	    Case "fill"
+158	1	    'set fields
+159	0	    Me.In_Situ.Enabled = False
+160	0	    Me.Location.Enabled = True
+161	0	    Me.Description.Enabled = True
+162	0	    Me.Material.Enabled = False
+163	0	    Me.Deposition.Enabled = True
+164	0	    Me.basal_spit.Enabled = True
+165	1	    'set values
+166	0	    Me.Location.RowSource = " ; between walls; building; cut; feature"
+167	2	    'Me.Description.RowSource = "" 'depends on location
+168	0	        Select Case Me.Location
+169	0	            Case "cut"
+170	0	            Me.Description.RowSource = " ; burial; ditch; foundation cut; gully; pit; posthole; scoop; stakehole"
+171	0	            Me.Description.Enabled = True
+172	0	            Case "feature"
+173	0	            Me.Description.RowSource = " ; basin; bin; hearth; niche; oven"
+174	0	            Me.Description.Enabled = True
+175	0	            Case Else
+176	0	            Me.Description.RowSource = ""
+177	0	            Me.Description.Enabled = False
+178	0	        End Select
+179	0	    Me.Deposition.RowSource = " ; heterogeneous; homogeneous"
+180	0	    Me.basal_spit.RowSource = " ; basal deposit"
+181	0	    
+182	0	    
+183	0	    
+184	1	'-------------------------------------------------
+185	0	    Case "floors (use)"
+186	1	    'set fields
+187	0	    Me.In_Situ.Enabled = False
+188	0	    Me.Location.Enabled = True
+189	0	    Me.Description.Enabled = True
+190	0	    Me.Material.Enabled = True
+191	0	    Me.Deposition.Enabled = True
+192	0	    Me.basal_spit.Enabled = False
+193	1	    'set values
+194	0	    Me.Location.RowSource = " ; building; external; feature"
+195	2	    'Me.Description.RowSource = "" 'depends on location
+196	0	        Select Case Me.Location
+197	0	            Case "building"
+198	0	            Me.Description.RowSource = " ; general; raised area (platform); roof (use)"
+199	0	            Me.Description.Enabled = True
+200	0	            Case "feature"
+201	0	            Me.Description.RowSource = " ; basin; bin; burial; hearth; niche; oven; pedestal/podium/plinth; ridge"
+202	0	            Me.Description.Enabled = True
+203	0	            Case Else
+204	0	            Me.Description.RowSource = ""
+205	0	            Me.Description.Enabled = False
+206	0	        End Select
+207	0	    Me.Material.RowSource = " ; dark grey clay; mix (dark grey&white); occupation; white clay"
+208	0	    Me.Deposition.RowSource = " ; composite (floors/bedding/plaster/packing/occupation); multiple; single"
+209	0	        
+210	1	    'set material for burnt  fetures.
+211	0	    If Me.Description = "oven" Or Me.Description = "hearth" Then
+212	0	        Me.Material.RowSource = " ; baked; dark grey clay; mix (dark grey&white); occupation; white clay"
+213	0	        Else
+214	0	        Me.Material.RowSource = " ; dark grey clay; mix (dark grey&white); occupation; white clay"
+215	0	    End If
+216	0	    
+217	1	 '------------------------------------------------
+218	0	    Case "construction/make-up/packing"
+219	1	    'set fields
+220	0	    Me.In_Situ.Enabled = True
+221	0	    Me.Location.Enabled = True
+222	0	    Me.Description.Enabled = True
+223	0	    Me.Material.Enabled = True
+224	0	    Me.Deposition.Enabled = True
+225	0	    Me.basal_spit.Enabled = False
+226	0	    Me.In_Situ.SetFocus
+227	0	    
+228	1	    'set values
+229	0	    Me.Location.RowSource = " ; between walls; building; external; feature; floor (packing only); roof (building); wall/blocking"
+230	2	    'Me.Description.RowSource = "" 'depends on location
+231	0	        Select Case Me.Location
+232	0	            Case "feature"
+233	0	            Me.Description.RowSource = " ; basin; bin; hearth; moulding; niche; oven; pedestal/podium/plinth; post; raised area (platform); ridge "
+234	0	            Me.Description.Enabled = True
+235	0	            Case Else
+236	0	            Me.Description.RowSource = ""
+237	0	            Me.Description.Enabled = False
+238	0	        End Select
+239	0	    Me.Material.RowSource = " ; brick; brick&mortar; mortar; pise-like; plaster; re-used brick&mortar; re-used superstructure"
+240	0	    Me.Deposition.RowSource = " ; heterogeneous; homogeneous; layered (wall plaster)"
+241	0	    
+242	0	   
+243	1	'------------------------------------------------
+244	0	    Case "midden"
+245	1	    'set fields
+246	0	    Me.In_Situ.Enabled = False
+247	0	    Me.Location.Enabled = True
+248	0	    Me.Description.Enabled = False
+249	0	    Me.Material.Enabled = False
+250	0	    Me.Deposition.Enabled = True
+251	0	    Me.basal_spit.Enabled = True
+252	0	
+253	1	    'values
+254	0	    Me.Location.RowSource = " ;external; in abandoned building"
+255	0	    Me.Deposition.RowSource = " ; alluviated dumps; coarsely bedded (dumps); finely bedded"
+256	0	    Me.basal_spit.RowSource = " ; basal deposit"
+257	1	'------------------------------------------------
+258	0	    Case "activity"
+259	1	    'set fields
+260	0	    Me.In_Situ.Enabled = False
+261	0	    Me.Location.Enabled = False
+262	0	    Me.Description.Enabled = True
+263	0	    Me.Material.Enabled = False
+264	0	    Me.Deposition.Enabled = True
+265	0	    Me.basal_spit.Enabled = True
+266	0	
+267	1	    'values
+268	0	    Me.Description.RowSource = " ;fire spots (non-structured); lime burning; penning"
+269	0	    Me.Deposition.RowSource = " ; heterogeneous; homogeneous"
+270	0	    Me.basal_spit.RowSource = " ; basal deposit"
+271	1	'------------------------------------------------
+272	0	    Case "natural"
+273	1	    'set fields
+274	0	    Me.In_Situ.Enabled = False
+275	0	    Me.Location.Enabled = False
+276	0	    Me.Description.Enabled = False
+277	0	    Me.Material.Enabled = False
+278	0	    Me.Deposition.Enabled = True
+279	0	    Me.basal_spit.Enabled = False
+280	0	
+281	1	    'values
+282	0	    Me.Deposition.RowSource = " ; alluvium; backswamp; buried soil; colluvium; marl"
+283	1	'------------------------------------------------
+284	0	    Case "arbitrary"
+285	1	    'set fields
+286	0	    Me.In_Situ.Enabled = False
+287	0	    Me.Location.Enabled = False
+288	0	    Me.Description.Enabled = True
+289	0	    Me.Material.Enabled = False
+290	0	    Me.Deposition.Enabled = False
+291	0	    Me.basal_spit.Enabled = False
+292	0	
+293	1	    'values
+294	1	    Me.Description.RowSource = " ; 60's; animal burrow; arbitrary allocation for samples; baulks; cleaning; not excavated; unstratified; very mixed; void (unused unit no);"
+295	1	'------------------------------------------------
+296	0	    Case Else
+297	0	    Me.In_Situ.Enabled = False
+298	0	    Me.Location.Enabled = False
+299	0	    Me.Description.Enabled = False
+300	0	    Me.Material.Enabled = False
+301	0	    Me.basal_spit.Enabled = False
+302	0	    
+303	0	End Select
+304	0	End Sub
+305	0	
+306	0	
+307	0	Private Sub Location_AfterUpdate()
+308	0	
+309	1	'all values blank again
+310	0	    Me.Description = ""
+311	0	    Me.Material = ""
+312	0	    Me.Deposition = ""
+313	0	    Me.basal_spit = ""
+314	0	    
+315	0	Select Case Me.Data_Category
+316	0	
+317	0	    Case "fill"
+318	0	    Select Case Me.Location
+319	0	        Case "cut"
+320	0	        Me.Description.RowSource = " ; burial; ditch; foundation cut; gully; pit; posthole; scoop; stakehole"
+321	0	        Me.Description.Enabled = True
+322	0	        Case "feature"
+323	0	        Me.Description.RowSource = " ; basin; bin; hearth; niche; oven"
+324	0	        Me.Description.Enabled = True
+325	0	        Case Else
+326	0	        Me.Description.RowSource = ""
+327	0	        Me.Description.Enabled = False
+328	0	    End Select
+329	0	    
+330	0	    Case "floors (use)"
+331	0	    Select Case Me.Location
+332	0	        Case "building"
+333	0	        Me.Description.RowSource = " ; general; raised area (platform); roof (use)"
+334	0	        Me.Description.Enabled = True
+335	0	        Case "feature"
+336	0	        Me.Description.RowSource = " ; basin; bin; burial; hearth; niche; oven; pedestal/podium/plinth; ridge"
+337	0	        Me.Description.Enabled = True
+338	0	        Case Else
+339	0	        Me.Description.RowSource = ""
+340	0	        Me.Description.Enabled = False
+341	0	    End Select
+342	0	    
+343	0	    Case "construction/make-up/packing"
+344	0	    Select Case Me.Location
+345	0	        Case "feature"
+346	0	        Me.Description.RowSource = " ; basin; bin; hearth; moulding; niche; oven; pedestal/podium/plinth; post; raised area (platform); ridge"
+347	0	        Me.Description.Enabled = True
+348	0	        Case Else
+349	0	        Me.Description.RowSource = ""
+350	0	        Me.Description.Enabled = False
+351	0	    End Select
+352	0	    
+353	0	    Me.Material.RowSource = " ; brick; brick&mortar; mortar; pise-like; plaster; re-used brick&mortar; re-used superstructure"
+354	0	
+355	0	End Select
+356	0	
+357	0	End Sub
+358	0	
+359	0	
+360	0	
+361	0	Private Sub Material_AfterUpdate()
+362	1	'all should be blank again
+363	0	Me.Deposition = ""
+364	0	Me.basal_spit = ""
+365	0	Me.basal_spit.Enabled = False
+366	0	
+367	1	'basal spit field (additional info) varies for floors
+368	0	
+369	0	Select Case Me.Data_Category
+370	0	Case "construction/make-up/packing"
+371	0	    If Me.Material = "plaster" Then
+372	0	    Me.basal_spit.Enabled = True
+373	0	    Me.basal_spit.RowSource = " ; painted; unpainted"
+374	0	    End If
+375	0	    
+376	0	Case "floors (use)"
+377	0	    If Me.Material = "dark grey clay" Or Me.Material = "mix (dark grey&white)" Or Me.Material = "white clay" Then
+378	0	    Me.basal_spit.Enabled = True
+379	0	    Me.basal_spit.RowSource = " ; painted; unpainted"
+380	0	    End If
+381	0	End Select
+382	0	    
+383	0	End Sub
+384	0	

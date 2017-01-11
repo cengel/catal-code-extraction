@@ -1,0 +1,177 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	0	Option Explicit
+3	1	'******************************************************************************
+4	1	' this sub menu is new in 2008
+5	1	' SAJ
+6	1	'******************************************************************************
+7	0	
+8	0	
+9	0	
+10	0	Private Sub cmdBuildings_Click()
+11	0	On Error GoTo err_Four
+12	0	    MsgBox "Generating data..."
+13	0	    Call CheckFeatureSpaceBuildingRelationships
+14	0	    DoCmd.OpenReport "LocalCheckFeatureSpaceBuildingRels", acViewPreview
+15	0	    
+16	0	
+17	0	Exit Sub
+18	0	
+19	0	err_Four:
+20	0	    Call General_Error_Trap
+21	0	    Exit Sub
+22	0	End Sub
+23	0	
+24	0	Private Sub cmdClose_Click()
+25	0	On Error GoTo err_cmdClose_Click
+26	0	
+27	0	    Dim stDocName As String
+28	0	    Dim stLinkCriteria As String
+29	0	
+30	0	    stDocName = "Excavation:AdminMenu"
+31	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+32	0	    DoCmd.Close acForm, "Excavation:ListsMenu"
+33	0	Exit Sub
+34	0	
+35	0	err_cmdClose_Click:
+36	0	    Call General_Error_Trap
+37	0	    Exit Sub
+38	0	End Sub
+39	0	
+40	0	Private Sub cmdDistinctFeatures_Click()
+41	0	On Error GoTo err_Distinct
+42	0	    DoCmd.OpenReport "R_Cleaning_Distinct_FeatureTypes", acViewPreview
+43	0	
+44	0	Exit Sub
+45	0	err_Distinct:
+46	0	    Call General_Error_Trap
+47	0	    Exit Sub
+48	0	End Sub
+49	0	
+50	0	Private Sub cmdFeatureList_Click()
+51	0	On Error GoTo err_feature
+52	0	    DoCmd.OpenReport "R_Features_and _SubTypes", acViewPreview
+53	0	
+54	0	Exit Sub
+55	0	err_feature:
+56	0	    Call General_Error_Trap
+57	0	    Exit Sub
+58	0	End Sub
+59	0	
+60	0	Private Sub cmdMissing_Click()
+61	0	On Error GoTo err_cmdMissing
+62	0	
+63	0	    DoCmd.OpenForm "Exca: Admin_Subform_MissingNumbers", acNormal, , , , acDialog
+64	0	    
+65	0	Exit Sub
+66	0	
+67	0	err_cmdMissing:
+68	0	    Call General_Error_Trap
+69	0	    Exit Sub
+70	0	End Sub
+71	0	
+72	0	Private Sub cmdOne_Click()
+73	0	On Error GoTo err_One
+74	0	    
+75	0	    Call CheckFeatureSpaceUnitSpaceRelationships
+76	0	    DoCmd.OpenReport "LocalCheckFeatureSpaceUnitSpaceRels", acViewPreview
+77	0	    
+78	0	
+79	0	Exit Sub
+80	0	
+81	0	err_One:
+82	0	    Call General_Error_Trap
+83	0	    Exit Sub
+84	0	End Sub
+85	0	
+86	0	Private Sub cmdSpace_Click()
+87	0	On Error GoTo err_Three
+88	0	    MsgBox "Generating data..."
+89	0	    Call CheckUnitFeatureBuildingRelationships
+90	0	    DoCmd.OpenReport "LocalCheckUnitFeatureBuildingRels", acViewPreview
+91	0	    
+92	0	
+93	0	Exit Sub
+94	0	
+95	0	err_Three:
+96	0	    Call General_Error_Trap
+97	0	    Exit Sub
+98	0	End Sub
+99	0	
+100	0	Private Sub cmdTwo_Click()
+101	0	On Error GoTo err_Two
+102	0	    MsgBox "Generating data..."
+103	0	    Call CheckUnitSpaceBuildingRelationships
+104	0	    DoCmd.OpenReport "LocalCheckUnitSpaceBuildingRels", acViewPreview
+105	0	    
+106	0	
+107	0	Exit Sub
+108	0	
+109	0	err_Two:
+110	0	    Call General_Error_Trap
+111	0	    Exit Sub
+112	0	End Sub
+113	0	
+114	0	Private Sub Command35_Click()
+115	0	On Error GoTo err_QOne
+116	0	
+117	0	    DoCmd.OpenQuery "Q_Cleaning_Units_where_Building_NoSpace", acViewNormal, acReadOnly
+118	0	
+119	0	Exit Sub
+120	0	
+121	0	err_QOne:
+122	0	    Call General_Error_Trap
+123	0	    Exit Sub
+124	0	End Sub
+125	0	
+126	0	Private Sub Command36_Click()
+127	0	On Error GoTo err_QTwo
+128	0	
+129	0	    DoCmd.OpenQuery "Q_Cleaning_Units_where_Feature_NoSpace", acViewNormal, acReadOnly
+130	0	
+131	0	Exit Sub
+132	0	
+133	0	err_QTwo:
+134	0	    Call General_Error_Trap
+135	0	    Exit Sub
+136	0	End Sub
+137	0	
+138	0	Private Sub Command37_Click()
+139	0	On Error GoTo err_QThree
+140	0	
+141	0	    DoCmd.OpenQuery "Q_Cleaning_Features_where_NoBuilding_NoSpace", acViewNormal, acReadOnly
+142	0	
+143	0	Exit Sub
+144	0	
+145	0	err_QThree:
+146	0	    Call General_Error_Trap
+147	0	    Exit Sub
+148	0	End Sub
+149	0	
+150	0	Private Sub Command38_Click()
+151	0	On Error GoTo err_QFour
+152	0	
+153	0	    DoCmd.OpenQuery "Q_Cleaning_Features_where_Building_NoSpace", acViewNormal, acReadOnly
+154	0	
+155	0	Exit Sub
+156	0	
+157	0	err_QFour:
+158	0	    Call General_Error_Trap
+159	0	    Exit Sub
+160	0	End Sub
+161	0	
+162	0	Private Sub Form_Open(Cancel As Integer)
+163	1	'v9.2 SAJ - only adminstrators are allowed in here
+164	0	On Error GoTo err_Form_Open
+165	0	
+166	0	    Dim permiss
+167	0	    permiss = GetGeneralPermissions
+168	0	    If permiss <> "ADMIN" Then
+169	0	        MsgBox "Sorry but only Administrators have access to this form"
+170	0	        DoCmd.Close acForm, Me.Name
+171	0	    End If
+172	0	Exit Sub
+173	0	
+174	0	err_Form_Open:
+175	0	    Call General_Error_Trap
+176	0	    Exit Sub
+177	0	End Sub

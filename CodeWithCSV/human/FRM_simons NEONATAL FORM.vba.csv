@@ -1,0 +1,170 @@
+1	0	Option Compare Database
+2	0	
+3	0	Private Sub cboFind_AfterUpdate()
+4	1	'find skeleton record - SAJ
+5	0	On Error GoTo err_cboFind
+6	0	
+7	0	    If Me![cboFind] <> "" Then
+8	0	        Me.Filter = "[UnitNumber] = " & Me![cboFind] & " AND [Individual Number] = " & Me!cboFind.Column(1)
+9	0	        Me.FilterOn = True
+10	0	    End If
+11	0	Exit Sub
+12	0	
+13	0	err_cboFind:
+14	0	    MsgBox Err.Description
+15	0	    Exit Sub
+16	0	End Sub
+17	0	
+18	0	Private Sub cmdAll_Click()
+19	1	'take off any filter - saj
+20	0	On Error GoTo err_all
+21	0	
+22	0	    Me.FilterOn = False
+23	0	    Me.Filter = ""
+24	0	Exit Sub
+25	0	
+26	0	err_all:
+27	0	    MsgBox Err.Description
+28	0	    Exit Sub
+29	0	End Sub
+30	0	
+31	0	Private Sub CmdOpenAgeSexFrm_Click()
+32	0	On Error GoTo Err_CmdOpenAgeSexFrm_Click
+33	0	
+34	0	    Call DoRecordCheck("HR_ageing and sexing", Me![txtUnit], Me![txtIndivid], "Unit Number")
+35	0	
+36	0	    Dim stDocName As String
+37	0	    Dim stLinkCriteria As String
+38	0	
+39	0	    stDocName = "FRM_Ageing-sexing form"
+40	0	    DoCmd.OpenForm stDocName, , , "[Unit Number] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+41	0	    DoCmd.Close acForm, Me.Name
+42	0	
+43	0	Exit_CmdOpenAgeSexFrm_Click:
+44	0	    Exit Sub
+45	0	
+46	0	Err_CmdOpenAgeSexFrm_Click:
+47	0	    MsgBox Err.Description
+48	0	    Resume Exit_CmdOpenAgeSexFrm_Click
+49	0	    
+50	0	End Sub
+51	0	
+52	0	Private Sub CmdOpenDeciduousTeethFrm_Click()
+53	0	On Error GoTo Err_CmdOpenDeciduousTeethFrm_Click
+54	0	
+55	0	    Call DoRecordCheck("HR_Teeth development measurement", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+56	0	    Call DoRecordCheck("HR_Teeth development score", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+57	0	    Call DoRecordCheck("HR_Teeth wear", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+58	0	  
+59	0	    Dim stDocName As String
+60	0	    Dim stLinkCriteria As String
+61	0	
+62	2	    ''stDocName = "FRM_simons DECIDUOUS TEETH"
+63	1	    'saj season 2007
+64	0	    stDocName = "FRM_Deciduous_Teeth"
+65	0	    
+66	0	    DoCmd.OpenForm stDocName, , , "[UnitNumber] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+67	0	    DoCmd.Close acForm, Me.Name
+68	0	Exit_CmdOpenDeciduousTeethFrm_Click:
+69	0	    Exit Sub
+70	0	
+71	0	Err_CmdOpenDeciduousTeethFrm_Click:
+72	0	    MsgBox Err.Description
+73	0	    Resume Exit_CmdOpenDeciduousTeethFrm_Click
+74	0	    
+75	0	End Sub
+76	0	Private Sub CmdMeasFrm_Click()
+77	0	On Error GoTo Err_CmdMeasFrm_Click
+78	0	
+79	0	    Call DoRecordCheck("HR_Measurements version 2", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+80	0	
+81	0	    Dim stDocName As String
+82	0	    Dim stLinkCriteria As String
+83	0	    
+84	0	    stDocName = "FRM_Measurement form version 2"
+85	0	    DoCmd.OpenForm stDocName, , , "[UnitNumber] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+86	0	    DoCmd.Close acForm, Me.Name
+87	0	
+88	0	Exit_CmdMeasFrm_Click:
+89	0	    Exit Sub
+90	0	
+91	0	Err_CmdMeasFrm_Click:
+92	0	    MsgBox Err.Description
+93	0	    Resume Exit_CmdMeasFrm_Click
+94	0	    
+95	0	End Sub
+96	0	Private Sub CmdOpenUnitDescFrm_Click()
+97	0	On Error GoTo Err_CmdOpenUnitDescFrm_Click
+98	0	
+99	0	    Dim stDocName As String
+100	0	    Dim stLinkCriteria As String
+101	0	
+102	0	    stDocName = "FRM_SkeletonDescription"
+103	0	    DoCmd.OpenForm stDocName, , , "[UnitNumber] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+104	0	    DoCmd.Close acForm, Me.Name
+105	0	
+106	0	Exit_CmdOpenUnitDescFrm_Click:
+107	0	    Exit Sub
+108	0	
+109	0	Err_CmdOpenUnitDescFrm_Click:
+110	0	    MsgBox Err.Description
+111	0	    Resume Exit_CmdOpenUnitDescFrm_Click
+112	0	    
+113	0	End Sub
+114	0	Private Sub CmdOpenMenuFrm_Click()
+115	0	Call ReturnToMenu(Me)
+116	0	
+117	0	    
+118	0	End Sub
+119	0	Private Sub Deciduous_teeth_Click()
+120	0	On Error GoTo Err_Deciduous_teeth_Click
+121	0	
+122	0	
+123	0	    DoCmd.DoMenuItem acFormBar, acRecordsMenu, 2, , acMenuVer70
+124	0	
+125	0	Exit_Deciduous_teeth_Click:
+126	0	    Exit Sub
+127	0	
+128	0	Err_Deciduous_teeth_Click:
+129	0	    MsgBox Err.Description
+130	0	    Resume Exit_Deciduous_teeth_Click
+131	0	    
+132	0	End Sub
+133	0	Private Sub openfrmdecid_neonatalform_Click()
+134	0	On Error GoTo Err_openfrmdecid_neonatalform_Click
+135	0	
+136	0	    Dim stDocName As String
+137	0	    Dim stLinkCriteria As String
+138	0	
+139	0	    stDocName = "FRM_simons DECIDUOUS TEETH"
+140	0	    
+141	0	    stLinkCriteria = "[Individual number]=" & Me![List3]
+142	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+143	0	
+144	0	Exit_openfrmdecid_neonatalform_Click:
+145	0	    Exit Sub
+146	0	
+147	0	Err_openfrmdecid_neonatalform_Click:
+148	0	    MsgBox Err.Description
+149	0	    Resume Exit_openfrmdecid_neonatalform_Click
+150	0	    
+151	0	End Sub
+152	0	Private Sub DeciduousTeeth_Click()
+153	0	On Error GoTo Err_DeciduousTeeth_Click
+154	0	
+155	0	    Dim stDocName As String
+156	0	    Dim stLinkCriteria As String
+157	0	
+158	0	    stDocName = "FRM_simons DECIDUOUS TEETH"
+159	0	    
+160	0	    stLinkCriteria = "[Individual number]=" & Me![txtIndivid]
+161	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+162	0	
+163	0	Exit_DeciduousTeeth_Click:
+164	0	    Exit Sub
+165	0	
+166	0	Err_DeciduousTeeth_Click:
+167	0	    MsgBox Err.Description
+168	0	    Resume Exit_DeciduousTeeth_Click
+169	0	    
+170	0	End Sub

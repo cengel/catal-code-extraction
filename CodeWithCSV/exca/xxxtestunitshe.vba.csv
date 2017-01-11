@@ -1,0 +1,1261 @@
+1	0	Option Explicit
+2	1	Option Compare Database   'Use database order for string comparisons
+3	0	
+4	0	Private Sub Area_AfterUpdate()
+5	1	'********************************************
+6	1	'Update the mound field to reflect the mound
+7	1	'associated with the area, mound is now a read
+8	1	'only field and users do not have to enter it
+9	1	'
+10	1	'SAJ v9.1
+11	1	'********************************************
+12	0	On Error GoTo err_Area_AfterUpdate
+13	0	
+14	0	If Me![Area].Column(1) <> "" Then
+15	0	    Me![Mound] = Me![Area].Column(1)
+16	0	End If
+17	0	
+18	0	Exit Sub
+19	0	err_Area_AfterUpdate:
+20	0	    Call General_Error_Trap
+21	0	    Exit Sub
+22	0	End Sub
+23	0	
+24	0	Private Sub Building_AfterUpdate()
+25	1	'***********************************************************************
+26	1	' Intro of a validity check to ensure building num entered here is ok
+27	1	' if not tell the user and allow them to enter. SF not want it to restrict
+28	1	' entry and trusts excavators to enter building num when they can
+29	1	'
+30	1	' SAJ v9.1
+31	1	'***********************************************************************
+32	0	On Error GoTo err_Building_AfterUpdate
+33	0	
+34	0	Dim checknum, msg, retval, sql
+35	0	
+36	0	If Me![Building] <> "" Then
+37	1	    'first check its valid
+38	0	    If IsNumeric(Me![Building]) Then
+39	0	    
+40	1	        'check that space num does exist
+41	0	        checknum = DLookup("[Number]", "[Exca: Building Details]", "[Number] = " & Me![Building])
+42	0	        If IsNull(checknum) Then
+43	0	            msg = "This Building Number DOES NOT EXIST in the database, you must remember to enter it."
+44	0	            msg = msg & Chr(13) & Chr(13) & "Would you like to enter it now?"
+45	0	            retval = MsgBox(msg, vbInformation + vbYesNo, "Building Number does not exist")
+46	0	        
+47	0	            If retval = vbNo Then
+48	1	                MsgBox "Ok, but you must remember to enter it soon otherwise you'll be chased!", vbExclamation, "Remember!"
+49	0	            Else
+50	0	                sql = "INSERT INTO [Exca: Building Details] ([Number]) VALUES (" & Me![Building] & ");"
+51	0	                DoCmd.RunSQL sql
+52	0	                
+53	0	                DoCmd.OpenForm "Exca: Building Sheet", acNormal, , "[Number] = " & Me![Building], acFormEdit, acDialog
+54	0	            End If
+55	0	        Else
+56	1	            'valid number, enable view button
+57	0	            Me![cmdGoToBuilding].Enabled = True
+58	0	        End If
+59	0	    
+60	0	    Else
+61	1	        'not a vaild building number
+62	0	        MsgBox "This Building number is not numeric, it cannot be checked for validity", vbInformation, "Non numeric Entry"
+63	0	    End If
+64	0	End If
+65	0	
+66	0	Exit Sub
+67	0	
+68	0	err_Building_AfterUpdate:
+69	0	    Call General_Error_Trap
+70	0	    Exit Sub
+71	0	End Sub
+72	0	
+73	0	Private Sub Category_AfterUpdate()
+74	1	'***********************************************************************************
+75	1	' This is existing code. It determines which sub forms to show on the basis of the
+76	1	' general category picked. The categories are hardcoded as a value list and then the
+77	1	' values used in the code here. SF says these will not change and is ok for this to
+78	1	' remain the case.
+79	1	'
+80	1	' Categories in the values list are: "Layer";"Cut";"Cluster";"Skeleton"
+81	1	' SAJ v9.1 - did intro error trap that not there before, added data categories SKELL
+82	1	' subform vis/invis inline with other subforms of this nature
+83	1	'***********************************************************************************
+84	0	On Error GoTo Err_Category_AfterUpdate
+85	0	
+86	0	Select Case Me.Category
+87	1	'action is based on value selected
+88	0	Case "cut"
+89	1	    'descr
+90	0	    Me![Exca: Subform Layer descr].Visible = False
+91	0	    Me![Exca: Subform Cut descr].Visible = True
+92	1	    'data
+93	0	    Me![Exca: Unit Data Categories CLUSTER subform].Visible = False
+94	0	    Me![Exca: Unit Data Categories LAYER subform].Visible = False
+95	0	    
+96	0	    Me![Exca: Unit Data Categories CUT subform].Visible = True
+97	0	    Me![Exca: Unit Data Categories CUT subform]![Data Category] = "cut"
+98	1	        'the rest need to be blank
+99	0	    Me![Exca: Unit Data Categories CUT subform]![In Situ] = ""
+100	0	    Me![Exca: Unit Data Categories CUT subform]![Location] = ""
+101	0	    Me![Exca: Unit Data Categories CUT subform]![Description] = ""
+102	0	    Me![Exca: Unit Data Categories CUT subform]![Material] = ""
+103	0	    Me![Exca: Unit Data Categories CUT subform]![Deposition] = ""
+104	0	    Me![Exca: Unit Data Categories CUT subform]![basal spit] = ""
+105	0	    Me.refresh
+106	0	    
+107	1	    'skelli
+108	0	    Me![Exca: subform Skeleton Sheet].Visible = False
+109	0	    Me![subform Unit: stratigraphy  same as].Visible = True
+110	0	    Me![Exca: subform Skeletons same as].Visible = False
+111	1	    'SAJ v9.1 make this invisible - see case skeleton below
+112	0	    Me![Exca: Unit Data Categories SKELL subform].Visible = False
+113	0	Case "layer"
+114	1	    'descr
+115	0	    Me![Exca: Subform Layer descr].Visible = True
+116	0	    Me![Exca: Subform Cut descr].Visible = False
+117	1	    'data
+118	0	    Me![Exca: Unit Data Categories CUT subform].Visible = False
+119	0	    Me![Exca: Unit Data Categories CLUSTER subform].Visible = False
+120	0	    
+121	0	    Me![Exca: Unit Data Categories LAYER subform].Visible = True
+122	0	    Me![Exca: Unit Data Categories LAYER subform]![Data Category] = ""
+123	1	        'the rest need to be blank
+124	0	    Me![Exca: Unit Data Categories LAYER subform]![In Situ] = ""
+125	0	    Me![Exca: Unit Data Categories LAYER subform]![Location] = ""
+126	0	    Me![Exca: Unit Data Categories LAYER subform]![Description] = ""
+127	0	    Me![Exca: Unit Data Categories LAYER subform]![Material] = ""
+128	0	    Me![Exca: Unit Data Categories LAYER subform]![Deposition] = ""
+129	0	    Me![Exca: Unit Data Categories LAYER subform]![basal spit] = ""
+130	0	    Me.refresh
+131	0	    
+132	0	    
+133	1	    'skelli
+134	0	    Me![Exca: subform Skeleton Sheet].Visible = False
+135	0	    Me![subform Unit: stratigraphy  same as].Visible = True
+136	0	    Me![Exca: subform Skeletons same as].Visible = False
+137	1	    'SAJ v9.1 make this invisible - see case skeleton below
+138	0	    Me![Exca: Unit Data Categories SKELL subform].Visible = False
+139	0	    
+140	0	Case "cluster"
+141	1	    'descr
+142	0	    Me![Exca: Subform Layer descr].Visible = True
+143	0	    Me![Exca: Subform Cut descr].Visible = False
+144	1	    'data
+145	0	    Me![Exca: Unit Data Categories CUT subform].Visible = False
+146	0	    Me![Exca: Unit Data Categories LAYER subform].Visible = False
+147	0	    
+148	0	    Me![Exca: Unit Data Categories CLUSTER subform].Visible = True
+149	0	    Me![Exca: Unit Data Categories CLUSTER subform]![Data Category] = "cluster"
+150	1	        'the rest need to be blank
+151	0	    Me![Exca: Unit Data Categories CLUSTER subform]![In Situ] = ""
+152	0	    Me![Exca: Unit Data Categories CLUSTER subform]![Location] = ""
+153	0	    Me![Exca: Unit Data Categories CLUSTER subform]![Description] = ""
+154	0	    Me![Exca: Unit Data Categories CLUSTER subform]![Material] = ""
+155	0	    Me![Exca: Unit Data Categories CLUSTER subform]![Deposition] = ""
+156	0	    Me![Exca: Unit Data Categories CLUSTER subform]![basal spit] = ""
+157	0	    Me.refresh
+158	0	        
+159	1	    'skelli
+160	0	    Me![Exca: subform Skeleton Sheet].Visible = False
+161	0	    Me![subform Unit: stratigraphy  same as].Visible = True
+162	0	    Me![Exca: subform Skeletons same as].Visible = False
+163	0	
+164	1	    'SAJ v9.1 make this invisible - see case skeleton below
+165	0	    Me![Exca: Unit Data Categories SKELL subform].Visible = False
+166	0	
+167	0	Case "skeleton"
+168	1	    'data
+169	0	    Me![Exca: Unit Data Categories CUT subform].Visible = False
+170	0	    Me![Exca: Unit Data Categories CLUSTER subform].Visible = False
+171	0	    Me![Exca: Unit Data Categories LAYER subform].Visible = False
+172	0	    
+173	0	    Me![Exca: Unit Data Categories SKELL subform]![Data Category] = "skeleton"
+174	1	    'the rest need to be blank
+175	0	    Me![Exca: Unit Data Categories SKELL subform]![In Situ] = ""
+176	0	    Me![Exca: Unit Data Categories SKELL subform]![Location] = ""
+177	0	    Me![Exca: Unit Data Categories SKELL subform]![Description] = ""
+178	0	    Me![Exca: Unit Data Categories SKELL subform]![Material] = ""
+179	0	    Me![Exca: Unit Data Categories SKELL subform]![Deposition] = ""
+180	0	    Me![Exca: Unit Data Categories SKELL subform]![basal spit] = ""
+181	0	        
+182	0	    Me.refresh
+183	0	    
+184	1	    'skelli
+185	0	    Me![Exca: subform Skeleton Sheet].Visible = True
+186	0	    Me![subform Unit: stratigraphy  same as].Visible = False
+187	0	    Me![Exca: Subform Layer descr].Visible = False
+188	0	    Me![Exca: Subform Cut descr].Visible = False
+189	0	    Me![Exca: subform Skeletons same as].Visible = True
+190	0	
+191	1	    'SAJ v9.1 make this visible to make consistent with other forms of this nature
+192	0	    Me![Exca: Unit Data Categories SKELL subform].Visible = True
+193	0	End Select
+194	0	Exit Sub
+195	0	
+196	0	Err_Category_AfterUpdate:
+197	0	    Call General_Error_Trap
+198	0	    Exit Sub
+199	0	End Sub
+200	0	
+201	0	
+202	0	
+203	0	
+204	0	
+205	0	Private Sub cboFindUnit_AfterUpdate()
+206	1	'********************************************
+207	1	'Find the selected unit number from the list
+208	1	'
+209	1	'SAJ v9.1
+210	1	'********************************************
+211	0	On Error GoTo err_cboFindUnit_AfterUpdate
+212	0	
+213	0	    If Me![cboFindUnit] <> "" Then
+214	1	         'for existing number the field with be disabled, enable it as when find num
+215	1	        'is shown the on current event will deal with disabling it again
+216	0	        If Me![Unit Number].Enabled = False Then Me![Unit Number].Enabled = True
+217	0	        DoCmd.GoToControl "Unit Number"
+218	0	        DoCmd.FindRecord Me![cboFindUnit]
+219	0	        Me![cboFindUnit] = ""
+220	0	    End If
+221	0	Exit Sub
+222	0	
+223	0	err_cboFindUnit_AfterUpdate:
+224	0	    Call General_Error_Trap
+225	0	    Exit Sub
+226	0	End Sub
+227	0	
+228	0	Private Sub cmdAddNew_Click()
+229	1	'********************************************
+230	1	'Add a new record
+231	1	'
+232	1	'SAJ v9.1
+233	1	'********************************************
+234	0	On Error GoTo err_cmdAddNew_Click
+235	0	
+236	0	    DoCmd.GoToRecord acActiveDataObject, , acNewRec
+237	0	    DoCmd.GoToControl "Unit Number"
+238	0	Exit Sub
+239	0	
+240	0	err_cmdAddNew_Click:
+241	0	    Call General_Error_Trap
+242	0	    Exit Sub
+243	0	End Sub
+244	0	
+245	0	Private Sub cmdGoToBuilding_Click()
+246	1	'***********************************************************
+247	1	' Open space form with a filter on the number related
+248	1	' to the button. Open as readonly.
+249	1	'
+250	1	' SAJ v9.1
+251	1	'***********************************************************
+252	0	On Error GoTo Err_cmdGoToBuilding_Click
+253	0	Dim checknum, msg, retval, sql, permiss
+254	0	
+255	0	If Not IsNull(Me![Building]) Or Me![Building] <> "" Then
+256	1	    'check that building num does exist
+257	0	    checknum = DLookup("[Number]", "[Exca: Building Details]", "[Number] = " & Me![Building])
+258	0	    If IsNull(checknum) Then
+259	1	        'number not exist - now see what permissions user has
+260	0	        permiss = GetGeneralPermissions
+261	0	        If permiss = "ADMIN" Or permiss = "RW" Then
+262	0	            msg = "This Building Number DOES NOT EXIST in the database."
+263	0	            msg = msg & Chr(13) & Chr(13) & "Would you like to enter it now?"
+264	0	            retval = MsgBox(msg, vbInformation + vbYesNo, "Building Number does not exist")
+265	0	        
+266	0	            If retval = vbNo Then
+267	0	                MsgBox "No Building record to view, please alert the your team leader about this.", vbExclamation, "Missing Building Record"
+268	0	            Else
+269	0	                sql = "INSERT INTO [Exca: Building Details] ([Number]) VALUES (" & Me![Building] & ");"
+270	0	                DoCmd.RunSQL sql
+271	0	                
+272	0	                DoCmd.OpenForm "Exca: Building Sheet", acNormal, , "[Number] = " & Me![Building], acFormEdit, acDialog
+273	0	            End If
+274	0	        Else
+275	1	            'user is readonly so just tell them record not exist
+276	0	            MsgBox "Sorry but this building record has not been added to the system yet, there is no record to view.", vbInformation, "Missing Building Record"
+277	0	        End If
+278	0	    Else
+279	1	        'record exists - open it
+280	0	        Dim stDocName As String
+281	0	        Dim stLinkCriteria As String
+282	0	
+283	0	        stDocName = "Exca: Building Sheet"
+284	0	    
+285	0	        stLinkCriteria = "[Number]= " & Me![Building]
+286	1	        'DoCmd.OpenForm stDocName, acNormal, , stLinkCriteria, acFormReadOnly, acDialog, "FILTER"
+287	1	        'decided against dialog as can open other forms on the building form and they would appear underneath it
+288	0	        DoCmd.OpenForm stDocName, acNormal, , stLinkCriteria, acFormReadOnly, , "FILTER"
+289	0	    End If
+290	0	    
+291	0	End If
+292	0	
+293	0	Exit Sub
+294	0	
+295	0	Err_cmdGoToBuilding_Click:
+296	0	    Call General_Error_Trap
+297	0	    Exit Sub
+298	0	End Sub
+299	0	
+300	0	Private Sub cmdGoToSpace_Click()
+301	1	'***********************************************************
+302	1	' Open space form with a filter on the number related
+303	1	' to the button. Open as readonly.
+304	1	'
+305	1	' SAJ v9.1
+306	1	'***********************************************************
+307	0	On Error GoTo Err_cmdGoToSpace_Click
+308	0	Dim checknum, msg, retval, sql, permiss
+309	0	
+310	0	If Not IsNull(Me![Space]) Or Me![Space] <> "" Then
+311	1	    'check that space num does exist
+312	2	    checknum = DLookup("[Space Number]", "[Exca: Space Sheet]", "[Space Number] = '" & Me![Space] & "'")
+313	0	    If IsNull(checknum) Then
+314	1	        'number not exist - now see what permissions user has
+315	0	        permiss = GetGeneralPermissions
+316	0	        If permiss = "ADMIN" Or permiss = "RW" Then
+317	0	            msg = "This Space Number DOES NOT EXIST in the database."
+318	0	            msg = msg & Chr(13) & Chr(13) & "Would you like to enter it now?"
+319	0	            retval = MsgBox(msg, vbInformation + vbYesNo, "Space Number does not exist")
+320	0	        
+321	0	            If retval = vbNo Then
+322	0	                MsgBox "No Space record to view, please alert the your team leader about this.", vbExclamation, "Missing Building Record"
+323	0	            Else
+324	2	                sql = "INSERT INTO [Exca: Space Sheet] ([Space Number]) VALUES ('" & Me![Space] & "');"
+325	0	                DoCmd.RunSQL sql
+326	0	                
+327	2	                DoCmd.OpenForm "Exca: Space Sheet", acNormal, , "[Space Number] = '" & Me![Space] & "'", acFormEdit, acDialog
+328	0	            End If
+329	0	        Else
+330	1	            'user is readonly so just tell them record not exist
+331	0	            MsgBox "Sorry but this space record has not been added to the system yet, there is no record to view.", vbInformation, "Missing Space Record"
+332	0	        End If
+333	0	    Else
+334	1	        'record exists - open it
+335	0	        Dim stDocName As String
+336	0	        Dim stLinkCriteria As String
+337	0	
+338	0	        stDocName = "Exca: Space Sheet"
+339	0	    
+340	2	        stLinkCriteria = "[Space Number]= '" & Me![Space] & "'"
+341	1	        'DoCmd.OpenForm stDocName, acNormal, , stLinkCriteria, acFormReadOnly, acDialog, "FILTER"
+342	1	        'decided against dialog as can open other forms on the space form and they would appear underneath it
+343	0	        DoCmd.OpenForm stDocName, acNormal, , stLinkCriteria, acFormReadOnly, , "FILTER"
+344	0	    End If
+345	0	    
+346	0	End If
+347	0	
+348	0	Exit Sub
+349	0	
+350	0	Err_cmdGoToSpace_Click:
+351	0	    Call General_Error_Trap
+352	0	    Exit Sub
+353	0	End Sub
+354	0	
+355	0	Private Sub copy_method_Click()
+356	0	On Error GoTo Err_copy_method_Click
+357	0	
+358	0	    Dim stDocName As String
+359	0	    Dim stLinkCriteria As String
+360	0	
+361	0	    stDocName = "Exca: Copy unit methodology"
+362	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+363	0	
+364	0	Exit_copy_method_Click:
+365	0	    Exit Sub
+366	0	
+367	0	Err_copy_method_Click:
+368	0	    MsgBox Err.Description
+369	0	    Resume Exit_copy_method_Click
+370	0	    
+371	0	
+372	0	End Sub
+373	0	
+374	0	Private Sub Excavation_Click()
+375	0	On Error GoTo err_Excavation_Click
+376	0	
+377	0	    Dim stDocName As String
+378	0	    Dim stLinkCriteria As String
+379	0	
+380	0	    stDocName = "Excavation"
+381	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+382	0	    DoCmd.Close acForm, "Exca: Unit Sheet"
+383	0	    
+384	0	Exit_Excavation_Click:
+385	0	    Exit Sub
+386	0	
+387	0	err_Excavation_Click:
+388	0	    MsgBox Err.Description
+389	0	    Resume Exit_Excavation_Click
+390	0	End Sub
+391	0	
+392	0	Private Sub FastTrack_Click()
+393	1	'*********************************************************************
+394	1	' Introduce logic to fast track option - if this is selected then
+395	1	' Not excavated must be false
+396	1	' SAJ v9.1
+397	1	'*********************************************************************
+398	0	On Error GoTo err_FastTrack_Click
+399	0	
+400	0	    If Me![FastTrack] = True Then
+401	0	        Me![NotExcavated] = False
+402	0	    End If
+403	0	Exit Sub
+404	0	
+405	0	err_FastTrack_Click:
+406	0	    Call General_Error_Trap
+407	0	    Exit Sub
+408	0	End Sub
+409	0	
+410	0	Sub find_unit_Click()
+411	0	On Error GoTo Err_find_unit_Click
+412	0	
+413	0	
+414	0	    Screen.PreviousControl.SetFocus
+415	0	    Unit_Number.SetFocus
+416	0	    DoCmd.DoMenuItem acFormBar, acEditMenu, 10, , acMenuVer70
+417	0	
+418	0	Exit_find_unit_Click:
+419	0	    Exit Sub
+420	0	
+421	0	Err_find_unit_Click:
+422	0	    MsgBox Err.Description
+423	0	    Resume Exit_find_unit_Click
+424	0	    
+425	0	End Sub
+426	0	
+427	0	
+428	0	Private Sub Form_AfterInsert()
+429	1	'existing code to catch updates - its all over the place! Just added error trap
+430	1	'think only before update is all thats required but shall keep in just in case
+431	1	' SAJ v9.1
+432	0	On Error GoTo err_Form_AfterInsert
+433	0	Me![Date changed] = Now()
+434	0	Forms![Exca: Unit Sheet]![dbo_Exca: UnitHistory].Form![lastmodify].Value = Now()
+435	0	
+436	0	Exit Sub
+437	0	
+438	0	err_Form_AfterInsert:
+439	0	    Call General_Error_Trap
+440	0	    Exit Sub
+441	0	End Sub
+442	0	
+443	0	Private Sub Form_AfterUpdate()
+444	1	'existing code to catch updates - its all over the place! Just added error trap
+445	1	'think only before update is all thats required but shall keep in just in case
+446	1	' SAJ v9.1
+447	0	On Error GoTo err_Form_AfterUpdate
+448	0	Me![Date changed] = Now()
+449	0	Forms![Exca: Unit Sheet]![dbo_Exca: UnitHistory].Form![lastmodify].Value = Now()
+450	0	Exit Sub
+451	0	
+452	0	err_Form_AfterUpdate:
+453	0	    Call General_Error_Trap
+454	0	    Exit Sub
+455	0	End Sub
+456	0	
+457	0	Private Sub Form_BeforeUpdate(Cancel As Integer)
+458	1	'*******************************************************************
+459	1	'existing code to catch updates - its all over the place! Just added error trap
+460	1	'think only before update is all thats required but shall keep in just in case
+461	1	'
+462	1	'Also new requirement - if user edits record but no plan number exists
+463	1	'then prompt them
+464	1	' SAJv9.1
+465	1	'*******************************************************************
+466	0	On Error GoTo err_Form_BeforeUpdate
+467	0	
+468	0	If IsNull(Me![Exca: subform Unit Plans].Form![Graphic Number]) Then
+469	1	    'this event will trigger when move to subform, which is really hard
+470	1	    'on this form as there are so many. So really can only catch this
+471	1	    'when they are editing at the bottom of the form
+472	0	    If Me.ActiveControl.Name = "Discussion" Or Me.ActiveControl.Name = "Checked By" Or Me.ActiveControl.Name = "Date Checked" Or Me.ActiveControl.Name = "Phase" Then
+473	0	        MsgBox "There is no Plan number entered for this Unit. Please can you enter one soon", vbInformation, "What is the Plan Number?"
+474	0	    End If
+475	0	End If
+476	0	
+477	0	Me![Date changed] = Now()
+478	0	Forms![Exca: Unit Sheet]![dbo_Exca: UnitHistory].Form![lastmodify].Value = Now()
+479	0	
+480	0	Exit Sub
+481	0	
+482	0	err_Form_BeforeUpdate:
+483	0	    Call General_Error_Trap
+484	0	    Exit Sub
+485	0	End Sub
+486	0	
+487	0	Private Sub Form_Current()
+488	1	'*************************************************************************************
+489	1	' Updates since Nov 2005
+490	1	'
+491	1	'-Read/Only users getting update permission error as here in On_current code
+492	1	' attempting to update the [Unit Data Categories <category> subform![data categories]
+493	1	' field to the value of the Category combo. This only needs to be done at Category_AfterUpdate
+494	1	' where it was present (looks like code has just been pasted but not amended here).
+495	1	'-intro error trap
+496	1	' SAJ v.9  23/11/05 (on)
+497	1	'
+498	1	' Also check state of record, if no unit number ie: new record make all fields read
+499	1	' only so user must enter valid feature num before proceeding.
+500	1	'
+501	1	' This will also be useful when intro more adv security checking
+502	1	'
+503	1	' Make DataCategories SKELL subform vis/invis in line with other subforms of this nature
+504	1	' other changes marked ** SAJ v9.1
+505	1	' New requirement that unit number cannot be edited after entry. This
+506	1	' can only be done by an administrator so lock field here
+507	1	' SAJ v9.1
+508	1	'*************************************************************************************
+509	0	Dim stDocName As String
+510	0	Dim stLinkCriteria As String
+511	0	    
+512	0	On Error GoTo err_Form_Current
+513	0	    
+514	0	Dim permiss
+515	0	permiss = GetGeneralPermissions
+516	0	If permiss = "ADMIN" Or permiss = "RW" Then
+517	1	    'if no unit number set all fields readonly
+518	1	    If IsNull(Me![Unit Number]) Or Me![Unit Number] = "" Then 'make rest of fields read only
+519	1	        ToggleFormReadOnly Me, True, "Additions" 'code in GeneralProcedures-shared
+520	0	        Me![lblMsg].Visible = True
+521	0	        
+522	1	        'no Unit number - new record allow entry
+523	0	        Me![Unit Number].Locked = False
+524	0	        Me![Unit Number].Enabled = True
+525	0	        Me![Unit Number].BackColor = 16777215
+526	0	        Me![Unit Number].SetFocus
+527	0	        
+528	0	    Else
+529	2	        ''ToggleFormReadOnly Me, False
+530	2	        ''Me![lblMsg].Visible = False
+531	0	        
+532	1	        'if coming in as a filter thats readonly then send in extra arg
+533	0	        If Me.FilterOn = True And Me.AllowEdits = False Then
+534	1	            'when popped up from the feature form this was allowing new records to be added, altered to fix
+535	1	            'ToggleFormReadOnly Me, False, "NoAdditions"
+536	0	            ToggleFormReadOnly Me, True, "NoAdditions"
+537	0	        Else
+538	1	            'if a filter is on remember no additions
+539	0	            If Me.FilterOn Then
+540	0	                ToggleFormReadOnly Me, False, "NoAdditions"
+541	0	            Else
+542	0	                ToggleFormReadOnly Me, False
+543	0	            End If
+544	1	            'unit number exists, lock field
+545	0	            Me![Year].SetFocus
+546	0	            Me![Unit Number].Locked = True
+547	0	            Me![Unit Number].Enabled = False
+548	0	            Me![Unit Number].BackColor = Me.Section(0).BackColor
+549	0	        End If
+550	0	        Me![lblMsg].Visible = False
+551	0	    End If
+552	0	End If
+553	0	
+554	1	'current unit field always needs to be locked
+555	0	Me![Text407].Locked = True
+556	0	
+557	0	
+558	1	'priority button
+559	0	If Me![Priority Unit] = True Then
+560	0	    Me![Open Priority].Enabled = True
+561	0	Else
+562	0	    Me![Open Priority].Enabled = False
+563	0	End If
+564	0	
+565	1	'go to space button - new
+566	0	If IsNull(Me![Space]) Or Me![Space] = "" Then
+567	0	    Me![cmdGoToSpace].Enabled = False
+568	0	Else
+569	0	    Me![cmdGoToSpace].Enabled = True
+570	0	End If
+571	0	
+572	1	'go to building button - new
+573	0	If IsNull(Me![Building]) Or Me![Building] = "" Then
+574	0	    Me![cmdGoToBuilding].Enabled = False
+575	0	Else
+576	0	    Me![cmdGoToBuilding].Enabled = True
+577	0	End If
+578	0	
+579	1	' ** SAJ v9.1 -  reverse this logic - hide all subs to be reinstated by Case below - will stop flashing on/off
+580	1	'restore all category forms
+581	1	'Me![Exca: Unit Data Categories CUT subform].Visible = True
+582	1	'Me![Exca: Unit Data Categories CLUSTER subform].Visible = True
+583	1	'Me![Exca: Unit Data Categories LAYER subform].Visible = True
+584	0	Me![Exca: Unit Data Categories CUT subform].Visible = False
+585	0	Me![Exca: Unit Data Categories CLUSTER subform].Visible = False
+586	0	Me![Exca: Unit Data Categories LAYER subform].Visible = False
+587	0	Me![Exca: Unit Data Categories SKELL subform].Visible = False
+588	0	
+589	1	'when skelli subform is shown these fields are hidden by it but still there
+590	1	'so expecting tabbing - when skelli form shown the tab stop is set to false, set it back here
+591	0	Me![Description].TabStop = True
+592	0	Me![Recognition].TabStop = True
+593	0	Me![Definition].TabStop = True
+594	0	Me![Execution].TabStop = True
+595	0	Me![Condition].TabStop = True
+596	0	
+597	1	'define which form to show
+598	0	Select Case Me.Category
+599	0	
+600	0	Case "layer"
+601	1	    'descr
+602	0	    Me![Exca: Subform Layer descr].Visible = True
+603	0	    Me![Exca: Subform Cut descr].Visible = False
+604	1	    'data
+605	0	    Me![Exca: Unit Data Categories CUT subform].Visible = False
+606	0	    Me![Exca: Unit Data Categories CLUSTER subform].Visible = False
+607	0	    Me![Exca: Unit Data Categories LAYER subform].Visible = True
+608	0	   
+609	0	    
+610	1	    'skelli
+611	0	    Me![Exca: subform Skeleton Sheet].Visible = False
+612	0	    Me![subform Unit: stratigraphy  same as].Visible = True
+613	0	    Me![Exca: subform Skeletons same as].Visible = False
+614	1	    'SAJ v9.1 make this invisible - see case skeleton below
+615	0	    Me![Exca: Unit Data Categories SKELL subform].Visible = False
+616	0	
+617	0	Case "cut"
+618	1	    'descr
+619	0	    Me![Exca: Subform Layer descr].Visible = False
+620	0	    Me![Exca: Subform Cut descr].Visible = True
+621	1	    'data
+622	0	    Me![Exca: Unit Data Categories CLUSTER subform].Visible = False
+623	0	    Me![Exca: Unit Data Categories LAYER subform].Visible = False
+624	0	    
+625	0	    Me![Exca: Unit Data Categories CUT subform].Visible = True
+626	1	    'SAJ v9 update of field restricted to category_afterupdate
+627	1	    'Me![Exca: Unit Data Categories CUT subform]![Data Category] = "cut"
+628	0	    Me.refresh
+629	0	    
+630	1	    'skelli
+631	0	    Me![Exca: subform Skeleton Sheet].Visible = False
+632	0	    Me![subform Unit: stratigraphy  same as].Visible = True
+633	0	    Me![Exca: subform Skeletons same as].Visible = False
+634	1	    'SAJ v9.1 make this invisible - see case skeleton below
+635	0	    Me![Exca: Unit Data Categories SKELL subform].Visible = False
+636	0	    
+637	0	Case "cluster"
+638	1	    'descr
+639	0	    Me![Exca: Subform Layer descr].Visible = True
+640	0	    Me![Exca: Subform Cut descr].Visible = False
+641	1	    'data
+642	0	    Me![Exca: Unit Data Categories CUT subform].Visible = False
+643	0	    Me![Exca: Unit Data Categories LAYER subform].Visible = False
+644	0	    
+645	0	    Me![Exca: Unit Data Categories CLUSTER subform].Visible = True
+646	1	    'SAJ v9 update of field restricted to category_afterupdate
+647	1	    'Me![Exca: Unit Data Categories CLUSTER subform]![Data Category] = "cluster"
+648	0	    Me.refresh
+649	0	    
+650	1	    'skelli
+651	0	    Me![Exca: subform Skeleton Sheet].Visible = False
+652	0	    Me![subform Unit: stratigraphy  same as].Visible = True
+653	0	    Me![Exca: subform Skeletons same as].Visible = False
+654	1	    'SAJ v9.1 make this invisible - see case skeleton below
+655	0	    Me![Exca: Unit Data Categories SKELL subform].Visible = False
+656	0	Case "skeleton"
+657	1	    'data
+658	0	    Me![Exca: Unit Data Categories CUT subform].Visible = False
+659	0	    Me![Exca: Unit Data Categories CLUSTER subform].Visible = False
+660	0	    Me![Exca: Unit Data Categories LAYER subform].Visible = False
+661	1	    'SAJ v9 update of field restricted to category_afterupdate
+662	1	    'Me![Exca: Unit Data Categories SKELL subform]![Data Category] = "skeleton"
+663	0	    Me.refresh
+664	0	    
+665	1	    'skelli
+666	0	    Me![Exca: subform Skeleton Sheet].Visible = True
+667	0	    Me![subform Unit: stratigraphy  same as].Visible = False
+668	0	    Me![Exca: Subform Layer descr].Visible = False
+669	0	    Me![Exca: Subform Cut descr].Visible = False
+670	0	    Me![Exca: subform Skeletons same as].Visible = True
+671	1	    'SAJ v9.1 make this visible to make consistent with other forms of this nature
+672	0	    Me![Exca: Unit Data Categories SKELL subform].Visible = True
+673	0	    
+674	1	    'when skelli subform is shown these fields are hidden by it but still there
+675	1	    'so expecting tabbing - when skelli form shown the tab stop is set to false, set it back here
+676	0	    Me![Description].TabStop = False
+677	0	    Me![Recognition].TabStop = False
+678	0	    Me![Definition].TabStop = False
+679	0	    Me![Execution].TabStop = False
+680	0	    Me![Condition].TabStop = False
+681	0	Case Else
+682	1	'descr
+683	0	    Me![Exca: Subform Layer descr].Visible = True
+684	0	    Me![Exca: Subform Cut descr].Visible = False
+685	1	    'data
+686	0	    Me![Exca: Unit Data Categories CUT subform].Visible = False
+687	0	    Me![Exca: Unit Data Categories CLUSTER subform].Visible = False
+688	0	    Me![Exca: Unit Data Categories LAYER subform].Visible = True
+689	1	    'skelli
+690	0	    Me![Exca: subform Skeleton Sheet].Visible = False
+691	0	    Me![subform Unit: stratigraphy  same as].Visible = True
+692	0	    Me![Exca: subform Skeletons same as].Visible = False
+693	1	    'SAJ v9.1 make this invisible - see case skeleton above
+694	0	    Me![Exca: Unit Data Categories SKELL subform].Visible = False
+695	0	End Select
+696	0	Exit Sub
+697	0	
+698	1	err_Form_Current: 'SAJ
+699	1	    General_Error_Trap 'sub in generalprocedures module
+700	0	    Exit Sub
+701	0	End Sub
+702	0	
+703	0	
+704	0	
+705	0	Private Sub Form_Open(Cancel As Integer)
+706	1	'*************************************************************************************
+707	1	' SAJ v.9.1
+708	1	' form is so big maximise it so can see as much as poss - this is now required as to keep
+709	1	' the main menu looking compact the system no longer maximises on startup
+710	1	'*************************************************************************************
+711	1	'DoCmd.Maximize
+712	0	On Error GoTo err_Form_Open:
+713	0	
+714	0	Dim permiss
+715	0	    permiss = GetGeneralPermissions
+716	0	    If permiss = "ADMIN" Or permiss = "RW" Then
+717	2	        ' ToggleFormReadOnly Me, False ' on current will set it up for these users
+718	0	    Else
+719	1	        'set read only form here, just once
+720	0	        ToggleFormReadOnly Me, True
+721	0	        Me![cmdAddNew].Enabled = False
+722	0	        Me![Unit Number].BackColor = Me.Section(0).BackColor
+723	0	        Me![Unit Number].Locked = True
+724	0	        Me![copy_method].Enabled = False
+725	0	    End If
+726	0	    
+727	0	    If Me.FilterOn = True Or Me.AllowEdits = False Then
+728	1	        'disable find and add new in this instance
+729	0	        Me![cboFindUnit].Enabled = False
+730	0	        Me![cmdAddNew].Enabled = False
+731	0	    End If
+732	0	
+733	0	Exit Sub
+734	0	
+735	0	err_Form_Open:
+736	0	    Call General_Error_Trap
+737	0	    Exit Sub
+738	0	End Sub
+739	0	
+740	0	Sub go_next_Click()
+741	0	On Error GoTo Err_go_next_Click
+742	0	
+743	0	
+744	0	    DoCmd.GoToRecord , , acNext
+745	0	
+746	0	Exit_go_next_Click:
+747	0	    Exit Sub
+748	0	
+749	0	Err_go_next_Click:
+750	0	    MsgBox Err.Description
+751	0	    Resume Exit_go_next_Click
+752	0	    
+753	0	End Sub
+754	0	
+755	0	
+756	0	Sub go_to_first_Click()
+757	0	On Error GoTo Err_go_to_first_Click
+758	0	
+759	0	
+760	0	    DoCmd.GoToRecord , , acFirst
+761	0	
+762	0	Exit_go_to_first_Click:
+763	0	    Exit Sub
+764	0	
+765	0	Err_go_to_first_Click:
+766	0	    MsgBox Err.Description
+767	0	    Resume Exit_go_to_first_Click
+768	0	    
+769	0	End Sub
+770	0	
+771	0	Sub go_to_last_Click()
+772	0	
+773	0	On Error GoTo Err_go_last_Click
+774	0	
+775	0	
+776	0	    DoCmd.GoToRecord , , acLast
+777	0	
+778	0	Exit_go_last_Click:
+779	0	    Exit Sub
+780	0	
+781	0	Err_go_last_Click:
+782	0	    MsgBox Err.Description
+783	0	    Resume Exit_go_last_Click
+784	0	    
+785	0	End Sub
+786	0	
+787	0	
+788	0	
+789	0	
+790	0	
+791	0	Sub go_previous2_Click()
+792	0	On Error GoTo Err_go_previous2_Click
+793	0	
+794	0	
+795	0	    DoCmd.GoToRecord , , acPrevious
+796	0	
+797	0	Exit_go_previous2_Click:
+798	0	    Exit Sub
+799	0	
+800	0	Err_go_previous2_Click:
+801	0	    MsgBox Err.Description
+802	0	    Resume Exit_go_previous2_Click
+803	0	    
+804	0	End Sub
+805	0	
+806	0	Private Sub Master_Control_Click()
+807	0	On Error GoTo Err_Master_Control_Click
+808	0	
+809	0	    Dim stDocName As String
+810	0	    Dim stLinkCriteria As String
+811	0	
+812	0	    stDocName = "Catal Data Entry"
+813	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+814	0	    DoCmd.Close acForm, "Exca: Unit Sheet"
+815	0	    
+816	0	Exit_Master_Control_Click:
+817	0	    Exit Sub
+818	0	
+819	0	Err_Master_Control_Click:
+820	0	    MsgBox Err.Description
+821	0	    Resume Exit_Master_Control_Click
+822	0	End Sub
+823	0	
+824	0	Sub New_entry_Click()
+825	1	'replaced by cmdAddNew
+826	1	'On Error GoTo Err_New_entry_Click
+827	1	'
+828	1	'
+829	1	'    DoCmd.GoToRecord , , acNewRec
+830	1	'    Mound.SetFocus
+831	1	'
+832	1	'Exit_New_entry_Click:
+833	1	'    Exit Sub
+834	1	'
+835	1	'Err_New_entry_Click:
+836	1	'    MsgBox Err.Description
+837	1	'    Resume Exit_New_entry_Click
+838	1	'
+839	0	End Sub
+840	0	Sub interpretation_Click()
+841	0	On Error GoTo Err_interpretation_Click
+842	0	
+843	0	    Dim stDocName As String
+844	0	    Dim stLinkCriteria As String
+845	0	    
+846	1	    'refresh
+847	0	    DoCmd.DoMenuItem acFormBar, acRecordsMenu, 5, , acMenuVer70
+848	0	    
+849	1	    'go to form
+850	0	    stDocName = "Interpret: Unit Sheet"
+851	0	    
+852	0	    stLinkCriteria = "[Unit Number]=" & Me![Unit Number]
+853	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+854	0	
+855	0	Exit_interpretation_Click:
+856	0	    Exit Sub
+857	0	
+858	0	Err_interpretation_Click:
+859	0	    MsgBox Err.Description
+860	0	    Resume Exit_interpretation_Click
+861	0	    
+862	0	End Sub
+863	0	Sub Command466_Click()
+864	0	On Error GoTo Err_Command466_Click
+865	0	
+866	0	
+867	0	    DoCmd.DoMenuItem acFormBar, acRecordsMenu, 5, , acMenuVer70
+868	0	
+869	0	Exit_Command466_Click:
+870	0	    Exit Sub
+871	0	
+872	0	Err_Command466_Click:
+873	0	    MsgBox Err.Description
+874	0	    Resume Exit_Command466_Click
+875	0	    
+876	0	End Sub
+877	0	
+878	0	Private Sub NotExcavated_Click()
+879	1	'*********************************************************************
+880	1	' Introduce logic to Not excavated option - if this is selected then
+881	1	' Priority Unit and Fast track must be false
+882	1	' SAJ v9.1
+883	1	'*********************************************************************
+884	0	On Error GoTo err_NotExcavated_Click
+885	0	Dim checknum, checknum1, sql1
+886	0	
+887	0	    If Me![NotExcavated] = True Then
+888	0	    
+889	1	        'this action means the Priority unit field cannot be checked - however
+890	2	        'if there has been info entered about the priority then don't allow this action
+891	0	        If Me![Priority Unit] = True Then
+892	1	            'must first check unit number is in priority table as if its not (and due to no linking of this info
+893	1	            'prior to this version this could have happened) the check for data will fail anyway
+894	0	            checknum = DLookup("[Unit Number]", "[Exca: Priority Detail]", "[Exca: Priority Detail].[unit Number] = " & Me![Unit Number])
+895	0	            If Not IsNull(checknum) Then
+896	1	                'unit number there, do second check to see if data entered
+897	0	                checknum1 = DLookup("[Unit Number]", "[Exca: Priority Detail]", "[Exca: Priority Detail].[unit Number] = " & Me![Unit Number] & " AND [Exca: Priority Detail].Priority =1 AND [Exca: Priority Detail].Comment Is Null AND [Exca: Priority Detail].Discussion Is Null")
+898	0	                If IsNull(checknum1) Then
+899	1	                    'the unit has priority data so this change from priorty to not exca can go ahead
+900	0	                    MsgBox "Sorry there is information relating to this Unit as a Priority, you cannot change this Unit to Not Excavated", vbExclamation, "Priority Information"
+901	0	                    Me![NotExcavated] = False
+902	0	                Else
+903	1	                    'the unit has no priority specific data so can be removed from there
+904	0	                    sql1 = "DELETE * FROM [Exca: Priority Detail] WHERE [Unit number] = " & Me![Unit Number] & ";"
+905	0	                    DoCmd.RunSQL sql1
+906	0	                    MsgBox "This Unit is no longer marked a Priority. This action has been allowed because it had no Priority specific information entered.", vbExclamation, "Priority change"
+907	0	                    GoTo allow_check
+908	0	                End If
+909	0	            Else
+910	1	                'unit number not in priorty table anyway so ok to uncheck
+911	0	                GoTo allow_check
+912	0	            End If
+913	0	        Else
+914	1	            'priority unit not set anyway so ok to uncheck this
+915	0	            GoTo allow_check
+916	0	        End If
+917	0	        
+918	0	    End If
+919	0	Exit Sub
+920	0	
+921	0	allow_check:
+922	0	    Me![FastTrack] = False
+923	0	    Me![Priority Unit] = False
+924	0	Exit Sub
+925	0	
+926	0	err_NotExcavated_Click:
+927	0	    Call General_Error_Trap
+928	0	    Exit Sub
+929	0	End Sub
+930	0	
+931	0	Sub Open_priority_Click()
+932	1	'******************************************************************
+933	1	' existing code, entered generic error trap v9.1
+934	1	'
+935	1	' add save record as otherwise newly entered records not appear in
+936	1	' priority form
+937	1	'
+938	1	' pre this version this form was not linked to the checking of the
+939	1	' priority on here - so must intro check to ensure the record does
+940	1	' exist in Priority Details table, if not add it as it should. This
+941	1	' problem will not happen in future, this is for old records
+942	1	' SAJ v9.1
+943	1	'******************************************************************
+944	0	On Error GoTo Err_Open_priority_Click
+945	0	
+946	0	    DoCmd.RunCommand acCmdSaveRecord
+947	0	    
+948	0	    Dim stDocName As String
+949	0	    Dim stLinkCriteria As String
+950	0	    Dim checknum, sql, permiss
+951	0	    
+952	1	    'check unit number already in Priority detail table
+953	0	    checknum = DLookup("[Unit Number]", "[Exca: Priority Detail]", "[Unit Number] = " & Me![Unit Number])
+954	0	    If IsNull(checknum) Then
+955	1	        'number not exist - now see what permissions user has
+956	0	        permiss = GetGeneralPermissions
+957	0	        If permiss = "ADMIN" Or permiss = "RW" Then
+958	2	            'no can't be found - add it as this user has permission to
+959	0	            sql = "INSERT INTO [Exca: Priority Detail] ([Unit Number], [DateSet]) VALUES (" & Me![Unit Number] & ", #" & Date & "#);"
+960	0	            DoCmd.RunSQL sql
+961	0	        Else
+962	1	            'user is readonly so just tell them record not exist
+963	0	            MsgBox "Sorry but this unit record has not been added to the priority detail table yet, there is no record to view.", vbInformation, "Missing Priority Record"
+964	0	        End If
+965	0	    End If
+966	0	    
+967	1	    'now carry on and open form
+968	0	    stDocName = "Exca: Priority Detail"
+969	0	    stLinkCriteria = "[Unit Number]=" & Me![Unit Number]
+970	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+971	0	
+972	0	Exit_Open_priority_Click:
+973	0	    Exit Sub
+974	0	
+975	0	Err_Open_priority_Click:
+976	0	    Call General_Error_Trap
+977	0	    Resume Exit_Open_priority_Click
+978	0	    
+979	0	End Sub
+980	0	Sub go_feature_Click()
+981	0	On Error GoTo Err_go_feature_Click
+982	0	
+983	0	    Dim stDocName As String
+984	0	    Dim stLinkCriteria As String
+985	0	
+986	0	    stDocName = "Exca: Feature Sheet"
+987	0	    
+988	0	    stLinkCriteria = "[Feature Number]=" & Forms![Exca: Unit Sheet]![Exca: subform Features for Units]![In_feature]
+989	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+990	0	
+991	0	Exit_go_feature_Click:
+992	0	    Exit Sub
+993	0	
+994	0	Err_go_feature_Click:
+995	0	    MsgBox Err.Description
+996	0	    Resume Exit_go_feature_Click
+997	0	    
+998	0	End Sub
+999	0	Sub Close_Click()
+1000	1	'***************************************************
+1001	1	' Existing close button revamped - image changed from
+1002	1	' default close (shut door) to trowel as in rest of
+1003	1	' season. Also made to specifically name form not just .close
+1004	1	'
+1005	1	' SAJ v9.1
+1006	1	'***************************************************
+1007	0	On Error GoTo err_Excavation_Click
+1008	0	
+1009	0	    Dim stDocName As String
+1010	0	    Dim stLinkCriteria As String
+1011	1	    'removed open excavation (menu) as now this form can be opened from other places
+1012	1	    'stDocName = "Excavation"
+1013	1	    'DoCmd.OpenForm stDocName, , , stLinkCriteria
+1014	0	    DoCmd.Close acForm, "Exca: Unit Sheet"
+1015	0	    
+1016	0	Exit_Excavation_Click:
+1017	0	    Exit Sub
+1018	0	
+1019	0	err_Excavation_Click:
+1020	0	    MsgBox Err.Description
+1021	0	    Resume Exit_Excavation_Click
+1022	0	End Sub
+1023	0	Sub open_copy_details_Click()
+1024	0	On Error GoTo Err_open_copy_details_Click
+1025	0	
+1026	0	    Dim stDocName As String
+1027	0	    Dim stLinkCriteria As String
+1028	0	
+1029	0	    stDocName = "Exca: Copy unit details form"
+1030	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+1031	0	
+1032	0	Exit_open_copy_details_Click:
+1033	0	    Exit Sub
+1034	0	
+1035	0	Err_open_copy_details_Click:
+1036	0	    MsgBox Err.Description
+1037	0	    Resume Exit_open_copy_details_Click
+1038	0	    
+1039	0	End Sub
+1040	0	
+1041	0	
+1042	0	
+1043	0	Private Sub Priority_Unit_Click()
+1044	1	'*********************************************************************
+1045	1	' Introduce logic to Priority Unit option - if this is selected then
+1046	1	' Not Excavated must be false.
+1047	1	' Previous to this version there was no link between checking this box and
+1048	1	' the unit being recorded in the Priority Detail table - this link has been
+1049	1	' introduced.
+1050	1	' SAJ v9.1
+1051	1	'*********************************************************************
+1052	0	On Error GoTo err_Priority_Unit_Click
+1053	0	Dim checknum, checknum1, sql, sql1
+1054	0	
+1055	0	    If Me![Priority Unit] = True Then
+1056	0	        Me![NotExcavated] = False
+1057	1	        'check unit num not already in priority details table - if not add it (this will catch any mismatches that are already there)
+1058	0	        checknum = DLookup("[Unit Number]", "[Exca: Priority Detail]", "[Unit Number] = " & Me![Unit Number])
+1059	0	        If IsNull(checknum) Then
+1060	0	            sql = "INSERT INTO [Exca: Priority Detail] ([Unit Number], [DateSet]) VALUES (" & Me![Unit Number] & ", #" & Date & "#);"
+1061	0	            DoCmd.RunSQL sql
+1062	0	        End If
+1063	0	        Me![Open Priority].Enabled = True
+1064	0	    Else
+1065	1	        'priority units can only be unchecked if no data has been entered into record, having the priority
+1066	1	        'of 1 has to be taken as no data as this is the default assigned when record entered
+1067	1	        'so this will check if the unit record is there with a priority of 1 but no comment and no discussion
+1068	0	        
+1069	1	        'however first must check if number there are all otherwise check below will come back null
+1070	2	        'ie can't uncheck when you should be able to as record not exist in priority detail table
+1071	0	        checknum = DLookup("[Unit Number]", "[Exca: Priority Detail]", "[Exca: Priority Detail].[unit Number] = " & Me![Unit Number])
+1072	0	        If Not IsNull(checknum) Then
+1073	1	           'unit number there, do second check to see if data entered
+1074	0	            checknum1 = DLookup("[Unit Number]", "[Exca: Priority Detail]", "[Exca: Priority Detail].[unit Number] = " & Me![Unit Number] & " AND [Exca: Priority Detail].Priority =1 AND [Exca: Priority Detail].Comment Is Null AND [Exca: Priority Detail].Discussion Is Null")
+1075	0	            If IsNull(checknum1) Then
+1076	1	                'the unit has prioirty data, it can be unallocated
+1077	0	                MsgBox "Sorry there is information relating to this Unit as a Priority, you cannot uncheck it", vbExclamation, "Priority Information"
+1078	0	                Me![Priority Unit] = True
+1079	0	            Else
+1080	1	                'no data so allow it to be removed from Priority detail table
+1081	0	                sql1 = "DELETE * FROM [Exca: Priority Detail] WHERE [Unit number] = " & Me![Unit Number] & ";"
+1082	0	                DoCmd.RunSQL sql1
+1083	0	                Me![Open Priority].Enabled = False
+1084	0	            End If
+1085	0	        Else
+1086	1	            'unit number not there in priority detail- so can uncheck
+1087	0	            Me![Open Priority].Enabled = False
+1088	0	        End If
+1089	0	        
+1090	0	    End If
+1091	0	Exit Sub
+1092	0	
+1093	0	err_Priority_Unit_Click:
+1094	0	    Call General_Error_Trap
+1095	0	    Exit Sub
+1096	0	End Sub
+1097	0	
+1098	0	Private Sub Space_AfterUpdate()
+1099	1	'***********************************************************************
+1100	1	' Intro of a validity check to ensure space num entered here is ok
+1101	1	' if not tell the user and allow them to enter. SF not want it to restrict
+1102	1	' entry and trusts excavators to enter space num when they can
+1103	1	'
+1104	1	' SAJ v9.1
+1105	1	'***********************************************************************
+1106	0	On Error GoTo err_Space_AfterUpdate
+1107	0	
+1108	0	Dim checknum, msg, retval, sql
+1109	0	
+1110	0	If Me![Space] <> "" Then
+1111	1	    'first check its valid
+1112	0	    If IsNumeric(Me![Space]) Then
+1113	0	    
+1114	1	        'check that space num does exist
+1115	2	        checknum = DLookup("[Space Number]", "[Exca: Space Sheet]", "[Space Number] = '" & Me![Space] & "'")
+1116	0	        If IsNull(checknum) Then
+1117	0	            msg = "This Space Number DOES NOT EXIST in the database, you must remember to enter it."
+1118	0	            msg = msg & Chr(13) & Chr(13) & "Would you like to enter it now?"
+1119	0	            retval = MsgBox(msg, vbInformation + vbYesNo, "Space Number does not exist")
+1120	0	        
+1121	0	            If retval = vbNo Then
+1122	1	                MsgBox "Ok, but you must remember to enter it soon otherwise you'll be chased!", vbExclamation, "Remember!"
+1123	0	            Else
+1124	2	                sql = "INSERT INTO [Exca: Space Sheet] ([Space Number]) VALUES ('" & Me![Space] & "');"
+1125	0	                DoCmd.RunSQL sql
+1126	0	                
+1127	2	                DoCmd.OpenForm "Exca: Space Sheet", acNormal, , "[Space Number] = '" & Me![Space] & "'", acFormEdit, acDialog
+1128	0	            End If
+1129	0	        Else
+1130	1	            'valid number, enable view button
+1131	0	            Me![cmdGoToSpace].Enabled = True
+1132	0	        End If
+1133	0	    
+1134	0	    Else
+1135	1	        'not a vaild space building number
+1136	0	        MsgBox "This Space number is not numeric, it cannot be checked for validity", vbInformation, "Non numeric Entry"
+1137	0	    End If
+1138	0	End If
+1139	0	
+1140	0	Exit Sub
+1141	0	
+1142	0	err_Space_AfterUpdate:
+1143	0	    Call General_Error_Trap
+1144	0	    Exit Sub
+1145	0	End Sub
+1146	0	
+1147	0	Private Sub Unit_Number_AfterUpdate()
+1148	1	'***********************************************************************
+1149	1	' Intro of a validity check to ensure duplicate unit numbers not entered
+1150	1	' which would result in nasty key violation msg back from sql server if not
+1151	1	' trapped. Duplicates were previously dealt with by an undo at unit_number_exit,
+1152	1	' but this undo would blank the whole record with no explaination so trying
+1153	1	' to explain problem to user here.
+1154	1	'
+1155	1	' FOr further info concerning this functionality see the comment in
+1156	1	' Form - Exca: Feature Sheet, control: Feature Number, After Update
+1157	1	' SAJ v9.1
+1158	1	'***********************************************************************
+1159	0	On Error GoTo err_Unit_Number_AfterUpdate
+1160	0	Dim checknum
+1161	0	
+1162	0	If Me![Unit Number] <> "" Then
+1163	1	    'check that unit num not exist
+1164	0	    checknum = DLookup("[Unit Number]", "[Exca: Unit Sheet]", "[Unit Number] = " & Me![Unit Number])
+1165	0	    If Not IsNull(checknum) Then
+1166	0	        MsgBox "Sorry but the Unit Number " & Me![Unit Number] & " already exists, please enter another number.", vbInformation, "Duplicate Unit Number"
+1167	0	        
+1168	0	        If Not IsNull(Me![Unit Number].OldValue) Then
+1169	1	            'return field to old value if there was one
+1170	0	            Me![Unit Number] = Me![Unit Number].OldValue
+1171	0	        Else
+1172	1	            'oh the joys, to keep the focus on unit have to flip to year then back
+1173	1	            'otherwise if will ignore you and go straight to year - dont believe me, comment out the gotocontrol year then!
+1174	0	            DoCmd.GoToControl "Year"
+1175	0	            DoCmd.GoToControl "Unit Number"
+1176	0	            Me![Unit Number].SetFocus
+1177	0	            
+1178	0	            DoCmd.RunCommand acCmdUndo
+1179	0	        End If
+1180	0	    Else
+1181	1	        'the number does not exist so allow rest of data entry
+1182	0	        ToggleFormReadOnly Me, False
+1183	0	    End If
+1184	0	End If
+1185	0	
+1186	0	Exit Sub
+1187	0	
+1188	0	err_Unit_Number_AfterUpdate:
+1189	0	    Call General_Error_Trap
+1190	0	    Exit Sub
+1191	0	
+1192	0	End Sub
+1193	0	
+1194	0	Private Sub Unit_number_Exit(Cancel As Integer)
+1195	1	'*****************************************************
+1196	1	' This existing code is commented out and replaced by
+1197	1	' a handling procedure after update - the reason being
+1198	1	' this blanks all edits to this record done so far with
+1199	1	' no explaination to the user why, it also use legacy
+1200	1	' domenuitem.
+1201	1	' SAJ v9.1
+1202	1	'*****************************************************
+1203	1	'On Error GoTo Err_Unit_number_Exit
+1204	1	'
+1205	1	'    Me.Refresh
+1206	2	'    'DoCmd.Save acTable, "Exca: Unit Sheet"
+1207	1	'
+1208	1	'Exit_Unit_number_Exit:
+1209	1	'    Exit Sub
+1210	1	'
+1211	1	'Err_Unit_number_Exit:
+1212	1	'
+1213	2	'    'MsgBox Err.Description
+1214	1	'
+1215	4	'    'MsgBox "This unit already exists in the database. Use the 'Find' button to go to it.", vbOKOnly, "duplicate"
+1216	1	'    DoCmd.DoMenuItem acFormBar, acEditMenu, 0, , acMenuVer70
+1217	1	'
+1218	1	'    Cancel = True
+1219	1	'
+1220	1	'    Resume Exit_Unit_number_Exit
+1221	0	End Sub
+1222	0	
+1223	0	
+1224	0	Sub Command497_Click()
+1225	0	On Error GoTo Err_Command497_Click
+1226	0	
+1227	0	    Dim stDocName As String
+1228	0	    Dim stLinkCriteria As String
+1229	0	
+1230	0	    stDocName = "Exca: Skeleton Sheet"
+1231	0	    
+1232	0	    stLinkCriteria = "[Exca: Unit Sheet.Unit Number]=" & Me![Unit Number]
+1233	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+1234	0	
+1235	0	Exit_Command497_Click:
+1236	0	    Exit Sub
+1237	0	
+1238	0	Err_Command497_Click:
+1239	0	    MsgBox Err.Description
+1240	0	    Resume Exit_Command497_Click
+1241	0	    
+1242	0	End Sub
+1243	0	Sub go_skell_Click()
+1244	0	On Error GoTo Err_go_skell_Click
+1245	0	
+1246	0	    Dim stDocName As String
+1247	0	    Dim stLinkCriteria As String
+1248	0	
+1249	0	    stDocName = "Exca: Skeleton Sheet"
+1250	0	    
+1251	0	    stLinkCriteria = "[Unit Number]=" & Me![Unit Number]
+1252	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+1253	0	
+1254	0	Exit_go_skell_Click:
+1255	0	    Exit Sub
+1256	0	
+1257	0	Err_go_skell_Click:
+1258	0	    MsgBox Err.Description
+1259	0	    Resume Exit_go_skell_Click
+1260	0	    
+1261	0	End Sub

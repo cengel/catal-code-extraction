@@ -1,0 +1,594 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	
+5	1	' This code is from the Microsoft Knowledge Base.
+6	1	'
+7	0	
+8	1	'API function called by ChooseColor method
+9	0	Private Declare Function ChooseColor Lib "comdlg32.dll" Alias "ChooseColorA" (pChoosecolor As ChooseColor) As Long
+10	0	
+11	1	'API function called by ShowOpen method
+12	0	Private Declare Function GetOpenFileName Lib "comdlg32.dll" Alias "GetOpenFileNameA" (pOpenfilename As OpenFilename) As Long
+13	0	
+14	1	'API function called by ShowSave method
+15	0	Private Declare Function GetSaveFileName Lib "comdlg32.dll" Alias "GetSaveFileNameA" (pOpenfilename As OpenFilename) As Long
+16	0	
+17	1	'API function to retrieve extended error information
+18	0	Private Declare Function CommDlgExtendedError Lib "comdlg32.dll" () As Long
+19	0	
+20	1	'API memory functions
+21	0	Private Declare Function GlobalAlloc Lib "kernel32" (ByVal wFlags As Long, ByVal dwBytes As Long) As Long
+22	0	Private Declare Function GlobalFree Lib "kernel32" (ByVal hMem As Long) As Long
+23	0	Private Declare Function GlobalLock Lib "kernel32" (ByVal hMem As Long) As Long
+24	0	Private Declare Function GlobalUnlock Lib "kernel32" (ByVal hMem As Long) As Long
+25	0	
+26	0	Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" ( _
+27	0	         hpvDest As Any, hpvSource As Any, ByVal cbCopy As Long)
+28	0	 
+29	0	
+30	1	'constants for API memory functions
+31	0	Private Const GMEM_MOVEABLE = &H2
+32	0	Private Const GMEM_ZEROINIT = &H40
+33	0	Private Const GHND = (GMEM_MOVEABLE Or GMEM_ZEROINIT)
+34	0	 
+35	0	 
+36	1	'data buffer for the ChooseColor function
+37	0	Private Type ChooseColor
+38	0	        lStructSize As Long
+39	0	        hwndOwner As Long
+40	0	        hInstance As Long
+41	0	        rgbResult As Long
+42	0	        lpCustColors As Long
+43	0	        Flags As Long
+44	0	        lCustData As Long
+45	0	        lpfnHook As Long
+46	0	        lpTemplateName As String
+47	0	End Type
+48	0	
+49	1	'data buffer for the GetOpenFileName and GetSaveFileName functions
+50	0	Private Type OpenFilename
+51	0	        lStructSize As Long
+52	0	        hwndOwner As Long
+53	0	        hInstance As Long
+54	0	        lpstrFilter As String
+55	0	        lpstrCustomFilter As String
+56	0	        nMaxCustFilter As Long
+57	0	        iFilterIndex As Long
+58	0	        lpstrFile As String
+59	0	        nMaxFile As Long
+60	0	        lpstrFileTitle As String
+61	0	        nMaxFileTitle As Long
+62	0	        lpstrInitialDir As String
+63	0	        lpstrTitle As String
+64	0	        Flags As Long
+65	0	        nFileOffset As Integer
+66	0	        nFileExtension As Integer
+67	0	        lpstrDefExt As String
+68	0	        lCustData As Long
+69	0	        lpfnHook As Long
+70	0	        lpTemplateName As String
+71	0	End Type
+72	0	
+73	0	
+74	1	'internal property buffers
+75	0	
+76	1	Private iAction As Integer         'internal buffer for Action property
+77	1	Private bCancelError As Boolean    'internal buffer for CancelError property
+78	1	Private lColor As Long             'internal buffer for Color property
+79	1	Private lCopies As Long            'internal buffer for lCopies property
+80	1	Private sDefaultExt As String      'internal buffer for sDefaultExt property
+81	1	Private sDialogTitle As String     'internal buffer for DialogTitle property
+82	1	Private sFilename As String        'internal buffer for FileName property
+83	1	Private sFileTitle As String       'internal buffer for FileTitle property
+84	1	Private sFilter As String          'internal buffer for Filter property
+85	1	Private iFilterIndex As Integer    'internal buffer for FilterIndex property
+86	1	Private lFlags As Long             'internal buffer for Flags property
+87	1	Private lhDC As Long               'internal buffer for hdc property
+88	1	Private sInitDir As String         'internal buffer for InitDir property
+89	1	Private lMax As Long               'internal buffer for Max property
+90	1	Private lMaxFileSize As Long       'internal buffer for MaxFileSize property
+91	1	Private lMin As Long               'internal buffer for Min property
+92	1	Private objObject As Object        'internal buffer for Object property
+93	0	
+94	1	Private lApiReturn As Long          'internal buffer for APIReturn property
+95	1	Private lExtendedError As Long      'internal buffer for ExtendedError property
+96	0	
+97	0	
+98	0	
+99	1	'constants for color dialog
+100	0	
+101	0	Private Const CDERR_DIALOGFAILURE = &HFFFF
+102	0	Private Const CDERR_FINDRESFAILURE = &H6
+103	0	Private Const CDERR_GENERALCODES = &H0
+104	0	Private Const CDERR_INITIALIZATION = &H2
+105	0	Private Const CDERR_LOADRESFAILURE = &H7
+106	0	Private Const CDERR_LOADSTRFAILURE = &H5
+107	0	Private Const CDERR_LOCKRESFAILURE = &H8
+108	0	Private Const CDERR_MEMALLOCFAILURE = &H9
+109	0	Private Const CDERR_MEMLOCKFAILURE = &HA
+110	0	Private Const CDERR_NOHINSTANCE = &H4
+111	0	Private Const CDERR_NOHOOK = &HB
+112	0	Private Const CDERR_NOTEMPLATE = &H3
+113	0	Private Const CDERR_REGISTERMSGFAIL = &HC
+114	0	Private Const CDERR_STRUCTSIZE = &H1
+115	0	
+116	0	
+117	1	'constants for file dialog
+118	0	
+119	0	Private Const FNERR_BUFFERTOOSMALL = &H3003
+120	0	Private Const FNERR_FILENAMECODES = &H3000
+121	0	Private Const FNERR_INVALIDFILENAME = &H3002
+122	0	Private Const FNERR_SUBCLASSFAILURE = &H3001
+123	0	
+124	0	Public Property Get Filter() As String
+125	2	    'return object's Filter property
+126	0	    Filter = sFilter
+127	0	End Property
+128	0	
+129	0	Public Sub ShowColor()
+130	1	    'display the color dialog box
+131	0	    
+132	0	    Dim tChooseColor As ChooseColor
+133	0	    Dim alCustomColors(15) As Long
+134	0	    Dim lCustomColorSize As Long
+135	0	    Dim lCustomColorAddress As Long
+136	0	    Dim lMemHandle As Long
+137	0	    
+138	0	    Dim n As Integer
+139	0	        
+140	0	    On Error GoTo ShowColorError
+141	0	    
+142	0	    
+143	1	    '***    init property buffers
+144	0	    
+145	1	    iAction = 3  'Action property - ShowColor
+146	1	    lApiReturn = 0  'APIReturn property
+147	1	    lExtendedError = 0  'ExtendedError property
+148	0	    
+149	0	    
+150	1	    '***    prepare tChooseColor data
+151	0	    
+152	1	    'lStructSize As Long
+153	0	    tChooseColor.lStructSize = Len(tChooseColor)
+154	0	    
+155	1	    'hwndOwner As Long
+156	0	    tChooseColor.hwndOwner = Application.hWndAccessApp
+157	0	
+158	1	    'hInstance As Long
+159	0	    
+160	1	    'rgbResult As Long
+161	0	    tChooseColor.rgbResult = lColor
+162	0	    
+163	1	    'lpCustColors As Long
+164	1	    ' Fill custom colors array with all white
+165	0	    For n = 0 To UBound(alCustomColors)
+166	0	        alCustomColors(n) = &HFFFFFF
+167	0	    Next
+168	1	    ' Get size of memory needed for custom colors
+169	0	    lCustomColorSize = Len(alCustomColors(0)) * 16
+170	1	    ' Get a global memory block to hold a copy of the custom colors
+171	0	    lMemHandle = GlobalAlloc(GHND, lCustomColorSize)
+172	0	    
+173	0	    If lMemHandle = 0 Then
+174	0	        Exit Sub
+175	0	    End If
+176	2	    ' Lock the custom color's global memory block
+177	0	    lCustomColorAddress = GlobalLock(lMemHandle)
+178	0	    If lCustomColorAddress = 0 Then
+179	0	        Exit Sub
+180	0	    End If
+181	1	    ' Copy custom colors to the global memory block
+182	0	    Call CopyMemory(ByVal lCustomColorAddress, alCustomColors(0), lCustomColorSize)
+183	0	 
+184	0	    tChooseColor.lpCustColors = lCustomColorAddress
+185	0	    
+186	1	    'flags As Long
+187	0	    tChooseColor.Flags = lFlags
+188	0	        
+189	1	    'lCustData As Long
+190	1	    'lpfnHook As Long
+191	1	    'lpTemplateName As String
+192	0	    
+193	0	    
+194	1	    '***    call the ChooseColor API function
+195	0	    lApiReturn = ChooseColor(tChooseColor)
+196	0	    
+197	0	    
+198	1	    '***    handle return from ChooseColor API function
+199	0	    Select Case lApiReturn
+200	0	        
+201	1	        Case 0  'user canceled
+202	0	        If bCancelError = True Then
+203	1	            'generate an error
+204	0	            On Error GoTo 0
+205	0	            Err.Raise Number:=vbObjectError + 894, _
+206	0	                Description:="Cancel Pressed"
+207	0	            Exit Sub
+208	0	        End If
+209	0	        
+210	1	        Case 1  'user selected a color
+211	1	            'update property buffer
+212	0	            lColor = tChooseColor.rgbResult
+213	0	        
+214	1	        Case Else   'an error occured
+215	1	            'call CommDlgExtendedError
+216	0	            lExtendedError = CommDlgExtendedError
+217	0	        
+218	0	    End Select
+219	0	
+220	0	Exit Sub
+221	0	
+222	0	ShowColorError:
+223	0	    Exit Sub
+224	0	End Sub
+225	0	
+226	0	Public Sub ShowOpen()
+227	1	    'display the file open dialog box
+228	1	    ShowFileDialog (1)  'Action property - ShowOpen
+229	0	End Sub
+230	0	
+231	0	Public Sub ShowSave()
+232	1	    'display the file save dialog box
+233	1	    ShowFileDialog (2)  'Action property - ShowSave
+234	0	End Sub
+235	0	
+236	0	Public Property Get FileName() As String
+237	2	    'return object's FileName property
+238	0	    FileName = sFilename
+239	0	End Property
+240	0	
+241	0	Public Property Let FileName(vNewValue As String)
+242	2	    'assign object's FileName property
+243	0	    sFilename = vNewValue
+244	0	End Property
+245	0	
+246	0	Public Property Let Filter(vNewValue As String)
+247	2	    'assign object's Filter property
+248	0	    sFilter = vNewValue
+249	0	End Property
+250	0	
+251	0	Private Function sLeftOfNull(ByVal sIn As String)
+252	1	    'returns the part of sIn preceding Chr$(0)
+253	0	    Dim lNullPos As Long
+254	0	    
+255	1	    'init output
+256	0	    sLeftOfNull = sIn
+257	0	    
+258	1	    'get position of first Chr$(0) in sIn
+259	0	    lNullPos = InStr(sIn, Chr$(0))
+260	0	    
+261	1	    'return part of sIn to left of first Chr$(0) if found
+262	0	    If lNullPos > 0 Then
+263	0	        sLeftOfNull = Mid$(sIn, 1, lNullPos - 1)
+264	0	    End If
+265	0	    
+266	0	End Function
+267	0	
+268	0	
+269	0	Public Property Get Action() As Integer
+270	2	    'Return object's Action property
+271	0	    Action = iAction
+272	0	End Property
+273	0	
+274	0	Private Function sAPIFilter(sIn)
+275	1	    'prepares sIn for use as a filter string in API common dialog functions
+276	0	    Dim lChrNdx As Long
+277	0	    Dim sOneChr As String
+278	0	    Dim sOutStr As String
+279	0	    
+280	1	    'convert any | characters to nulls
+281	0	    For lChrNdx = 1 To Len(sIn)
+282	0	        sOneChr = Mid$(sIn, lChrNdx, 1)
+283	0	        If sOneChr = "|" Then
+284	0	            sOutStr = sOutStr & Chr$(0)
+285	0	        Else
+286	0	            sOutStr = sOutStr & sOneChr
+287	0	        End If
+288	0	    Next
+289	0	    
+290	1	    'add a null to the end
+291	0	    sOutStr = sOutStr & Chr$(0)
+292	0	    
+293	1	    'return sOutStr
+294	0	    sAPIFilter = sOutStr
+295	0	    
+296	0	End Function
+297	0	
+298	0	Public Property Get FilterIndex() As Integer
+299	2	    'return object's FilterIndex property
+300	0	    FilterIndex = iFilterIndex
+301	0	End Property
+302	0	
+303	0	Public Property Let FilterIndex(vNewValue As Integer)
+304	0	    iFilterIndex = vNewValue
+305	0	End Property
+306	0	
+307	0	Public Property Get CancelError() As Boolean
+308	2	    'Return object's CancelError property
+309	0	    CancelError = bCancelError
+310	0	End Property
+311	0	
+312	0	Public Property Let CancelError(vNewValue As Boolean)
+313	2	    'Assign object's CancelError property
+314	0	    bCancelError = vNewValue
+315	0	End Property
+316	0	
+317	0	Public Property Get Color() As Long
+318	2	    'return object's Color property
+319	0	    Color = lColor
+320	0	End Property
+321	0	
+322	0	Public Property Let Color(vNewValue As Long)
+323	2	    'assign object's Color property
+324	0	    lColor = vNewValue
+325	0	End Property
+326	0	
+327	0	Public Property Get DefaultExt() As String
+328	2	    'return object's DefaultExt property
+329	0	    DefaultExt = sDefaultExt
+330	0	End Property
+331	0	
+332	0	Public Property Let DefaultExt(vNewValue As String)
+333	2	    'assign object's DefaultExt property
+334	0	    sDefaultExt = vNewValue
+335	0	End Property
+336	0	
+337	0	Public Property Get DialogTitle() As String
+338	2	    'return object's FileName property
+339	0	    DialogTitle = sDialogTitle
+340	0	End Property
+341	0	
+342	0	Public Property Let DialogTitle(vNewValue As String)
+343	2	    'assign object's DialogTitle property
+344	0	    sDialogTitle = vNewValue
+345	0	End Property
+346	0	
+347	0	Public Property Get Flags() As Long
+348	2	    'return object's Flags property
+349	0	    Flags = lFlags
+350	0	End Property
+351	0	
+352	0	Public Property Let Flags(vNewValue As Long)
+353	2	    'assign object's Flags property
+354	0	    lFlags = vNewValue
+355	0	End Property
+356	0	
+357	0	Public Property Get hDC() As Long
+358	2	    'Return object's hDC property
+359	0	    hDC = lhDC
+360	0	End Property
+361	0	
+362	0	Public Property Let hDC(vNewValue As Long)
+363	2	    'Assign object's hDC property
+364	0	    lhDC = vNewValue
+365	0	End Property
+366	0	
+367	0	Public Property Get InitDir() As String
+368	2	    'Return object's InitDir property
+369	0	    InitDir = sInitDir
+370	0	End Property
+371	0	
+372	0	Public Property Let InitDir(vNewValue As String)
+373	2	    'Assign object's InitDir property
+374	0	    sInitDir = vNewValue
+375	0	End Property
+376	0	
+377	0	Public Property Get Max() As Long
+378	2	    'Return object's Max property
+379	0	    Max = lMax
+380	0	End Property
+381	0	
+382	0	Public Property Let Max(vNewValue As Long)
+383	2	    'Assign object's - property
+384	0	    lMax = vNewValue
+385	0	End Property
+386	0	
+387	0	Public Property Get MaxFileSize() As Long
+388	2	    'Return object's MaxFileSize property
+389	0	    MaxFileSize = lMaxFileSize
+390	0	End Property
+391	0	
+392	0	Public Property Let MaxFileSize(vNewValue As Long)
+393	2	    'Assign object's MaxFileSize property
+394	0	    lMaxFileSize = vNewValue
+395	0	End Property
+396	0	
+397	0	Public Property Get Min() As Long
+398	2	    'Return object's Min property
+399	0	    Min = lMin
+400	0	End Property
+401	0	
+402	0	Public Property Let Min(vNewValue As Long)
+403	2	    'Assign object's Min property
+404	0	    lMin = vNewValue
+405	0	End Property
+406	0	
+407	0	Public Property Get Object() As Object
+408	2	    'Return object's Object property
+409	0	    Object = objObject
+410	0	End Property
+411	0	
+412	0	Public Property Let Object(vNewValue As Object)
+413	2	    'Assign object's Object property
+414	0	    objObject = vNewValue
+415	0	End Property
+416	0	
+417	0	Public Property Get FileTitle() As String
+418	2	    'return object's FileTitle property
+419	0	    FileTitle = sFileTitle
+420	0	End Property
+421	0	
+422	0	Public Property Let FileTitle(vNewValue As String)
+423	2	    'assign object's FileTitle property
+424	0	    sFileTitle = vNewValue
+425	0	End Property
+426	0	
+427	0	Public Property Get APIReturn() As Long
+428	2	    'return object's APIReturn property
+429	0	    APIReturn = lApiReturn
+430	0	End Property
+431	0	
+432	0	Public Property Get ExtendedError() As Long
+433	2	    'return object's ExtendedError property
+434	0	    ExtendedError = lExtendedError
+435	0	End Property
+436	0	
+437	0	
+438	0	Private Function sByteArrayToString(abBytes() As Byte) As String
+439	1	    'return a string from a byte array
+440	0	    Dim lBytePoint As Long
+441	0	    Dim lByteVal As Long
+442	0	    Dim sOut As String
+443	0	    
+444	1	    'init array pointer
+445	0	    lBytePoint = LBound(abBytes)
+446	0	    
+447	1	    'fill sOut with characters in array
+448	0	    While lBytePoint <= UBound(abBytes)
+449	0	        
+450	0	        lByteVal = abBytes(lBytePoint)
+451	0	        
+452	1	        'return sOut and stop if Chr$(0) is encountered
+453	0	        If lByteVal = 0 Then
+454	0	            sByteArrayToString = sOut
+455	0	            Exit Function
+456	0	        Else
+457	0	            sOut = sOut & Chr$(lByteVal)
+458	0	        End If
+459	0	        
+460	0	        lBytePoint = lBytePoint + 1
+461	0	    
+462	0	    Wend
+463	0	    
+464	2	    'return sOut if Chr$(0) wasn't encountered
+465	0	    sByteArrayToString = sOut
+466	0	    
+467	0	End Function
+468	0	Private Sub ShowFileDialog(ByVal iAction As Integer)
+469	0	    
+470	1	    'display the file dialog for ShowOpen or ShowSave
+471	0	    
+472	0	    Dim tOpenFile As OpenFilename
+473	0	    Dim lMaxSize As Long
+474	0	    Dim sFileNameBuff As String
+475	0	    Dim sFileTitleBuff As String
+476	0	    
+477	0	    On Error GoTo ShowFileDialogError
+478	0	    
+479	0	    
+480	1	    '***    init property buffers
+481	0	    
+482	1	    iAction = iAction  'Action property
+483	1	    lApiReturn = 0  'APIReturn property
+484	1	    lExtendedError = 0  'ExtendedError property
+485	0	        
+486	0	    
+487	1	    '***    prepare tOpenFile data
+488	0	    
+489	1	    'tOpenFile.lStructSize As Long
+490	0	    tOpenFile.lStructSize = Len(tOpenFile)
+491	0	    
+492	1	    'tOpenFile.hWndOwner As Long - init from hdc property
+493	0	    tOpenFile.hwndOwner = Application.hWndAccessApp
+494	0	    
+495	1	    'tOpenFile.lpstrFilter As String - init from Filter property
+496	0	    tOpenFile.lpstrFilter = sAPIFilter(sFilter)
+497	0	        
+498	1	    'tOpenFile.iFilterIndex As Long - init from FilterIndex property
+499	0	    tOpenFile.iFilterIndex = iFilterIndex
+500	0	    
+501	1	    'tOpenFile.lpstrFile As String
+502	1	        'determine size of buffer from MaxFileSize property
+503	0	        If lMaxFileSize > 0 Then
+504	0	            lMaxSize = lMaxFileSize
+505	0	        Else
+506	0	            lMaxSize = 256
+507	0	        End If
+508	0	    
+509	1	    'tOpenFile.lpstrFile As Long - init from FileName property
+510	1	        'prepare sFileNameBuff
+511	0	        sFileNameBuff = sFilename
+512	1	        'pad with spaces
+513	0	        While Len(sFileNameBuff) < lMaxSize - 1
+514	0	            sFileNameBuff = sFileNameBuff & " "
+515	0	        Wend
+516	1	        'trim to length of lMaxFileSize - 1
+517	0	       sFileNameBuff = Mid$(sFileNameBuff, 1, lMaxFileSize - 1)
+518	1	        'null terminate
+519	0	        sFileNameBuff = sFileNameBuff & Chr$(0)
+520	0	    tOpenFile.lpstrFile = sFileNameBuff
+521	0	    
+522	1	    'nMaxFile As Long - init from MaxFileSize property
+523	1	    If lMaxFileSize <> 255 Then  'default is 255
+524	0	        tOpenFile.nMaxFile = lMaxFileSize
+525	0	    End If
+526	0	            
+527	1	    'lpstrFileTitle As String - init from FileTitle property
+528	1	        'prepare sFileTitleBuff
+529	0	        sFileTitleBuff = sFileTitle
+530	1	        'pad with spaces
+531	0	        While Len(sFileTitleBuff) < lMaxSize - 1
+532	0	            sFileTitleBuff = sFileTitleBuff & " "
+533	0	        Wend
+534	1	        'trim to length of lMaxFileSize - 1
+535	0	        sFileTitleBuff = Mid$(sFileTitleBuff, 1, lMaxFileSize - 1)
+536	1	        'null terminate
+537	0	        sFileTitleBuff = sFileTitleBuff & Chr$(0)
+538	0	    tOpenFile.lpstrFileTitle = sFileTitleBuff
+539	0	        
+540	1	    'tOpenFile.lpstrInitialDir As String - init from InitDir property
+541	0	    tOpenFile.lpstrInitialDir = sInitDir
+542	0	    
+543	1	    'tOpenFile.lpstrTitle As String - init from DialogTitle property
+544	0	    tOpenFile.lpstrTitle = sDialogTitle
+545	0	    
+546	1	    'tOpenFile.flags As Long - init from Flags property
+547	0	    tOpenFile.Flags = lFlags
+548	0	        
+549	1	    'tOpenFile.lpstrDefExt As String - init from DefaultExt property
+550	0	    tOpenFile.lpstrDefExt = sDefaultExt
+551	0	    
+552	0	    
+553	1	    '***    call the GetOpenFileName API function
+554	0	    Select Case iAction
+555	1	        Case 1  'ShowOpen
+556	0	            lApiReturn = GetOpenFileName(tOpenFile)
+557	1	        Case 2  'ShowSave
+558	0	            lApiReturn = GetSaveFileName(tOpenFile)
+559	1	        Case Else   'unknown action
+560	0	            Exit Sub
+561	0	    End Select
+562	0	    
+563	0	    
+564	1	    '***    handle return from GetOpenFileName API function
+565	0	    Select Case lApiReturn
+566	0	        
+567	1	        Case 0  'user canceled
+568	0	        If bCancelError = True Then
+569	1	            'generate an error
+570	0	            Err.Raise (2001)
+571	0	            Exit Sub
+572	0	        End If
+573	0	        
+574	1	        Case 1  'user selected or entered a file
+575	1	            'sFileName gets part of tOpenFile.lpstrFile to the left of first Chr$(0)
+576	0	            sFilename = sLeftOfNull(tOpenFile.lpstrFile)
+577	0	            sFileTitle = sLeftOfNull(tOpenFile.lpstrFileTitle)
+578	0	        
+579	1	        Case Else   'an error occured
+580	1	            'call CommDlgExtendedError
+581	0	            lExtendedError = CommDlgExtendedError
+582	0	        
+583	0	    End Select
+584	0	    
+585	0	
+586	0	Exit Sub
+587	0	
+588	0	ShowFileDialogError:
+589	0	    
+590	0	    Exit Sub
+591	0	
+592	0	End Sub
+593	0	
+594	0	

@@ -1,0 +1,376 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	0	Option Explicit
+3	0	Sub EnableLists(Action)
+4	1	'this deals with enabling and disabling the unit...building lists
+5	1	'season 2006 - SAJ
+6	1	'added subform for tags season 2012 - CE
+7	0	
+8	0	On Error GoTo err_EnableLists
+9	0	
+10	0	    If Action = "disable" Then
+11	0	        Me![lblMsg].Visible = True
+12	0	        Me![Diary_Units subform].Enabled = False
+13	0	        Me![Diary_Features subform].Enabled = False
+14	0	        Me![Diary_Spaces subform].Enabled = False
+15	0	        Me![Diary_Buildings subform].Enabled = False
+16	0	        Me![Diary_Tags_Subform].Enabled = False
+17	0	        Me![Diary_Tags_Pulldown_subform1].Enabled = False
+18	0	        Me![Diary_Tags_Pulldown_subform2].Enabled = False
+19	0	        Me![Diary_Tags_Pulldown_subform3].Enabled = False
+20	0	        Me![Diary_Tags_Pulldown_subform4].Enabled = False
+21	0	        Me![Diary_Tags_Pulldown_subform5].Enabled = False
+22	0	        Me![Diary_Tags_Pulldown_subform6].Enabled = False
+23	0	    Else
+24	0	        Me![lblMsg].Visible = False
+25	0	        Me![Diary_Units subform].Enabled = True
+26	0	        Me![Diary_Features subform].Enabled = True
+27	0	        Me![Diary_Spaces subform].Enabled = True
+28	0	        Me![Diary_Buildings subform].Enabled = True
+29	0	        Me![Diary_Tags_Subform].Enabled = True
+30	0	        Me![Diary_Tags_Pulldown_subform1].Enabled = True
+31	0	        Me![Diary_Tags_Pulldown_subform2].Enabled = True
+32	0	        Me![Diary_Tags_Pulldown_subform3].Enabled = True
+33	0	        Me![Diary_Tags_Pulldown_subform4].Enabled = True
+34	0	        Me![Diary_Tags_Pulldown_subform5].Enabled = True
+35	0	        Me![Diary_Tags_Pulldown_subform6].Enabled = True
+36	0	    End If
+37	0	Exit Sub
+38	0	
+39	0	err_EnableLists:
+40	0	    Call General_Error_Trap
+41	0	    Exit Sub
+42	0	
+43	0	End Sub
+44	0	
+45	0	Private Sub Command26_Click()
+46	0	
+47	0	End Sub
+48	0	
+49	0	
+50	0	Private Sub Excavation_Click()
+51	0	On Error GoTo Err_Excavation_Click
+52	0	
+53	0	    Dim stDocName As String
+54	0	    Dim stLinkCriteria As String
+55	0	
+56	0	    stDocName = "Excavation"
+57	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+58	0	    DoCmd.Close acForm, "Diary Form"
+59	0	    
+60	0	Exit_Excavation_Click:
+61	0	    Exit Sub
+62	0	
+63	0	Err_Excavation_Click:
+64	0	    MsgBox Err.Description
+65	0	    Resume Exit_Excavation_Click
+66	0	End Sub
+67	0	
+68	0	Private Sub Master_Control_Click()
+69	0	On Error GoTo Err_Master_Control_Click
+70	0	
+71	0	    Dim stDocName As String
+72	0	    Dim stLinkCriteria As String
+73	0	
+74	0	    stDocName = "Catal Data Entry"
+75	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+76	0	    DoCmd.Close acForm, "Diary Form"
+77	0	    
+78	0	Exit_Master_Control_Click:
+79	0	    Exit Sub
+80	0	
+81	0	Err_Master_Control_Click:
+82	0	    MsgBox Err.Description
+83	0	    Resume Exit_Master_Control_Click
+84	0	End Sub
+85	0	
+86	0	Sub New_Diary_Entry_Click()
+87	0	On Error GoTo Err_New_Diary_Entry_Click
+88	0	
+89	0	    DoCmd.GoToRecord , , acNewRec
+90	0	
+91	0	Exit_New_Diary_Entry_Click:
+92	0	    Exit Sub
+93	0	
+94	0	Err_New_Diary_Entry_Click:
+95	0	    MsgBox Err.Description
+96	0	    Resume Exit_New_Diary_Entry_Click
+97	0	    
+98	0	End Sub
+99	0	Sub Diary_Go_to_New_Click()
+100	0	On Error GoTo Err_Diary_Go_to_New_Click
+101	0	
+102	0	
+103	0	    DoCmd.GoToRecord , , acNewRec
+104	0	
+105	0	Exit_Diary_Go_to_New_Click:
+106	0	    Exit Sub
+107	0	
+108	0	Err_Diary_Go_to_New_Click:
+109	0	    MsgBox Err.Description
+110	0	    Resume Exit_Diary_Go_to_New_Click
+111	0	    
+112	0	End Sub
+113	0	Sub New_Diary_Entry2_Click()
+114	0	On Error GoTo Err_New_Diary_Entry2_Click
+115	0	
+116	0	
+117	0	    New_Diary_Entry_Click
+118	0	
+119	0	Exit_New_Diary_Entry2_Click:
+120	0	    Exit Sub
+121	0	
+122	0	Err_New_Diary_Entry2_Click:
+123	0	    MsgBox Err.Description
+124	0	    Resume Exit_New_Diary_Entry2_Click
+125	0	   
+126	0	End Sub
+127	0	
+128	0	Private Sub close_Click()
+129	0	On Error GoTo Err_Close_Form_Click
+130	0	
+131	0	    DoCmd.Close
+132	0	
+133	0	Exit_Close_Form_Click:
+134	0	    Exit Sub
+135	0	
+136	0	Err_Close_Form_Click:
+137	0	    MsgBox Err.Description
+138	0	    Resume Exit_Close_Form_Click
+139	0	End Sub
+140	0	
+141	0	Private Sub cmdOpenSketch_Click()
+142	1	'new season 2007 - open the diary sketch
+143	0	On Error GoTo err_opensketch
+144	0	
+145	1	    'DoCmd.OpenForm "frm_pop_sketch", acNormal, , , acFormReadOnly, , Me![txtSketch_Name]
+146	0	    
+147	1	    'DoCmd.OpenForm "frm_pop_sketch", acNormal, , "[ID] = " & Me![ID], acFormReadOnly, , Me![txtSketch_Name]
+148	0	    
+149	0	    DoCmd.OpenForm "frm_pop_graphic", acNormal, , , acFormReadOnly, , Me![txtSketch_Name]
+150	0	Exit Sub
+151	0	
+152	0	err_opensketch:
+153	0	    Call General_Error_Trap
+154	0	    Exit Sub
+155	0	End Sub
+156	0	
+157	0	Private Sub Diary_AfterUpdate()
+158	1	'once name filled in the ID for the record is triggered so can unlock lists
+159	0	On Error GoTo err_diary
+160	0	
+161	0	    EnableLists "enable"
+162	0	Exit Sub
+163	0	
+164	0	err_diary:
+165	0	    Call General_Error_Trap
+166	0	    Exit Sub
+167	0	
+168	0	End Sub
+169	0	
+170	0	Private Sub Field20_AfterUpdate()
+171	1	'once name filled in the ID for the record is triggered so can unlock lists
+172	0	On Error GoTo err_field20
+173	0	
+174	0	    EnableLists "enable"
+175	0	Exit Sub
+176	0	
+177	0	err_field20:
+178	0	    Call General_Error_Trap
+179	0	    Exit Sub
+180	0	
+181	0	End Sub
+182	0	
+183	0	Sub find_Click()
+184	0	On Error GoTo Err_find_Click
+185	0	
+186	0	
+187	0	    Screen.PreviousControl.SetFocus
+188	0	    Me![Diary].SetFocus
+189	0	    DoCmd.DoMenuItem acFormBar, acEditMenu, 10, , acMenuVer70
+190	0	
+191	0	Exit_find_Click:
+192	0	    Exit Sub
+193	0	
+194	0	Err_find_Click:
+195	0	    MsgBox Err.Description
+196	0	    Resume Exit_find_Click
+197	0	    
+198	0	End Sub
+199	0	Private Sub Close_Form_Click()
+200	0	On Error GoTo Err_Close_Form_Click
+201	0	
+202	0	
+203	0	    DoCmd.Close
+204	0	
+205	0	Exit_Close_Form_Click:
+206	0	    Exit Sub
+207	0	
+208	0	Err_Close_Form_Click:
+209	0	    MsgBox Err.Description
+210	0	    Resume Exit_Close_Form_Click
+211	0	    
+212	0	End Sub
+213	0	
+214	0	Private Sub Form_Current()
+215	1	'until something is typed into the main diary record
+216	1	'the ID number is not created = if user first goes to fill in Unit....building
+217	2	'numbers they get the error msg 'cannot insert null val into col Diary_ID
+218	1	'To work around this disablin these lists until entry begun - plus msg to this effect
+219	1	'season 2006 - SAJ
+220	0	On Error GoTo err_Current
+221	0	
+222	0	If IsNull(Me![ID]) Then
+223	1	    'this sub is stored above
+224	0	    EnableLists "disable"
+225	0	Else
+226	0	    EnableLists "enable"
+227	0	
+228	0	End If
+229	0	
+230	1	'season 2007 - saj
+231	1	'new link to sketch directory - enable button if sketch name present
+232	0	If Me![txtSketch_Name] <> "" Then
+233	0	    Me![cmdOpenSketch].Enabled = True
+234	0	Else
+235	0	    Me![cmdOpenSketch].Enabled = False
+236	0	End If
+237	0	
+238	0	Exit Sub
+239	0	
+240	0	err_Current:
+241	0	    Call General_Error_Trap
+242	0	    Exit Sub
+243	0	End Sub
+244	0	
+245	0	Private Sub Form_Error(DataErr As Integer, Response As Integer)
+246	1	'User must enter their name otherwise get sql server null error when try to move off record
+247	1	'intercept here
+248	1	'season 2006 - SAJ
+249	0	
+250	1	'MsgBox DataErr
+251	0	If DataErr = 3146 Then
+252	1	    'null value
+253	0	    MsgBox "You must fill out all relevant information - please ensure you have filled out your name"
+254	0	    Response = 2
+255	0	End If
+256	0	End Sub
+257	0	
+258	0	Private Sub Form_Load()
+259	0	
+260	0	    Me![txtReplyTo].DefaultValue = Me.OpenArgs
+261	0	
+262	0	End Sub
+263	0	
+264	0	Private Sub Form_Open(Cancel As Integer)
+265	1	'12 Sept 06 - the database from site has returned but is still set to RO at Cambridge
+266	1	'as excavation still ongoing - putting this front end up highlighted problem - in this
+267	1	'RO scenario when this form opens it calls a macro Create New Record. This macro fails
+268	1	'as a new record cannot be created.
+269	1	'
+270	2	'So I've replaced the macro with error trappable code
+271	1	'SAJ
+272	0	On Error GoTo err_frm
+273	0	
+274	0	    DoCmd.RunCommand acCmdRecordsGoToNew
+275	0	    
+276	0	Exit Sub
+277	0	
+278	0	err_frm:
+279	0	    
+280	0	    If Err.Number = 2046 Then
+281	2	        'can't create a new record - open to show existing only
+282	0	        Resume Next
+283	0	    Else
+284	0	        Call General_Error_Trap
+285	0	    End If
+286	0	    Exit Sub
+287	0	End Sub
+288	0	
+289	0	Sub next_Click()
+290	0	On Error GoTo Err_next_Click
+291	0	
+292	0	
+293	0	    DoCmd.GoToRecord , , acNext
+294	0	
+295	0	Exit_next_Click:
+296	0	    Exit Sub
+297	0	
+298	0	Err_next_Click:
+299	0	    MsgBox Err.Description
+300	0	    Resume Exit_next_Click
+301	0	    
+302	0	End Sub
+303	0	Sub last_Click()
+304	0	On Error GoTo Err_last_Click
+305	0	
+306	0	
+307	0	    DoCmd.GoToRecord , , acLast
+308	0	
+309	0	Exit_last_Click:
+310	0	    Exit Sub
+311	0	
+312	0	Err_last_Click:
+313	0	    MsgBox Err.Description
+314	0	    Resume Exit_last_Click
+315	0	    
+316	0	End Sub
+317	0	Sub prev_Click()
+318	0	On Error GoTo Err_prev_Click
+319	0	
+320	0	
+321	0	    DoCmd.GoToRecord , , acPrevious
+322	0	
+323	0	Exit_prev_Click:
+324	0	    Exit Sub
+325	0	
+326	0	Err_prev_Click:
+327	0	    MsgBox Err.Description
+328	0	    Resume Exit_prev_Click
+329	0	    
+330	0	End Sub
+331	0	Sub first_Click()
+332	0	On Error GoTo Err_first_Click
+333	0	
+334	0	
+335	0	    DoCmd.GoToRecord , , acFirst
+336	0	
+337	0	Exit_first_Click:
+338	0	    Exit Sub
+339	0	
+340	0	Err_first_Click:
+341	0	    MsgBox Err.Description
+342	0	    Resume Exit_first_Click
+343	0	    
+344	0	End Sub
+345	0	Private Sub cmdSave_Click()
+346	1	'added by SAJ 5/06/06 request from Mia and Lisa for save function as users report
+347	1	'sometimes records not auto saved
+348	0	On Error GoTo Err_cmdSave_Click
+349	0	
+350	0	
+351	0	    DoCmd.DoMenuItem acFormBar, acRecordsMenu, acSaveRecord, , acMenuVer70
+352	0	
+353	0	Exit_cmdSave_Click:
+354	0	    Exit Sub
+355	0	
+356	0	Err_cmdSave_Click:
+357	0	    MsgBox Err.Description
+358	0	    Resume Exit_cmdSave_Click
+359	0	    
+360	0	End Sub
+361	0	
+362	0	Private Sub txtSketch_Name_AfterUpdate()
+363	0	On Error GoTo err_Name
+364	0	
+365	0	If Me![txtSketch_Name] <> "" Then
+366	0	    Me![cmdOpenSketch].Enabled = True
+367	0	Else
+368	0	    Me![cmdOpenSketch].Enabled = False
+369	0	End If
+370	0	
+371	0	Exit Sub
+372	0	
+373	0	err_Name:
+374	0	    Call General_Error_Trap
+375	0	    Exit Sub
+376	0	End Sub

@@ -1,0 +1,336 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	Dim current4percent
+4	0	Dim current2percent
+5	0	Dim current1percent
+6	0	
+7	0	
+8	0	Sub SetUpFields()
+9	1	'set up view of fields - pot and clay ball only need 4mm entry, stone only need 4mm presence/abscence
+10	0	On Error GoTo err_setupfield
+11	0	
+12	1	    'If LCase(Me![Material]) = "stone" Or LCase(Me![Material]) = "worked stone" Then
+13	1	    '    Me![chkStonePresent].Visible = True
+14	1	    '    Me![4 %% sorted].TabStop = False
+15	1	    '    Me![4 Weight].TabStop = False
+16	1	    'Else
+17	1	    '    Me![chkStonePresent].Visible = False
+18	1	    '    Me![4 %% sorted].TabStop = True
+19	1	    '    Me![4 Weight].TabStop = True
+20	1	    'End If
+21	0	    
+22	1	    'If LCase(Me![Material]) = "pottery" Or LCase(Me![Material]) = "clay ball" Or LCase(Me![Material]) = "stone" Or LCase(Me![Material]) = "worked stone" Then
+23	1	    ' MR added bone 4 %%, elseif for bone diagnostic for Slobo 27/7/2006
+24	1	    'this change above was not in the version brought back to cambridge end 2007, rescued from current download dir on site server in 2007 by SAJ
+25	1	    'Changed bone-behaviour - is now enabled for 2mm an 1mm; DL 2016
+26	0	    If LCase(Me![Material]) = "pottery" Or LCase(Me![Material]) = "clay ball" Or LCase(Me![Material]) = "stone" Or LCase(Me![Material]) = "worked stone" Then
+27	0	        Me![2 %% sorted].Enabled = False
+28	0	        Me![2 %% sorted].Locked = True
+29	0	        Me![2 %% sorted].TabStop = False
+30	1	       ' Me![2 %% sorted].BackColor = Me.Section(0).BackColor
+31	0	        Me![2 Weight].Enabled = False
+32	0	        Me![2 Weight].Locked = True
+33	0	        Me![2 Weight].TabStop = False
+34	1	       ' Me![2 Weight].BackColor = Me.Section(0).BackColor
+35	0	        Me![1 %% sorted].Enabled = False
+36	0	        Me![1 %% sorted].Locked = True
+37	0	        Me![1 %% sorted].TabStop = False
+38	1	       ' Me![1 %% sorted].BackColor = Me.Section(0).BackColor
+39	0	        Me![1 Weight].Enabled = False
+40	0	        Me![1 Weight].Locked = True
+41	0	        Me![1 Weight].TabStop = False
+42	1	       ' Me![1 Weight].BackColor = Me.Section(0).BackColor
+43	0	    
+44	2	    'this a new part of MR's change rescued 2007
+45	0	    ElseIf LCase(Me![Material]) = "bone diagnostic" Then
+46	0	        Me![4 %% sorted].Enabled = False
+47	0	        Me![4 %% sorted].Locked = True
+48	0	        Me![4 %% sorted].TabStop = False
+49	0	        Me![4 Weight].Enabled = False
+50	0	        Me![4 Weight].Locked = True
+51	0	        Me![4 Weight].TabStop = False
+52	0	    Else
+53	1	        'the 4 mm fields added to this bit due to elseif above
+54	0	        Me![4 %% sorted].Enabled = True
+55	0	        Me![4 %% sorted].Locked = False
+56	0	        Me![4 %% sorted].TabStop = True
+57	0	        Me![4 Weight].Enabled = True
+58	0	        Me![4 Weight].Locked = False
+59	0	        Me![4 Weight].TabStop = True
+60	0	    
+61	1	        'original
+62	0	        Me![2 %% sorted].Enabled = True
+63	0	        Me![2 %% sorted].Locked = False
+64	0	        Me![2 %% sorted].TabStop = True
+65	1	       ' Me![2 %% sorted].BackColor = 16777215
+66	0	        Me![2 Weight].Enabled = True
+67	0	        Me![2 Weight].Locked = False
+68	0	        Me![2 Weight].TabStop = True
+69	1	       ' Me![2 Weight].BackColor = 16777215
+70	0	        Me![1 %% sorted].Enabled = True
+71	0	        Me![1 %% sorted].Locked = False
+72	0	        Me![1 %% sorted].TabStop = True
+73	1	       ' Me![1 %% sorted].BackColor = 16777215
+74	0	        Me![1 Weight].Enabled = True
+75	0	        Me![1 Weight].Locked = False
+76	0	        Me![1 Weight].TabStop = True
+77	1	       ' Me![1 Weight].BackColor = 16777215
+78	0	    End If
+79	0	
+80	1	    'new season 2007 - there are default values %% sorted for diff material types
+81	1	    'but if the a %% sorted is typed in Slobo wants this carried down the list for any type of material
+82	1	    'the after update routine on the sorted fields stores the value in a global to use
+83	1	    'july 2008 after saj left 2007 and begining of 2008 Betsa reported that after changing the 100%%
+84	1	    'value when you enter a new HR record you get stuck in a null value/insert error loop that
+85	1	    'means you have to keep pressing ok (you can carry on but its annoying.
+86	1	    'I think this is because these 3 lines trigger a new materials record to be created before the
+87	1	    'unit,sample and flot fields have been filled out so...
+88	0	    If Not IsNull(Me![Unit]) Then
+89	0	        If current4percent <> "" Then Me![4 %% sorted] = current4percent
+90	0	        If current2percent <> "" Then Me![2 %% sorted] = current2percent
+91	0	        If current1percent <> "" Then Me![1 %% sorted] = current1percent
+92	1	        'MsgBox "should now be: " & Me![2 %% sorted]
+93	0	    Else
+94	1	        'new main HR record so blank these values
+95	0	        current4percent = ""
+96	0	        current2percent = ""
+97	0	        current1percent = ""
+98	0	    End If
+99	0	Exit Sub
+100	0	
+101	0	err_setupfield:
+102	0	    Call General_Error_Trap
+103	0	    Exit Sub
+104	0	
+105	0	End Sub
+106	0	
+107	0	Private Sub Ctl1___sorted_AfterUpdate()
+108	1	'new season 2007 - if %% sorted is changed in one record hold onto the value and make the the value for this column
+109	1	'for every new entry
+110	0	On Error GoTo err_ct11
+111	0	
+112	1	    'form var updated with value
+113	0	    current1percent = Me![1 %% sorted]
+114	0	    
+115	1	    'make sure its not 0
+116	0	    If Me![1 %% sorted] = 0 Then
+117	0	        MsgBox "Invalid entry - 0 not allowed. Update cancelled", vbCritical, "Invalid Data"
+118	0	        Me![1 %% sorted] = Me![1 %% sorted].OldValue
+119	0	    End If
+120	0	Exit Sub
+121	0	
+122	0	err_ct11:
+123	0	    Call General_Error_Trap
+124	0	    Exit Sub
+125	0	End Sub
+126	0	
+127	0	Private Sub Ctl2___sorted_AfterUpdate()
+128	1	'new season 2007 - if %% sorted is changed in one record hold onto the value and make the the value for this column
+129	1	'for every new entry
+130	0	On Error GoTo err_ct12
+131	0	
+132	1	    'form var updated with value
+133	0	    current2percent = Me![2 %% sorted]
+134	0	    
+135	1	    'make sure its not 0
+136	0	    If Me![2 %% sorted] = 0 Then
+137	0	        MsgBox "Invalid entry - 0 not allowed. Update cancelled", vbCritical, "Invalid Data"
+138	0	        Me![2 %% sorted] = Me![2 %% sorted].OldValue
+139	0	    End If
+140	0	Exit Sub
+141	0	
+142	0	err_ct12:
+143	0	    Call General_Error_Trap
+144	0	    Exit Sub
+145	0	End Sub
+146	0	
+147	0	Private Sub Ctl4___sorted_AfterUpdate()
+148	1	'new season 2007 - if %% sorted is changed in one record hold onto the value and make the the value for this column
+149	1	'for every new entry
+150	0	On Error GoTo err_ct14
+151	0	
+152	1	    'form var updated with value
+153	0	    current4percent = Me![4 %% sorted]
+154	0	    
+155	1	    'make sure its not 0
+156	0	    If Me![4 %% sorted] = 0 Then
+157	0	        MsgBox "Invalid entry - 0 not allowed. Update cancelled", vbCritical, "Invalid Data"
+158	0	        Me![4 %% sorted] = Me![4 %% sorted].OldValue
+159	0	    End If
+160	0	
+161	0	Exit Sub
+162	0	
+163	0	err_ct14:
+164	0	    Call General_Error_Trap
+165	0	    Exit Sub
+166	0	
+167	0	End Sub
+168	0	
+169	0	Private Sub Form_BeforeUpdate(Cancel As Integer)
+170	0	On Error GoTo err_BUpd
+171	0	
+172	0	Me![LastUpdated] = Now()
+173	0	
+174	0	Exit Sub
+175	0	
+176	0	err_BUpd:
+177	0	    Call General_Error_Trap
+178	0	    Exit Sub
+179	0	
+180	0	End Sub
+181	0	
+182	0	Private Sub Form_Current()
+183	1	'season 2006 - new request that stone and worked stone categories only have 4mm tick box
+184	1	'plus pottery and clay ball only 4mm entry
+185	0	On Error GoTo err_current
+186	0	
+187	0	    Call SetUpFields
+188	0	Exit Sub
+189	0	
+190	0	err_current:
+191	0	    Call General_Error_Trap
+192	0	    Exit Sub
+193	0	End Sub
+194	0	
+195	0	Private Sub Material_AfterUpdate()
+196	0	
+197	1	'20/7/06 Slobo you asked me to set the default value for ALL 2%% sorted to 50%%
+198	1	'and all 1%% sorted to 25%% - SAJ :)
+199	1	'note I also changed the hard coded default value on those fields - probably its
+200	1	'necessary to have this stuff here now? Check season 2007
+201	0	
+202	1	'Me![2 %% sorted] = 25
+203	1	'Me![1 %% sorted] = 12.5
+204	0	
+205	0	Me![2 %% sorted] = 50
+206	0	Me![1 %% sorted] = 25
+207	0	
+208	0	If Me![Material] = "Plant" Then
+209	0	Me![2 %% sorted] = 50
+210	0	End If
+211	0	
+212	0	If Me![Material] = "Eggshell" Then
+213	0	Me![2 %% sorted] = 50
+214	0	Me![1 %% sorted] = 25
+215	0	End If
+216	0	
+217	0	If Me![Material] = "Flint" Then
+218	0	Me![2 %% sorted] = 50
+219	0	Me![1 %% sorted] = 25
+220	0	End If
+221	0	
+222	0	If Me![Material] = "Worked Stone" Then
+223	0	Me![2 %% sorted] = 50
+224	0	Me![1 %% sorted] = 25
+225	0	End If
+226	0	
+227	0	If Me![Material] = "Pottery" Then
+228	0	Me![2 %% sorted] = 50
+229	0	Me![1 %% sorted] = 25
+230	0	End If
+231	0	
+232	0	If Me![Material] = "Clay Ball" Then
+233	0	Me![2 %% sorted] = 50
+234	0	Me![1 %% sorted] = 25
+235	0	End If
+236	0	
+237	0	If Me![Material] = "Clay Figurines" Then
+238	0	Me![2 %% sorted] = 50
+239	0	Me![1 %% sorted] = 25
+240	0	End If
+241	0	
+242	0	If Me![Material] = "Beads" Then
+243	0	Me![2 %% sorted] = 50
+244	0	Me![1 %% sorted] = 25
+245	0	End If
+246	0	
+247	0	If Me![Material] = "Metal" Then
+248	0	Me![2 %% sorted] = 50
+249	0	Me![1 %% sorted] = 25
+250	0	End If
+251	0	
+252	0	If Me![Material] = "Ochre" Then
+253	0	Me![2 %% sorted] = 50
+254	0	Me![1 %% sorted] = 25
+255	0	End If
+256	0	
+257	1	'SAJ new season 2006
+258	0	If Me![Material] = "Bone Diagnostic" Then
+259	0	Me![2 %% sorted] = 50
+260	0	Me![1 %% sorted] = 25
+261	0	End If
+262	0	
+263	1	'saj new season 2006
+264	0	Call SetUpFields
+265	0	
+266	0	End Sub
+267	0	
+268	0	
+269	0	Private Sub Material_Change()
+270	1	'season 2008 - this code is triggered and is out of date! When %% is changed and therefore
+271	1	'carried to a new record the choice of the material is actually a ON CHANGE event rather than
+272	1	'after update which meant the carried %% value was being overwritten by the values here.
+273	0	
+274	1	'so to keep %% categories in one place call after update - saj 2/08/2008
+275	0	Call Material_AfterUpdate
+276	0	
+277	1	'Me![2 %% sorted] = 25
+278	1	'Me![1 %% sorted] = 12.5
+279	0	
+280	0	
+281	1	'If Me![Material] = "Plant" Then
+282	1	'Me![2 %% sorted] = 50
+283	1	'End If
+284	0	
+285	1	'If Me![Material] = "Eggshell" Then
+286	1	'Me![2 %% sorted] = 50
+287	1	'Me![1 %% sorted] = 25
+288	1	'End If
+289	0	
+290	1	'If Me![Material] = "Flint" Then
+291	1	'Me![2 %% sorted] = 50
+292	1	'Me![1 %% sorted] = 25
+293	1	'End If
+294	0	
+295	1	'If Me![Material] = "Worked Stone" Then
+296	1	'Me![2 %% sorted] = 50
+297	1	'Me![1 %% sorted] = 25
+298	1	'End If
+299	0	
+300	1	'If Me![Material] = "Pottery" Then
+301	1	'Me![2 %% sorted] = 50
+302	1	'Me![1 %% sorted] = 25
+303	1	'End If
+304	0	
+305	1	'If Me![Material] = "Clay Ball" Then
+306	1	'Me![2 %% sorted] = 50
+307	1	'Me![1 %% sorted] = 25
+308	1	'End If
+309	0	
+310	1	'If Me![Material] = "Clay Figurines" Then
+311	1	'Me![2 %% sorted] = 50
+312	1	'Me![1 %% sorted] = 25
+313	1	'End If
+314	0	
+315	1	'If Me![Material] = "Beads" Then
+316	1	'Me![2 %% sorted] = 50
+317	1	'Me![1 %% sorted] = 25
+318	1	'End If
+319	0	
+320	1	'If Me![Material] = "Metal" Then
+321	1	'Me![2 %% sorted] = 50
+322	1	'Me![1 %% sorted] = 25
+323	1	'End If
+324	0	
+325	1	'If Me![Material] = "Ochre" Then
+326	1	'Me![2 %% sorted] = 50
+327	1	'Me![1 %% sorted] = 25
+328	1	'End If
+329	0	
+330	1	'SAJ new season 2006
+331	1	'If Me![Material] = "Bone Diagnostic" Then
+332	1	'Me![2 %% sorted] = 50
+333	1	'Me![1 %% sorted] = 25
+334	1	'End If
+335	0	End Sub
+336	0	

@@ -1,0 +1,133 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	1	' Copyright Lebans Holdings 1999 Ltd.
+4	0	
+5	0	
+6	0	Private Sub cmdLoadPicture_Click()
+7	1	' You must supply the reference to an Image Control
+8	1	' when you call this Function. The FileName is Optional.
+9	1	' If not supplied the File Dialog Window is called.
+10	0	fLoadPicture Me.JGSForm.Form.Image1, , True
+11	1	' To pass a FileName including the path
+12	1	' call the Function like:
+13	1	'fLoadPicture Me.Image1 , "C:\test.jpg"
+14	1	' Set ScrollBars back to 0,0
+15	1	' Scroll the Form back to X:0,Y:0
+16	0	ScrollToHome Me.JGSForm.Form.Image1
+17	0	End Sub
+18	0	
+19	0	Private Sub CmdClip_Click()
+20	0	With Me.JGSForm.Form.Image1
+21	0	    If .ImageWidth <= Me.JGSForm.Form.Width - 200 Then
+22	0	        .Width = .ImageWidth
+23	0	    Else
+24	0	        .Width = Me.JGSForm.Form.Width - 200
+25	0	    End If
+26	0	    
+27	0	    If .ImageHeight <= Me.JGSForm.Form.Detail.Height - 200 Then
+28	0	        .Height = .ImageHeight
+29	0	    Else
+30	0	        .Height = Me.JGSForm.Form.Detail.Height - 200
+31	0	    End If
+32	0	    
+33	1	    .SizeMode = acOLESizeClip '0
+34	0	End With
+35	0	
+36	1	' Force ScrollBars back to Top and Left
+37	0	ScrollToHome Me.JGSForm.Form.Image1
+38	0	End Sub
+39	0	
+40	0	Private Sub cmdSave_Click()
+41	1	' Save Enhanced Metafile to disk
+42	0	Dim blRet As Boolean
+43	0	blRet = fSaveImagetoDisk(Me.JGSForm.Form.Image1)
+44	0	End Sub
+45	0	
+46	0	Private Sub CmdStretch_Click()
+47	0	With Me.JGSForm.Form.Image1
+48	0	    .Width = Me.JGSForm.Form.Width - 200
+49	0	    .Height = Me.JGSForm.Form.Detail.Height - 200
+50	1	    .SizeMode = acOLESizeStretch '3
+51	0	End With
+52	0	End Sub
+53	0	
+54	0	Private Sub CmdZoom_Click()
+55	0	With Me.JGSForm.Form.Image1
+56	0	    .Width = Me.JGSForm.Form.Width - 200
+57	0	    .Height = Me.JGSForm.Form.Detail.Height - 200
+58	1	    .SizeMode = acOLESizeZoom '1
+59	0	End With
+60	0	End Sub
+61	0	
+62	0	Private Sub Form_Activate()
+63	0	DoCmd.MoveSize 5, 5, 8500, 7000
+64	0	End Sub
+65	0	
+66	0	Private Sub Form_Load()
+67	0	DoCmd.MoveSize 5, 5, 8500, 7000
+68	0	End Sub
+69	0	
+70	0	Private Sub CmdBig_Click()
+71	0	
+72	0	Dim intWidth As Integer
+73	0	Dim intHeight As Integer
+74	0	
+75	0	With Me.JGSForm.Form.Image1
+76	0	    intWidth = .Width * 1.05
+77	0	    intHeight = .Height * 1.05
+78	0	
+79	0	    If intWidth < .Parent.Width Then
+80	0	        .Width = intWidth
+81	0	    Else
+82	0	        MsgBox "Sorry, that is as Big as you can go!", vbOKOnly, "Do you really want to go bigger than this?"
+83	0	        Exit Sub
+84	0	    End If
+85	0	    
+86	0	    If intHeight < .Parent.Detail.Height Then
+87	0	        .Height = intHeight
+88	0	    Else
+89	0	        MsgBox "Sorry, that is as Big as you can go!", vbOKOnly, "Do you really want to go bigger than this?"
+90	0	        Exit Sub
+91	0	    End If
+92	1	     ' Set size mode
+93	0	    .SizeMode = acOLESizeZoom
+94	0	End With
+95	1	' Allow Access time to Repaint Screen
+96	1	' since we have Autorepeat set to TRUE for
+97	1	' this Command Button
+98	0	DoEvents
+99	0	   
+100	0	End Sub
+101	0	
+102	0	Private Sub CmdSmall_Click()
+103	0	
+104	0	Dim intWidth As Integer
+105	0	Dim intHeight As Integer
+106	0	
+107	0	
+108	0	With Me.JGSForm.Form.Image1
+109	0	    intWidth = .Width * 0.95
+110	0	    intHeight = .Height * 0.95
+111	0	
+112	0	    If intWidth > 200 Then
+113	0	        .Width = intWidth
+114	0	    Else
+115	0	        MsgBox "Sorry, that is as small as you can go!", vbOKOnly, "Do you really want to go smaller than this?"
+116	0	        Exit Sub
+117	0	    End If
+118	0	    
+119	0	    If intHeight > 200 Then
+120	0	        .Height = intHeight
+121	0	    Else
+122	0	        MsgBox "Sorry, that is as small as you can go!", vbOKOnly, "Do you really want to go smaller than this?"
+123	0	        Exit Sub
+124	0	    End If
+125	0	
+126	0	    .SizeMode = acOLESizeZoom
+127	0	End With
+128	1	' Allow Access time to Repaint Screen
+129	1	' since we have Autorepeat set to TRUE for
+130	1	' this Command Button
+131	0	DoEvents
+132	0	End Sub
+133	0	

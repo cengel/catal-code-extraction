@@ -1,0 +1,18 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Public Const DBName = "Finds Register Central"
+5	0	
+6	0	Public VersionNumber
+7	1	Public Const VersionNumberLocal = "8.3" 'NEW 2009 TO FLAG UPDATE MESSAGE TO USER - see SetCurrentVersion in module General Procedures-shared
+8	0	
+9	0	Public GeneralPermissions
+10	0	
+11	1	Public spString 'var to hold call to sp used in DeleteCrateRecord()
+12	0	
+13	0	Public logon
+14	0	
+15	1	Public SecondCrate 'used by crate comparison tool - R_crate_comparison
+16	0	
+17	1	Public CrateLetterFlag 'used to create a conditional query in Location Panel which will only show crates for a particular team to move inbetween
+18	0	

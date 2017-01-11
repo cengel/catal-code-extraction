@@ -1,0 +1,50 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub TimePeriod_DblClick(Cancel As Integer)
+5	1	'May 2009 - SAJ
+6	1	'This is a new subform that allows the timeperiod of a units to display on the feature sheet
+7	1	'Sometimes an error may have occurred and a feature have units from >1 timeperiod, to facilitate
+8	1	'checking this out when the user double click the period a message will tell them the units assigned
+9	0	On Error GoTo err_timeperiod
+10	0	
+11	0	Dim sql, mydb As DAO.Database, myrs As DAO.Recordset, msg
+12	0	Set mydb = CurrentDb
+13	0	sql = "SELECT DISTINCT [Exca: Unit Sheet].TimePeriod, [Exca: Units in Features].In_feature, [Exca: Units in Features].Unit " & _
+14	0	        "FROM [Exca: Unit Sheet] INNER JOIN [Exca: Units in Features] ON " & _
+15	0	        "[Exca: Unit Sheet].[Unit Number] = [Exca: Units in Features].Unit WHERE [In_feature] = " & Me![In_feature] & " AND "
+16	0	        
+17	0	If IsNull(Me![TimePeriod]) Then
+18	0	    sql = sql & "[timeperiod]is null;"
+19	0	Else
+20	2	    sql = sql & "[timeperiod] = '" & Me![TimePeriod] & "';"
+21	0	End If
+22	0	Set myrs = mydb.OpenRecordset(sql, dbOpenSnapshot)
+23	0	
+24	0	If Not (myrs.BOF And myrs.EOF) Then
+25	0	    myrs.MoveFirst
+26	0	    Do Until myrs.EOF
+27	0	        If msg <> "" Then msg = msg & ", "
+28	0	        msg = msg & myrs![Unit]
+29	0	    myrs.MoveNext
+30	0	    Loop
+31	0	
+32	0	End If
+33	0	
+34	0	If msg = "" Then
+35	0	    MsgBox "No units have been found for this timeperiod, associated with this feature. This should not happen, please let the database administrator know", vbCritical, "Code Issue"
+36	0	Else
+37	2	    MsgBox "This features unit numbers that are assigned to the timeperiod '" & Me![TimePeriod] & "': " & Chr(13) & Chr(13) & msg, vbInformation, "Units for this timeperiod"
+38	0	End If
+39	0	
+40	0	myrs.Close
+41	0	Set myrs = Nothing
+42	0	mydb.Close
+43	0	Set mydb = Nothing
+44	0	
+45	0	Exit Sub
+46	0	
+47	0	err_timeperiod:
+48	0	    Call General_Error_Trap
+49	0	    Exit Sub
+50	0	End Sub

@@ -1,0 +1,68 @@
+1	0	Option Compare Database
+2	0	
+3	0	Private Sub cboLettercode_AfterUpdate()
+4	1	'update the GID
+5	0	On Error GoTo err_lc
+6	0	
+7	0	    Me![GID] = Me![Unit] & "." & Me![Lettercode] & Me![FindNumber]
+8	0	
+9	0	Exit Sub
+10	0	
+11	0	err_lc:
+12	0	    Call General_Error_Trap
+13	0	    Exit Sub
+14	0	End Sub
+15	0	
+16	0	Private Sub FindNumber_AfterUpdate()
+17	1	'update the GID
+18	0	On Error GoTo err_fn
+19	0	
+20	0	    Me![GID] = Me![Unit] & "." & Me![Lettercode] & Me![FindNumber]
+21	0	
+22	0	Exit Sub
+23	0	
+24	0	err_fn:
+25	0	    Call General_Error_Trap
+26	0	    Exit Sub
+27	0	End Sub
+28	0	
+29	0	Private Sub Unit_AfterUpdate()
+30	0	
+31	1	'update the GID
+32	0	On Error GoTo err_unit
+33	0	
+34	0	    Me![GID] = Me![Unit] & "." & Me![Lettercode] & Me![FindNumber]
+35	0	
+36	0	Exit Sub
+37	0	
+38	0	err_unit:
+39	0	    Call General_Error_Trap
+40	0	    Exit Sub
+41	0	
+42	0	End Sub
+43	0	
+44	0	Private Sub Unit_DblClick(Cancel As Integer)
+45	0	
+46	0	On Error GoTo Err_cmdUnitDesc_Click
+47	0	
+48	0	If Me![Unit] <> "" Then
+49	1	    'check the unit number is in the unit desc form
+50	0	    Dim checknum, sql
+51	0	    checknum = DLookup("[Unit]", "[dbo_Groundstone: Unit Description_2013]", "[Unit] = " & Me![Unit])
+52	0	    If IsNull(checknum) Then
+53	1	        'must add the unit to the table
+54	0	        sql = "INSERT INTo [dbo_Groundstone: Unit Description_2013] ([Unit]) VALUES (" & Me![Unit] & ");"
+55	0	        DoCmd.RunSQL sql
+56	0	    End If
+57	0	    
+58	0	    DoCmd.OpenForm "Frm_GS_UnitDescription_2013", acNormal, , "[Unit] = " & Me![Unit], acFormPropertySettings
+59	0	Else
+60	0	    MsgBox "No Unit number is present, cannot open the Unit Description form", vbInformation, "No Unit Number"
+61	0	End If
+62	0	Exit Sub
+63	0	
+64	0	Err_cmdUnitDesc_Click:
+65	0	    Call General_Error_Trap
+66	0	    Exit Sub
+67	0	
+68	0	End Sub

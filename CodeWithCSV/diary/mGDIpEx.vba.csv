@@ -1,0 +1,569 @@
+1	1	'================================================
+2	1	' Module:        mGDIpEx.bas
+3	1	' Author:        (*)
+4	1	' Dependencies:  -
+5	1	' Last revision: 2004.08.02
+6	1	'================================================
+7	1	'
+8	1	' (*) From great stuff:
+9	1	'
+10	1	'     + http://www.planet-source-code.com/vb/scripts/ShowCode.asp?txtCodeId=37541&lngWId=1
+11	1	'       by Avery
+12	1	'     + Also thanks to Vlad Vissoultchev
+13	1	'
+14	1	' GDI+ PNG (Load/Save) and JPEG (Save) support
+15	1	' High-quality scaling
+16	1	'
+17	1	' In case lower versions than Windows XP, needed:
+18	1	'
+19	1	'     Platform SDK Redistributable: GDI+ RTM
+20	1	'     http://www.microsoft.com/downloads/release.asp?releaseid=32738
+21	0	
+22	0	Option Explicit
+23	0	
+24	1	'-- GDI+ API:
+25	0	
+26	0	Public Enum GpImageFormat
+27	0	    [ImageGIF] = 0
+28	0	    [ImageJPEG] = 1
+29	0	    [ImagePNG] = 2
+30	0	    [ImageTIFF] = 3
+31	0	End Enum
+32	0	
+33	0	Public Enum GpStatus
+34	0	    [OK] = 0
+35	0	    [GenericError] = 1
+36	0	    [InvalidParameter] = 2
+37	0	    [OutOfMemory] = 3
+38	0	    [ObjectBusy] = 4
+39	0	    [InsufficientBuffer] = 5
+40	0	    [NotImplemented] = 6
+41	0	    [Win32Error] = 7
+42	0	    [WrongState] = 8
+43	0	    [Aborted] = 9
+44	0	    [FileNotFound] = 10
+45	0	    [ValueOverflow ] = 11
+46	0	    [AccessDenied] = 12
+47	0	    [UnknownImageFormat] = 13
+48	0	    [FontFamilyNotFound] = 14
+49	0	    [FontStyleNotFound] = 15
+50	0	    [NotTrueTypeFont] = 16
+51	0	    [UnsupportedGdiplusVersion] = 17
+52	0	    [GdiplusNotInitialized ] = 18
+53	0	    [PropertyNotFound] = 19
+54	0	    [PropertyNotSupported] = 20
+55	0	End Enum
+56	0	
+57	0	Public Type GdiplusStartupInput
+58	0	    GdiplusVersion           As Long
+59	0	    DebugEventCallback       As Long
+60	0	    SuppressBackgroundThread As Long
+61	0	    SuppressExternalCodecs   As Long
+62	0	End Type
+63	0	
+64	1	'//
+65	0	
+66	0	Private Enum GpUnit
+67	0	    [UnitWorld]
+68	0	    [UnitDisplay]
+69	0	    [UnitPixel]
+70	0	    [UnitPoint]
+71	0	    [UnitInch]
+72	0	    [UnitDocument]
+73	0	    [UnitMillimeter]
+74	0	End Enum
+75	0	
+76	0	Private Enum QualityMode
+77	0	    [QualityModeInvalid] = -1
+78	0	    [QualityModeDefault] = 0
+79	0	    [QualityModeLow] = 1
+80	0	    [QualityModeHigh] = 2
+81	0	End Enum
+82	0	
+83	0	Private Enum PixelOffsetMode
+84	0	    [PixelOffsetModeInvalid] = -1
+85	0	    [PixelOffsetModeDefault]
+86	0	    [PixelOffsetModeHighSpeed]
+87	0	    [PixelOffsetModeHighQuality]
+88	0	    [PixelOffsetModeNone]
+89	0	    [PixelOffsetModeHalf]
+90	0	End Enum
+91	0	
+92	0	Private Enum InterpolationMode
+93	0	    [InterpolationModeInvalid] = [QualityModeInvalid]
+94	0	    [InterpolationModeDefault] = [QualityModeDefault]
+95	0	    [InterpolationModeLowQuality] = [QualityModeLow]
+96	0	    [InterpolationModeHighQuality] = [QualityModeHigh]
+97	0	    [InterpolationModeBilinear]
+98	0	    [InterpolationModeBicubic]
+99	0	    [InterpolationModeNearestNeighbor]
+100	0	    [InterpolationModeHighQualityBilinear]
+101	0	    [InterpolationModeHighQualityBicubic]
+102	0	End Enum
+103	0	
+104	0	Private Enum EncoderParameterValueType
+105	0	    [EncoderParameterValueTypeByte] = 1
+106	0	    [EncoderParameterValueTypeASCII] = 2
+107	0	    [EncoderParameterValueTypeShort] = 3
+108	0	    [EncoderParameterValueTypeLong] = 4
+109	0	    [EncoderParameterValueTypeRational] = 5
+110	0	    [EncoderParameterValueTypeLongRange] = 6
+111	0	    [EncoderParameterValueTypeUndefined] = 7
+112	0	    [EncoderParameterValueTypeRationalRange] = 8
+113	0	End Enum
+114	0	
+115	0	Private Enum EncoderValue
+116	0	    [EncoderValueColorTypeCMYK] = 0
+117	0	    [EncoderValueColorTypeYCCK] = 1
+118	0	    [EncoderValueCompressionLZW] = 2
+119	0	    [EncoderValueCompressionCCITT3] = 3
+120	0	    [EncoderValueCompressionCCITT4] = 4
+121	0	    [EncoderValueCompressionRle] = 5
+122	0	    [EncoderValueCompressionNone] = 6
+123	0	    [EncoderValueScanMethodInterlaced]
+124	0	    [EncoderValueScanMethodNonInterlaced]
+125	0	    [EncoderValueVersionGif87]
+126	0	    [EncoderValueVersionGif89]
+127	0	    [EncoderValueRenderProgressive]
+128	0	    [EncoderValueRenderNonProgressive]
+129	0	    [EncoderValueTransformRotate90]
+130	0	    [EncoderValueTransformRotate180]
+131	0	    [EncoderValueTransformRotate270]
+132	0	    [EncoderValueTransformFlipHorizontal]
+133	0	    [EncoderValueTransformFlipVertical]
+134	0	    [EncoderValueMultiFrame]
+135	0	    [EncoderValueLastFrame]
+136	0	    [EncoderValueFlush]
+137	0	    [EncoderValueFrameDimensionTime]
+138	0	    [EncoderValueFrameDimensionResolution]
+139	0	    [EncoderValueFrameDimensionPage]
+140	0	End Enum
+141	0	
+142	0	Private Type CLSID
+143	0	    Data1         As Long
+144	0	    Data2         As Integer
+145	0	    Data3         As Integer
+146	0	    Data4(0 To 7) As Byte
+147	0	End Type
+148	0	
+149	0	Private Type ImageCodecInfo
+150	0	    ClassID           As CLSID
+151	0	    FormatID          As CLSID
+152	0	    CodecName         As Long
+153	0	    DllName           As Long
+154	0	    FormatDescription As Long
+155	0	    FilenameExtension As Long
+156	0	    MimeType          As Long
+157	0	    Flags             As Long
+158	0	    Version           As Long
+159	0	    SigCount          As Long
+160	0	    SigSize           As Long
+161	0	    SigPattern        As Long
+162	0	    SigMask           As Long
+163	0	End Type
+164	0	
+165	1	'-- Encoder Parameter structure
+166	0	Private Type EncoderParameter
+167	0	    GUID           As CLSID
+168	0	    NumberOfValues As Long
+169	0	    Type           As EncoderParameterValueType
+170	0	    Value          As Long
+171	0	End Type
+172	0	
+173	1	'-- Encoder Parameters structure
+174	0	Private Type EncoderParameters
+175	0	    Count     As Long
+176	0	    Parameter As EncoderParameter
+177	0	End Type
+178	0	
+179	1	'-- Encoder parameter sets
+180	0	Private Const EncoderCompression      As String = "{E09D739D-CCD4-44EE-8EBA-3FBF8BE4FC58}"
+181	0	Private Const EncoderColorDepth       As String = "{66087055-AD66-4C7C-9A18-38A2310B8337}"
+182	0	Private Const EncoderScanMethod       As String = "{3A4E2661-3109-4E56-8536-42C156E7DCFA}"
+183	0	Private Const EncoderVersion          As String = "{24D18C76-814A-41A4-BF53-1C219CCCF797}"
+184	0	Private Const EncoderRenderMethod     As String = "{6D42C53A-229A-4825-8BB7-5C99E2B9A8B8}"
+185	0	Private Const EncoderQuality          As String = "{1D5BE4B5-FA4A-452D-9CDD-5DB35105E7EB}"
+186	0	Private Const EncoderTransformation   As String = "{8D0EB2D1-A58E-4EA8-AA14-108074B7B6F9}"
+187	0	Private Const EncoderLuminanceTable   As String = "{EDB33BCE-0266-4A77-B904-27216099E717}"
+188	0	Private Const EncoderChrominanceTable As String = "{F2E455DC-09B3-4316-8260-676ADA32481C}"
+189	0	Private Const EncoderSaveFlag         As String = "{292266FC-AC40-47BF-8CFC-A85B89A655DE}"
+190	0	Private Const CodecIImageBytes        As String = "{025D1823-6C7D-447B-BBDB-A3CBC3DFA2FC}"
+191	0	
+192	0	Private Type BITMAPINFOHEADER
+193	0	    biSize          As Long
+194	0	    biWidth         As Long
+195	0	    biHeight        As Long
+196	0	    biPlanes        As Integer
+197	0	    biBitCount      As Integer
+198	0	    biCompression   As Long
+199	0	    biSizeImage     As Long
+200	0	    biXPelsPerMeter As Long
+201	0	    biYPelsPerMeter As Long
+202	0	    biClrUsed       As Long
+203	0	    biClrImportant  As Long
+204	0	End Type
+205	0	
+206	0	Private Type RGBQUAD
+207	0	    B As Byte
+208	0	    G As Byte
+209	0	    R As Byte
+210	0	    A As Byte
+211	0	End Type
+212	0	
+213	0	Private Type BITMAPINFO
+214	0	    bmiHeader As BITMAPINFOHEADER
+215	0	    bmiColors As RGBQUAD
+216	0	End Type
+217	0	
+218	0	Private Type PICTDESC
+219	0	    Size       As Long
+220	0	    Type       As Long
+221	0	    hBmpOrIcon As Long
+222	0	    hPal       As Long
+223	0	End Type
+224	0	
+225	0	Public Declare Function GdiplusStartup Lib "gdiplus" (Token As Long, InputBuf As GdiplusStartupInput, Optional ByVal OutputBuf As Long = 0) As GpStatus
+226	0	Public Declare Function GdiplusShutdown Lib "gdiplus" (ByVal Token As Long) As GpStatus
+227	0	
+228	0	Private Declare Function GdipGetImageEncodersSize Lib "gdiplus" (numEncoders As Long, Size As Long) As GpStatus
+229	0	Private Declare Function GdipGetImageEncoders Lib "gdiplus" (ByVal numEncoders As Long, ByVal Size As Long, Encoders As Any) As GpStatus
+230	0	Private Declare Function GdipGetImageDecodersSize Lib "gdiplus" (numDecoders As Long, Size As Long) As GpStatus
+231	0	Private Declare Function GdipGetImageDecoders Lib "gdiplus" (ByVal numDecoders As Long, ByVal Size As Long, Decoders As Any) As GpStatus
+232	0	
+233	0	Private Declare Function GdipCreateFromHDC Lib "gdiplus" (ByVal hDC As Long, hGraphics As Long) As GpStatus
+234	0	Private Declare Function GdipCreateHBITMAPFromBitmap Lib "gdiplus" (ByVal Bitmap As Long, hBmpReturn As Long, ByVal Background As Long) As GpStatus
+235	0	Private Declare Function GdipCreateBitmapFromGdiDib Lib "gdiplus" (gdiBitmapInfo As BITMAPINFO, gdiBitmapData As Any, Bitmap As Long) As GpStatus
+236	0	Private Declare Function GdipLoadImageFromFile Lib "gdiplus" (ByVal FileName As String, hImage As Long) As GpStatus
+237	0	Private Declare Function GdipSaveImageToFile Lib "gdiplus" (ByVal hImage As Long, ByVal sFilename As String, clsidEncoder As CLSID, encoderParams As Any) As GpStatus
+238	0	Private Declare Function GdipSetPixelOffsetMode Lib "gdiplus" (ByVal hGraphics As Long, ByVal OffsetMode As PixelOffsetMode) As GpStatus
+239	0	Private Declare Function GdipSetInterpolationMode Lib "gdiplus" (ByVal hGraphics As Long, ByVal Interpolation As InterpolationMode) As GpStatus
+240	0	Private Declare Function GdipDrawImageRectRect Lib "gdiplus" (ByVal hGraphics As Long, ByVal hImage As Long, ByVal dstX As Long, ByVal dstY As Long, ByVal dstWidth As Long, ByVal dstHeight As Long, ByVal srcX As Long, ByVal srcY As Long, ByVal srcWidth As Long, ByVal srcHeight As Long, ByVal srcUnit As GpUnit, Optional ByVal imageAttributes As Long = 0, Optional ByVal Callback As Long = 0, Optional ByVal CallbackData As Long = 0) As GpStatus
+241	0	Private Declare Function GdipDrawImageRectRectI Lib "gdiplus" (ByVal hGraphics As Long, ByVal hImage As Long, ByVal dstX As Long, ByVal dstY As Long, ByVal dstWidth As Long, ByVal dstHeight As Long, ByVal srcX As Long, ByVal srcY As Long, ByVal srcWidth As Long, ByVal srcHeight As Long, ByVal srcUnit As GpUnit, Optional ByVal imageAttributes As Long = 0, Optional ByVal Callback As Long = 0, Optional ByVal CallbackData As Long = 0) As GpStatus
+242	0	Private Declare Function GdipDisposeImage Lib "gdiplus" (ByVal hImage As Long) As GpStatus
+243	0	Private Declare Function GdipDeleteGraphics Lib "gdiplus" (ByVal hGraphics As Long) As GpStatus
+244	0	
+245	0	Private Declare Function CLSIDFromString Lib "ole32" (ByVal lpszProgID As Long, pCLSID As CLSID) As Long
+246	0	Private Declare Function lstrlenW Lib "kernel32" (ByVal psString As Any) As Long
+247	0	Private Declare Function lstrlenA Lib "kernel32" (ByVal psString As Any) As Long
+248	0	
+249	0	Private Declare Function OleCreatePictureIndirect Lib "olepro32" (lpPictDesc As PICTDESC, riid As Any, ByVal fPictureOwnsHandle As Long, IPic As IPicture) As Long
+250	0	Private Declare Function CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Dest As Any, Src As Any, ByVal cb As Long) As Long
+251	0	
+252	0	
+253	1	Private Const vbPicTypeNone = 0 'Picture is empty
+254	1	Private Const vbPicTypeBitmap = 1 'Bitmap (.bmpBMP files)
+255	1	Private Const vbPicTypeMetafile = 2 'Metafile (.wmfWMF files)
+256	1	Private Const vbPicTypeIcon = 3 'Icon (.icoICO files)
+257	1	Private Const vbPicTypeEMetafile = 4 'Enhanced Metafile (.emfEMF files)
+258	0	
+259	1	'//
+260	0	
+261	0	Public Function LoadPictureEx(ByVal sFilename As String) As StdPicture
+262	0	
+263	0	  Dim gplRet        As Long
+264	0	  Dim hImg          As Long
+265	0	  Dim hBmp          As Long
+266	0	  Dim uPictDesc     As PICTDESC
+267	0	  Dim aGuid(0 To 3) As Long
+268	0	  Dim varString As Variant
+269	0	    
+270	1	    '-- Load image
+271	0	    varString = StrConv(sFilename, vbUnicode)
+272	1	    'gplRet = GdipLoadImageFromFile(StrConv(sFilename, vbUnicode), hImg)
+273	0	     Call GdipLoadImageFromFile(varString, hImg)
+274	0	    
+275	1	    '-- Create bitmap
+276	0	    gplRet = GdipCreateHBITMAPFromBitmap(hImg, hBmp, vbBlack)
+277	0	    
+278	1	    '-- Free image
+279	0	    gplRet = GdipDisposeImage(hImg)
+280	0	    
+281	0	    If (gplRet = [OK]) Then
+282	0	    
+283	1	        '-- Fill struct
+284	0	        With uPictDesc
+285	0	            .Size = Len(uPictDesc)
+286	0	            .Type = vbPicTypeBitmap
+287	0	            .hBmpOrIcon = hBmp
+288	0	            .hPal = 0
+289	0	        End With
+290	0	        
+291	1	        '-- Fill in magic IPicture GUID {7BF80980-BF32-101A-8BBB-00AA00300CAB}
+292	0	        aGuid(0) = &H7BF80980
+293	0	        aGuid(1) = &H101ABF32
+294	0	        aGuid(2) = &HAA00BB8B
+295	0	        aGuid(3) = &HAB0C3000
+296	0	        
+297	1	        '-- Create picture from bitmap handle
+298	0	        OleCreatePictureIndirect uPictDesc, aGuid(0), -1, LoadPictureEx
+299	0	    End If
+300	0	End Function
+301	0	
+302	1	'Public Function SaveDIB(DIB As cDIB, _
+303	1	'                        ByVal sFilename As String, _
+304	1	'                        ByVal lEncoder As GpImageFormat, _
+305	1	'                        Optional ByVal JPEG_Quality As Long = 90, _
+306	1	'                        Optional ByVal TIFF_ColorDepth As Long = 24, _
+307	1	'                        Optional ByVal TIFF_Compression As Long = [EncoderValueCompressionNone] _
+308	1	'                        ) As Boolean
+309	1	'
+310	1	'  Dim gplRet       As Long
+311	1	'  Dim uInfo        As BITMAPINFO
+312	1	'  Dim hImg         As Long
+313	1	'  Dim uEncCLSID    As CLSID
+314	1	'  Dim uEncParams   As EncoderParameters
+315	1	'  Dim aEncParams() As Byte
+316	1	'
+317	2	'    '-- Prepare struct
+318	1	'    With uInfo.bmiHeader
+319	1	'        .biSize = Len(uInfo.bmiHeader)
+320	1	'        .biPlanes = 1
+321	1	'        .biBitCount = 32
+322	1	'        .biWidth = DIB.Width
+323	1	'        .biHeight = DIB.Height
+324	1	'    End With
+325	1	'
+326	2	'    '-- Create bitmap
+327	1	'    gplRet = GdipCreateBitmapFromGdiDib(uInfo, ByVal DIB.lpBits, hImg)
+328	1	'
+329	2	'    '-- Get image encoder
+330	1	'    Select Case lEncoder
+331	1	'
+332	1	'        Case [ImageGIF]
+333	2	'            '-- GIF encoder
+334	1	'            Call pvGetEncoderClsID("image/gif", uEncCLSID)
+335	1	'            ReDim aEncParams(1 To Len(uEncParams))
+336	1	'
+337	1	'        Case [ImageJPEG]
+338	2	'            '-- JPEG encoder
+339	1	'            Call pvGetEncoderClsID("image/jpeg", uEncCLSID)
+340	2	'            '-- Set encoders params. (Quality)
+341	1	'            uEncParams.Count = 1: ReDim aEncParams(1 To Len(uEncParams))
+342	1	'            With uEncParams.Parameter
+343	1	'                .NumberOfValues = 1
+344	1	'                .Type = [EncoderParameterValueTypeLong]
+345	1	'                .GUID = pvDEFINE_GUID(EncoderQuality)
+346	1	'                .Value = VarPtr(JPEG_Quality)
+347	1	'            End With
+348	1	'            Call CopyMemory(aEncParams(1), uEncParams, Len(uEncParams))
+349	1	'
+350	1	'        Case [ImagePNG]
+351	2	'            '-- PNG encoder
+352	1	'            Call pvGetEncoderClsID("image/png", uEncCLSID)
+353	1	'            ReDim aEncParams(1 To Len(uEncParams))
+354	1	'
+355	1	'        Case [ImageTIFF]
+356	2	'            '-- TIFF encoder
+357	1	'            Call pvGetEncoderClsID("image/tiff", uEncCLSID)
+358	2	'            '-- Set encoders params. (Compression/Color depth)
+359	1	'            uEncParams.Count = 2: ReDim aEncParams(1 To Len(uEncParams) + Len(uEncParams.Parameter))
+360	1	'            With uEncParams.Parameter
+361	1	'                .NumberOfValues = 1
+362	1	'                .Type = [EncoderParameterValueTypeLong]
+363	1	'                .GUID = pvDEFINE_GUID(EncoderCompression)
+364	1	'                .Value = VarPtr(TIFF_Compression)
+365	1	'            End With
+366	1	'            Call CopyMemory(aEncParams(1), uEncParams, Len(uEncParams))
+367	1	'            With uEncParams.Parameter
+368	1	'                .NumberOfValues = 1
+369	1	'                .Type = [EncoderParameterValueTypeLong]
+370	1	'                .GUID = pvDEFINE_GUID(EncoderColorDepth)
+371	1	'                .Value = VarPtr(TIFF_ColorDepth)
+372	1	'            End With
+373	1	'            Call CopyMemory(aEncParams(Len(uEncParams) + 1), uEncParams.Parameter, Len(uEncParams.Parameter))
+374	1	'    End Select
+375	1	'
+376	2	'    '-- Kill previous
+377	1	'    On Error Resume Next
+378	1	'       Kill sFilename
+379	1	'    On Error GoTo 0
+380	1	'
+381	2	'    '-- Encode
+382	1	'    gplRet = GdipSaveImageToFile(hImg, StrConv(sFilename, vbUnicode), uEncCLSID, aEncParams(1))
+383	1	'
+384	2	'    '-- Free image
+385	1	'    gplRet = GdipDisposeImage(hImg)
+386	1	'
+387	2	'    '-- Success
+388	1	'    SaveDIB = (gplRet = [OK])
+389	1	'End Function
+390	1	'
+391	1	'Public Function ScaleDIB(DIB As cDIB, _
+392	1	'                         ByVal NewWidth As Long, _
+393	1	'                         ByVal NewHeight As Long, _
+394	1	'                         Optional ByVal HighQuality As Boolean = False _
+395	1	'                         ) As Boolean
+396	1	'
+397	1	'  Dim gplRet    As Long
+398	1	'  Dim sDIB      As New cDIB
+399	1	'  Dim uInfo     As BITMAPINFO
+400	1	'  Dim hGraphics As Long
+401	1	'  Dim hImg      As Long
+402	1	'
+403	1	'  Dim OldWidth  As Long
+404	1	'  Dim OldHeight As Long
+405	1	'
+406	1	'    If (DIB.hDIB <> 0) Then
+407	1	'
+408	2	'        '-- Buffer DIB
+409	1	'        If (sDIB.Create(NewWidth, NewHeight)) Then
+410	1	'
+411	2	'            '-- Get source dimensions
+412	1	'            OldWidth = DIB.Width
+413	1	'            OldHeight = DIB.Height
+414	1	'
+415	4	'            '-- Create 'surface'
+416	1	'            gplRet = GdipCreateFromHDC(sDIB.hDC, hGraphics)
+417	1	'
+418	2	'            '-- Create bitmap
+419	1	'            With uInfo.bmiHeader
+420	1	'                .biSize = Len(uInfo.bmiHeader)
+421	1	'                .biPlanes = 1
+422	1	'                .biBitCount = 32
+423	1	'                .biWidth = DIB.Width
+424	1	'                .biHeight = DIB.Height
+425	1	'            End With
+426	1	'            gplRet = GdipCreateBitmapFromGdiDib(uInfo, ByVal DIB.lpBits, hImg)
+427	1	'
+428	2	'            '-- Scale
+429	1	'            If (HighQuality) Then
+430	1	'                gplRet = GdipSetInterpolationMode(hGraphics, [InterpolationModeHighQualityBicubic])
+431	1	'              Else
+432	1	'                gplRet = GdipSetInterpolationMode(hGraphics, [InterpolationModeNearestNeighbor])
+433	1	'            End If
+434	1	'            gplRet = GdipSetPixelOffsetMode(hGraphics, [PixelOffsetModeHighQuality])
+435	1	'            gplRet = GdipDrawImageRectRectI(hGraphics, hImg, 0, 0, NewWidth, NewHeight, 0, 0, OldWidth, OldHeight, [UnitPixel])
+436	1	'
+437	2	'            '-- Clean up
+438	1	'            gplRet = GdipDisposeImage(hImg)
+439	1	'            gplRet = GdipDeleteGraphics(hGraphics)
+440	1	'
+441	2	'            '-- Success
+442	1	'            If (gplRet = [OK]) Then
+443	1	'
+444	2	'                '-- Get from Buffer
+445	1	'                If (DIB.Create(NewWidth, NewHeight)) Then
+446	1	'                    DIB.LoadBlt sDIB.hDC
+447	1	'                    ScaleDIB = True
+448	1	'                End If
+449	1	'            End If
+450	1	'        End If
+451	1	'    End If
+452	1	'End Function
+453	0	
+454	1	'========================================================================================
+455	1	' Private
+456	1	'========================================================================================
+457	0	
+458	0	Private Function pvGetEncoderClsID(strMimeType As String, ClassID As CLSID) As Long
+459	0	
+460	0	  Dim Num      As Long
+461	0	  Dim Size     As Long
+462	0	  Dim lIdx     As Long
+463	0	  Dim ICI()    As ImageCodecInfo
+464	0	  Dim Buffer() As Byte
+465	0	    
+466	1	    pvGetEncoderClsID = -1 ' Failure flag
+467	0	    
+468	1	    '-- Get the encoder array size
+469	0	    Call GdipGetImageEncodersSize(Num, Size)
+470	1	    If (Size = 0) Then Exit Function ' Failed!
+471	0	    
+472	1	    '-- Allocate room for the arrays dynamically
+473	0	    ReDim ICI(1 To Num) As ImageCodecInfo
+474	0	    ReDim Buffer(1 To Size) As Byte
+475	0	    
+476	1	    '-- Get the array and string data
+477	0	    Call GdipGetImageEncoders(Num, Size, Buffer(1))
+478	1	    '-- Copy the class headers
+479	0	    Call CopyMemory(ICI(1), Buffer(1), (Len(ICI(1)) * Num))
+480	0	    
+481	1	    '-- Loop through all the codecs
+482	0	    For lIdx = 1 To Num
+483	1	        '-- Must convert the pointer into a usable string
+484	0	        If (StrComp(pvPtrToStrW(ICI(lIdx).MimeType), strMimeType, vbTextCompare) = 0) Then
+485	1	            ClassID = ICI(lIdx).ClassID ' Save the Class ID
+486	1	            pvGetEncoderClsID = lIdx      ' Return the index number for success
+487	0	            Exit For
+488	0	        End If
+489	0	    Next lIdx
+490	1	    '-- Free the memory
+491	0	    Erase ICI
+492	0	    Erase Buffer
+493	0	End Function
+494	0	
+495	0	Private Function pvGetDecoderClsID(strMimeType As String, ClassID As CLSID) As Long
+496	0	
+497	0	  Dim Num      As Long
+498	0	  Dim Size     As Long
+499	0	  Dim lIdx     As Long
+500	0	  Dim ICI()    As ImageCodecInfo
+501	0	  Dim Buffer() As Byte
+502	0	    
+503	1	    pvGetDecoderClsID = -1 'Failure flag
+504	0	    
+505	1	    '-- Get the encoder array size
+506	0	    Call GdipGetImageDecodersSize(Num, Size)
+507	1	    If (Size = 0) Then Exit Function ' Failed!
+508	0	    
+509	1	    '-- Allocate room for the arrays dynamically
+510	0	    ReDim ICI(1 To Num) As ImageCodecInfo
+511	0	    ReDim Buffer(1 To Size) As Byte
+512	0	    
+513	1	    '-- Get the array and string data
+514	0	    Call GdipGetImageDecoders(Num, Size, Buffer(1))
+515	1	    '-- Copy the class headers
+516	0	    Call CopyMemory(ICI(1), Buffer(1), (Len(ICI(1)) * Num))
+517	0	    
+518	1	    '-- Loop through all the codecs
+519	0	    For lIdx = 1 To Num
+520	1	        '-- Must convert the pointer into a usable string
+521	0	        If (StrComp(pvPtrToStrW(ICI(lIdx).MimeType), strMimeType, vbTextCompare) = 0) Then
+522	1	            ClassID = ICI(lIdx).ClassID ' Save the Class ID
+523	1	            pvGetDecoderClsID = lIdx      ' Return the index number for success
+524	0	            Exit For
+525	0	        End If
+526	0	    Next lIdx
+527	1	    '-- Free the memory
+528	0	    Erase ICI
+529	0	    Erase Buffer
+530	0	End Function
+531	0	
+532	0	Private Function pvDEFINE_GUID(ByVal sGuid As String) As CLSID
+533	1	'-- Courtesy of: Dana Seaman
+534	1	'   Helper routine to convert a CLSID(aka GUID) string to a structure
+535	1	'   Example ImageFormatBMP = {B96B3CAB-0728-11D3-9D7B-0000F81EF32E}
+536	0	    Call CLSIDFromString(StrPtr(sGuid), pvDEFINE_GUID)
+537	0	End Function
+538	0	
+539	1	'-- From www.mvps.org/vbnet
+540	1	'   Dereferences an ANSI or Unicode string pointer
+541	1	'   and returns a normal VB BSTR
+542	0	
+543	0	Private Function pvPtrToStrW(ByVal lpsz As Long) As String
+544	0	    
+545	0	  Dim sOut As String
+546	0	  Dim lLen As Long
+547	0	
+548	0	    lLen = lstrlenW(lpsz)
+549	0	
+550	0	    If (lLen > 0) Then
+551	0	        sOut = StrConv(String$(lLen, vbNullChar), vbUnicode)
+552	0	        Call CopyMemory(ByVal sOut, ByVal lpsz, lLen * 2)
+553	0	        pvPtrToStrW = StrConv(sOut, vbFromUnicode)
+554	0	    End If
+555	0	End Function
+556	0	
+557	0	Private Function pvPtrToStrA(ByVal lpsz As Long) As String
+558	0	    
+559	0	  Dim sOut As String
+560	0	  Dim lLen As Long
+561	0	
+562	0	    lLen = lstrlenA(lpsz)
+563	0	
+564	0	    If (lLen > 0) Then
+565	0	        sOut = String$(lLen, vbNullChar)
+566	0	        Call CopyMemory(ByVal sOut, ByVal lpsz, lLen)
+567	0	        pvPtrToStrA = sOut
+568	0	    End If
+569	0	End Function

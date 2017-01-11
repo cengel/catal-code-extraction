@@ -1,0 +1,21 @@
+# This script takes the *vba files and generates a csv file for each.
+### v 0.1
+
+for file in Code/*/*.vba;
+do
+  awk -F ''\''' '{gsub("%","%%"); printf gsub("'\''","'\''") "\t"; for (i = 2; i < NF; i++) printf $i " "; print $NF}' "$file" > $file".csv"
+done
+
+# Explanation
+awk -F ''\''' ## use ' as field separator (we need to escape it)
+  ## awk fix: a single % makes printf choke so we make it two %%
+  '{gsub("%","%%");
+  ## here's the trick: we replace ' with itself (senseless)
+  ## but gsub counts the number of replacements
+  ## per line so we can print them!
+  printf gsub("'\''","'\''")
+  ## print Tab delimiter, >> hoping that it is unique
+  "\t";
+  ## loop through each field per line and print
+  ## everything or everything after the first '
+  for (i = 2; i < NF; i++) printf $i " "; print $NF}'

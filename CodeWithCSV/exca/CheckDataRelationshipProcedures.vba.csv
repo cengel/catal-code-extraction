@@ -1,0 +1,439 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Sub CheckUnitFeatureSpaceRelationships()
+5	0	
+6	0	Dim mydb As DAO.Database, unitrels As DAO.Recordset, unitFeatures As DAO.Recordset, unitSpaces As DAO.Recordset, unitBuildings As DAO.Recordset
+7	0	Dim featureSpaces As DAO.Recordset, featureBuildings As DAO.Recordset, getFeatures, getSpaces, getBuildings, thisSpace, ishere
+8	0	Dim sql, writeToTable As DAO.Recordset, counter
+9	0	
+10	1	'delete last set of check data
+11	0	sql = "DELETE from LocalCheckUnitFeatureSpaceRels;"
+12	0	DoCmd.RunSQL sql
+13	0	counter = 0
+14	0	
+15	0	Set mydb = CurrentDb
+16	0	Set unitrels = mydb.OpenRecordset("Exca: Unit Sheet with Relationships", dbOpenSnapshot)
+17	0	Set writeToTable = mydb.OpenRecordset("LocalCheckUnitFeatureSpaceRels", dbOpenDynaset)
+18	0	
+19	0	
+20	0	If Not (unitrels.BOF And unitrels.EOF) Then
+21	0	    unitrels.MoveFirst
+22	1	    Do Until unitrels.EOF 'Or counter = 1000
+23	1	        'Debug.Print "unit: " & unitrels![Unit Number]
+24	1	        'If unitrels![Unit Number] = 1086 Then
+25	1	        '    MsgBox "why not matching space@"
+26	1	        'End If
+27	0	        getFeatures = unitrels![Feature]
+28	0	        getSpaces = unitrels![Space]
+29	0	        getBuildings = unitrels![Building]
+30	0	        
+31	0	        If Not IsNull(unitrels![Feature]) Or unitrels![Feature] <> "" Then
+32	0	            sql = "SELECT * FROM [Exca: Units in Features] where [unit] = " & unitrels![Unit Number] & ";"
+33	0	            Set unitFeatures = mydb.OpenRecordset(sql, dbOpenSnapshot)
+34	0	        
+35	0	            If Not (unitFeatures.BOF And unitFeatures.EOF) Then
+36	0	                unitFeatures.MoveFirst
+37	0	                Do Until unitFeatures.EOF
+38	1	                    'get first feature num asso with this unit, then use this to find out what space this feature is assoc with
+39	0	                    Set featureSpaces = mydb.OpenRecordset("SELECT * FROM [Exca: Features in Spaces] where [Feature] = " & unitFeatures![In_feature], dbOpenSnapshot)
+40	0	                    If Not (featureSpaces.BOF And featureSpaces.EOF) Then
+41	0	                        featureSpaces.MoveFirst
+42	0	                        thisSpace = "," & Trim(featureSpaces![In_Space]) & ","
+43	0	                        
+44	1	                        'writeToTable.AddNew
+45	1	                        'writeToTable![UnitNumber] = unitrels![Unit Number]
+46	1	                        'writeToTable![AssociatedWithFeature] = unitFeatures![In_feature]
+47	0	                        If InStr(getSpaces, thisSpace) > 0 Then
+48	1	                            'MsgBox "unit: " & unitrels![Unit Number] & " is assoc with feature: " & unitFeatures![Feature Number] & " which in turn is related to space: " & featureSpaces![In_Space] & " AND this unit is also related to this space!!!"
+49	1	                        '    writeToTable![Success] = "unit: " & unitrels![Unit Number] & " is assoc with feature: " & unitFeatures![In_feature] & " which in turn is related to space: " & featureSpaces![In_Space] & " AND this feature is also related to this space!!!"
+50	0	                        Else
+51	1	                            'MsgBox "unit: " & unitrels![Unit Number] & " is assoc with feature: " & unitFeatures![In_feature] & " which in turn is related to space: " & featureSpaces![In_Space] & " BUT this unit is NOT related to this space....."
+52	0	                            writeToTable.AddNew
+53	0	                            writeToTable![UnitNumber] = unitrels![Unit Number]
+54	0	                            writeToTable![AssociatedWithFeature] = unitFeatures![In_feature]
+55	2	                            writeToTable![Problem] = "unit: " & unitrels![Unit Number] & " is assoc with feature: " & unitFeatures![In_feature] & ", this feature is in turn related to space: " & featureSpaces![In_Space] & " BUT this unit is NOT related to this space, it is related to '" & getSpaces & "'"
+56	0	                            writeToTable.Update
+57	0	                        End If
+58	1	                        'writeToTable.Update
+59	0	                    End If
+60	0	                    featureSpaces.Close
+61	0	                    Set featureSpaces = Nothing
+62	0	                    
+63	0	                    unitFeatures.MoveNext
+64	0	                Loop
+65	0	            End If
+66	0	            
+67	0	            unitFeatures.Close
+68	0	            Set unitFeatures = Nothing
+69	0	        End If
+70	0	    unitrels.MoveNext
+71	0	    counter = counter + 1
+72	0	    Loop
+73	0	
+74	0	End If
+75	0	
+76	0	unitrels.Close
+77	0	Set unitrels = Nothing
+78	0	
+79	0	mydb.Close
+80	0	Set mydb = Nothing
+81	0	MsgBox "done - " & counter & " records checked"
+82	0	End Sub
+83	0	
+84	0	Sub CheckUnitFeatureBuildingRelationships()
+85	0	
+86	0	Dim mydb As DAO.Database, unitrels As DAO.Recordset, unitFeatures As DAO.Recordset, unitSpaces As DAO.Recordset, unitBuildings As DAO.Recordset
+87	0	Dim featureSpaces As DAO.Recordset, featureBuildings As DAO.Recordset, getFeatures, getSpaces, getBuildings, thisSpace, ishere
+88	0	Dim sql, writeToTable As DAO.Recordset, counter, thisBuilding
+89	0	
+90	1	'delete last set of check data
+91	0	sql = "DELETE from LocalCheckUnitFeatureBuildingRels;"
+92	0	DoCmd.RunSQL sql
+93	0	counter = 0
+94	0	
+95	0	Set mydb = CurrentDb
+96	0	Set unitrels = mydb.OpenRecordset("Exca: Unit Sheet with Relationships", dbOpenSnapshot)
+97	0	Set writeToTable = mydb.OpenRecordset("LocalCheckUnitFeatureBuildingRels", dbOpenDynaset)
+98	0	
+99	0	
+100	0	If Not (unitrels.BOF And unitrels.EOF) Then
+101	0	    unitrels.MoveFirst
+102	1	    Do Until unitrels.EOF 'Or counter = 1000
+103	1	        'Debug.Print "unit: " & unitrels![Unit Number]
+104	1	        'If unitrels![Unit Number] = 1086 Then
+105	1	        '    MsgBox "why not matching space@"
+106	1	        'End If
+107	0	        getFeatures = unitrels![Feature]
+108	0	        getSpaces = unitrels![Space]
+109	0	        getBuildings = unitrels![Building]
+110	0	        
+111	0	        If Not IsNull(unitrels![Feature]) Or unitrels![Feature] <> "" Then
+112	0	            sql = "SELECT * FROM [Exca: Units in Features] where [unit] = " & unitrels![Unit Number] & ";"
+113	0	            Set unitFeatures = mydb.OpenRecordset(sql, dbOpenSnapshot)
+114	0	        
+115	0	            If Not (unitFeatures.BOF And unitFeatures.EOF) Then
+116	0	                unitFeatures.MoveFirst
+117	0	                Do Until unitFeatures.EOF
+118	1	                    'get first feature num asso with this unit, then use this to find out what space this feature is assoc with
+119	0	                    Set featureBuildings = mydb.OpenRecordset("SELECT * FROM [Exca: Features in Buildings] where [Feature] = " & unitFeatures![In_feature], dbOpenSnapshot)
+120	0	                    If Not (featureBuildings.BOF And featureBuildings.EOF) Then
+121	0	                        featureBuildings.MoveFirst
+122	0	                        thisBuilding = "," & Trim(featureBuildings![In_Building]) & ","
+123	0	                        
+124	1	                        'writeToTable.AddNew
+125	1	                        'writeToTable![UnitNumber] = unitrels![Unit Number]
+126	1	                        'writeToTable![AssociatedWithFeature] = unitFeatures![In_feature]
+127	0	                        If InStr(getBuildings, thisBuilding) > 0 Then
+128	1	                            'MsgBox "unit: " & unitrels![Unit Number] & " is assoc with feature: " & unitFeatures![Feature Number] & " which in turn is related to building: " & featureBuildings![In_Building] & " AND this unit is also related to this building!!!"
+129	1	                        '    writeToTable![Success] = "unit: " & unitrels![Unit Number] & " is assoc with feature: " & unitFeatures![In_feature] & " which in turn is related to building: " & featureBuildings![In_Building] & " AND this feature is also related to this building!!!"
+130	0	                        Else
+131	1	                            'MsgBox "unit: " & unitrels![Unit Number] & " is assoc with feature: " & unitFeatures![In_feature] & " which in turn is related to building: " & featureBuildings![In_Building] & " BUT this unit is NOT related to this building....."
+132	0	                            writeToTable.AddNew
+133	0	                            writeToTable![UnitNumber] = unitrels![Unit Number]
+134	0	                            writeToTable![AssociatedWithFeature] = unitFeatures![In_feature]
+135	2	                            writeToTable![Problem] = "unit: " & unitrels![Unit Number] & " is assoc with feature: " & unitFeatures![In_feature] & ", this feature is in turn is related to building: " & featureBuildings![In_Building] & " BUT this unit is NOT related to this building, it is related to '" & getBuildings & "'"
+136	0	                            writeToTable.Update
+137	0	                        End If
+138	1	                        'writeToTable.Update
+139	0	                    End If
+140	0	                    featureBuildings.Close
+141	0	                    Set featureBuildings = Nothing
+142	0	                    
+143	0	                    unitFeatures.MoveNext
+144	0	                Loop
+145	0	            End If
+146	0	            
+147	0	            unitFeatures.Close
+148	0	            Set unitFeatures = Nothing
+149	0	        End If
+150	0	    unitrels.MoveNext
+151	0	    counter = counter + 1
+152	0	    Loop
+153	0	
+154	0	End If
+155	0	
+156	0	unitrels.Close
+157	0	Set unitrels = Nothing
+158	0	
+159	0	mydb.Close
+160	0	Set mydb = Nothing
+161	0	MsgBox "done - " & counter & " records checked"
+162	0	End Sub
+163	0	
+164	0	Sub CheckUnitSpaceBuildingRelationships()
+165	0	
+166	0	Dim mydb As DAO.Database, unitrels As DAO.Recordset, unitFeatures As DAO.Recordset, unitSpaces As DAO.Recordset, unitBuildings As DAO.Recordset
+167	0	Dim featureSpaces As DAO.Recordset, featureBuildings As DAO.Recordset, getFeatures, getSpaces, getBuildings, thisSpace, ishere
+168	0	Dim sql, writeToTable As DAO.Recordset, counter, thisBuilding, spaceBuildings As DAO.Recordset
+169	0	
+170	1	'delete last set of check data
+171	0	sql = "DELETE from LocalCheckUnitSpaceBuildingRels;"
+172	0	DoCmd.RunSQL sql
+173	0	counter = 0
+174	0	
+175	0	Set mydb = CurrentDb
+176	0	Set unitrels = mydb.OpenRecordset("Exca: Unit Sheet with Relationships", dbOpenSnapshot)
+177	0	Set writeToTable = mydb.OpenRecordset("LocalCheckUnitSpaceBuildingRels", dbOpenDynaset)
+178	0	
+179	0	
+180	0	If Not (unitrels.BOF And unitrels.EOF) Then
+181	0	    unitrels.MoveFirst
+182	1	    Do Until unitrels.EOF 'Or counter = 1000
+183	1	        'Debug.Print "unit: " & unitrels![Unit Number]
+184	1	        'If unitrels![Unit Number] = 1086 Then
+185	1	        '    MsgBox "why not matching space@"
+186	1	        'End If
+187	0	        getFeatures = unitrels![Feature]
+188	0	        getSpaces = unitrels![Space]
+189	0	        getBuildings = unitrels![Building]
+190	0	        
+191	0	        If Not IsNull(unitrels![Space]) Or unitrels![Space] <> "" Then
+192	0	            sql = "SELECT * FROM [Exca: Units in Spaces] where [unit] = " & unitrels![Unit Number] & ";"
+193	0	            Set unitSpaces = mydb.OpenRecordset(sql, dbOpenSnapshot)
+194	0	        
+195	0	            If Not (unitSpaces.BOF And unitSpaces.EOF) Then
+196	0	                unitSpaces.MoveFirst
+197	0	                Do Until unitSpaces.EOF
+198	1	                    '
+199	0	                    
+200	0	                    Set spaceBuildings = mydb.OpenRecordset("SELECT * FROM [Exca: Space Sheet] where [Space Number] = " & unitSpaces![In_Space], dbOpenSnapshot)
+201	0	                    If Not (spaceBuildings.BOF And spaceBuildings.EOF) Then
+202	0	                        spaceBuildings.MoveFirst
+203	0	                        If IsNull(spaceBuildings![Building]) Then
+204	0	                            thisBuilding = Null
+205	0	                        Else
+206	0	                            thisBuilding = "," & Trim(spaceBuildings![Building]) & ","
+207	0	                        End If
+208	1	                        'writeToTable.AddNew
+209	1	                        'writeToTable![UnitNumber] = unitrels![Unit Number]
+210	1	                        'writeToTable![AssociatedWithFeature] = unitFeatures![In_feature]
+211	0	                        If Not IsNull(thisBuilding) Or Not IsNull(getBuildings) Then
+212	0	                            If InStr(getBuildings, thisBuilding) > 0 Then
+213	1	                                'MsgBox "unit: " & unitrels![Unit Number] & " is assoc with feature: " & unitFeatures![Feature Number] & " which in turn is related to building: " & featureBuildings![In_Building] & " AND this unit is also related to this building!!!"
+214	1	                            '    writeToTable![Success] = "unit: " & unitrels![Unit Number] & " is assoc with feature: " & unitFeatures![In_feature] & " which in turn is related to building: " & featureBuildings![In_Building] & " AND this feature is also related to this building!!!"
+215	0	                            Else
+216	1	                                'MsgBox "unit: " & unitrels![Unit Number] & " is assoc with feature: " & unitFeatures![In_feature] & " which in turn is related to building: " & featureBuildings![In_Building] & " BUT this unit is NOT related to this building....."
+217	0	                                writeToTable.AddNew
+218	0	                                writeToTable![UnitNumber] = unitrels![Unit Number]
+219	0	                                writeToTable![AssociatedWithSpace] = unitSpaces![In_Space]
+220	2	                                writeToTable![Problem] = "unit: " & unitrels![Unit Number] & " is assoc with space: " & unitSpaces![In_Space] & ", this space is in turn related to building: " & spaceBuildings![Building] & " BUT this unit is NOT related to this building, it is related to '" & getBuildings & "'"
+221	0	                                writeToTable.Update
+222	0	                            End If
+223	1	                            'writeToTable.Update
+224	0	                        End If
+225	0	                    End If
+226	0	                    spaceBuildings.Close
+227	0	                    Set spaceBuildings = Nothing
+228	0	                    
+229	0	                    unitSpaces.MoveNext
+230	0	                Loop
+231	0	            End If
+232	0	            
+233	0	            unitSpaces.Close
+234	0	            Set unitSpaces = Nothing
+235	0	        End If
+236	0	    unitrels.MoveNext
+237	0	    counter = counter + 1
+238	0	    Loop
+239	0	
+240	0	End If
+241	0	
+242	0	unitrels.Close
+243	0	Set unitrels = Nothing
+244	0	
+245	0	mydb.Close
+246	0	Set mydb = Nothing
+247	0	MsgBox "done - " & counter & " records checked"
+248	0	End Sub
+249	0	
+250	0	Sub CheckFeatureSpaceBuildingRelationships()
+251	0	
+252	0	Dim mydb As DAO.Database, featurerels As DAO.Recordset, unitFeatures As DAO.Recordset, unitSpaces As DAO.Recordset, unitBuildings As DAO.Recordset
+253	0	Dim featureSpaces As DAO.Recordset, featureBuildings As DAO.Recordset, getFeatures, getSpaces, getBuildings, thisSpace, ishere
+254	0	Dim sql, writeToTable As DAO.Recordset, counter, thisBuilding, spaceBuildings As DAO.Recordset
+255	0	
+256	1	'delete last set of check data
+257	0	sql = "DELETE from LocalCheckFeatureSpaceBuildingRels;"
+258	0	DoCmd.RunSQL sql
+259	0	counter = 0
+260	0	
+261	0	Set mydb = CurrentDb
+262	0	Set featurerels = mydb.OpenRecordset("Exca: Features with Relationships", dbOpenSnapshot)
+263	0	Set writeToTable = mydb.OpenRecordset("LocalCheckFeatureSpaceBuildingRels", dbOpenDynaset)
+264	0	
+265	0	
+266	0	If Not (featurerels.BOF And featurerels.EOF) Then
+267	0	    featurerels.MoveFirst
+268	1	    Do Until featurerels.EOF 'Or counter = 1000
+269	1	        'Debug.Print "unit: " & unitrels![Unit Number]
+270	0	        If featurerels![Feature Number] = 5000 Then
+271	1	            'MsgBox "why not matching building"
+272	0	        End If
+273	1	        'getFeatures = unitrels![Feature]
+274	0	        getSpaces = featurerels![Space]
+275	0	        getBuildings = featurerels![Building]
+276	0	        
+277	0	        If Not IsNull(featurerels![Space]) Or featurerels![Space] <> "" Then
+278	0	            sql = "SELECT * FROM [Exca: Features in Spaces] where [feature] = " & featurerels![Feature Number] & ";"
+279	0	            Set featureSpaces = mydb.OpenRecordset(sql, dbOpenSnapshot)
+280	0	        
+281	0	            If Not (featureSpaces.BOF And featureSpaces.EOF) Then
+282	0	                featureSpaces.MoveFirst
+283	0	                Do Until featureSpaces.EOF
+284	1	                    '
+285	0	                    
+286	0	                    Set spaceBuildings = mydb.OpenRecordset("SELECT * FROM [Exca: Space Sheet] where [Space Number] = " & featureSpaces![In_Space], dbOpenSnapshot)
+287	0	                    If Not (spaceBuildings.BOF And spaceBuildings.EOF) Then
+288	0	                        spaceBuildings.MoveFirst
+289	0	                        If Not IsNull(spaceBuildings![Building]) Then
+290	0	                            thisBuilding = "," & Trim(spaceBuildings![Building]) & ","
+291	0	                        Else
+292	0	                            thisBuilding = Null
+293	0	                        End If
+294	0	                        
+295	1	                        'writeToTable.AddNew
+296	1	                        'writeToTable![UnitNumber] = unitrels![Unit Number]
+297	1	                        'writeToTable![AssociatedWithFeature] = unitFeatures![In_feature]
+298	0	                        If InStr(getBuildings, thisBuilding) > 0 Then
+299	1	                            'MsgBox "unit: " & unitrels![Unit Number] & " is assoc with feature: " & unitFeatures![Feature Number] & " which in turn is related to building: " & featureBuildings![In_Building] & " AND this unit is also related to this building!!!"
+300	1	                        '    writeToTable![Success] = "unit: " & unitrels![Unit Number] & " is assoc with feature: " & unitFeatures![In_feature] & " which in turn is related to building: " & featureBuildings![In_Building] & " AND this feature is also related to this building!!!"
+301	0	                        ElseIf Not IsNull(InStr(getBuildings, thisBuilding)) Then
+302	1	                         'Else
+303	1	                            'MsgBox "unit: " & unitrels![Unit Number] & " is assoc with feature: " & unitFeatures![In_feature] & " which in turn is related to building: " & featureBuildings![In_Building] & " BUT this unit is NOT related to this building....."
+304	0	                            writeToTable.AddNew
+305	0	                            writeToTable![FeatureNumber] = featurerels![Feature Number]
+306	0	                            writeToTable![AssociatedWithSpace] = featureSpaces![In_Space]
+307	4	                            writeToTable![Problem] = "feature: " & featurerels![Feature Number] & " is assoc with space: " & featureSpaces![In_Space] & ", this space is in turn related to building: '" & spaceBuildings![Building] & "' BUT this feature NOT related to this building, it is related to '" & getBuildings & "'"
+308	0	                            writeToTable.Update
+309	0	                        End If
+310	1	                        'writeToTable.Update
+311	0	                    End If
+312	0	                    spaceBuildings.Close
+313	0	                    Set spaceBuildings = Nothing
+314	0	                    
+315	0	                    featureSpaces.MoveNext
+316	0	                Loop
+317	0	            End If
+318	0	            
+319	0	            featureSpaces.Close
+320	0	            Set featureSpaces = Nothing
+321	0	        End If
+322	0	    featurerels.MoveNext
+323	0	    counter = counter + 1
+324	0	    Loop
+325	0	
+326	0	End If
+327	0	
+328	0	featurerels.Close
+329	0	Set featurerels = Nothing
+330	0	
+331	0	mydb.Close
+332	0	Set mydb = Nothing
+333	0	MsgBox "done - " & counter & " records checked"
+334	0	End Sub
+335	0	Sub CheckFeatureSpaceUnitSpaceRelationships()
+336	0	
+337	0	Dim mydb As DAO.Database, featurerels As DAO.Recordset, unitFeatures As DAO.Recordset, unitSpaces As DAO.Recordset, unitBuildings As DAO.Recordset
+338	0	Dim featureSpaces As DAO.Recordset, featureBuildings As DAO.Recordset, getFeatures, getSpaces, getBuildings, thisSpace, ishere
+339	0	Dim sql, writeToTable As DAO.Recordset, counter, checkpresent, strtoprint
+340	0	
+341	1	'delete last set of check data
+342	0	sql = "DELETE from LocalCheckFeatureSpaceUnitSpaceRels;"
+343	0	DoCmd.RunSQL sql
+344	0	counter = 0
+345	0	
+346	0	Dim sqlFeature, response
+347	0	response = MsgBox("4040 and South only?", vbQuestion + vbYesNo, "Area Filter")
+348	0	If response = vbYes Then
+349	4	    sqlFeature = "SELECT * FROM [Exca: Features with Relationships] WHERE Area = 'South' or Area = '4040'"
+350	0	Else
+351	0	    sqlFeature = "Exca: Features with Relationships"
+352	0	End If
+353	1	'MsgBox "Generating data..."
+354	0	Set mydb = CurrentDb
+355	1	'Set featurerels = mydb.OpenRecordset("Exca: Features with Relationships", dbOpenSnapshot)
+356	1	'added season 2009
+357	0	Set featurerels = mydb.OpenRecordset(sqlFeature, dbOpenSnapshot)
+358	0	Set writeToTable = mydb.OpenRecordset("LocalCheckFeatureSpaceUnitSpaceRels", dbOpenDynaset)
+359	0	
+360	0	
+361	0	If Not (featurerels.BOF And featurerels.EOF) Then
+362	0	    featurerels.MoveFirst
+363	1	    Do Until featurerels.EOF 'Or counter = 1000
+364	1	        'Debug.Print "unit: " & unitrels![Unit Number]
+365	1	        'If unitrels![Unit Number] = 1086 Then
+366	1	        '    MsgBox "why not matching space@"
+367	1	        'End If
+368	0	        getSpaces = featurerels![Space]
+369	0	        
+370	0	        If Not IsNull(featurerels![Space]) Or featurerels![Space] <> "" Then
+371	0	            sql = "SELECT * FROM [Exca: Units in Features] where [In_Feature] = " & featurerels![Feature Number] & ";"
+372	0	            Set unitFeatures = mydb.OpenRecordset(sql, dbOpenSnapshot)
+373	0	        
+374	0	            If Not (unitFeatures.BOF And unitFeatures.EOF) Then
+375	0	                unitFeatures.MoveFirst
+376	0	                
+377	0	                Do Until unitFeatures.EOF
+378	1	                    'get first feature num asso with this unit, then use this to find out what space this feature is assoc with
+379	0	                    Set unitSpaces = mydb.OpenRecordset("SELECT * FROM [Exca: Units in Spaces] where [Unit] = " & unitFeatures![Unit], dbOpenSnapshot)
+380	0	                    If Not (unitSpaces.BOF And unitSpaces.EOF) Then
+381	0	                        unitSpaces.MoveFirst
+382	0	                        Do Until unitSpaces.EOF
+383	0	                            thisSpace = "," & Trim(unitSpaces![In_Space]) & ","
+384	0	                            strtoprint = strtoprint & "," & unitSpaces![In_Space]
+385	1	                            'writeToTable.AddNew
+386	1	                            'writeToTable![UnitNumber] = unitrels![Unit Number]
+387	1	                            'writeToTable![AssociatedWithFeature] = unitFeatures![In_feature]
+388	0	                            If InStr(getSpaces, thisSpace) > 0 Then
+389	1	                                'MsgBox "unit: " & unitrels![Unit Number] & " is assoc with feature: " & unitFeatures![Feature Number] & " which in turn is related to space: " & featureSpaces![In_Space] & " AND this unit is also related to this space!!!"
+390	1	                            '    writeToTable![Success] = "unit: " & unitrels![Unit Number] & " is assoc with feature: " & unitFeatures![In_feature] & " which in turn is related to space: " & featureSpaces![In_Space] & " AND this feature is also related to this space!!!"
+391	1	                            'great we have a match exit loop as this unit is assoc with same space as feature
+392	0	                            checkpresent = True
+393	0	                            Exit Do
+394	0	                            Else
+395	1	                                'MsgBox "unit: " & unitrels![Unit Number] & " is assoc with feature: " & unitFeatures![In_feature] & " which in turn is related to space: " & featureSpaces![In_Space] & " BUT this unit is NOT related to this space....."
+396	1	                                'writeToTable.AddNew
+397	1	                                'writeToTable![UnitNumber] = unitFeatures![Unit]
+398	1	                                'writeToTable![AssociatedWithFeature] = unitFeatures![In_feature]
+399	3	                                'writeToTable![Problem] = "Feature: " & featurerels![Feature Number] & " is assoc with spaces: " & getSpaces & ", unit: " & unitFeatures![Unit] & " is associated with this feature but is not associated with " & featureSpaces![In_Space] & " BUT this unit is NOT related to this space, it is related to '" & getSpaces & "'"
+400	1	                                'writeToTable.Update
+401	0	                                checkpresent = False
+402	0	                            End If
+403	1	                            'writeToTable.Update
+404	0	                            
+405	0	                        unitSpaces.MoveNext
+406	0	                        Loop
+407	0	                        
+408	0	                        If checkpresent = False Then
+409	0	                            writeToTable.AddNew
+410	0	                            writeToTable![UnitNumber] = unitFeatures![Unit]
+411	0	                            writeToTable![AssociatedWithFeature] = unitFeatures![In_feature]
+412	0	                            writeToTable![Problem] = "Feature: " & featurerels![Feature Number] & " is assoc with spaces: " & getSpaces & ", unit: " & unitFeatures![Unit] & " is associated with this feature but is not associated with any of these spaces, instead it is associated with space/s " & strtoprint
+413	0	                            writeToTable.Update
+414	0	                        End If
+415	0	                        strtoprint = ""
+416	0	                    End If
+417	0	                    unitSpaces.Close
+418	0	                    Set unitSpaces = Nothing
+419	0	                    
+420	0	                    unitFeatures.MoveNext
+421	0	                Loop
+422	0	            End If
+423	0	            
+424	0	            unitFeatures.Close
+425	0	            Set unitFeatures = Nothing
+426	0	        End If
+427	0	    featurerels.MoveNext
+428	0	    counter = counter + 1
+429	0	    Loop
+430	0	
+431	0	End If
+432	0	
+433	0	featurerels.Close
+434	0	Set featurerels = Nothing
+435	0	
+436	0	mydb.Close
+437	0	Set mydb = Nothing
+438	0	MsgBox "done - " & counter & " records checked"
+439	0	End Sub

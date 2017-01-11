@@ -1,0 +1,113 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub Bulb_NotInList(NewData As String, Response As Integer)
+5	1	'stop not in list msg loop
+6	0	On Error GoTo err_BulbNot
+7	0	
+8	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+9	0	    Response = acDataErrContinue
+10	0	    
+11	0	    Me![Bulb].Undo
+12	0	Exit Sub
+13	0	
+14	0	err_BulbNot:
+15	0	    Call General_Error_Trap
+16	0	    Exit Sub
+17	0	
+18	0	End Sub
+19	0	
+20	0	Private Sub BulbScar_NotInList(NewData As String, Response As Integer)
+21	1	'stop not in list msg loop
+22	0	On Error GoTo err_BulbScarNot
+23	0	
+24	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+25	0	    Response = acDataErrContinue
+26	0	    
+27	0	    Me![BulbScar].Undo
+28	0	Exit Sub
+29	0	
+30	0	err_BulbScarNot:
+31	0	    Call General_Error_Trap
+32	0	    Exit Sub
+33	0	
+34	0	End Sub
+35	0	
+36	0	
+37	0	
+38	0	Private Sub cboOverhang_NotInList(NewData As String, Response As Integer)
+39	1	'stop not in list msg loop
+40	0	On Error GoTo err_OverhangNot
+41	0	
+42	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+43	0	    Response = acDataErrContinue
+44	0	    
+45	0	    Me![OverHang].Undo
+46	0	Exit Sub
+47	0	
+48	0	err_OverhangNot:
+49	0	    Call General_Error_Trap
+50	0	    Exit Sub
+51	0	End Sub
+52	0	
+53	0	Private Sub cboDistal_NotInList(NewData As String, Response As Integer)
+54	1	'stop not in list msg loop
+55	0	On Error GoTo err_cboDistalNot
+56	0	
+57	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+58	0	    Response = acDataErrContinue
+59	0	    
+60	0	    Me![cboDistal].Undo
+61	0	Exit Sub
+62	0	
+63	0	err_cboDistalNot:
+64	0	    Call General_Error_Trap
+65	0	    Exit Sub
+66	0	
+67	0	End Sub
+68	0	
+69	0	Private Sub Edges_NotInList(NewData As String, Response As Integer)
+70	1	'stop not in list msg loop
+71	0	On Error GoTo err_EdgesNot
+72	0	
+73	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+74	0	    Response = acDataErrContinue
+75	0	    
+76	0	    Me![Edges].Undo
+77	0	Exit Sub
+78	0	
+79	0	err_EdgesNot:
+80	0	    Call General_Error_Trap
+81	0	    Exit Sub
+82	0	End Sub
+83	0	
+84	0	Private Sub Profile_NotInList(NewData As String, Response As Integer)
+85	1	'stop not in list msg loop
+86	0	On Error GoTo err_ProfileNot
+87	0	
+88	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+89	0	    Response = acDataErrContinue
+90	0	    
+91	0	    Me![Profile].Undo
+92	0	Exit Sub
+93	0	
+94	0	err_ProfileNot:
+95	0	    Call General_Error_Trap
+96	0	    Exit Sub
+97	0	
+98	0	End Sub
+99	0	
+100	0	Private Sub Ridges_NotInList(NewData As String, Response As Integer)
+101	1	'stop not in list msg loop
+102	0	On Error GoTo err_RidgesNot
+103	0	
+104	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+105	0	    Response = acDataErrContinue
+106	0	    
+107	0	    Me![Ridges].Undo
+108	0	Exit Sub
+109	0	
+110	0	err_RidgesNot:
+111	0	    Call General_Error_Trap
+112	0	    Exit Sub
+113	0	End Sub

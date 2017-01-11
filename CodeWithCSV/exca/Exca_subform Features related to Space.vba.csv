@@ -1,0 +1,31 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	1	'*********************************************************
+4	1	' This form is new in v9.1 to give read only view of features
+5	1	'*********************************************************
+6	0	
+7	0	
+8	0	Private Sub cmdgotofeature_Click()
+9	1	'***********************************************************
+10	1	' Open feature form with a filter on the feature number related
+11	1	' to the button. Open as readonly.
+12	1	'
+13	1	' SAJ v9.1
+14	1	'***********************************************************
+15	0	On Error GoTo Err_cmdGoToFeature_Click
+16	0	
+17	0	    Dim stDocName As String
+18	0	    Dim stLinkCriteria As String
+19	0	
+20	0	    stDocName = "Exca: Feature Sheet"
+21	0	    
+22	0	    stLinkCriteria = "[Feature Number]= " & Me![Feature Number]
+23	1	    DoCmd.OpenForm stDocName, acNormal, , stLinkCriteria, acFormReadOnly ', acDialog
+24	1	    'decided against dialog as there may be other windows that can be opened from this form
+25	1	    'and if this is dialog they appear beneath it
+26	0	    Exit Sub
+27	0	
+28	0	Err_cmdGoToFeature_Click:
+29	0	    Call General_Error_Trap
+30	0	    Exit Sub
+31	0	End Sub

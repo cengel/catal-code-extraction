@@ -1,0 +1,121 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdDelete_Click()
+5	1	'v9.2 SAJ - check if user can delete this record
+6	1	' The feature sub type value is used on the Feature Sheet
+7	1	' so must check all this value along with its associated feature type to see if
+8	1	' this type is used before allow delete
+9	1	' At present not offering global edits - this can be extended to offer this if required
+10	0	
+11	0	On Error GoTo Err_cmdDelete_Click
+12	0	
+13	0	Dim checkValidAction, retVal
+14	0	
+15	1	       'check FEATURE sheet feature subtype field
+16	3	'        checkValidAction = CheckIfLOVValueUsed("Exca:SubFeatureTypeLOV", "FeatureSubType", Me![txtFeatureSubType], "Exca: Features", "Feature Number", "FeatureSubType", "delete", " AND [Feature Type] = '" & Forms![Exca: Admin_FeatureTypeSubTypeLOV]![txtFeatureType] & "'")
+17	1	'        If checkValidAction = "ok" Then
+18	2	'        'delete action can go ahead - at present simply offer an input box for this
+19	1	'            retVal = msgbox("No records refer to this Feature SubType (" & Me![txtFeatureSubType] & ") so deletion is allowed." & Chr(13) & Chr(13) & "Are you sure you want to delete " & Me![txtFeatureSubType] & " from the list of available Feature Subtypes?", vbExclamation + vbYesNo, "Confirm Deletion")
+20	1	'            If retVal = vbYes Then
+21	1	'                Me.AllowDeletions = True
+22	1	'                DoCmd.RunCommand acCmdDeleteRecord
+23	1	'                Me.AllowDeletions = False
+24	1	'            End If
+25	1	'
+26	1	'        ElseIf checkValidAction = "fail" Then
+27	1	'            msgbox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+28	1	'        Else
+29	2	'            'is error occured in CheckIfLOVValueUsed it will come back empty so err already displayed
+30	1	'            If Not IsEmpty(checkValidAction) Then msgbox checkValidAction, vbExclamation, "Action Report"
+31	1	'        End If
+32	1	'
+33	0	Exit_cmdDelete_Click:
+34	0	    Exit Sub
+35	0	
+36	0	Err_cmdDelete_Click:
+37	1	 '   Call General_Error_Trap
+38	0	    Exit Sub
+39	0	    
+40	0	
+41	0	End Sub
+42	0	
+43	0	Private Sub cmdEdit_Click()
+44	1	'v9.2 SAJ - check if user can edit this record
+45	1	' The feature subtype value is used on the Feature Sheet
+46	1	' so must check this value along with its associated feature type to see if this sub
+47	1	' type is used before allow edit.
+48	1	' At present not offering global edits - this can be extended to offer this if required
+49	0	
+50	0	On Error GoTo Err_cmdEdit_Click
+51	0	
+52	0	Dim checkValidAction, retVal
+53	0	
+54	2	    'check feature sheet feature and feature subtype field for this match (as the text of the subtype maybe used for a diff feature also and don't want that to stop edit)
+55	3	'    checkValidAction = CheckIfLOVValueUsed("Exca:SubFeatureTypeLOV", "FeatureSubType", Me![txtFeatureSubType], "Exca: Features", "Feature Number", "FeatureSubType", "edit", " AND [Feature Type] = '" & Forms![Exca: Admin_FeatureTypeSubTypeLOV]![txtFeatureType] & "'")
+56	1	'
+57	1	'    If checkValidAction = "ok" Then
+58	2	'        'edit action can go ahead - at present simply offer an input box for this
+59	1	'        retVal = InputBox("No records refer to this Feature sub type (" & Me![txtFeatureSubType] & ") so an edit is allowed." & Chr(13) & Chr(13) & "Please enter the edited Feature Sub Type that you wish to replace this entry with:", "Enter edited Feature Sub Type")
+60	1	'        If retVal <> "" Then
+61	1	'            Me![txtFeatureSubType] = retVal
+62	1	'        End If
+63	1	'    ElseIf checkValidAction = "fail" Then
+64	1	'        msgbox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+65	1	'    Else
+66	1	'        msgbox checkValidAction, vbExclamation, "Action Report"
+67	1	'    End If
+68	0	    
+69	0	Exit_cmdEdit_Click:
+70	0	    Exit Sub
+71	0	
+72	0	Err_cmdEdit_Click:
+73	1	'    Call General_Error_Trap
+74	0	    Exit Sub
+75	0	    
+76	0	
+77	0	End Sub
+78	0	
+79	1	'******************************************************
+80	1	' This subform is new with v9.2
+81	1	' SAJ v9.2
+82	1	'******************************************************
+83	0	Private Sub cmdNewSubType_Click()
+84	1	'v9.2 - allow new subtype to be added
+85	0	On Error GoTo err_cmdNewSubType_Click
+86	0	
+87	0	    If Forms![Finds: Admin_MaterialGroupSubGroupLOV]![MaterialID] <> "" Then
+88	0	        Dim sql, retVal
+89	2	        retVal = InputBox("Please enter the new object type for the material type '" & Forms![Finds: Admin_MaterialGroupSubGroupLOV]![MaterialGroup] & "': ", "Enter new subtype")
+90	0	        If retVal <> "" Then
+91	2	            sql = "INSERT INTO [MaterialSubGroup_ObjectTypes] ([MaterialSubGroupID], [ObjectTypeText]) VALUES (" & Forms![Finds: Admin_MaterialGroupSubGroupLOV]![Finds: Admin_Subform_MaterialSubGroup].Form![MaterialSubGroupID] & ", '" & retVal & "');"
+92	0	            DoCmd.RunSQL sql
+93	0	            Me.Requery
+94	0	        End If
+95	0	    Else
+96	0	        MsgBox "Sorry not all the data necessary to make a new subtype is available.", vbExclamation, "Invalid Action"
+97	0	    End If
+98	0	Exit Sub
+99	0	
+100	0	err_cmdNewSubType_Click:
+101	1	 '   Call General_Error_Trap
+102	0	    MsgBox Err.Description
+103	0	    Exit Sub
+104	0	End Sub
+105	0	
+106	0	Private Sub Form_Open(Cancel As Integer)
+107	1	'v9.2 SAJ - only adminstrators are allowed in here
+108	0	On Error GoTo err_Form_Open
+109	0	
+110	0	    Dim permiss
+111	1	'    permiss = GetGeneralPermissions
+112	1	'    If permiss <> "ADMIN" Then
+113	1	'        msgbox "Sorry but only Administrators have access to this form"
+114	1	'        DoCmd.close acForm, Me.Name
+115	1	'    End If
+116	0	Exit Sub
+117	0	
+118	0	err_Form_Open:
+119	1	 '   Call General_Error_Trap
+120	0	    Exit Sub
+121	0	End Sub

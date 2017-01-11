@@ -1,0 +1,443 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cboFind_AfterUpdate()
+5	0	On Error GoTo err_cboFind
+6	0	
+7	0	If Me![cboFind] <> "" Then
+8	1	    'me![txtIdnumber].Enabled = true
+9	0	    If Me.FilterOn = True Then
+10	0	        Me.FilterOn = False
+11	0	        Me.Filter = ""
+12	0	        Me!cmdRemoveFilter.Visible = False
+13	0	        Me![lblFilter].Visible = False
+14	0	    End If
+15	0	    
+16	0	    DoCmd.GoToControl Me![txtIDnumber].Name
+17	0	    DoCmd.FindRecord Me![cboFind]
+18	0	    Me![cboFind] = ""
+19	0	    Me![cboFindUnit] = ""
+20	0	End If
+21	0	
+22	0	Exit Sub
+23	0	
+24	0	err_cboFind:
+25	0	    Call General_Error_Trap
+26	0	    Exit Sub
+27	0	End Sub
+28	0	
+29	0	Private Sub cboFind_NotInList(NewData As String, Response As Integer)
+30	0	On Error GoTo err_notUnit
+31	0	    
+32	0	    MsgBox "GID number not found", vbInformation, "Not In List"
+33	0	    Response = acDataErrContinue
+34	0	    Me![cboFind].Undo
+35	0	
+36	0	Exit Sub
+37	0	
+38	0	err_notUnit:
+39	0	    Call General_Error_Trap
+40	0	    Exit Sub
+41	0	End Sub
+42	0	
+43	0	Private Sub cboFindUnit_AfterUpdate()
+44	0	On Error GoTo err_cboFindUnit
+45	0	
+46	1	'If Me![cboFindUnit] <> "" Then
+47	1	'    DoCmd.GoToControl Me![UnitNumber].Name
+48	1	'    DoCmd.FindRecord Me![cboFindUnit]
+49	1	'    Me![cboFindUnit] = ""
+50	1	'End If
+51	0	
+52	0	If Me![cboFindUnit] <> "" Then
+53	0	    Me.Filter = "[UnitNumber] = " & Me![cboFindUnit]
+54	0	    Me.FilterOn = True
+55	0	    Me![cmdRemoveFilter].Visible = True
+56	0	    Me!lblFilter.Visible = True
+57	0	    Me![cboFind] = ""
+58	0	End If
+59	0	
+60	0	Exit Sub
+61	0	
+62	0	err_cboFindUnit:
+63	0	    Call General_Error_Trap
+64	0	    Exit Sub
+65	0	End Sub
+66	0	
+67	0	Private Sub cboFindUnit_NotInList(NewData As String, Response As Integer)
+68	0	On Error GoTo err_notUnit
+69	0	    
+70	0	    MsgBox "Unit number not found", vbInformation, "Not In List"
+71	0	    Response = acDataErrContinue
+72	0	    Me![cboFindUnit].Undo
+73	0	
+74	0	Exit Sub
+75	0	
+76	0	err_notUnit:
+77	0	    Call General_Error_Trap
+78	0	    Exit Sub
+79	0	End Sub
+80	0	
+81	0	Private Sub chkFreeStanding_Click()
+82	1	'update the text in the free standing field
+83	0	On Error GoTo err_chkFree
+84	0	    
+85	0	    If Me![chkFreeStanding] = True Then
+86	0	        Me![free-standing] = "free-standing"
+87	0	        
+88	0	    Else
+89	0	        Me![free-standing] = ""
+90	0	    End If
+91	0	
+92	0	    
+93	0	Exit Sub
+94	0	
+95	0	err_chkFree:
+96	0	    Call General_Error_Trap
+97	0	    Exit Sub
+98	0	End Sub
+99	0	
+100	0	
+101	0	
+102	0	Private Sub cmdImage1_Click()
+103	0	Application.FollowHyperlink "http://10.2.1.1/Fig_Images/displayimage.asp?size=full_size&img=" & Me![Image ids], , True
+104	0	End Sub
+105	0	
+106	0	Private Sub Close_Click()
+107	1	'***************************************************
+108	1	' Standard close
+109	1	'***************************************************
+110	0	On Error GoTo err_close_Click
+111	0	    
+112	0	    DoCmd.OpenForm "Frm_Menu", , , , acFormPropertySettings
+113	0	    
+114	0	    DoCmd.Close acForm, Me.Name
+115	0	    
+116	0	    Exit Sub
+117	0	
+118	0	err_close_Click:
+119	0	    Call General_Error_Trap
+120	0	    Exit Sub
+121	0	End Sub
+122	0	
+123	0	Private Sub cmdAddNew_Click()
+124	0	On Error GoTo err_cmdAddNew_Click
+125	0	
+126	0	    DoCmd.GoToRecord acActiveDataObject, , acNewRec
+127	0	    Me![txtIDnumber].Locked = False
+128	0	    DoCmd.GoToControl "txtIDnumber"
+129	0	Exit Sub
+130	0	
+131	0	err_cmdAddNew_Click:
+132	0	    Call General_Error_Trap
+133	0	    Exit Sub
+134	0	End Sub
+135	0	
+136	0	Private Sub cmdGoFirst_Click()
+137	0	On Error GoTo Err_gofirst_Click
+138	0	
+139	0	
+140	0	    DoCmd.GoToRecord , , acFirst
+141	0	
+142	0	    Exit Sub
+143	0	
+144	0	Err_gofirst_Click:
+145	0	    Call General_Error_Trap
+146	0	End Sub
+147	0	
+148	0	Private Sub cmdGoNext_Click()
+149	0	On Error GoTo Err_goNext_Click
+150	0	
+151	0	
+152	0	    DoCmd.GoToRecord , , acNext
+153	0	
+154	0	    Exit Sub
+155	0	
+156	0	Err_goNext_Click:
+157	0	    Call General_Error_Trap
+158	0	End Sub
+159	0	
+160	0	Private Sub cmdGoPrev_Click()
+161	0	On Error GoTo Err_goPrev_Click
+162	0	
+163	0	
+164	0	    DoCmd.GoToRecord , , acPrevious
+165	0	
+166	0	    Exit Sub
+167	0	
+168	0	Err_goPrev_Click:
+169	0	    Call General_Error_Trap
+170	0	End Sub
+171	0	
+172	0	Private Sub cmdLastGID_Click()
+173	1	'return last gid for the current unit
+174	0	On Error GoTo err_lastgid
+175	0	
+176	0	    If Me![UnitNumber] = "" Or IsNull(Me![UnitNumber]) Then
+177	0	        MsgBox "No current Unit to check"
+178	0	    Else
+179	0	        Dim num
+180	0	        num = FindLastGIDforUnit(Me![UnitNumber])
+181	0	        If num = "Not found" Then
+182	0	            MsgBox "The last GID number for this unit cannot be found", vbInformation, "No number returned"
+183	0	        Else
+184	0	            MsgBox "Last GID entered for this unit was: " & Me![UnitNumber] & "." & "H" & num & Chr(13) & Chr(13) & "Please use " & num + 1 & " as next number.", vbInformation, "Last GID"
+185	0	        End If
+186	0	    End If
+187	0	Exit Sub
+188	0	
+189	0	err_lastgid:
+190	0	    Call General_Error_Trap
+191	0	    Exit Sub
+192	0	End Sub
+193	0	
+194	0	Private Sub cmdLocate_Click()
+195	1	'allow user to locate this artefact in  crate
+196	0	On Error GoTo err_locate
+197	0	
+198	1	    'get find number from main form to pass as openargs
+199	0	    Dim current
+200	0	    current = Forms![Frm_MainData]![ID number]
+201	0	    DoCmd.OpenForm "frm_subform_newlocation", acNormal, , , acFormPropertySettings, acDialog, current
+202	0	    
+203	0	Exit Sub
+204	0	
+205	0	err_locate:
+206	0	    Call General_Error_Trap
+207	0	    Exit Sub
+208	0	End Sub
+209	0	
+210	0	Private Sub Form_Current()
+211	1	'ImageLocationOnSite
+212	0	On Error GoTo err_current
+213	0	
+214	0	Dim fullimagepath, imagename
+215	0	
+216	1	'this will work for on-site if you want to have an image control - one is hidden on this form
+217	1	'If Me![Image small ids] <> "" Or Not IsNull(Me![Image small ids]) Then
+218	1	'    If InStr(Me![Image small ids], ".jpg") = 0 Then
+219	1	'        fullimagepath = ImageLocationOnSite & Me![Image small ids] & ".jpg"
+220	1	'    Else
+221	1	'        fullimagepath = ImageLocationOnSite & Me![Image small ids]
+222	2	''    End If
+223	1	'
+224	1	'    Me!Image1.Picture = fullimagepath
+225	1	'End If
+226	0	
+227	1	'this will work on site
+228	0	Me![WebBrowser1].Navigate URL:="http://www.catalhoyuk.lan/Fig_Images/displayimage.asp?img=" & Me![Image small ids] & "&size=thumbnail&height=100&width=100"
+229	0	Me![WebBrowser2].Navigate URL:="http://www.catalhoyuk.lan/Fig_Images/displayimage.asp?img=" & Me![image 2 small id] & "&size=thumbnail&height=100&width=100"
+230	0	Me![WebBrowser3].Navigate URL:="http://www.catalhoyuk.lan/Fig_Images/displayimage.asp?img=" & Me![image 3 small id] & "&size=thumbnail&height=100&width=100"
+231	0	Me![WebBrowser4].Navigate URL:="http://www.catalhoyuk.lan/Fig_Images/displayimage.asp?img=" & Me![image 4 small id] & "&size=thumbnail&height=100&width=100"
+232	1	'this will work off site
+233	2	''Me![WebBrowser1].Navigate URL:="http://www.catalhoyuk.com/Fig_Images/displayimage.asp?img=" & Me![Image small ids] & "&size=thumbnail&height=80&width=80"
+234	2	''MsgBox Me![WebBrowser1].LocationURL
+235	0	
+236	0	If Me![free-standing] <> "" Then
+237	0	    Me![chkFreeStanding] = True
+238	0	Else
+239	0	    Me![chkFreeStanding] = False
+240	0	End If
+241	0	
+242	1	'lock id number so not overwritten
+243	0	If Me![txtIDnumber] <> "" And Not IsNull(Me![txtIDnumber]) Then
+244	0	    Me![txtIDnumber].Locked = True
+245	0	Else
+246	0	    Me![txtIDnumber].Locked = False
+247	0	End If
+248	0	
+249	0	If Me!frm_subform_location.Form.RecordsetClone.RecordCount = 0 Then
+250	0	    Me!lblCrateRegMsg.Visible = True
+251	0	    Me!frm_subform_location.Visible = False
+252	0	    Me![cmdLocate].Visible = True
+253	0	Else
+254	0	    Me!lblCrateRegMsg.Visible = False
+255	0	    Me!frm_subform_location.Visible = True
+256	0	    Me![cmdLocate].Visible = False
+257	0	End If
+258	0	Me!frm_subform_location.Form.Refresh
+259	0	
+260	0	
+261	0	Exit Sub
+262	0	
+263	0	err_current:
+264	0	    If Err.Number = 2220 Then
+265	1	        'Me!Image1Picture = ""
+266	0	    Else
+267	0	        Call General_Error_Trap
+268	0	    End If
+269	0	End Sub
+270	0	
+271	0	Private Sub frmComplete_Click()
+272	0	On Error GoTo err_frmComplete
+273	0	
+274	0	    If Me![frmComplete] = 1 Then
+275	0	        Me![Data Entry] = "complete"
+276	0	    ElseIf Me![frmComplete] = 2 Then
+277	0	        Me![Data Entry] = "incomplete"
+278	0	    Else
+279	0	        Me![Data Entry] = ""
+280	0	    End If
+281	0	    
+282	0	
+283	0	Exit Sub
+284	0	
+285	0	err_frmComplete:
+286	0	    Call General_Error_Trap
+287	0	    Exit Sub
+288	0	End Sub
+289	0	
+290	0	Private Sub Form_Open(Cancel As Integer)
+291	1	'make sure focus in search combo
+292	0	On Error GoTo err_open
+293	0	
+294	0	    DoCmd.Maximize
+295	0	    
+296	0	    DoCmd.GoToControl "cbofind"
+297	0	    
+298	1	    'i was going to have it so that all filters get turned off on open BUT
+299	1	    'finder screen now passes in where/filters so needs to stay on
+300	0	    If Me.FilterOn = True Then
+301	0	        Me![cmdRemoveFilter].Visible = True
+302	0	        If InStr(Me.Filter, "[id number]") > 0 Then
+303	3	            'Me![cboFind] = Left(Me.Filter, Len(Me.Filter) - 1 - InStr(Me.Filter, "'")) 'WRONG
+304	2	            Me![cboFind] = Mid(Me.Filter, InStr(Me.Filter, "'") + 1, Len(Me.Filter) - 1 - InStr(Me.Filter, "'"))
+305	0	        ElseIf InStr(Me.Filter, "unit") > 0 Then
+306	1	            'Me![cboFindUnit] = Left(Me.Filter, Len(Me.Filter) - InStr(Me.Filter, "="))
+307	0	            Me![cboFindUnit] = Mid(Me.Filter, InStr(Me.Filter, "=") + 1, Len(Me.Filter) - InStr(Me.Filter, "="))
+308	0	        End If
+309	0	        Me!lblFilter.Visible = True
+310	0	    Else
+311	0	        Me![cmdRemoveFilter].Visible = False
+312	0	        Me.Filter = ""
+313	0	        Me.FilterOn = False
+314	0	        Me!lblFilter.Visible = False
+315	0	        Me![cboFindUnit] = ""
+316	0	        Me![cboFind] = ""
+317	0	    End If
+318	0	    
+319	2	    ''MsgBox Forms!Frm_MainData!UnitNumber
+320	0	
+321	0	Exit Sub
+322	0	
+323	0	err_open:
+324	0	    Call General_Error_Trap
+325	0	    Exit Sub
+326	0	End Sub
+327	0	
+328	0	Private Sub image_2_id_Click()
+329	1	'open hyperlink?
+330	0	
+331	0	Application.FollowHyperlink "http://10.2.1.1/Fig_Images/displayimage.asp?size=full_size&img=" & Me![image 2 id], , True
+332	0	End Sub
+333	0	
+334	0	Private Sub image_2_small_id_AfterUpdate()
+335	1	'get web browser control to refresh
+336	0	On Error GoTo err_img_sm_2
+337	0	   
+338	0	   Me![WebBrowser2].Navigate URL:="http://10.2.1.1/Fig_Images/displayimage.asp?img=" & Me![image 2 small id] & "&size=thumbnail&height=100&width=100"
+339	0	err_img_sm_2:
+340	0	    Call General_Error_Trap
+341	0	    Exit Sub
+342	0	
+343	0	End Sub
+344	0	
+345	0	Private Sub image_3_id_Click()
+346	1	'open hyperlink?
+347	0	
+348	0	Application.FollowHyperlink "http://10.2.1.1/Fig_Images/displayimage.asp?size=full_size&img=" & Me![image 3 id], , True
+349	0	End Sub
+350	0	
+351	0	Private Sub image_3_small_id_AfterUpdate()
+352	1	'get web browser control to refresh
+353	0	On Error GoTo err_img_sm_3
+354	0	   
+355	0	   Me![WebBrowser3].Navigate URL:="http://10.2.1.1/Fig_Images/displayimage.asp?img=" & Me![image 3 small id] & "&size=thumbnail&height=100&width=100"
+356	0	err_img_sm_3:
+357	0	    Call General_Error_Trap
+358	0	    Exit Sub
+359	0	End Sub
+360	0	
+361	0	Private Sub image_4_id_Click()
+362	1	'open hyperlink?
+363	0	
+364	0	Application.FollowHyperlink "http://10.2.1.1/Fig_Images/displayimage.asp?size=full_size&img=" & Me![image 4 id], , True
+365	0	End Sub
+366	0	
+367	0	Private Sub image_4_small_id_AfterUpdate()
+368	1	'get web browser control to refresh
+369	0	On Error GoTo err_img_sm_4
+370	0	   
+371	0	   Me![WebBrowser4].Navigate URL:="http://10.2.1.1/Fig_Images/displayimage.asp?img=" & Me![image 4 small id] & "&size=thumbnail&height=100&width=100"
+372	0	
+373	0	err_img_sm_4:
+374	0	    Call General_Error_Trap
+375	0	    Exit Sub
+376	0	End Sub
+377	0	
+378	0	Private Sub Image_ids_Click()
+379	1	'open hyperlink?
+380	1	'Me![WebBrowser1].Navigate URL:="http://10.2.1.1/Fig_Images/displayimage.asp?img=" & Me![Image small ids] & "&size=thumbnail&height=100&width=100"
+381	0	
+382	0	Application.FollowHyperlink "http://www.catalhoyuk.lan/Fig_Images/displayimage.asp?size=full_size&img=" & Me![Image ids], , True
+383	0	
+384	0	End Sub
+385	0	
+386	0	Private Sub Image_small_ids_AfterUpdate()
+387	1	'get web browser control to refresh
+388	0	On Error GoTo err_img_sm_1
+389	0	
+390	0	    Me![WebBrowser1].Navigate URL:="http://www.catalhoyuk.lan/Fig_Images/displayimage.asp?img=" & Me![Image small ids] & "&size=thumbnail&height=100&width=100"
+391	0	
+392	0	Exit Sub
+393	0	
+394	0	err_img_sm_1:
+395	0	    Call General_Error_Trap
+396	0	    Exit Sub
+397	0	    
+398	0	End Sub
+399	0	
+400	0	Private Sub txtIDnumber_AfterUpdate()
+401	1	'make sure GID is entered
+402	0	On Error GoTo err_ID
+403	0	
+404	0	    If Me![txtIDnumber] = "" Or IsNull(Me![txtIDnumber]) Then
+405	0	        MsgBox "ID number must be entered", vbCritical, "Missing ID"
+406	0	        If Me![txtIDnumber].OldValue <> "" Then Me![txtIDnumber] = Me![txtIDnumber].OldValue
+407	0	        DoCmd.GoToControl "Unitnumber"
+408	0	        DoCmd.GoToControl "txtIDNumber"
+409	0	    Else
+410	1	        'auto fill out unit number field
+411	0	        Me![UnitNumber] = Left(Me![txtIDnumber], InStr(Me![txtIDnumber], "."))
+412	0	        
+413	0	    End If
+414	0	    
+415	0	Exit Sub
+416	0	
+417	0	err_ID:
+418	0	    Call General_Error_Trap
+419	0	    Exit Sub
+420	0	End Sub
+421	0	
+422	0	Private Sub txtIDnumber_LostFocus()
+423	0	
+424	1	'txtIDnumber_AfterUpdate
+425	0	
+426	0	End Sub
+427	0	Private Sub cmdRemoveFilter_Click()
+428	0	On Error GoTo Err_cmdRemoveFilter_Click
+429	0	
+430	0	    Me.Filter = ""
+431	0	    Me.FilterOn = False
+432	0	    Me!cboFindUnit = ""
+433	0	    DoCmd.GoToControl "cboFindUnit"
+434	0	    Me![cmdRemoveFilter].Visible = False
+435	0	    Me!lblFilter.Visible = False
+436	0	    
+437	0	    Exit Sub
+438	0	
+439	0	Err_cmdRemoveFilter_Click:
+440	0	    Call General_Error_Trap
+441	0	    Exit Sub
+442	0	    
+443	0	End Sub

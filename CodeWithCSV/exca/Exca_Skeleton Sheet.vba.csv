@@ -1,0 +1,319 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	0	
+3	0	Private Sub Category_AfterUpdate()
+4	0	
+5	0	If Me![Category] = "Cut" Then
+6	0	    Me![LayerLabel].Visible = False
+7	0	    Me![CutLAbel].Visible = True
+8	0	Else
+9	0	    Me![LayerLabel].Visible = True
+10	0	    Me![CutLAbel].Visible = False
+11	0	End If
+12	0	
+13	0	End Sub
+14	0	
+15	0	Private Sub Category_Change()
+16	0	
+17	0	If Me![Category] = "Cut" Then
+18	0	    Me![LayerLabel].Visible = False
+19	0	    Me![CutLAbel].Visible = True
+20	0	Else
+21	0	    Me![LayerLabel].Visible = True
+22	0	    Me![CutLAbel].Visible = False
+23	0	End If
+24	0	
+25	0	End Sub
+26	0	
+27	0	
+28	0	Private Sub Excavation_Click()
+29	0	On Error GoTo err_Excavation_Click
+30	0	
+31	0	    Dim stDocName As String
+32	0	    Dim stLinkCriteria As String
+33	0	
+34	0	    stDocName = "Excavation"
+35	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+36	0	    DoCmd.Close acForm, "Exca: Unit Sheet"
+37	0	    
+38	0	Exit_Excavation_Click:
+39	0	    Exit Sub
+40	0	
+41	0	err_Excavation_Click:
+42	0	    MsgBox Err.Description
+43	0	    Resume Exit_Excavation_Click
+44	0	End Sub
+45	0	
+46	0	Sub find_unit_Click()
+47	0	On Error GoTo Err_find_unit_Click
+48	0	
+49	0	
+50	0	    Screen.PreviousControl.SetFocus
+51	0	    Unit_Number.SetFocus
+52	0	    DoCmd.DoMenuItem acFormBar, acEditMenu, 10, , acMenuVer70
+53	0	
+54	0	Exit_find_unit_Click:
+55	0	    Exit Sub
+56	0	
+57	0	Err_find_unit_Click:
+58	0	    MsgBox Err.Description
+59	0	    Resume Exit_find_unit_Click
+60	0	    
+61	0	End Sub
+62	0	
+63	0	
+64	0	Private Sub Form_AfterInsert()
+65	0	Me![Date changed] = Now()
+66	0	Forms![Exca: Unit Sheet]![dbo_Exca: UnitHistory].Form![lastmodify].Value = Now()
+67	0	End Sub
+68	0	
+69	0	Private Sub Form_AfterUpdate()
+70	0	Me![Date changed] = Now()
+71	0	Forms![Exca: Unit Sheet]![dbo_Exca: UnitHistory].Form![lastmodify].Value = Now()
+72	0	
+73	0	End Sub
+74	0	
+75	0	Private Sub Form_BeforeUpdate(Cancel As Integer)
+76	0	Me![Date changed] = Now()
+77	0	Forms![Exca: Unit Sheet]![dbo_Exca: UnitHistory].Form![lastmodify].Value = Now()
+78	0	End Sub
+79	0	
+80	0	Private Sub Form_Current()
+81	0	
+82	0	If Me![Category] <> "Skeleton" Then
+83	1	    'return to unit sheet
+84	0	    
+85	0	    DoCmd.Close
+86	0	Else
+87	1	    'do nothing
+88	0	End If
+89	0	
+90	0	End Sub
+91	0	
+92	0	Sub go_next_Click()
+93	0	On Error GoTo Err_go_next_Click
+94	0	
+95	0	
+96	0	    DoCmd.GoToRecord , , acNext
+97	0	
+98	0	Exit_go_next_Click:
+99	0	    Exit Sub
+100	0	
+101	0	Err_go_next_Click:
+102	0	    MsgBox Err.Description
+103	0	    Resume Exit_go_next_Click
+104	0	    
+105	0	End Sub
+106	0	
+107	0	
+108	0	Sub go_to_first_Click()
+109	0	On Error GoTo Err_go_to_first_Click
+110	0	
+111	0	
+112	0	    DoCmd.GoToRecord , , acFirst
+113	0	
+114	0	Exit_go_to_first_Click:
+115	0	    Exit Sub
+116	0	
+117	0	Err_go_to_first_Click:
+118	0	    MsgBox Err.Description
+119	0	    Resume Exit_go_to_first_Click
+120	0	    
+121	0	End Sub
+122	0	
+123	0	Sub go_to_last_Click()
+124	0	
+125	0	On Error GoTo Err_go_last_Click
+126	0	
+127	0	
+128	0	    DoCmd.GoToRecord , , acLast
+129	0	
+130	0	Exit_go_last_Click:
+131	0	    Exit Sub
+132	0	
+133	0	Err_go_last_Click:
+134	0	    MsgBox Err.Description
+135	0	    Resume Exit_go_last_Click
+136	0	    
+137	0	End Sub
+138	0	
+139	0	
+140	0	
+141	0	
+142	0	
+143	0	Sub go_previous2_Click()
+144	0	On Error GoTo Err_go_previous2_Click
+145	0	
+146	0	
+147	0	    DoCmd.GoToRecord , , acPrevious
+148	0	
+149	0	Exit_go_previous2_Click:
+150	0	    Exit Sub
+151	0	
+152	0	Err_go_previous2_Click:
+153	0	    MsgBox Err.Description
+154	0	    Resume Exit_go_previous2_Click
+155	0	    
+156	0	End Sub
+157	0	
+158	0	Private Sub Master_Control_Click()
+159	0	On Error GoTo Err_Master_Control_Click
+160	0	
+161	0	    Dim stDocName As String
+162	0	    Dim stLinkCriteria As String
+163	0	
+164	0	    stDocName = "Catal Data Entry"
+165	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+166	0	    DoCmd.Close acForm, "Exca: Unit Sheet"
+167	0	    
+168	0	Exit_Master_Control_Click:
+169	0	    Exit Sub
+170	0	
+171	0	Err_Master_Control_Click:
+172	0	    MsgBox Err.Description
+173	0	    Resume Exit_Master_Control_Click
+174	0	End Sub
+175	0	
+176	0	Sub New_entry_Click()
+177	0	On Error GoTo Err_New_entry_Click
+178	0	
+179	0	
+180	0	    DoCmd.GoToRecord , , acNewRec
+181	0	    Mound.SetFocus
+182	0	    
+183	0	Exit_New_entry_Click:
+184	0	    Exit Sub
+185	0	
+186	0	Err_New_entry_Click:
+187	0	    MsgBox Err.Description
+188	0	    Resume Exit_New_entry_Click
+189	0	    
+190	0	End Sub
+191	0	Sub interpretation_Click()
+192	0	On Error GoTo Err_interpretation_Click
+193	0	
+194	0	    Dim stDocName As String
+195	0	    Dim stLinkCriteria As String
+196	0	    
+197	1	    'refresh
+198	0	    DoCmd.DoMenuItem acFormBar, acRecordsMenu, 5, , acMenuVer70
+199	0	    
+200	1	    'go to form
+201	0	    stDocName = "Interpret: Unit Sheet"
+202	0	    
+203	0	    stLinkCriteria = "[Unit Number]=" & Me![Unit Number]
+204	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+205	0	
+206	0	Exit_interpretation_Click:
+207	0	    Exit Sub
+208	0	
+209	0	Err_interpretation_Click:
+210	0	    MsgBox Err.Description
+211	0	    Resume Exit_interpretation_Click
+212	0	    
+213	0	End Sub
+214	0	Sub Command466_Click()
+215	0	On Error GoTo Err_Command466_Click
+216	0	
+217	0	
+218	0	    DoCmd.DoMenuItem acFormBar, acRecordsMenu, 5, , acMenuVer70
+219	0	
+220	0	Exit_Command466_Click:
+221	0	    Exit Sub
+222	0	
+223	0	Err_Command466_Click:
+224	0	    MsgBox Err.Description
+225	0	    Resume Exit_Command466_Click
+226	0	    
+227	0	End Sub
+228	0	Sub Open_priority_Click()
+229	0	On Error GoTo Err_Open_priority_Click
+230	0	
+231	0	    Dim stDocName As String
+232	0	    Dim stLinkCriteria As String
+233	0	
+234	0	    stDocName = "Exca: Priority Detail"
+235	0	    
+236	0	    stLinkCriteria = "[Unit Number]=" & Me![Unit Number]
+237	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+238	0	
+239	0	Exit_Open_priority_Click:
+240	0	    Exit Sub
+241	0	
+242	0	Err_Open_priority_Click:
+243	0	    MsgBox Err.Description
+244	0	    Resume Exit_Open_priority_Click
+245	0	    
+246	0	End Sub
+247	0	Sub go_feature_Click()
+248	0	On Error GoTo Err_go_feature_Click
+249	0	
+250	0	    Dim stDocName As String
+251	0	    Dim stLinkCriteria As String
+252	0	
+253	0	    stDocName = "Exca: Feature Sheet"
+254	0	    
+255	0	    stLinkCriteria = "[Feature Number]=" & Forms![Exca: Unit Sheet]![Exca: subform Features for Units]![In_feature]
+256	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+257	0	
+258	0	Exit_go_feature_Click:
+259	0	    Exit Sub
+260	0	
+261	0	Err_go_feature_Click:
+262	0	    MsgBox Err.Description
+263	0	    Resume Exit_go_feature_Click
+264	0	    
+265	0	End Sub
+266	0	Sub Close_Click()
+267	0	On Error GoTo err_close_Click
+268	0	
+269	0	
+270	0	    DoCmd.Close
+271	0	
+272	0	Exit_close_Click:
+273	0	    Exit Sub
+274	0	
+275	0	err_close_Click:
+276	0	    MsgBox Err.Description
+277	0	    Resume Exit_close_Click
+278	0	    
+279	0	End Sub
+280	0	Sub open_copy_details_Click()
+281	0	On Error GoTo Err_open_copy_details_Click
+282	0	
+283	0	    Dim stDocName As String
+284	0	    Dim stLinkCriteria As String
+285	0	
+286	0	    stDocName = "Exca: Copy unit details form"
+287	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+288	0	
+289	0	Exit_open_copy_details_Click:
+290	0	    Exit Sub
+291	0	
+292	0	Err_open_copy_details_Click:
+293	0	    MsgBox Err.Description
+294	0	    Resume Exit_open_copy_details_Click
+295	0	    
+296	0	End Sub
+297	0	
+298	0	Private Sub Unit_number_Exit(Cancel As Integer)
+299	0	On Error GoTo Err_Unit_number_Exit
+300	0	
+301	0	    Me.refresh
+302	1	    'DoCmd.Save acTable, "Exca: Unit Sheet"
+303	0	    
+304	0	Exit_Unit_number_Exit:
+305	0	    Exit Sub
+306	0	
+307	0	Err_Unit_number_Exit:
+308	0	   
+309	1	    'MsgBox Err.Description
+310	0	    
+311	3	    'MsgBox "This unit already exists in the database. Use the 'Find' button to go to it.", vbOKOnly, "duplicate"
+312	0	    DoCmd.DoMenuItem acFormBar, acEditMenu, 0, , acMenuVer70
+313	0	    
+314	0	    Cancel = True
+315	0	        
+316	0	    Resume Exit_Unit_number_Exit
+317	0	End Sub
+318	0	
+319	0	

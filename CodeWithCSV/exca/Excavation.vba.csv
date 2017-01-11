@@ -1,0 +1,313 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	0	
+3	0	Private Sub Area_Sheet_Click()
+4	1	'orig code - just added general error trap - SAJ v9.1
+5	0	On Error GoTo Err_Area_Sheet_Click
+6	0	
+7	0	    Dim stDocName As String
+8	0	    Dim stLinkCriteria As String
+9	0	
+10	0	    stDocName = "Exca: Area Sheet"
+11	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+12	0	
+13	0	Exit_Area_Sheet_Click:
+14	0	    Exit Sub
+15	0	
+16	0	Err_Area_Sheet_Click:
+17	0	    Call General_Error_Trap
+18	0	    Resume Exit_Area_Sheet_Click
+19	0	End Sub
+20	0	
+21	0	
+22	0	Private Sub Building_Sheet_Click()
+23	1	'orig code - just added general error trap - SAJ v9.1
+24	0	On Error GoTo Err_Building_Sheet_Click
+25	0	
+26	0	    Dim stDocName As String
+27	0	    Dim stLinkCriteria As String
+28	0	
+29	0	    stDocName = "Exca: Building Sheet"
+30	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+31	0	
+32	0	Exit_Building_Sheet_Click:
+33	0	    Exit Sub
+34	0	
+35	0	Err_Building_Sheet_Click:
+36	0	    Call General_Error_Trap
+37	0	    Resume Exit_Building_Sheet_Click
+38	0	End Sub
+39	0	
+40	0	Private Sub Button10_Click()
+41	0	Building_Sheet_Click
+42	0	End Sub
+43	0	
+44	0	Private Sub Button11_Click()
+45	0	Space_Sheet_Button_Click
+46	0	End Sub
+47	0	
+48	0	
+49	0	Private Sub Button12_Click()
+50	0	Feature_Sheet_Button_Click
+51	0	End Sub
+52	0	
+53	0	
+54	0	Private Sub Button13_Click()
+55	0	Unit_Sheet_Click
+56	0	End Sub
+57	0	
+58	0	
+59	0	Private Sub Button17_Click()
+60	0	Area_Sheet_Click
+61	0	End Sub
+62	0	
+63	0	Private Sub Button9_Click()
+64	0	Return_to_Master_Con_Click
+65	0	End Sub
+66	0	
+67	0	Private Sub cmdAdmin_Click()
+68	1	'************************************************************
+69	1	' New with v9.1 - admininstration menu
+70	1	'
+71	1	' SAJ v9.1
+72	1	'************************************************************
+73	0	On Error GoTo err_cmdAdmin_Click
+74	0	
+75	0	    DoCmd.OpenForm "Excavation:AdminMenu", acNormal, , , acFormReadOnly
+76	0	    
+77	0	Exit Sub
+78	0	
+79	0	err_cmdAdmin_Click:
+80	0	    Call General_Error_Trap
+81	0	    Exit Sub
+82	0	End Sub
+83	0	
+84	0	Private Sub cmdFT_Click()
+85	0	On Error GoTo err_cmdFT_Click
+86	0	
+87	0	    DoCmd.OpenForm "Exca: Admin_Foundation_Trenches", acNormal
+88	0	    
+89	0	Exit Sub
+90	0	
+91	0	err_cmdFT_Click:
+92	0	    Call General_Error_Trap
+93	0	    Exit Sub
+94	0	End Sub
+95	0	
+96	0	Private Sub cmdLists_Click()
+97	1	'************************************************************
+98	1	' New with v9.1 - two lists buttons orig on this form moved
+99	1	' to new predefined lists submenu
+100	1	'
+101	1	' SAJ v9.1
+102	1	'************************************************************
+103	0	On Error GoTo err_cmdLists_Click
+104	0	
+105	0	    DoCmd.OpenForm "Excavation:ListsMenu", acNormal, , , acFormReadOnly
+106	0	    
+107	0	Exit Sub
+108	0	
+109	0	err_cmdLists_Click:
+110	0	    Call General_Error_Trap
+111	0	    Exit Sub
+112	0	End Sub
+113	0	
+114	0	Private Sub Command18_Click()
+115	0	Open_priority_Click
+116	0	End Sub
+117	0	
+118	0	Private Sub Command25_Click()
+119	0	cmdLists_Click
+120	0	End Sub
+121	0	
+122	0	Private Sub Command27_Click()
+123	0	cmdAdmin_Click
+124	0	End Sub
+125	0	
+126	0	Private Sub Command29_Click()
+127	0	cmdFT_Click
+128	0	End Sub
+129	0	
+130	0	Private Sub Feature_Sheet_Button_Click()
+131	1	'orig code - just added general error trap - SAJ v9.1
+132	0	On Error GoTo Err_Feature_Sheet_Button_Click
+133	0	
+134	0	    Dim stDocName As String
+135	0	    Dim stLinkCriteria As String
+136	0	
+137	0	    stDocName = "Exca: Feature Sheet"
+138	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+139	0	
+140	0	Exit_Feature_Sheet_Button_Click:
+141	0	    Exit Sub
+142	0	
+143	0	Err_Feature_Sheet_Button_Click:
+144	0	    Call General_Error_Trap
+145	0	    Resume Exit_Feature_Sheet_Button_Click
+146	0	End Sub
+147	0	
+148	0	
+149	0	Private Sub FeatureStatus_Click()
+150	0	On Error GoTo Err_FeatureStatus_Click
+151	0	
+152	0	    Dim stDocName As String
+153	0	    Dim stLinkCriteria As String
+154	0	
+155	0	    stDocName = "FeaturesheetStatus"
+156	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+157	0	   
+158	0	Exit_FeatureStatus_Click:
+159	0	    Exit Sub
+160	0	
+161	0	Err_FeatureStatus_Click:
+162	0	    Call General_Error_Trap
+163	0	    Resume Exit_FeatureStatus_Click
+164	0	End Sub
+165	0	
+166	0	Private Sub Form_Open(Cancel As Integer)
+167	1	'DoCmd.RunCommand acCmdSizeToFit
+168	0	If GetGeneralPermissions = "Admin" Then
+169	0	    Me![cmdAdmin].Enabled = True
+170	0	    Me![Command27].Enabled = True
+171	0	Else
+172	0	    Me![cmdAdmin].Enabled = False
+173	0	    Me![Command27].Enabled = False
+174	0	End If
+175	0	End Sub
+176	0	
+177	0	Sub Open_priority_Click()
+178	1	'orig code - just added general error trap - SAJ v9.1
+179	0	On Error GoTo Err_Open_priority_Click
+180	0	
+181	0	    Dim stDocName As String
+182	0	    Dim stLinkCriteria As String
+183	0	
+184	0	    stDocName = "Exca: Priority Detail"
+185	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+186	0	
+187	0	Exit_Open_priority_Click:
+188	0	    Exit Sub
+189	0	
+190	0	Err_Open_priority_Click:
+191	0	    Call General_Error_Trap
+192	0	    Resume Exit_Open_priority_Click
+193	0	    
+194	0	End Sub
+195	0	
+196	0	
+197	0	
+198	0	Private Sub Return_to_Master_Con_Click()
+199	1	'************************************************************
+200	1	' Removed link to macro: Exca: Macros. This quits out of Access
+201	1	'
+202	1	' SAJ v9.1
+203	1	'************************************************************
+204	1	'legacy code already here
+205	1	'DoCmd.DoMenuItem acFormBar, acFileMenu, 14, , acMenuVer70
+206	0	On Error GoTo err_Return_to_Master_Con_Click
+207	0	
+208	0	    DoCmd.Quit acQuitSaveAll
+209	0	    
+210	0	Exit Sub
+211	0	
+212	0	err_Return_to_Master_Con_Click:
+213	0	    Call General_Error_Trap
+214	0	    Exit Sub
+215	0	End Sub
+216	0	
+217	0	Private Sub Space_Sheet_Button_Click()
+218	1	'orig code - just added general error trap - SAJ v9.1
+219	0	On Error GoTo Err_Space_Sheet_Button_Click
+220	0	
+221	0	    Dim stDocName As String
+222	0	    Dim stLinkCriteria As String
+223	0	
+224	0	    stDocName = "Exca: Space Sheet"
+225	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+226	0	
+227	0	Exit_Space_Sheet_Button_Click:
+228	0	    Exit Sub
+229	0	
+230	0	Err_Space_Sheet_Button_Click:
+231	0	    Call General_Error_Trap
+232	0	    Resume Exit_Space_Sheet_Button_Click
+233	0	
+234	0	End Sub
+235	0	
+236	0	
+237	0	Private Sub Unit_Sheet_Click()
+238	1	'orig code - just added general error trap - SAJ v9.1
+239	0	On Error GoTo Err_Unit_Sheet_Click
+240	0	
+241	0	    Dim stDocName As String
+242	0	    Dim stLinkCriteria As String
+243	0	
+244	0	    stDocName = "Exca: Unit Sheet"
+245	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+246	0	   
+247	2	   '' REMOVED SAJ AS WILL FAIL FOR RO USERS DoCmd.GoToRecord acForm, stDocName, acNewRec
+248	0	
+249	0	Exit_Unit_Sheet_Click:
+250	0	    Exit Sub
+251	0	
+252	0	Err_Unit_Sheet_Click:
+253	0	    Call General_Error_Trap
+254	0	    Resume Exit_Unit_Sheet_Click
+255	0	
+256	0	End Sub
+257	0	
+258	0	
+259	0	Sub Feature_types_Click()
+260	1	'orig code - just added general error trap - SAJ v9.1
+261	0	On Error GoTo Err_Feature_types_Click
+262	0	
+263	0	    Dim stDocName As String
+264	0	
+265	0	    stDocName = "Exca: Feature Types"
+266	0	    DoCmd.OpenQuery stDocName, acNormal, acEdit
+267	0	
+268	0	Exit_Feature_types_Click:
+269	0	    Exit Sub
+270	0	
+271	0	Err_Feature_types_Click:
+272	0	    Call General_Error_Trap
+273	0	    Resume Exit_Feature_types_Click
+274	0	    
+275	0	End Sub
+276	0	Sub interpret_Click()
+277	1	'orig code - just added general error trap - SAJ v9.1
+278	0	On Error GoTo Err_interpret_Click
+279	0	
+280	0	    Dim stDocName As String
+281	0	
+282	0	    stDocName = "Exca: List Interpretive Categories"
+283	0	    DoCmd.OpenQuery stDocName, acNormal, acEdit
+284	0	
+285	0	Exit_interpret_Click:
+286	0	    Exit Sub
+287	0	
+288	0	Err_interpret_Click:
+289	0	    Call General_Error_Trap
+290	0	    Resume Exit_interpret_Click
+291	0	    
+292	0	End Sub
+293	0	
+294	0	Private Sub UnitStatus_Click()
+295	0	On Error GoTo Err_UnitStatus_Click
+296	0	
+297	0	    Dim stDocName As String
+298	0	    Dim stLinkCriteria As String
+299	0	
+300	0	    stDocName = "UnitsheetStatus"
+301	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+302	0	   
+303	2	   '' REMOVED SAJ AS WILL FAIL FOR RO USERS DoCmd.GoToRecord acForm, stDocName, acNewRec
+304	0	
+305	0	Exit_UnitStatus_Click:
+306	0	    Exit Sub
+307	0	
+308	0	Err_UnitStatus_Click:
+309	0	    Call General_Error_Trap
+310	0	    Resume Exit_UnitStatus_Click
+311	0	End Sub
+312	0	
+313	0	

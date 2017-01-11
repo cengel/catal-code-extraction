@@ -1,0 +1,22 @@
+1	0	Option Compare Database
+2	0	
+3	0	Private Sub cmdgotounit_Click()
+4	0	On Error GoTo Err_UnitSheet_Click
+5	0	
+6	0	    Dim stDocName As String
+7	0	    Dim stLinkCriteria As String
+8	0	
+9	0	    stDocName = "Exca: Unit Sheet"
+10	0	    stLinkCriteria = "[Unit Number] = " & Me.[Unit_Number]
+11	0	
+12	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+13	0	   
+14	2	   '' REMOVED SAJ AS WILL FAIL FOR RO USERS DoCmd.GoToRecord acForm, stDocName, acNewRec
+15	0	
+16	0	Exit_UnitSheet_Click:
+17	0	    Exit Sub
+18	0	
+19	0	Err_UnitSheet_Click:
+20	0	    Call General_Error_Trap
+21	0	    Resume Exit_UnitSheet_Click
+22	0	End Sub

@@ -1,0 +1,360 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	1	'****************************************************************
+5	1	' Archaeobots specific procedures
+6	1	'
+7	1	' SAJ March 2006
+8	1	'****************************************************************
+9	0	
+10	0	Function AddRecordToPriorityTable(frm As Form) As Boolean
+11	1	'*******************************************
+12	1	' Add the flot record to the priority table
+13	1	' SAJ
+14	1	'*******************************************
+15	0	On Error GoTo err_AddRecordToPriorityTable
+16	0	Dim sql, msg, retVal
+17	0	
+18	0	If frm![Float Date] <> "" And frm![Flot Number] <> "" Then
+19	1	    'enough info to add record to Priority table
+20	1	    'new season 2006 - new records if entered in as a range also go auto into scanning table so
+21	1	    'now need to check if the record is in scanning before moving to priority
+22	0	    If frm![chkInScanning] = True Then
+23	2	        'new request from AB, check if 1mm random split field filled out if so don't delete
+24	0	        Dim checkSplit
+25	0	        checkSplit = DLookup("[1 mm random split]", "[Bot: Sample Scanning]", "[Flot Number] = " & frm![Flot Number])
+26	0	        If Not IsNull(checkSplit) Then
+27	0	            retVal = MsgBox("A sample scanning record exists for this Flot that contains data, do you want to delete it from the Scanning table now?", vbInformation + vbYesNo, "Scanning Record Exists")
+28	0	           
+29	0	            If retVal = vbYes Then
+30	1	                'call sp to delete this record as rw users no permission to delete
+31	0	                If DeleteSampleRecord(frm![Flot Number]) = False Then
+32	0	                    MsgBox "The deletion failed", vbCritical, "Error"
+33	0	                End If
+34	0	            End If
+35	1	            'retVal = MsgBox("This operation will remove the Scanning record for this Flot, are you sure you want to continue?", vbYesNo + vbQuestion, "Remove from Scanning")
+36	0	        
+37	1	            'If retVal = vbNo Then
+38	1	            '    AddRecordToPriorityTable = False
+39	1	            '    Exit Function
+40	1	            'Else
+41	1	            'call sp to delete this record as rw users no permission to delete
+42	1	            '    If DeleteSampleRecord(frm![Flot Number]) = False Then
+43	1	            '    AddRecordToPriorityTable = False
+44	1	            '    Exit Function
+45	1	            'End If
+46	0	        Else
+47	0	            DeleteSampleRecord (frm![Flot Number])
+48	0	        End If
+49	0	    End If
+50	1	    'all is well carry on
+51	1	    Application.SetOption "Confirm Action Queries", False 'turn flag off as if you get append msg and press No it seems to get in a mess
+52	0	    sql = "INSERT INTO [Bot: Priority Sample] ([Flot Number], [Year]) VALUES (" & frm![Flot Number] & ", " & Year(frm![Float Date]) & ");"
+53	0	    DoCmd.RunSQL sql
+54	0	    Application.SetOption "Confirm Action Queries", True
+55	1	    'throwing error that form is not bound so remove where clause - not always throwing error!
+56	1	    'DoCmd.OpenForm "FrmPriority", acNormal, , "[Flot Number] = " & frm![Flot Number], , , frm![Flot Number]
+57	0	    DoCmd.OpenForm "FrmPriority", acNormal, , , , , frm![Flot Number]
+58	0	    AddRecordToPriorityTable = True
+59	0	        
+60	0	        
+61	0	        
+62	0	Else
+63	1	    'not enough info to add record
+64	0	    msg = "This record cannot be entered into the Priority Sample table until the following values are present:" & Chr(13) & Chr(13)
+65	0	    If frm![Flot Number] = "" Or IsNull(frm![Flot Number]) Then
+66	0	        msg = msg & " Flot number " & Chr(13)
+67	0	    ElseIf frm![Float Date] = "" Or IsNull(frm![Float Date]) Then
+68	0	        msg = msg & " Float Date "
+69	0	    End If
+70	0	    MsgBox msg, vbExclamation, "Insufficient Information"
+71	0	    AddRecordToPriorityTable = False
+72	0	End If
+73	0	
+74	0	Exit Function
+75	0	err_AddRecordToPriorityTable:
+76	0	    Call General_Error_Trap
+77	0	    Exit Function
+78	0	End Function
+79	0	
+80	0	Function AddRecordToScanTable(frm As Form) As Boolean
+81	1	'*******************************************
+82	1	' Add the flot record to the scanning table
+83	1	' SAJ
+84	1	'*******************************************
+85	0	On Error GoTo err_AddRecordToScanTable
+86	0	Dim sql, msg
+87	0	If frm![Float Date] <> "" And frm![Flot Number] <> "" Then
+88	1	    'enough info to add record to Priority table
+89	0	    sql = "INSERT INTO [Bot: Sample Scanning] ([Flot Number], [YearScanned]) VALUES (" & frm![Flot Number] & ", " & Year(frm![Float Date]) & ");"
+90	0	    DoCmd.RunSQL sql
+91	1	    'throwing error that form is not bound so remove where clause - not always throwing error!
+92	1	    'DoCmd.OpenForm "FrmSampleScan", acNormal, , "[Flot Number] = " & frm![Flot Number], , , frm![Flot Number]
+93	0	    DoCmd.OpenForm "FrmSampleScan", acNormal, , , , , frm![Flot Number]
+94	0	    AddRecordToScanTable = True
+95	0	Else
+96	1	    'not enough info to add record
+97	0	    msg = "This record cannot be entered into the Sample Scanning table until the following values are present:" & Chr(13) & Chr(13)
+98	0	    If frm![Flot Number] = "" Or IsNull(frm![Flot Number]) Then
+99	0	        msg = msg & " Flot number " & Chr(13)
+100	0	    ElseIf frm![Float Date] = "" Or IsNull(frm![Float Date]) Then
+101	0	        msg = msg & " Float Date "
+102	0	    End If
+103	0	    MsgBox msg, vbExclamation, "Insufficient Information"
+104	0	    AddRecordToScanTable = False
+105	0	End If
+106	0	
+107	0	Exit Function
+108	0	err_AddRecordToScanTable:
+109	0	    Call General_Error_Trap
+110	0	    Exit Function
+111	0	
+112	0	End Function
+113	0	
+114	0	
+115	0	Function AddRecordToSieveScanTable(frm As Form) As Boolean
+116	1	'*******************************************
+117	1	' Add the flot record to the scanning table
+118	1	' DL 2015 (taken from SAJ)
+119	1	'*******************************************
+120	0	On Error GoTo err_AddRecordToSieveScanTable
+121	0	Dim sql, msg
+122	0	If frm![Float Date] <> "" And frm![Flot Number] <> "" Then
+123	1	    'enough info to add record to Priority table
+124	0	    sql = "INSERT INTO [Bot: SieveScanning] ([Flot Number], [Year_scanned]) VALUES (" & frm![Flot Number] & ", " & Year(frm![Float Date]) & ");"
+125	0	    DoCmd.RunSQL sql
+126	1	    'throwing error that form is not bound so remove where clause - not always throwing error!
+127	1	    'DoCmd.OpenForm "FrmSampleScan", acNormal, , "[Flot Number] = " & frm![Flot Number], , , frm![Flot Number]
+128	0	    DoCmd.OpenForm "FrmSieveScan", acNormal, , , , , frm![Flot Number]
+129	0	    AddRecordToSieveScanTable = True
+130	0	Else
+131	1	    'not enough info to add record
+132	0	    msg = "This record cannot be entered into the Sieve Scanning table until the following values are present:" & Chr(13) & Chr(13)
+133	0	    If frm![Flot Number] = "" Or IsNull(frm![Flot Number]) Then
+134	0	        msg = msg & " Flot number " & Chr(13)
+135	0	    ElseIf frm![Float Date] = "" Or IsNull(frm![Float Date]) Then
+136	0	        msg = msg & " Float Date "
+137	0	    End If
+138	0	    MsgBox msg, vbExclamation, "Insufficient Information"
+139	0	    AddRecordToSieveScanTable = False
+140	0	End If
+141	0	
+142	0	Exit Function
+143	0	err_AddRecordToSieveScanTable:
+144	0	    Call General_Error_Trap
+145	0	    Exit Function
+146	0	
+147	0	End Function
+148	0	
+149	0	Function ViewPriorityRecord(frm As Form) As Boolean
+150	1	'*******************************************
+151	1	' Open the priority record for this the flot num
+152	1	' SAJ
+153	1	'*******************************************
+154	0	On Error GoTo err_GoToPriority_click
+155	0	Dim sql, msg
+156	0	
+157	0	If frm![chkInPriority] = True Then
+158	1	    'go to Priority form
+159	1	    'form is not bound where clause not needed
+160	1	    'DoCmd.OpenForm "FrmPriority", acNormal, , "[Flot Number] = " & frm![Flot Number], , , frm![Flot Number]
+161	0	    DoCmd.OpenForm "FrmPriority", acNormal, , , , , frm![Flot Number]
+162	0	    ViewPriorityRecord = True
+163	0	Else
+164	1	    'error, is not flagged in priority record here so better check
+165	0	    Dim there
+166	0	    there = DLookup(frm![Flot Number], "[Bot: Priority Sample]", "[Flot Number] = " & frm![Flot Number])
+167	0	    If IsNull(there) Then
+168	1	        'number not in table insert it
+169	0	    
+170	0	        If frm![Float Date] <> "" And frm![Flot Number] <> "" Then
+171	0	            sql = "INSERT INTO [Bot: Priority Sample] ([Flot Number], [Year]) VALUES (" & frm![Flot Number] & ", " & Year(frm![Float Date]) & ");"
+172	0	            DoCmd.RunSQL sql
+173	0	            DoCmd.OpenForm "FrmPriority", acNormal, , "[Flot Number] = " & frm![Flot Number], , , frm![Flot Number]
+174	0	            ViewPriorityRecord = True
+175	0	        Else
+176	0	            msg = "The record is not actually in the Priority table and cannot be entered into it until the following values are present:" & Chr(13) & Chr(13)
+177	0	            If frm![Flot Number] = "" Or IsNull(frm![Flot Number]) Then
+178	0	                msg = msg & " Flot number " & Chr(13)
+179	0	            ElseIf frm![Float Date] = "" Or IsNull(frm![Float Date]) Then
+180	0	                msg = msg & " Float Date "
+181	0	            End If
+182	0	            MsgBox msg, vbExclamation, "Insufficient Information"
+183	0	            ViewPriorityRecord = False
+184	0	        End If
+185	0	    Else
+186	1	        'number is there so open form
+187	0	        DoCmd.OpenForm "FrmPriority", acNormal, , "[Flot Number] = " & frm![Flot Number], , , frm![Flot Number]
+188	0	        ViewPriorityRecord = True
+189	0	    End If
+190	0	End If
+191	0	
+192	0	Exit Function
+193	0	err_GoToPriority_click:
+194	0	    Call General_Error_Trap
+195	0	    Exit Function
+196	0	
+197	0	End Function
+198	0	
+199	0	Function ViewScanRecord(frm As Form) As Boolean
+200	1	'*******************************************
+201	1	' Open the sample scan record for this the flot num
+202	1	' SAJ
+203	1	'*******************************************
+204	0	On Error GoTo err_GoToScanning_click
+205	0	Dim sql, msg
+206	0	
+207	0	If frm![chkInScanning] = True Then
+208	1	    'go to Priority form
+209	1	    'form is not bound, where clause not used
+210	1	    'DoCmd.OpenForm "FrmSampleScan", acNormal, , "[Flot Number] = " & frm![Flot Number], , , frm![Flot Number]
+211	0	    DoCmd.OpenForm "FrmSampleScan", acNormal, , , , , frm![Flot Number]
+212	0	    ViewScanRecord = True
+213	0	Else
+214	1	    'error, is not flagged in priority record here so better check
+215	0	    Dim there
+216	0	    there = DLookup(frm![Flot Number], "[Bot: Sample Scanning]", "[Flot Number] = " & frm![Flot Number])
+217	0	    If IsNull(there) Then
+218	1	        'number not in table insert it
+219	0	    
+220	0	        If frm![Float Date] <> "" And frm![Flot Number] <> "" Then
+221	0	            sql = "INSERT INTO [Bot: Sample Scanning] ([Flot Number], [YearScanned]) VALUES (" & frm![Flot Number] & ", " & Year(frm![Float Date]) & ");"
+222	0	            DoCmd.RunSQL sql
+223	0	            DoCmd.OpenForm "FrmSampleScan", acNormal, , "[Flot Number] = " & frm![Flot Number], , , frm![Flot Number]
+224	0	            ViewScanRecord = True
+225	0	        Else
+226	0	            msg = "The record is not actually in the Scanning table and cannot be entered into it until the following values are present:" & Chr(13) & Chr(13)
+227	0	            If frm![Flot Number] = "" Or IsNull(frm![Flot Number]) Then
+228	0	                msg = msg & " Flot number " & Chr(13)
+229	0	            ElseIf frm![Float Date] = "" Or IsNull(frm![Float Date]) Then
+230	0	                msg = msg & " Float Date "
+231	0	            End If
+232	0	            MsgBox msg, vbExclamation, "Insufficient Information"
+233	0	            ViewScanRecord = False
+234	0	        End If
+235	0	    Else
+236	1	        'number is there so open form
+237	0	        DoCmd.OpenForm "FrmSampleScan", acNormal, , "[Flot Number] = " & frm![Flot Number], , , frm![Flot Number]
+238	0	        ViewScanRecord = True
+239	0	    End If
+240	0	End If
+241	0	
+242	0	Exit Function
+243	0	err_GoToScanning_click:
+244	0	    Call General_Error_Trap
+245	0	    Exit Function
+246	0	
+247	0	
+248	0	End Function
+249	0	
+250	0	Function ViewSieveScanRecord(frm As Form) As Boolean
+251	1	'*******************************************
+252	1	' Open the Sieve scan record for this the flot num
+253	1	' DL 2015 (taken from SAJ)
+254	1	'*******************************************
+255	0	On Error GoTo err_GoToSieveScanning_click
+256	0	Dim sql, msg
+257	0	
+258	0	If frm![chkinsievescanning] = True Then
+259	1	    'go to Priority form
+260	1	    'form is not bound, where clause not used
+261	1	    'DoCmd.OpenForm "FrmSampleScan", acNormal, , "[Flot Number] = " & frm![Flot Number], , , frm![Flot Number]
+262	0	    DoCmd.OpenForm "FrmSieveScan", acNormal, , , , , frm![Flot Number]
+263	0	    ViewSieveScanRecord = True
+264	0	Else
+265	1	    'error, is not flagged in priority record here so better check
+266	0	    Dim there
+267	0	    there = DLookup(frm![Flot Number], "[Bot: SieveScanning]", "[Flot Number] = " & frm![Flot Number])
+268	0	    If IsNull(there) Then
+269	1	        'number not in table insert it
+270	0	    
+271	0	        If frm![Float Date] <> "" And frm![Flot Number] <> "" Then
+272	0	            sql = "INSERT INTO [Bot: SieveScanning] ([Flot Number], [Year_scanned]) VALUES (" & frm![Flot Number] & ", " & Year(frm![Float Date]) & ");"
+273	0	            DoCmd.RunSQL sql
+274	0	            DoCmd.OpenForm "FrmSieveScan", acNormal, , "[Flot Number] = " & frm![Flot Number], , , frm![Flot Number]
+275	0	            ViewSieveScanRecord = True
+276	0	        Else
+277	0	            msg = "The record is not actually in the Sieve Scanning table and cannot be entered into it until the following values are present:" & Chr(13) & Chr(13)
+278	0	            If frm![Flot Number] = "" Or IsNull(frm![Flot Number]) Then
+279	0	                msg = msg & " Flot number " & Chr(13)
+280	0	            ElseIf frm![Float Date] = "" Or IsNull(frm![Float Date]) Then
+281	0	                msg = msg & " Float Date "
+282	0	            End If
+283	0	            MsgBox msg, vbExclamation, "Insufficient Information"
+284	0	            ViewSieveScanRecord = False
+285	0	        End If
+286	0	    Else
+287	1	        'number is there so open form
+288	0	        DoCmd.OpenForm "FrmSieveScan", acNormal, , "[Flot Number] = " & frm![Flot Number], , , frm![Flot Number]
+289	0	        ViewSieveScanRecord = True
+290	0	    End If
+291	0	End If
+292	0	
+293	0	Exit Function
+294	0	err_GoToSieveScanning_click:
+295	0	    Call General_Error_Trap
+296	0	    Exit Function
+297	0	
+298	0	
+299	0	End Function
+300	0	
+301	0	
+302	0	Function DeleteSampleRecord(num) As Boolean
+303	1	'all basic records are auto put into sample scanning but if they require to go in
+304	2	'priority need to delete out of sample. RW users don't have permissions to delete so
+305	1	'need to use SP to do so
+306	0	On Error GoTo err_delrec
+307	0	
+308	0	If spString <> "" Then
+309	0	    Dim mydb As DAO.Database
+310	0	    Dim myq1 As QueryDef
+311	0	    Set mydb = CurrentDb
+312	0	    Set myq1 = mydb.CreateQueryDef("")
+313	0	    myq1.Connect = spString
+314	0	    myq1.ReturnsRecords = False
+315	0	    myq1.sql = "sp_Bot_Delete_SampleScanRecord " & num
+316	0	    myq1.Execute
+317	0	    myq1.Close
+318	0	    Set myq1 = Nothing
+319	0	    mydb.Close
+320	0	    Set mydb = Nothing
+321	0	    
+322	0	    DeleteSampleRecord = True
+323	0	
+324	0	Else
+325	0	    MsgBox "Sorry but the record cannot be deleted out of the sample scanning table, restart the database and try again", vbCritical, "Error"
+326	0	    DeleteSampleRecord = False
+327	0	End If
+328	0	Exit Function
+329	0	
+330	0	err_delrec:
+331	0	    Call General_Error_Trap
+332	0	    Exit Function
+333	0	End Function
+334	0	
+335	0	Function AddRecordToPriorityReport(frm As Form) As Boolean
+336	1	'*******************************************
+337	1	' Add the flot record to the priority report table
+338	1	' SAJ
+339	1	'*******************************************
+340	0	On Error GoTo err_AddRecordToPriorityReport
+341	0	Dim sql, msg
+342	0	If frm![Flot Number] <> "" Then
+343	1	    'enough info to add record to Priority table
+344	0	    sql = "INSERT INTO [Bot: Priority Report] ([Flot Number]) VALUES (" & frm![Flot Number] & ");"
+345	0	    DoCmd.RunSQL sql
+346	0	    DoCmd.OpenForm "FrmPriorityReport", acNormal, , "[Flot Number] = " & frm![Flot Number], , , frm![Flot Number]
+347	0	    AddRecordToPriorityReport = True
+348	0	Else
+349	1	    'not enough info to add record
+350	0	    msg = "This record cannot be entered into the Priority Report table until a Flot number has been entered"
+351	0	    MsgBox msg, vbExclamation, "Insufficient Information"
+352	0	    AddRecordToPriorityReport = False
+353	0	End If
+354	0	
+355	0	Exit Function
+356	0	err_AddRecordToPriorityReport:
+357	0	    Call General_Error_Trap
+358	0	    Exit Function
+359	0	
+360	0	End Function

@@ -1,0 +1,20 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Sub copy_cut_Click()
+5	0	On Error GoTo Err_copy_cut_Click
+6	0	
+7	0	    Dim stDocName As String
+8	0	    Dim stLinkCriteria As String
+9	0	
+10	0	    stDocName = "Exca: Copy Cut description"
+11	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+12	0	
+13	0	Exit_copy_cut_Click:
+14	0	    Exit Sub
+15	0	
+16	0	Err_copy_cut_Click:
+17	0	    MsgBox Err.Description
+18	0	    Resume Exit_copy_cut_Click
+19	0	    
+20	0	End Sub

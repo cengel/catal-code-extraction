@@ -1,0 +1,627 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cboFind_AfterUpdate()
+5	0	On Error GoTo err_cboFind
+6	0	
+7	0	If Me![cboFind] <> "" Then
+8	0	    DoCmd.GoToControl Me![txtGID].Name
+9	0	    DoCmd.FindRecord Me![cboFind]
+10	0	    DoCmd.GoToControl Me![Unit].Name
+11	0	End If
+12	0	
+13	0	Exit Sub
+14	0	
+15	0	err_cboFind:
+16	0	    Call General_Error_Trap
+17	0	    Exit Sub
+18	0	End Sub
+19	0	
+20	0	Private Sub cboStoragePlace_AfterUpdate()
+21	1	'the storage place determines the whether the museum no or crate num field appears
+22	0	On Error GoTo err_cboStorage
+23	0	
+24	0	
+25	0	Dim retVal
+26	0	If Me![cboStoragePlace].OldValue = 1 And Me![txtCrate] <> "" Then
+27	0	    retVal = MsgBox("Changing the Storage Location will mean you lose the Crate Number information as you will have to enter a Museum number instead, are you sure you want to continue?", vbQuestion + vbYesNo, "Confirm Action")
+28	0	    If retVal = vbNo Then
+29	0	        Me![cboStoragePlace] = Me![cboStoragePlace].OldValue
+30	0	        Exit Sub
+31	0	    Else
+32	0	        Me![txtCrate] = Null
+33	0	    End If
+34	0	ElseIf Me![cboStoragePlace].OldValue = 2 And Me![txtMuseumNo] <> "" Then
+35	0	    retVal = MsgBox("Changing the Storage Location will mean you lose the Museum Number information as you will have to enter a Crate number instead, are you sure you want to continue?", vbQuestion + vbYesNo, "Confirm Action")
+36	0	    If retVal = vbNo Then
+37	0	        Me![cboStoragePlace] = Me![cboStoragePlace].OldValue
+38	0	        Exit Sub
+39	0	    Else
+40	0	        Me![txtMuseumNo] = Null
+41	0	    End If
+42	0	End If
+43	0	
+44	0	If Me![cboStoragePlace] = 1 Then
+45	0	    Me![lblCrate].Visible = True
+46	0	    Me![txtCrate].Visible = True
+47	0	    Me![lblMuseumNo].Visible = False
+48	0	    Me![txtMuseumNo].Visible = False
+49	0	ElseIf Me![cboStoragePlace] = 2 Then
+50	0	    Me![lblCrate].Visible = False
+51	0	    Me![txtCrate].Visible = False
+52	0	    Me![lblMuseumNo].Visible = True
+53	0	    Me![txtMuseumNo].Visible = True
+54	0	Else
+55	0	    Me![lblCrate].Visible = False
+56	0	    Me![txtCrate].Visible = False
+57	0	    Me![lblMuseumNo].Visible = False
+58	0	    Me![txtMuseumNo].Visible = False
+59	0	End If
+60	0	
+61	0	Exit Sub
+62	0	
+63	0	err_cboStorage:
+64	0	    Call General_Error_Trap
+65	0	    Exit Sub
+66	0	End Sub
+67	0	
+68	0	Private Sub Close_Click()
+69	0	On Error GoTo err_close
+70	0	
+71	0	    DoCmd.Close acForm, Me.Name
+72	0	
+73	0	Exit Sub
+74	0	
+75	0	err_close:
+76	0	    Call General_Error_Trap
+77	0	    Exit Sub
+78	0	End Sub
+79	0	
+80	0	Private Sub cmdAddNew_Click()
+81	0	On Error GoTo err_cmdAddNew_Click
+82	0	
+83	0	    DoCmd.GoToRecord acActiveDataObject, , acNewRec
+84	0	    DoCmd.GoToControl "Unit"
+85	0	Exit Sub
+86	0	
+87	0	err_cmdAddNew_Click:
+88	0	    Call General_Error_Trap
+89	0	    Exit Sub
+90	0	End Sub
+91	0	
+92	0	Private Sub cmdGoFirst_Click()
+93	0	On Error GoTo Err_gofirst_Click
+94	0	
+95	0	
+96	0	    DoCmd.GoToRecord , , acFirst
+97	0	
+98	0	    Exit Sub
+99	0	
+100	0	Err_gofirst_Click:
+101	0	    Call General_Error_Trap
+102	0	    
+103	0	End Sub
+104	0	
+105	0	Private Sub cmdGoLast_Click()
+106	0	On Error GoTo Err_goLast_Click
+107	0	
+108	0	
+109	0	    DoCmd.GoToRecord , , acLast
+110	0	
+111	0	    Exit Sub
+112	0	
+113	0	Err_goLast_Click:
+114	0	    Call General_Error_Trap
+115	0	    
+116	0	End Sub
+117	0	
+118	0	Private Sub cmdGoNext_Click()
+119	0	On Error GoTo Err_goNext_Click
+120	0	
+121	0	
+122	0	    DoCmd.GoToRecord , , acNext
+123	0	
+124	0	    Exit Sub
+125	0	
+126	0	Err_goNext_Click:
+127	0	    Call General_Error_Trap
+128	0	    
+129	0	End Sub
+130	0	
+131	0	Private Sub cmdGoPrev_Click()
+132	0	On Error GoTo Err_goPrev_Click
+133	0	
+134	0	
+135	0	    DoCmd.GoToRecord , , acPrevious
+136	0	
+137	0	    Exit Sub
+138	0	
+139	0	Err_goPrev_Click:
+140	0	    Call General_Error_Trap
+141	0	    
+142	0	End Sub
+143	0	
+144	0	Private Sub cmdGoToPub_Click()
+145	1	'open the publication form
+146	0	On Error GoTo err_gotopub
+147	0	
+148	0	    If Me![Published] = True Then
+149	2	        DoCmd.OpenForm "Frm_GS_Publications", acNormal, , "[GID] = '" & Me![txtGID] & "'"
+150	0	    
+151	0	    Else
+152	0	        MsgBox "This record is not recorded as published (the check box next to the button). The publication record cannot be shown", vbInformation, "No publication record"
+153	0	    End If
+154	0	    
+155	0	
+156	0	Exit Sub
+157	0	
+158	0	err_gotopub:
+159	0	    Call General_Error_Trap
+160	0	    Exit Sub
+161	0	End Sub
+162	0	
+163	0	Private Sub cmdGotoSample_Click()
+164	1	'open the sample form
+165	0	On Error GoTo err_gotosample
+166	0	
+167	0	    If Me![Sampled?] = True Then
+168	2	        DoCmd.OpenForm "Frm_GS_Samples", acNormal, , "[GID] = '" & Me![txtGID] & "'"
+169	0	    
+170	0	    Else
+171	0	        MsgBox "This record is not recorded as sampled (the check box next to the button). The sample record cannot be shown", vbInformation, "No sample record"
+172	0	    End If
+173	0	    
+174	0	
+175	0	Exit Sub
+176	0	
+177	0	err_gotosample:
+178	0	    Call General_Error_Trap
+179	0	    Exit Sub
+180	0	End Sub
+181	0	
+182	0	Private Sub cmdOutput_Click()
+183	1	'open output options pop up
+184	0	On Error GoTo err_Output
+185	0	
+186	0	    If Me![txtGID] <> "" Then
+187	0	        DoCmd.OpenForm "Frm_Pop_DataOutputOptions", acNormal, , , , acDialog, Me![txtGID] & ";" & Me![Worked?]
+188	0	    Else
+189	0	        MsgBox "The output options form cannot be shown when there is no GID on screen", vbInformation, "Action Cancelled"
+190	0	    End If
+191	0	
+192	0	Exit Sub
+193	0	
+194	0	err_Output:
+195	0	    Call General_Error_Trap
+196	0	    Exit Sub
+197	0	End Sub
+198	0	
+199	0	Private Sub Form_Current()
+200	1	'Set up form display
+201	0	On Error GoTo err_current
+202	0	
+203	0	If Me![RetrievalMethod] = "Heavy Residue" Then
+204	0	    Me![txtFlotNo].Enabled = True
+205	0	    Me![txtFlotNo].BackColor = -2147483643
+206	0	    Me![cboFraction].Enabled = True
+207	0	    Me![cboFraction].BackColor = -2147483643
+208	0	    Me![cboPercent].Enabled = True
+209	0	    Me![cboPercent].BackColor = -2147483643
+210	0	    Me![txtVolume].Enabled = True
+211	0	    Me![txtVolume].BackColor = -2147483643
+212	0	    Me![txtFlotNo].Locked = False
+213	0	    Me![cboFraction].Locked = False
+214	0	    Me![cboPercent].Locked = False
+215	0	    Me![txtVolume].Locked = False
+216	0	Else
+217	0	    Me![txtFlotNo].Enabled = False
+218	0	    Me![txtFlotNo].BackColor = 9503284
+219	0	    Me![cboFraction].Enabled = False
+220	0	    Me![cboFraction].BackColor = 9503284
+221	0	    Me![cboPercent].Enabled = False
+222	0	    Me![cboPercent].BackColor = 9503284
+223	0	    Me![txtVolume].Enabled = False
+224	0	    Me![txtVolume].BackColor = 9503284
+225	0	    Me![txtFlotNo].Locked = True
+226	0	    Me![cboFraction].Locked = True
+227	0	    Me![cboPercent].Locked = True
+228	0	    Me![txtVolume].Locked = True
+229	0	End If
+230	0	
+231	0	If Me![cboStoragePlace] = 1 Then
+232	0	    Me![lblCrate].Visible = True
+233	0	    Me![txtCrate].Visible = True
+234	0	    Me![lblMuseumNo].Visible = False
+235	0	    Me![txtMuseumNo].Visible = False
+236	0	ElseIf Me![cboStoragePlace] = 2 Then
+237	0	    Me![lblCrate].Visible = False
+238	0	    Me![txtCrate].Visible = False
+239	0	    Me![lblMuseumNo].Visible = True
+240	0	    Me![txtMuseumNo].Visible = True
+241	0	Else
+242	0	    Me![lblCrate].Visible = False
+243	0	    Me![txtCrate].Visible = False
+244	0	    Me![lblMuseumNo].Visible = False
+245	0	    Me![txtMuseumNo].Visible = False
+246	0	End If
+247	0	
+248	0	If Me![Worked?] = True Then
+249	0	    Me![subfrmWorkedOrUnworked].SourceObject = "Frm_subform_WorkedStone"
+250	0	    
+251	0	    If Me![subfrmWorkedOrUnworked].Form![Artefact Class] = "Unidentifiable" Then
+252	0	        Me![subfrmWorkedOrUnworked].Height = "4900"
+253	0	    Else
+254	0	        Me![subfrmWorkedOrUnworked].Height = "9800"
+255	0	    End If
+256	2	    Me![txtWorkUnWorlLBL].ControlSource = "='This record is currently marked as Worked'"
+257	0	Else
+258	0	    Me![subfrmWorkedOrUnworked].SourceObject = "Frm_subform_UnworkedStone"
+259	0	    Me![subfrmWorkedOrUnworked].Height = "3444"
+260	2	    Me![txtWorkUnWorlLBL].ControlSource = "='This record is currently marked as UnWorked'"
+261	0	End If
+262	0	
+263	0	If Me![Sampled?] = True Then
+264	0	    Me![cmdGotoSample].Enabled = True
+265	0	Else
+266	0	    Me![cmdGotoSample].Enabled = False
+267	0	End If
+268	0	
+269	0	If Me![Published] = True Then
+270	0	    Me![cmdGoToPub].Enabled = True
+271	0	Else
+272	0	    Me![cmdGoToPub].Enabled = False
+273	0	End If
+274	0	
+275	0	Exit Sub
+276	0	
+277	0	err_current:
+278	0	    Call General_Error_Trap
+279	0	    Exit Sub
+280	0	End Sub
+281	0	
+282	0	Private Sub go_to_first_Click()
+283	0	
+284	0	End Sub
+285	0	
+286	0	Private Sub GSAnalyst_NotInList(NewData As String, Response As Integer)
+287	1	'Allow more values to be added if necessary
+288	0	On Error GoTo err_GSAnalyst_NotInList
+289	0	
+290	0	Dim retVal, sql, inputname
+291	0	
+292	0	retVal = MsgBox("This value is not in the list, are you sure you want to add it?", vbQuestion + vbYesNo, "Value not in list")
+293	0	If retVal = vbYes Then
+294	0	    Response = acDataErrAdded
+295	0	    inputname = InputBox("Please enter the full name of the analyst to go along with these initials:", "Analyst Name")
+296	0	    If inputname <> "" Then
+297	4	        sql = "INSERT INTO [GroundStone List of Values: GSAnalyst]([GSAnalystInitials], [GSAnalystName]) VALUES ('" & NewData & "', '" & inputname & "');"
+298	0	        DoCmd.RunSQL sql
+299	0	    Else
+300	0	        Response = acDataErrContinue
+301	0	    End If
+302	0	Else
+303	0	    Response = acDataErrContinue
+304	0	End If
+305	0	
+306	0	   
+307	0	Exit Sub
+308	0	
+309	0	err_GSAnalyst_NotInList:
+310	0	    Call General_Error_Trap
+311	0	    Exit Sub
+312	0	End Sub
+313	0	
+314	0	Private Sub Letter_AfterUpdate()
+315	0	Dim retVal
+316	0	If Me![Letter] <> "" Then
+317	0	    If Me![Letter].OldValue <> "" And Me![Unit] <> "" And Me![Number] <> "" Then
+318	0	        retVal = MsgBox("Altering the Letter effects the GID, are you sure you want to do this?", vbQuestion + vbYesNo, "Confirm Action")
+319	0	        If retVal = vbYes Then
+320	0	            Me![txtGID] = Me![Unit] & "." & Me![Letter] & Me![Number]
+321	0	        Else
+322	0	            Me![Letter] = Me![Letter].OldValue
+323	0	        End If
+324	0	    Else
+325	0	        Me![txtGID] = Me![Unit] & "." & Me![Letter] & Me![Number]
+326	0	    End If
+327	0	
+328	0	End If
+329	0	End Sub
+330	0	
+331	0	Private Sub Letter_NotInList(NewData As String, Response As Integer)
+332	1	'Allow more values to be added if necessary
+333	0	On Error GoTo err_Letter_NotInList
+334	0	
+335	0	Dim retVal, sql
+336	0	
+337	0	retVal = MsgBox("This value is not in the list, are you sure you want to add it?", vbQuestion + vbYesNo, "Value not in list")
+338	0	If retVal = vbYes Then
+339	0	    Response = acDataErrAdded
+340	2	    sql = "INSERT INTO [GroundStone List of Values: GSLetter]([GIDLetter]) VALUES ('" & NewData & "');"
+341	0	    DoCmd.RunSQL sql
+342	1	    'DoCmd.RunCommand acCmdSaveRecord
+343	1	    'Me![Letter].Requery
+344	0	Else
+345	0	    Response = acDataErrContinue
+346	0	End If
+347	0	
+348	0	   
+349	0	Exit Sub
+350	0	
+351	0	err_Letter_NotInList:
+352	0	    Call General_Error_Trap
+353	0	    Exit Sub
+354	0	End Sub
+355	0	
+356	0	Private Sub Number_AfterUpdate()
+357	0	Dim retVal
+358	0	If Me![Number] <> "" Then
+359	0	    If Me![Number].OldValue <> "" And Me![Unit] <> "" And Me![Letter] <> "" Then
+360	0	        retVal = MsgBox("Altering the Number effects the GID, are you sure you want to do this?", vbQuestion + vbYesNo, "Confirm Action")
+361	0	        If retVal = vbYes Then
+362	0	            Me![txtGID] = Me![Unit] & "." & Me![Letter] & Me![Number]
+363	0	        Else
+364	0	            Me![Number] = Me![Number].OldValue
+365	0	        End If
+366	0	    Else
+367	0	        Me![txtGID] = Me![Unit] & "." & Me![Letter] & Me![Number]
+368	0	    End If
+369	0	
+370	0	End If
+371	0	End Sub
+372	0	
+373	0	Private Sub Published_AfterUpdate()
+374	1	'set up go to button
+375	0	On Error GoTo err_Published
+376	0	
+377	0	If Me![Published] = True Then
+378	0	    
+379	0	    Dim pubnum, sql
+380	4	    sql = "INSERT INTO [Groundstone: Publications] ([GID], [Unit], [Letter], [Number]) VALUES ('" & Me![txtGID] & "'," & Me![Unit] & ",'" & Me![Letter] & "'," & Me![Number] & ");"
+381	0	    DoCmd.RunSQL sql
+382	0	    Me![cmdGoToPub].Enabled = True
+383	0	    
+384	0	Else
+385	2	    'don't allow the pub to be unchecked if pub details exist for this GID
+386	0	    Dim checknum
+387	0	    checknum = DLookup("[GID]", "[Groundstone: Publications]", "[GID] = " & Me![txtGID])
+388	0	    If IsNull(checknum) Then
+389	0	        Me![cmdGoToPub].Enabled = False
+390	0	    Else
+391	0	        MsgBox "Publication records exist for this GID, sorry but you cannot uncheck this box whilst these exist", vbInformation, "Invalid Action"
+392	0	        Me![Published] = True
+393	0	        Me![cmdGoToPub].Enabled = True
+394	0	    End If
+395	0	End If
+396	0	Exit Sub
+397	0	
+398	0	err_Published:
+399	0	    Call General_Error_Trap
+400	0	    Exit Sub
+401	0	
+402	0	End Sub
+403	0	
+404	0	Private Sub RawMaterial_NotInList(NewData As String, Response As Integer)
+405	1	'Allow more values to be added if necessary
+406	0	On Error GoTo err_RawMat_NotInList
+407	0	
+408	0	Dim retVal, sql, inputname
+409	0	
+410	0	retVal = MsgBox("This value is not in the list, are you sure you want to add it?", vbQuestion + vbYesNo, "Value not in list")
+411	0	If retVal = vbYes Then
+412	0	    Response = acDataErrAdded
+413	2	    sql = "INSERT INTO [Groundstone List of Values: Raw Materials]([stone type]) VALUES ('" & NewData & "');"
+414	0	    DoCmd.RunSQL sql
+415	0	Else
+416	0	    Response = acDataErrContinue
+417	0	End If
+418	0	
+419	0	   
+420	0	Exit Sub
+421	0	
+422	0	err_RawMat_NotInList:
+423	0	    Call General_Error_Trap
+424	0	    Exit Sub
+425	0	End Sub
+426	0	
+427	0	Private Sub RetrievalMethod_AfterUpdate()
+428	0	Dim retVal
+429	0	If Me![RetrievalMethod].OldValue = "Heavy Residue" Then
+430	0	    If Not IsNull(Me![txtFlotNo]) Or Me![cboFraction] <> "" Or Not IsNull(Me![txtVolume]) Then
+431	0	        retVal = MsgBox("Changing the Retrieval Method from Heavy Residue will mean you will lose all the Flotation data. Are you sure?", vbQuestion + vbYesNo, "Confirm Action")
+432	0	        If retVal = vbYes Then
+433	0	            Me![txtFlotNo] = Null
+434	0	            Me![cboFraction] = Null
+435	0	            Me![txtVolume] = Null
+436	0	        Else
+437	0	            Me![RetrievalMethod] = "Heavy Residue"
+438	0	            Exit Sub
+439	0	        End If
+440	0	    End If
+441	0	End If
+442	0	
+443	0	If Me![RetrievalMethod] = "Heavy Residue" Then
+444	0	    Me![txtFlotNo].Enabled = True
+445	0	    Me![txtFlotNo].BackColor = -2147483643
+446	0	    Me![cboFraction].Enabled = True
+447	0	    Me![cboFraction].BackColor = -2147483643
+448	0	    Me![cboPercent].Enabled = True
+449	0	    Me![cboPercent].BackColor = -2147483643
+450	0	    Me![txtVolume].Enabled = True
+451	0	    Me![txtVolume].BackColor = -2147483643
+452	0	    Me![txtFlotNo].Locked = False
+453	0	    Me![cboFraction].Locked = False
+454	0	    Me![cboPercent].Locked = False
+455	0	    Me![txtVolume].Locked = False
+456	0	Else
+457	0	    Me![txtFlotNo].Enabled = False
+458	0	    Me![txtFlotNo].BackColor = 9503284
+459	0	    Me![cboFraction].Enabled = False
+460	0	    Me![cboFraction].BackColor = 9503284
+461	0	    Me![cboPercent].Enabled = False
+462	0	    Me![cboPercent].BackColor = 9503284
+463	0	    Me![txtVolume].Enabled = False
+464	0	    Me![txtVolume].BackColor = 9503284
+465	0	    Me![txtFlotNo].Locked = True
+466	0	    Me![cboFraction].Locked = True
+467	0	    Me![cboPercent].Locked = True
+468	0	    Me![txtVolume].Locked = True
+469	0	End If
+470	0	
+471	0	End Sub
+472	0	
+473	0	Private Sub RetrievalMethod_NotInList(NewData As String, Response As Integer)
+474	1	'Allow more values to be added if necessary
+475	0	On Error GoTo err_RetrievalMethod_NotInList
+476	0	
+477	0	Dim retVal, sql, inputname
+478	0	
+479	0	retVal = MsgBox("This value is not in the list, are you sure you want to add it?", vbQuestion + vbYesNo, "Value not in list")
+480	0	If retVal = vbYes Then
+481	0	    Response = acDataErrAdded
+482	2	    sql = "INSERT INTO [Groundstone List of Values: RetrievalMethod]([RetrievalMethod]) VALUES ('" & NewData & "');"
+483	0	    DoCmd.RunSQL sql
+484	0	Else
+485	0	    Response = acDataErrContinue
+486	0	End If
+487	0	
+488	0	   
+489	0	Exit Sub
+490	0	
+491	0	err_RetrievalMethod_NotInList:
+492	0	    Call General_Error_Trap
+493	0	    Exit Sub
+494	0	End Sub
+495	0	
+496	0	Private Sub Sampled__AfterUpdate()
+497	1	'set up go to button
+498	0	On Error GoTo err_sampled
+499	0	
+500	0	If Me![Sampled?] = True Then
+501	0	    
+502	0	    Dim SampleNum, sql
+503	0	    SampleNum = InputBox("Please enter the unique sample number that you have allocated to this sample:", "GS Sample Number")
+504	0	    If SampleNum = "" Then
+505	0	        MsgBox "You must enter a unique groundstone sample number to identify this sample before proceeding", vbInformation, "Action Cancelled"
+506	0	        Me![Sampled?] = False
+507	0	        Me![cmdGotoSample].Enabled = False
+508	0	    Else
+509	6	        sql = "INSERT INTO [Groundstone 6: Samples] ([GID], [Unit], [Letter], [Number], [GSSample Number]) VALUES ('" & Me![txtGID] & "'," & Me![Unit] & ",'" & Me![Letter] & "'," & Me![Number] & ",'" & SampleNum & "');"
+510	0	        DoCmd.RunSQL sql
+511	0	        Me![cmdGotoSample].Enabled = True
+512	0	    End If
+513	0	Else
+514	2	    'don't allow the sample to be unchecked if sample details exist for this GID
+515	0	    Dim checknum
+516	0	    checknum = DLookup("[GID]", "[Groundstone 6: Samples]", "[GID] = " & Me![txtGID])
+517	0	    If IsNull(checknum) Then
+518	0	        Me![cmdGotoSample].Enabled = False
+519	0	    Else
+520	0	        MsgBox "Samples exist for this GID, sorry but you cannot uncheck this box whilst these exist", vbInformation, "Invalid Action"
+521	0	        Me![Sampled?] = True
+522	0	        Me![cmdGotoSample].Enabled = True
+523	0	    End If
+524	0	End If
+525	0	Exit Sub
+526	0	
+527	0	err_sampled:
+528	0	    Call General_Error_Trap
+529	0	    Exit Sub
+530	0	End Sub
+531	0	
+532	0	Private Sub Unit_AfterUpdate()
+533	0	
+534	0	Dim retVal
+535	0	If Me![Unit] <> "" Then
+536	0	    If Me![Unit].OldValue <> "" And Me![Letter] <> "" And Me![Number] <> "" Then
+537	0	        retVal = MsgBox("Altering the Unit effects the GID, are you sure you want to do this?", vbQuestion + vbYesNo, "Confirm Action")
+538	0	        If retVal = vbYes Then
+539	0	            Me![txtGID] = Me![Unit] & "." & Me![Letter] & Me![Number]
+540	0	        Else
+541	0	            Me![Unit] = Me![Unit].OldValue
+542	0	        End If
+543	0	    Else
+544	0	        Me![txtGID] = Me![Unit] & "." & Me![Letter] & Me![Number]
+545	0	    End If
+546	0	
+547	0	End If
+548	0	End Sub
+549	0	
+550	0	Private Sub Worked__AfterUpdate()
+551	0	Dim retVal, checknum, sql
+552	0	If IsNull(Me![subfrmWorkedOrUnworked]![GID]) Then
+553	1	    'this record has no worked/unworked specific data so can allow alteration without a problem
+554	0	    If Me![Worked?] = True Then
+555	0	        Me![subfrmWorkedOrUnworked].SourceObject = "Frm_subform_WorkedStone"
+556	0	        Me![subfrmWorkedOrUnworked].Height = "6885"
+557	2	        Me![txtWorkUnWorlLBL].ControlSource = "='This record is currently marked as Worked'"
+558	0	        Me![subfrmWorkedOrUnworked].Form![txtGID] = Me![txtGID]
+559	0	    Else
+560	0	        Me![subfrmWorkedOrUnworked].SourceObject = "Frm_subform_UnworkedStone"
+561	0	        Me![subfrmWorkedOrUnworked].Height = "3444"
+562	2	        Me![txtWorkUnWorlLBL].ControlSource = "='This record is currently marked as UnWorked'"
+563	0	        Me![subfrmWorkedOrUnworked].Form![txtGID] = Me![txtGID]
+564	0	    End If
+565	0	Else
+566	0	    If Me![Worked?] = False Then
+567	1	        'was worked
+568	2	        checknum = DLookup("[GID]", "[GroundStone 3: Worked Stone Basics]", "[GID] = '" & Me![txtGID] & "'")
+569	0	        If Not IsNull(checknum) Then
+570	0	            retVal = MsgBox("This action means you will lose all of the information entered into the Worked fields below. Are you sure?", vbQuestion + vbYesNo, "Confirm Action")
+571	0	            If retVal = vbNo Then
+572	0	                Me![Worked?] = True
+573	0	                Exit Sub
+574	0	            Else
+575	2	                sql = "DELETE FROM [GroundStone 3: Worked Stone Basics] WHERE [GID] = '" & Me![txtGID] & "';"
+576	0	                DoCmd.RunSQL sql
+577	0	            End If
+578	0	        End If
+579	0	        Me![subfrmWorkedOrUnworked].SourceObject = "Frm_subform_UnworkedStone"
+580	0	        Me![subfrmWorkedOrUnworked].Height = "3444"
+581	2	        Me![txtWorkUnWorlLBL].ControlSource = "='This record is currently marked as UnWorked'"
+582	0	        Me![subfrmWorkedOrUnworked].Form![txtGID] = Me![txtGID]
+583	0	    Else
+584	1	        'was unworked
+585	2	        checknum = DLookup("[GID]", "[GroundStone 2: UnWorked Stone Basics]", "[GID] = '" & Me![txtGID] & "'")
+586	0	        If Not IsNull(checknum) Then
+587	0	            retVal = MsgBox("This action means you will lose all of the information entered into the UnWorked fields below. Are you sure?", vbQuestion + vbYesNo, "Confirm Action")
+588	0	            If retVal = vbNo Then
+589	0	                Me![Worked?] = False
+590	0	                Exit Sub
+591	0	            Else
+592	2	                sql = "DELETE FROM [GroundStone 2: UnWorked Stone Basics] WHERE [GID] = '" & Me![txtGID] & "';"
+593	0	                DoCmd.RunSQL sql
+594	0	            End If
+595	0	        End If
+596	0	        Me![subfrmWorkedOrUnworked].SourceObject = "Frm_subform_WorkedStone"
+597	0	        Me![subfrmWorkedOrUnworked].Height = "6885"
+598	2	        Me![txtWorkUnWorlLBL].ControlSource = "='This record is currently marked as Worked'"
+599	0	        Me![subfrmWorkedOrUnworked].Form![txtGID] = Me![txtGID]
+600	0	    End If
+601	0	End If
+602	0	End Sub
+603	0	
+604	0	Private Sub cmdUnitDesc_Click()
+605	0	On Error GoTo Err_cmdUnitDesc_Click
+606	0	
+607	0	If Me![Unit] <> "" Then
+608	1	    'check the unit number is in the unit desc form
+609	0	    Dim checknum, sql
+610	0	    checknum = DLookup("[Unit]", "[Groundstone: GS Unit Description]", "[Unit] = " & Me![Unit])
+611	0	    If IsNull(checknum) Then
+612	1	        'must add the unit to the table
+613	0	        sql = "INSERT INTo [Groundstone: GS Unit Description] ([Unit]) VALUES (" & Me![Unit] & ");"
+614	0	        DoCmd.RunSQL sql
+615	0	    End If
+616	0	    
+617	0	    DoCmd.OpenForm "Frm_GS_UnitDescription", acNormal, , "[Unit] = " & Me![Unit], acFormPropertySettings
+618	0	Else
+619	0	    MsgBox "No Unit number is present, cannot open the Unit Description form", vbInformation, "No Unit Number"
+620	0	End If
+621	0	Exit Sub
+622	0	
+623	0	Err_cmdUnitDesc_Click:
+624	0	    Call General_Error_Trap
+625	0	    Exit Sub
+626	0	    
+627	0	End Sub

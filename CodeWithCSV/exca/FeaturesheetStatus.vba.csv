@@ -1,0 +1,74 @@
+1	0	Option Compare Database
+2	0	
+3	0	Private Sub cboFilterArea_AfterUpdate()
+4	1	'filter - new 2011
+5	0	On Error GoTo err_filter
+6	0	
+7	0	    If Me![cboFilterArea] <> "" Then
+8	0	    
+9	2	        Me.[dbo_view_exca_feature_lateststatus_2bchecked].Form.Filter = "[Area] = '" & Me![cboFilterArea] & "'"
+10	2	        Me.[dbo_view_exca_feature_lateststatus_checked].Form.Filter = "[Area] = '" & Me![cboFilterArea] & "'"
+11	2	        Me.[dbo_view_exca_feature_lateststatus_inprogress].Form.Filter = "[Area] = '" & Me![cboFilterArea] & "'"
+12	0	        Me.[dbo_view_exca_feature_lateststatus_2bchecked].Form.FilterOn = True
+13	0	        Me.[dbo_view_exca_feature_lateststatus_checked].Form.FilterOn = True
+14	0	        Me.[dbo_view_exca_feature_lateststatus_inprogress].Form.FilterOn = True
+15	0	        Me![cboFilterArea] = ""
+16	0	        Me![cmdRemoveFilter].Visible = True
+17	0	    End If
+18	0	
+19	0	Exit Sub
+20	0	
+21	0	err_filter:
+22	0	    Call General_Error_Trap
+23	0	    Exit Sub
+24	0	End Sub
+25	0	
+26	0	Private Sub cboFilterArea_NotInList(NewData As String, response As Integer)
+27	1	'stop not in list msg loop - new 2011
+28	0	On Error GoTo err_cbofilterNot
+29	0	
+30	0	    MsgBox "Sorry this Area does not exist in this database yet", vbInformation, "No Match"
+31	0	    response = acDataErrContinue
+32	0	    
+33	0	    Me![cboFilterArea].Undo
+34	0	Exit Sub
+35	0	
+36	0	err_cbofilterNot:
+37	0	    Call General_Error_Trap
+38	0	    Exit Sub
+39	0	End Sub
+40	0	
+41	0	Private Sub cmdRemoveFilter_Click()
+42	1	'remove unit filter - new 2011
+43	0	On Error GoTo err_Removefilter
+44	0	
+45	0	    Me![cboFilterArea] = ""
+46	0	    Me.Filter = ""
+47	0	    Me.[dbo_view_exca_feature_lateststatus_2bchecked].Form.FilterOn = False
+48	0	    Me.[dbo_view_exca_feature_lateststatus_checked].Form.FilterOn = False
+49	0	    Me.[dbo_view_exca_feature_lateststatus_inprogress].Form.FilterOn = False
+50	0	    
+51	1	    'DoCmd.GoToControl "cboFind"
+52	0	    Me![cboFilterArea].SetFocus
+53	0	    Me![cmdRemoveFilter].Visible = False
+54	0	   
+55	0	
+56	0	Exit Sub
+57	0	
+58	0	err_Removefilter:
+59	0	    Call General_Error_Trap
+60	0	    Exit Sub
+61	0	End Sub
+62	0	
+63	0	
+64	0	Private Sub refresh_Click()
+65	0	
+66	0	Me![dbo_view_exca_feature_lateststatus_2bchecked].Requery
+67	0	Me![dbo_view_exca_feature_lateststatus_checked].Requery
+68	0	Me![dbo_view_exca_feature_lateststatus_inprogress].Requery
+69	0	
+70	0	End Sub
+71	0	
+72	0	Private Sub Form_Activate()
+73	0	Me.Requery
+74	0	End Sub

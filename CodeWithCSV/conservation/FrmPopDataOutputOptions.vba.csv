@@ -1,0 +1,159 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdAction_Click()
+5	1	'************************************************************************
+6	1	' Process output depending on values selected on screen
+7	1	' SAJ
+8	1	'************************************************************************
+9	0	On Error GoTo err_cmdAction
+10	0	Dim which, where, sql, rpt
+11	0	
+12	0	    If Me![optgrpWhich] = 1 Then
+13	1	        'report
+14	0	        which = "report"
+15	0	    ElseIf Me![optgrpWhich] = 2 Then
+16	1	        'excel
+17	0	        which = "excel"
+18	0	    Else
+19	0	        MsgBox "Please select to either report or export data to excel", vbInformation, "No action to carry out"
+20	0	        which = ""
+21	0	        Exit Sub
+22	0	    End If
+23	0	
+24	0	   If which <> "" Then
+25	0	        If Me![optgrpData] = 1 Then
+26	1	            'current only
+27	2	            where = "[FullConservation_Ref] = '" & Me![txtRec] & "'"
+28	0	        ElseIf Me![optgrpData] = 2 Then
+29	1	            'range
+30	0	            If Me![cboStart] = "" Or Me![cboEnd] = "" Then
+31	0	                MsgBox "Please enter both a Start and End value for the range of records to output.", vbInformation, "Insufficient Data"
+32	0	                Exit Sub
+33	0	            Else
+34	4	                where = "[FullConservation_Ref] BETWEEN '" & Me![cboStart] & "' AND '" & Me![cboEnd] & "'"
+35	0	            End If
+36	0	        ElseIf Me![optgrpData] = 3 Then
+37	1	            'all
+38	0	            where = ""
+39	0	        ElseIf Me![optgrpData] = 4 Then
+40	1	            'current only
+41	0	            where = "[NameID] = " & Me![cboName]
+42	0	        End If
+43	0	   
+44	0	        If Me![optgrpData] = 4 Then
+45	0	            sql = "SELECT * FROM [Q_BasicDataWithConservatorName]"
+46	0	        Else
+47	0	            sql = "SELECT * FROM [" & Me![txtData] & "]"
+48	0	        End If
+49	0	        If where <> "" Then sql = sql & " where " & where
+50	0	        sql = sql & ";"
+51	0	   
+52	0	   
+53	0	        If which = "report" Then
+54	0	            If Me![optgrpData] = 4 Then
+55	0	                rpt = "Conserv: Full Printout for Conservator"
+56	0	                DoCmd.OpenReport rpt, acViewPreview, , where
+57	1	                'DoCmd.SelectObject acReport, "R_BasicData", True
+58	0	            Else
+59	0	                 rpt = "Conserv: Full Printout"
+60	0	                DoCmd.OpenReport rpt, acViewPreview, , where
+61	0	            End If
+62	1	            MsgBox "If you can't see the report it has appeared behind the form, go to the Window menu and select it from there", vbInformation, "Report Location"
+63	0	            DoCmd.Close acForm, Me.Name
+64	1	            'rpt.SetFocus
+65	0	        ElseIf which = "excel" Then
+66	0	            Dim mydb As Database, myq As QueryDef
+67	0	            Set mydb = CurrentDb
+68	0	            Set myq = mydb.CreateQueryDef("ConservationExcelExport")
+69	0	            
+70	0	            myq.sql = sql
+71	0	            myq.ReturnsRecords = False
+72	0	            
+73	0	            DoCmd.OutputTo acOutputQuery, "ConservationExcelExport", acFormatXLS, , True
+74	0	            
+75	0	            mydb.QueryDefs.Delete ("ConservationExcelExport")
+76	0	            
+77	0	            myq.Close
+78	0	            Set myq = Nothing
+79	0	            mydb.Close
+80	0	            Set mydb = Nothing
+81	0	            
+82	0	            DoCmd.Close acForm, Me.Name
+83	0	        End If
+84	0	   End If
+85	0	Exit Sub
+86	0	
+87	0	err_cmdAction:
+88	0	    If Err.Number = 3012 Then
+89	1	        'query already exists
+90	0	        mydb.QueryDefs.Delete ("ArchBotExcelExport")
+91	0	        Resume
+92	0	    Else
+93	0	        Call General_Error_Trap
+94	0	    End If
+95	0	    Exit Sub
+96	0	
+97	0	End Sub
+98	0	
+99	0	Private Sub Form_Open(Cancel As Integer)
+100	1	'**********************************************************************
+101	1	' This form allows the user to select what data they wish to output and in
+102	1	' what format. OpenArgs are required to specify where the call to the form
+103	1	' was made from (ie: what table was viewed) and what the current record was.
+104	1	' This must take the format: table;record
+105	1	' SAJ
+106	1	'**********************************************************************
+107	0	On Error GoTo err_open
+108	0	
+109	0	If Not IsNull(Me.OpenArgs) Then
+110	0	    Dim data, rec
+111	0	    data = Left(Me.OpenArgs, InStr(Me.OpenArgs, ";") - 1)
+112	0	    rec = Right(Me.OpenArgs, Len(Me.OpenArgs) - InStr(Me.OpenArgs, ";"))
+113	0	    
+114	0	    Me![txtRec] = rec
+115	0	    Me![txtData] = data
+116	0	    
+117	0	    Me![cboStart].RowSource = "SELECT DISTINCT [FullConservation_Ref] FROM [" & data & "] ORDER BY [FullConservation_Ref];"
+118	0	    Me![cboEnd].RowSource = "SELECT DISTINCT [FullConservation_Ref] FROM [" & data & "] ORDER BY [FullConservation_Ref];"
+119	0	
+120	0	Else
+121	0	    MsgBox "This form has been called without the necessary parameters, it will now close", vbCritical, "Insufficient Parameters"
+122	0	    DoCmd.Close acForm, Me.Name
+123	0	End If
+124	0	
+125	0	
+126	0	Exit Sub
+127	0	
+128	0	err_open:
+129	0	    Call General_Error_Trap
+130	0	    Exit Sub
+131	0	End Sub
+132	0	
+133	0	Private Sub optgrpData_Click()
+134	1	'***********************************************************************
+135	1	' enable/disable range combos depending on value selected
+136	1	' SAJ
+137	1	'***********************************************************************
+138	0	On Error GoTo err_optgrpData
+139	0	
+140	0	If Me![optgrpData] = 2 Then
+141	0	    Me![cboStart].Enabled = True
+142	0	    Me![cboEnd].Enabled = True
+143	0	    Me![cboName].Enabled = False
+144	0	ElseIf Me![optgrpData] = 4 Then
+145	0	    Me![cboName].Enabled = True
+146	0	    Me![cboStart].Enabled = False
+147	0	    Me![cboEnd].Enabled = False
+148	0	Else
+149	0	    Me![cboName].Enabled = False
+150	0	    Me![cboStart].Enabled = False
+151	0	    Me![cboEnd].Enabled = False
+152	0	End If
+153	0	
+154	0	Exit Sub
+155	0	
+156	0	err_optgrpData:
+157	0	    Call General_Error_Trap
+158	0	    Exit Sub
+159	0	End Sub

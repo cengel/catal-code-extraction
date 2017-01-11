@@ -1,0 +1,200 @@
+1	0	Option Compare Database
+2	0	
+3	0	Private Sub cboFind_AfterUpdate()
+4	1	'find skeleton record - SAJ
+5	0	On Error GoTo err_cboFind
+6	0	
+7	0	    If Me![cboFind] <> "" Then
+8	0	        Me.Filter = "[UnitNumber] = " & Me![cboFind] & " AND [Individual Number] = " & Me!cboFind.Column(1)
+9	0	        Me.FilterOn = True
+10	0	    End If
+11	0	Exit Sub
+12	0	
+13	0	err_cboFind:
+14	0	    MsgBox Err.Description
+15	0	    Exit Sub
+16	0	End Sub
+17	0	
+18	0	Private Sub cmdAll_Click()
+19	1	'take off any filter - saj
+20	0	On Error GoTo err_all
+21	0	
+22	0	    Me.FilterOn = False
+23	0	    Me.Filter = ""
+24	0	Exit Sub
+25	0	
+26	0	err_all:
+27	0	    MsgBox Err.Description
+28	0	    Exit Sub
+29	0	End Sub
+30	0	
+31	0	Private Sub cmdGuide_Click()
+32	1	'new season 2007
+33	0	On Error GoTo err_cmdGuide
+34	0	
+35	0	    DoCmd.OpenForm "frm_pop_tooth_guide", acNormal, , , acFormReadOnly
+36	0	
+37	0	Exit Sub
+38	0	
+39	0	err_cmdGuide:
+40	0	    Call General_Error_Trap
+41	0	    Exit Sub
+42	0	End Sub
+43	0	
+44	0	Private Sub CmdOpenDecidTeethFrm_Click()
+45	0	On Error GoTo Err_CmdOpenDecidTeethFrm_Click
+46	0	
+47	1	    'Dim answer
+48	1	   ' answer = MsgBox("Only enter retained deciduous teeth from here. Are you sure you want to continue?", vbQuestion + vbYesNo, "Confirm Action")
+49	1	    'If answer = vbYes Then
+50	0	    
+51	1	  '      Call DoRecordCheck("HR_Teeth development measurement", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+52	1	   '     Call DoRecordCheck("HR_Teeth development score", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+53	1	  '      Call DoRecordCheck("HR_Teeth wear", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+54	0	    
+55	0	        Dim stDocName As String
+56	0	        Dim stLinkCriteria As String
+57	0	
+58	2	        ''stDocName = "FRM_simons DECIDUOUS TEETH"
+59	2	        ''saj season 2007
+60	1	        'was to decid but changed for new form 2009
+61	0	        stDocName = "FRM_PERMANENT_TEETH"
+62	0	        DoCmd.OpenForm stDocName, , , "[UnitNumber] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+63	0	        DoCmd.Close acForm, Me.Name
+64	1	   ' End If
+65	0	
+66	0	
+67	0	Exit_CmdOpenDecidTeethFrm_Click:
+68	0	    Exit Sub
+69	0	
+70	0	Err_CmdOpenDecidTeethFrm_Click:
+71	0	    MsgBox Err.Description
+72	0	    Resume Exit_CmdOpenDecidTeethFrm_Click
+73	0	    
+74	0	End Sub
+75	0	Private Sub CmdOpenJuvenileFrm_Click()
+76	0	On Error GoTo Err_CmdOpenJuvFrm_Click
+77	0	
+78	0	    
+79	0	    Call DoRecordCheck("HR_Juvenile_Cranial_Data", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+80	0	    Call DoRecordCheck("HR_Juvenile_shoulder_hip", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+81	0	    Call DoRecordCheck("HR_Juvenile_axial", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+82	0	    Call DoRecordCheck("HR_Juvenile_Arm_Data", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+83	0	    Call DoRecordCheck("HR_Juvenile_Leg_Data", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+84	0	    
+85	0	    
+86	0	    Dim stDocName As String
+87	0	    Dim stLinkCriteria As String
+88	0	
+89	2	    ''stDocName = "FRM_Simons juvenile form"
+90	2	    ''saj season 2007
+91	0	    stDocName = "FRM_Juvenile"
+92	0	    
+93	0	    DoCmd.OpenForm stDocName, , , "[UnitNumber] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+94	0	    DoCmd.Close acForm, Me.Name
+95	0	
+96	0	Exit_CmdOpenJuvFrm_Click:
+97	0	    Exit Sub
+98	0	
+99	0	Err_CmdOpenJuvFrm_Click:
+100	0	    MsgBox Err.Description
+101	0	    Resume Exit_CmdOpenJuvFrm_Click
+102	0	    
+103	0	End Sub
+104	0	Private Sub CmdOpenAdultFrm_Click()
+105	0	On Error GoTo Err_CmdOpenAdultFrm_Click
+106	0	
+107	0	    Call DoRecordCheck("HR_Adult_Cranial_Data", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+108	0	    Call DoRecordCheck("HR_Adult_shoulder_hip", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+109	0	    Call DoRecordCheck("HR_Adult_Axial_Data", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+110	0	    Call DoRecordCheck("HR_Adult_Arm_Data", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+111	0	    Call DoRecordCheck("HR_Adult_Leg_Data", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+112	0	    
+113	0	    Dim stDocName As String
+114	0	    Dim stLinkCriteria As String
+115	0	
+116	2	    ''stDocName = "FRM_Simons adult form"
+117	2	    ''saj season 2007
+118	0	    stDocName = "FRM_Adult"
+119	0	    
+120	0	    DoCmd.OpenForm stDocName, , , "[UnitNumber] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+121	0	    DoCmd.Close acForm, Me.Name
+122	0	
+123	0	Exit_CmdOpenAdultFrm_Click:
+124	0	    Exit Sub
+125	0	
+126	0	Err_CmdOpenAdultFrm_Click:
+127	0	    MsgBox Err.Description
+128	0	    Resume Exit_CmdOpenAdultFrm_Click
+129	0	    
+130	0	End Sub
+131	0	Private Sub CmdOpenAgeSexFrm_Click()
+132	1	'this whole procedure seems wrong - should be entering age sex
+133	1	'saj 2007
+134	0	On Error GoTo Err_CmdOpenAgeSexFrm_Click
+135	0	
+136	2	    ''Call DoRecordCheck("HR_Juvenile_Cranial_Data", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+137	2	    ''Call DoRecordCheck("HR_Juvenile_shoulder_hip", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+138	2	    ''Call DoRecordCheck("HR_Juvenile_axial", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+139	2	    ''Call DoRecordCheck("HR_Juvenile_Arm_Data", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+140	2	    ''Call DoRecordCheck("HR_Juvenile_Leg_Data", Me![txtUnit], Me![txtIndivid], "UnitNumber")
+141	0	    
+142	0	    
+143	0	    Dim stDocName As String
+144	0	    Dim stLinkCriteria As String
+145	0	
+146	2	    ''stDocName = "FRM_Simons juvenile form"
+147	2	    ''DoCmd.OpenForm stDocName, , , "[UnitNumber] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+148	2	    ''DoCmd.Close acForm, Me.Name
+149	0	    
+150	0	    stDocName = "FRM_Ageing-sexing form"
+151	0	    DoCmd.OpenForm stDocName, , , "[Unit Number] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+152	0	    DoCmd.Close acForm, Me.Name
+153	0	    
+154	0	Exit_CmdOpenAgeSexFrm_Click:
+155	0	    Exit Sub
+156	0	
+157	0	Err_CmdOpenAgeSexFrm_Click:
+158	0	    MsgBox Err.Description
+159	0	    Resume Exit_CmdOpenAgeSexFrm_Click
+160	0	    
+161	0	End Sub
+162	0	Private Sub CmdOpenMainMenuFrm_Click()
+163	0	Call ReturnToMenu(Me)
+164	0	    
+165	0	End Sub
+166	0	
+167	0	Private Sub Command462_Click()
+168	0	On Error GoTo Err_CmdOpenUnitDescFrm_Click
+169	0	
+170	0	    Dim stDocName As String
+171	0	    Dim stLinkCriteria As String
+172	0	
+173	0	    stDocName = "FRM_SkeletonDescription"
+174	0	    DoCmd.OpenForm stDocName, , , "[UnitNumber] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+175	0	    DoCmd.Close acForm, Me.Name
+176	0	    
+177	0	Exit_CmdOpenUnitDescFrm_Click:
+178	0	    Exit Sub
+179	0	
+180	0	Err_CmdOpenUnitDescFrm_Click:
+181	0	    MsgBox Err.Description
+182	0	    Resume Exit_CmdOpenUnitDescFrm_Click
+183	0	End Sub
+184	0	
+185	0	Private Sub Form_Current()
+186	1	'new season 2007 - hide and show buttons depending on age category
+187	0	On Error GoTo err_current
+188	0	
+189	1	    'the age should be brought into this form by the invisible field cboAgeCategory
+190	1	    'that uses a function (GetSkeletonAge) to obtain it.
+191	1	    'the following function then uses this value to set the adult/juvenile/neonatal buttons up
+192	1	    'Call SortOutButtons(Me)
+193	0	
+194	0	
+195	0	Exit Sub
+196	0	
+197	0	err_current:
+198	0	    General_Error_Trap
+199	0	    Exit Sub
+200	0	End Sub

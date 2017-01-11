@@ -1,0 +1,951 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub SetUpFields()
+5	1	'set up display dependant on fields selected
+6	0	
+7	0	If Me![RetrievalMethod] = "Heavy Residue" Then
+8	1	    'for HR make all flot and sample fields etc avail
+9	0	    Me![txtFlotNo].Enabled = True
+10	0	    Me![txtFlotNo].BackColor = -2147483643
+11	0	    Me![txtFlotNo].Locked = False
+12	0	    Me![txtSampleNum].Enabled = True
+13	0	    Me![txtSampleNum].BackColor = -2147483643
+14	0	    Me![txtSampleNum].Locked = False
+15	0	    Me![cboFraction].Enabled = True
+16	0	    Me![cboFraction].BackColor = -2147483643
+17	0	    Me![cboFraction].Locked = False
+18	0	    Me![cboPercent].Enabled = True
+19	0	    Me![cboPercent].BackColor = -2147483643
+20	0	    Me![cboPercent].Locked = False
+21	0	    Me![txtVolume].Enabled = True
+22	0	    Me![txtVolume].BackColor = -2147483643
+23	0	    Me![txtVolume].Locked = False
+24	0	    Me![txtWgt/L].Enabled = True
+25	0	    Me![txtWgt/L].BackColor = -2147483643
+26	0	    Me![txtWgt/L].Locked = False
+27	0	    Me![txtCount/L].Enabled = True
+28	0	    Me![txtCount/L].BackColor = -2147483643
+29	0	    Me![txtCount/L].Locked = False
+30	0	ElseIf Me![RetrievalMethod] = "Fast Track" Then
+31	2	    'fast track doesn't need wght/l and count/l
+32	1	    '17/7/06 TC ask also to blank out Flot no, sample no, faction and %%
+33	0	    Me![txtFlotNo].Enabled = False
+34	0	    Me![txtFlotNo].BackColor = 8421504
+35	0	    Me![txtFlotNo].Locked = True
+36	0	    Me![txtSampleNum].Enabled = False
+37	0	    Me![txtSampleNum].BackColor = 8421504
+38	0	    Me![txtSampleNum].Locked = True
+39	0	    Me![cboFraction].Enabled = False
+40	0	    Me![cboFraction].BackColor = 8421504
+41	0	    Me![cboFraction].Locked = True
+42	0	    Me![cboPercent].Enabled = False
+43	0	    Me![cboPercent].BackColor = 8421504
+44	0	    Me![cboPercent].Locked = True
+45	0	    Me![txtVolume].Enabled = True
+46	0	    Me![txtVolume].BackColor = -2147483643
+47	0	    Me![txtVolume].Locked = False
+48	0	    Me![txtWgt/L].Enabled = False
+49	0	    Me![txtWgt/L].BackColor = 8421504
+50	0	    Me![txtWgt/L].Locked = True
+51	0	    Me![txtCount/L].Enabled = False
+52	0	    Me![txtCount/L].BackColor = 8421504
+53	0	    Me![txtCount/L].Locked = True
+54	0	ElseIf Me![RetrievalMethod] = "Dry Sieve" Then
+55	1	    'only allow vol and count/l weight/l
+56	0	    Me![txtFlotNo].Enabled = False
+57	0	    Me![txtFlotNo].BackColor = 8421504
+58	0	    Me![txtFlotNo].Locked = True
+59	0	    Me![txtSampleNum].Enabled = False
+60	0	    Me![txtSampleNum].BackColor = 8421504
+61	0	    Me![txtSampleNum].Locked = True
+62	0	    Me![cboFraction].Enabled = False
+63	0	    Me![cboFraction].BackColor = 8421504
+64	0	    Me![cboFraction].Locked = True
+65	0	    Me![cboPercent].Enabled = False
+66	0	    Me![cboPercent].BackColor = 8421504
+67	0	    Me![cboPercent].Locked = True
+68	0	    Me![txtVolume].Enabled = True
+69	0	    Me![txtVolume].BackColor = -2147483643
+70	0	    Me![txtVolume].Locked = False
+71	0	    Me![txtWgt/L].Enabled = True
+72	0	    Me![txtWgt/L].BackColor = -2147483643
+73	0	    Me![txtWgt/L].Locked = False
+74	0	    Me![txtCount/L].Enabled = True
+75	0	    Me![txtCount/L].BackColor = -2147483643
+76	0	    Me![txtCount/L].Locked = False
+77	0	Else
+78	0	    Me![txtFlotNo].Enabled = False
+79	0	    Me![txtFlotNo].BackColor = 8421504
+80	0	    Me![txtFlotNo].Locked = True
+81	0	    Me![txtSampleNum].Enabled = False
+82	0	    Me![txtSampleNum].BackColor = 8421504
+83	0	    Me![txtSampleNum].Locked = True
+84	0	    Me![cboFraction].Enabled = False
+85	0	    Me![cboFraction].BackColor = 8421504
+86	0	    Me![cboFraction].Locked = True
+87	0	    Me![cboPercent].Enabled = False
+88	0	    Me![cboPercent].BackColor = 8421504
+89	0	    Me![cboPercent].Locked = True
+90	0	    Me![txtVolume].Enabled = False
+91	0	    Me![txtVolume].BackColor = 8421504
+92	0	    Me![txtVolume].Locked = True
+93	0	    Me![txtWgt/L].Enabled = False
+94	0	    Me![txtWgt/L].BackColor = 8421504
+95	0	    Me![txtWgt/L].Locked = True
+96	0	    Me![txtCount/L].Enabled = False
+97	0	    Me![txtCount/L].BackColor = 8421504
+98	0	    Me![txtCount/L].Locked = True
+99	0	End If
+100	0	
+101	0	End Sub
+102	0	Private Function CheckValidRecord() As Boolean
+103	1	'checks if ok to leave the record
+104	0	On Error GoTo err_check
+105	0	Dim msg
+106	0	    If Me![txtBag] = "" Or Me![Unit] = "" Or Me![RawMaterial] = "" Or Me![Count] = "" Or Me![Weight] = "" Or Me![RetrievalMethod] = "" Then
+107	0	        msg = "Please make sure all the following fields have been filled out:" & Chr(13) & Chr(13)
+108	0	        msg = msg & "Bag Number" & Chr(13) & "Unit" & Chr(13) & "Raw Material" & Chr(13) & "Count" & Chr(13) & "Weight" & Chr(13) & "Retrieval Method"
+109	0	        MsgBox msg, vbExclamation, "Incomplete Record"
+110	0	        CheckValidRecord = False
+111	0	    Else
+112	0	        CheckValidRecord = True
+113	0	     End If
+114	0	Exit Function
+115	0	
+116	0	err_check:
+117	0	    Call General_Error_Trap
+118	0	    Exit Function
+119	0	
+120	0	End Function
+121	0	
+122	0	
+123	0	Private Sub cboFind_AfterUpdate()
+124	0	On Error GoTo err_cboFind
+125	0	
+126	0	If Me![cboFind] <> "" Then
+127	0	    DoCmd.GoToControl Me![txtBag].Name
+128	0	    DoCmd.FindRecord Me![cboFind]
+129	0	    DoCmd.GoToControl Me![Unit].Name
+130	0	    Me![cboFind] = ""
+131	0	End If
+132	0	
+133	0	Exit Sub
+134	0	
+135	0	err_cboFind:
+136	0	    Call General_Error_Trap
+137	0	    Exit Sub
+138	0	End Sub
+139	0	
+140	0	
+141	0	Private Sub cboFind_NotInList(NewData As String, Response As Integer)
+142	0	On Error GoTo err_not
+143	0	    
+144	0	    MsgBox "Bag number not found", vbInformation, "Not In List"
+145	0	    Response = acDataErrContinue
+146	0	    Me![cboFind].Undo
+147	0	
+148	0	Exit Sub
+149	0	
+150	0	err_not:
+151	0	    Call General_Error_Trap
+152	0	    Exit Sub
+153	0	End Sub
+154	0	
+155	0	Private Sub cboFindUnit_AfterUpdate()
+156	0	On Error GoTo err_cboFindUnit
+157	0	
+158	0	If Me![cboFindUnit] <> "" Then
+159	0	    DoCmd.GoToControl Me![Unit].Name
+160	0	    DoCmd.FindRecord Me![cboFindUnit]
+161	0	    Me![cboFindUnit] = ""
+162	0	End If
+163	0	
+164	0	Exit Sub
+165	0	
+166	0	err_cboFindUnit:
+167	0	    Call General_Error_Trap
+168	0	    Exit Sub
+169	0	End Sub
+170	0	
+171	0	Private Sub cboFindUnit_NotInList(NewData As String, Response As Integer)
+172	0	On Error GoTo err_notUnit
+173	0	    
+174	0	    MsgBox "Unit number not found", vbInformation, "Not In List"
+175	0	    Response = acDataErrContinue
+176	0	    Me![cboFindUnit].Undo
+177	0	
+178	0	Exit Sub
+179	0	
+180	0	err_notUnit:
+181	0	    Call General_Error_Trap
+182	0	    Exit Sub
+183	0	End Sub
+184	0	
+185	0	Private Sub cboPercent_AfterUpdate()
+186	0	On Error GoTo err_cboP
+187	0	
+188	0	Call CalcCountL(Me)
+189	0	Call CalcWgtL(Me)
+190	0	
+191	0	Exit Sub
+192	0	
+193	0	err_cboP:
+194	0	    Call General_Error_Trap
+195	0	    Exit Sub
+196	0	End Sub
+197	0	
+198	0	Private Sub Close_Click()
+199	0	On Error GoTo err_close
+200	0	
+201	0	    DoCmd.Close acForm, Me.Name
+202	0	
+203	0	Exit Sub
+204	0	
+205	0	err_close:
+206	0	    Call General_Error_Trap
+207	0	    Exit Sub
+208	0	End Sub
+209	0	
+210	0	Private Sub cmdAddNew_Click()
+211	0	On Error GoTo err_cmdAddNew_Click
+212	0	
+213	0	    DoCmd.GoToRecord acActiveDataObject, , acNewRec
+214	0	    DoCmd.GoToControl "txtBag"
+215	0	Exit Sub
+216	0	
+217	0	err_cmdAddNew_Click:
+218	0	    Call General_Error_Trap
+219	0	    Exit Sub
+220	0	End Sub
+221	0	
+222	0	Private Sub cmdGoFirst_Click()
+223	0	On Error GoTo Err_gofirst_Click
+224	0	
+225	0	
+226	0	    DoCmd.GoToRecord , , acFirst
+227	0	
+228	0	    Exit Sub
+229	0	
+230	0	Err_gofirst_Click:
+231	0	    Call General_Error_Trap
+232	0	    
+233	0	End Sub
+234	0	
+235	0	Private Sub cmdGoLast_Click()
+236	0	On Error GoTo Err_goLast_Click
+237	0	
+238	0	
+239	0	    DoCmd.GoToRecord , , acLast
+240	0	
+241	0	    Exit Sub
+242	0	
+243	0	Err_goLast_Click:
+244	0	    Call General_Error_Trap
+245	0	    
+246	0	End Sub
+247	0	
+248	0	Private Sub cmdGoNext_Click()
+249	0	On Error GoTo Err_goNext_Click
+250	0	
+251	0	
+252	0	    DoCmd.GoToRecord , , acNext
+253	0	
+254	0	    Exit Sub
+255	0	
+256	0	Err_goNext_Click:
+257	0	    Call General_Error_Trap
+258	0	    
+259	0	End Sub
+260	0	
+261	0	Private Sub cmdGoPrev_Click()
+262	0	On Error GoTo Err_goPrev_Click
+263	0	
+264	0	
+265	0	    DoCmd.GoToRecord , , acPrevious
+266	0	
+267	0	    Exit Sub
+268	0	
+269	0	Err_goPrev_Click:
+270	0	    Call General_Error_Trap
+271	0	    
+272	0	End Sub
+273	0	
+274	0	
+275	0	
+276	0	
+277	0	
+278	0	Private Sub cmdOutput_Click()
+279	1	'open output options pop up
+280	0	On Error GoTo err_Output
+281	0	
+282	0	    If Me![txtBag] <> "" Then
+283	0	        DoCmd.OpenForm "Frm_Pop_DataOutputOptions", acNormal, , , , acDialog, Me![txtBag] & ";basic"
+284	0	    Else
+285	0	        MsgBox "The output options form cannot be shown when there is no Bag Number on screen", vbInformation, "Action Cancelled"
+286	0	    End If
+287	0	
+288	0	Exit Sub
+289	0	
+290	0	err_Output:
+291	0	    Call General_Error_Trap
+292	0	    Exit Sub
+293	0	End Sub
+294	0	
+295	0	Private Sub cmdStageTwo_Click()
+296	1	'check if record exists in stage two table and if not put it there ready for data entry
+297	1	'saj
+298	2	'2011 refined as a unit has more than one bag so this check on bag doesn't always work
+299	1	'plus the user has no idea of the next number so can get a PK error which they dont understand so
+300	1	'need to make clever. This feature was never used as Stringy insisted on using Excel and the data was only
+301	1	'imported in 2010
+302	0	On Error GoTo err_stagetwo
+303	0	
+304	0	If Me![txtBag] <> "" And Me![Unit] <> "" Then
+305	0	    Dim stagetwo, sql, LetterCode, findnum, Response
+306	4	   '' stagetwo = DLookup("[Bag]", "[ChippedStone_StageTwo_Data]", "[Bag] = '" & Me![txtBag] & "'")
+307	2	   '' If IsNull(stagetwo) Then
+308	3	   ''     'not there yet
+309	2	   ''     LetterCode = InputBox("Please enter the letter code of the first piece:", "Letter Code for Piece", "A")
+310	2	   ''     If LetterCode <> "" Then
+311	2	   ''         findnum = InputBox("Please enter the number of the first piece:", "Number for Piece", "1")
+312	2	   ''         If findnum <> "" Then
+313	8	   ''             sql = "INSERT INTO [ChippedStone_StageTwo_Data] ([Unit], [LetterCode], [FindNumber], [Bag], [GID]) VALUES (" & Me![Unit] & ", '" & LetterCode & "'," & findnum & ",'" & Me![txtBag] & "', '" & Me![Unit] & "." & LetterCode & findnum & "');"
+314	2	   ''             DoCmd.RunSQL sql
+315	2	   ''         Else
+316	2	   ''             MsgBox "Sorry but a Find Number is required to enter a new record", vbExclamation, "Insufficient Data"
+317	2	   ''             Exit Sub
+318	2	   ''         End If
+319	2	   ''     Else
+320	2	   ''         MsgBox "Sorry but a letter code is required to enter a new record", vbExclamation, "Insufficient Data"
+321	2	   ''         Exit Sub
+322	2	   ''     End If
+323	2	   '' End If
+324	2	   '' DoCmd.OpenForm "frm_CS_StageTwo", acNormal, , "[Unit] = " & Me![Unit]
+325	0	   
+326	1	   'find out if this unit has any A numbers already
+327	0	   stagetwo = DLookup("[Unit]", "[ChippedStone_StageTwo_Data]", "[Unit] = " & Me![Unit])
+328	0	    If IsNull(stagetwo) Then
+329	1	        'unit not there yet at all therefore A1
+330	0	        Response = MsgBox("The database does not have any A numbers allocated for this unit so the system will create " & Me![Unit] & ".A1" & Chr(13) & Chr(13) & "Is this OK?", vbYesNo, "New A Number")
+331	0	        If Response = vbNo Then
+332	0	            Response = MsgBox("Would you still like to move to Stage 2 and allocate a number there yourself?", vbYesNo, "Continue?")
+333	0	            If Response = vbNo Then
+334	0	                Exit Sub
+335	0	            Else
+336	2	               ''MsgBox "Use the Add New button on the next screen to enter your record", vbInformation, "Entering your record"
+337	0	               DoCmd.OpenForm "frm_CS_StageTwo", acNormal, , "[Unit] = " & Me![Unit], acFormAdd
+338	0	            End If
+339	0	        Else
+340	1	            'user want to continue
+341	6	            sql = "INSERT INTO [ChippedStone_StageTwo_Data] ([Unit], [LetterCode], [FindNumber], [Bag], [GID]) VALUES (" & Me![Unit] & ", 'A',1,'" & Me![txtBag] & "', '" & Me![Unit] & ".A1');"
+342	0	            DoCmd.RunSQL sql
+343	2	            DoCmd.OpenForm "frm_CS_StageTwo", acNormal, , "[GID] = '" & Me![Unit] & ".A1'"
+344	0	        End If
+345	0	    Else
+346	1	        'unit is in there - check what user wants to do maybe find last number to create new record
+347	0	        Response = MsgBox("Do you want to add a new A number record or simply view existing records for this record?" & Chr(13) & Chr(13) & "To simply view press Yes", vbQuestion + vbYesNo, "Confirm Action")
+348	0	        If Response = vbYes Then
+349	0	            DoCmd.OpenForm "frm_CS_StageTwo", acNormal, , "[Unit] = " & Me![Unit]
+350	0	        Else
+351	1	            'does not want to view, wants to add
+352	0	            sql = "SELECT ChippedStone_StageTwo_Data.Unit, ChippedStone_StageTwo_Data.LetterCode, Last(ChippedStone_StageTwo_Data.FindNumber) AS LastOfFindNumber "
+353	0	            sql = sql & "FROM ChippedStone_StageTwo_Data  "
+354	0	            sql = sql & "GROUP BY ChippedStone_StageTwo_Data.Unit, ChippedStone_StageTwo_Data.LetterCode "
+355	0	            sql = sql & "HAVING (((ChippedStone_StageTwo_Data.Unit)=" & Me![Unit] & "));"
+356	0	            
+357	0	            Dim mydb As DAO.Database, myrs As DAO.Recordset, lastnum
+358	0	            Set mydb = CurrentDb
+359	0	            Set myrs = mydb.OpenRecordset(sql, dbOpenSnapshot)
+360	0	            
+361	0	                If Not (myrs.BOF And myrs.EOF) Then
+362	0	                    lastnum = myrs!LastOfFindNumber
+363	0	                Else
+364	1	                    'this should not happen as if here there will be a number but JUST IN CASE
+365	0	                    lastnum = 0
+366	0	                End If
+367	0	            myrs.Close
+368	0	            Set myrs = Nothing
+369	0	            mydb.Close
+370	0	            Set mydb = Nothing
+371	0	            
+372	0	            lastnum = lastnum + 1
+373	0	            
+374	0	            Response = MsgBox("The database will allocate the next A number available for this unit which will be: " & Me![Unit] & ".A" & lastnum & Chr(13) & Chr(13) & "Is this OK?", vbYesNo, "New A Number")
+375	0	            If Response = vbNo Then
+376	0	                Response = MsgBox("Would you still like to move to Stage 2 and allocate a number there yourself?", vbYesNo, "Continue?")
+377	0	                If Response = vbNo Then
+378	0	                    Exit Sub
+379	0	                Else
+380	2	                   ''MsgBox "Use the Add New button on the next screen to enter your record", vbInformation, "Entering your record"
+381	0	                   DoCmd.OpenForm "frm_CS_StageTwo", acNormal, , "[Unit] = " & Me![Unit], acFormAdd
+382	0	                End If
+383	0	            Else
+384	1	                'user want to continue
+385	6	                sql = "INSERT INTO [ChippedStone_StageTwo_Data] ([Unit], [LetterCode], [FindNumber], [Bag], [GID]) VALUES (" & Me![Unit] & ", 'A'," & lastnum & ",'" & Me![txtBag] & "', '" & Me![Unit] & ".A" & lastnum & "');"
+386	0	                DoCmd.RunSQL sql
+387	2	                DoCmd.OpenForm "frm_CS_StageTwo", acNormal, , "[GID] = '" & Me![Unit] & ".A" & lastnum & "'"
+388	0	            End If
+389	0	            
+390	0	            
+391	0	        End If
+392	0	        
+393	0	    End If
+394	0	Else
+395	0	    MsgBox "Please enter the bag number and the unit number first", vbExclamation, "Insufficient Data"
+396	0	End If
+397	0	Exit Sub
+398	0	
+399	0	err_stagetwo:
+400	0	    Call General_Error_Trap
+401	0	    Exit Sub
+402	0	End Sub
+403	0	
+404	0	Private Sub Count_AfterUpdate()
+405	0	On Error GoTo err_count
+406	0	
+407	0	If Me![RetrievalMethod] = "Heavy Residue" Then
+408	0	    Call CalcCountL(Me)
+409	0	ElseIf Me![RetrievalMethod] = "Dry Sieve" Then
+410	0	    Call CalcCountLDrySeive(Me)
+411	0	End If
+412	0	Exit Sub
+413	0	
+414	0	err_count:
+415	0	    Call General_Error_Trap
+416	0	    Exit Sub
+417	0	End Sub
+418	0	
+419	0	Private Sub Form_Close()
+420	1	'If CheckValidRecord = False Then
+421	1	'    MsgBox "no"
+422	1	'    DoCmd.CancelEvent
+423	1	'End If
+424	0	End Sub
+425	0	
+426	0	Private Sub Form_Current()
+427	1	'Set up form display
+428	0	On Error GoTo err_current
+429	0	
+430	1	'If Me![RetrievalMethod] = "Heavy Residue" Then
+431	2	'    'let all flot num, sample num etc fields be avail
+432	1	'    Me![txtFlotNo].Enabled = True
+433	1	'    Me![txtFlotNo].BackColor = -2147483643
+434	1	'    Me![txtSampleNum].Enabled = True
+435	1	'    Me![txtSampleNum].BackColor = -2147483643
+436	1	'    Me![cboFraction].Enabled = True
+437	1	'    Me![cboFraction].BackColor = -2147483643
+438	1	'    Me![cboPercent].Enabled = True
+439	1	'    Me![cboPercent].BackColor = -2147483643
+440	1	'    Me![txtVolume].Enabled = True
+441	1	'    Me![txtVolume].BackColor = -2147483643
+442	1	'    Me![txtWgt/L].Enabled = True
+443	1	'    Me![txtWgt/L].BackColor = -2147483643
+444	1	'    Me![txtCount/L].Enabled = True
+445	1	'    Me![txtCount/L].BackColor = -2147483643
+446	1	'    Me![txtFlotNo].Locked = False
+447	1	'    Me![cboFraction].Locked = False
+448	1	'    Me![cboPercent].Locked = False
+449	1	'    Me![txtVolume].Locked = False
+450	1	'    Me![txtSampleNum].Locked = False
+451	1	'    Me![txtWgt/L].Locked = False
+452	1	'    Me![txtCount/L].Locked = False
+453	1	'ElseIf Me![RetrievalMethod] = "Fast Track" Then
+454	3	'    'fast track won't have a weight/l or count/l
+455	1	'    Me![txtVolume].Enabled = False
+456	1	'    Me![txtVolume].BackColor = -2147483643
+457	1	'    Me![txtVolume].Locked = True
+458	1	'    Me![txtWgt/L].Enabled = False
+459	1	'    Me![txtWgt/L].BackColor = -2147483643
+460	1	'    Me![txtWgt/L].Locked = True
+461	1	'    Me![txtCount/L].Enabled = False
+462	1	'    Me![txtCount/L].BackColor = -2147483643
+463	1	'    Me![txtCount/L].Locked = True
+464	1	'ElseIf Me![RetrievalMethod] = "Dry Sieve" Then
+465	2	'    'only allow vol and count/l weight/l
+466	1	'    Me![txtVolume].Enabled = True
+467	1	'    Me![txtVolume].BackColor = -2147483643
+468	1	'    Me![txtVolume].Locked = False
+469	1	'    Me![txtWgt/L].Enabled = True
+470	1	'    Me![txtWgt/L].BackColor = -2147483643
+471	1	'    Me![txtWgt/L].Locked = False
+472	1	'    Me![txtCount/L].Enabled = True
+473	1	'    Me![txtCount/L].BackColor = -2147483643
+474	1	'    Me![txtCount/L].Locked = False
+475	1	'Else
+476	1	'    Me![txtFlotNo].Enabled = False
+477	1	'    Me![txtFlotNo].BackColor = 8421504
+478	1	'    Me![txtSampleNum].Enabled = False
+479	1	'    Me![txtSampleNum].BackColor = 8421504
+480	1	'    Me![cboFraction].Enabled = False
+481	1	'    Me![cboFraction].BackColor = 8421504
+482	1	'    Me![cboPercent].Enabled = False
+483	1	'    Me![cboPercent].BackColor = 8421504
+484	1	'    Me![txtVolume].Enabled = False
+485	1	'    Me![txtVolume].BackColor = 8421504
+486	1	'    Me![txtWgt/L].Enabled = False
+487	1	'    Me![txtWgt/L].BackColor = 8421504
+488	1	'    Me![txtCount/L].Enabled = False
+489	1	 '   Me![txtCount/L].BackColor = 8421504
+490	1	'    Me![txtFlotNo].Locked = True
+491	1	'    Me![cboFraction].Locked = True
+492	1	'    Me![cboPercent].Locked = True
+493	1	'    Me![txtVolume].Locked = True
+494	1	'    Me![txtSampleNum].Locked = True
+495	1	'    Me![txtWgt/L].Locked = True
+496	1	'    Me![txtCount/L].Locked = True
+497	1	'End If
+498	0	Call SetUpFields
+499	1	'check if data in stage two yet and make button text dependant
+500	0	Dim stagetwo
+501	2	stagetwo = DLookup("[Bag]", "[ChippedStone_StageTwo_Data]", "[Bag] = '" & Me![txtBag] & "'")
+502	0	If IsNull(stagetwo) Then
+503	1	    'not there yet
+504	0	    Me![cmdStageTwo].Caption = "Move to Level 2"
+505	0	Else
+506	1	    'there
+507	0	    Me![cmdStageTwo].Caption = "View Level 2"
+508	0	End If
+509	0	
+510	0	DoCmd.GoToControl "cboFind"
+511	0	
+512	0	Exit Sub
+513	0	
+514	0	err_current:
+515	0	    Call General_Error_Trap
+516	0	    Exit Sub
+517	0	End Sub
+518	0	
+519	0	
+520	0	
+521	0	
+522	0	
+523	0	Private Sub Form_Deactivate()
+524	1	'If CheckValidRecord = False Then
+525	1	'    MsgBox "no"
+526	1	'    DoCmd.CancelEvent
+527	1	'End If
+528	1	'checks if ok to leave the record
+529	0	On Error GoTo err_check
+530	0	Dim msg
+531	1	'    If Me![txtBag] = "" Or Me![Unit] = "" Or Me![RawMaterial] = "" Or Me![Count] = "" Or Me![Weight] = "" Or Me![RetrievalMethod] = "" Then
+532	1	'        msg = "Please make sure all the following fields have been filled out:" & Chr(13) & Chr(13)
+533	1	'        msg = msg & "Bag Number" & Chr(13) & "Unit" & Chr(13) & "Raw Material" & Chr(13) & "Count" & Chr(13) & "Weight" & Chr(13) & "Retrieval Method"
+534	1	'        MsgBox msg, vbExclamation, "Incomplete Record"
+535	2	'        'CheckValidRecord = False
+536	1	'        DoCmd.CancelEvent
+537	1	'    Else
+538	2	'        'CheckValidRecord = True
+539	1	'     End If
+540	0	
+541	2	''testing 2011
+542	2	''If Me!frm_subform_location.Form.RecordsetClone.RecordCount = 0 Then
+543	2	''    msg = "NO NO NO NO deactivate"
+544	2	''    MsgBox msg
+545	2	''Else
+546	2	''    MsgBox "yes yes deactivate"
+547	2	''End If
+548	0	Exit Sub
+549	0	
+550	0	err_check:
+551	0	    Call General_Error_Trap
+552	0	    Exit Sub
+553	0	
+554	0	End Sub
+555	0	
+556	0	Private Sub Form_Error(DataErr As Integer, Response As Integer)
+557	1	'try to give a user friendly message to the problem
+558	0	If DataErr = 3146 Then
+559	1	    'probably primary key error
+560	0	    MsgBox "An error has been encountered. Check you have not entered an existing Bag Number by looking at the pull down list. If this is the case you will needto press ESC but will lose your data (sorry!)", vbCritical, "Error"
+561	0	    Response = acDataErrContinue
+562	0	    
+563	0	End If
+564	0	End Sub
+565	0	
+566	0	Private Sub Form_Unload(Cancel As Integer)
+567	1	'If CheckValidRecord = False Then
+568	1	'    MsgBox "no"
+569	1	'    DoCmd.CancelEvent
+570	1	'End If
+571	1	'checks if ok to leave the record
+572	0	
+573	1	'2011 - Stringy has left and the remaining team members are no entering data but viewing and requested I take
+574	2	'this off as it makes navigation from frustrating. I'm also not sure its working quite right.
+575	0	On Error GoTo err_check
+576	0	Dim msg
+577	2	  ''  If IsNull(Me![txtBag]) Or IsNull(Me![Unit]) Or IsNull(Me![RawMaterial]) Or IsNull(Me![Count]) Or IsNull(Me![Weight]) Or IsNull(Me![RetrievalMethod]) Then
+578	2	  ''      msg = "Please make sure all the following fields have been filled out:" & Chr(13) & Chr(13)
+579	2	  ''      msg = msg & "Bag Number" & Chr(13) & "Unit" & Chr(13) & "Raw Material" & Chr(13) & "Count" & Chr(13) & "Weight" & Chr(13) & "Retrieval Method"
+580	2	  ''      MsgBox msg, vbExclamation, "Incomplete Record"
+581	3	  ''      'CheckValidRecord = False
+582	2	  ''      DoCmd.CancelEvent
+583	2	  ''  Else
+584	3	  ''      'CheckValidRecord = True
+585	2	  ''   End If
+586	0	  
+587	2	''testing in 2011
+588	2	''If Me!frm_subform_location.Form.RecordsetClone.RecordCount = 0 Then
+589	2	''    msg = "NO NO NO NO unload"
+590	2	''    MsgBox msg
+591	2	''Else
+592	2	''    MsgBox "yes yes unload"
+593	2	''End If
+594	0	Exit Sub
+595	0	
+596	0	err_check:
+597	0	    Call General_Error_Trap
+598	0	    Exit Sub
+599	0	
+600	0	End Sub
+601	0	
+602	0	Private Sub Letter_AfterUpdate()
+603	1	'Dim retVal
+604	1	'If Me![Letter] <> "" Then
+605	1	'    If Me![Letter].OldValue <> "" And Me![Unit] <> "" And Me![Number] <> "" Then
+606	1	'        retVal = MsgBox("Altering the Letter effects the GID, are you sure you want to do this?", vbQuestion + vbYesNo, "Confirm Action")
+607	1	'        If retVal = vbYes Then
+608	1	'            Me![txtGID] = Me![Unit] & "." & Me![Letter] & Me![Number]
+609	1	'        Else
+610	1	'            Me![Letter] = Me![Letter].OldValue
+611	1	'        End If
+612	1	'    Else
+613	1	'        Me![txtGID] = Me![Unit] & "." & Me![Letter] & Me![Number]
+614	1	'    End If
+615	1	'
+616	1	'End If
+617	0	End Sub
+618	0	
+619	0	Private Sub Letter_NotInList(NewData As String, Response As Integer)
+620	1	'Allow more values to be added if necessary
+621	0	On Error GoTo err_Letter_NotInList
+622	0	
+623	0	Dim retVal, sql
+624	0	
+625	0	retVal = MsgBox("This value is not in the list, are you sure you want to add it?", vbQuestion + vbYesNo, "Value not in list")
+626	0	If retVal = vbYes Then
+627	0	    Response = acDataErrAdded
+628	2	    sql = "INSERT INTO [ChippedStoneLOV_Letter]([GIDLetter]) VALUES ('" & NewData & "');"
+629	0	    DoCmd.RunSQL sql
+630	1	    'DoCmd.RunCommand acCmdSaveRecord
+631	1	    'Me![Letter].Requery
+632	0	Else
+633	0	    Response = acDataErrContinue
+634	0	End If
+635	0	
+636	0	   
+637	0	Exit Sub
+638	0	
+639	0	err_Letter_NotInList:
+640	0	    Call General_Error_Trap
+641	0	    Exit Sub
+642	0	End Sub
+643	0	
+644	0	Private Sub Number_AfterUpdate()
+645	1	'Dim retVal
+646	1	'If Me![Number] <> "" Then
+647	1	'    If Me![Number].OldValue <> "" And Me![Unit] <> "" And Me![Letter] <> "" Then
+648	1	'        retVal = MsgBox("Altering the Number effects the GID, are you sure you want to do this?", vbQuestion + vbYesNo, "Confirm Action")
+649	1	'        If retVal = vbYes Then
+650	1	'            Me![txtGID] = Me![Unit] & "." & Me![Letter] & Me![Number]
+651	1	'        Else
+652	1	'            Me![Number] = Me![Number].OldValue
+653	1	'        End If
+654	1	'    Else
+655	1	'        Me![txtGID] = Me![Unit] & "." & Me![Letter] & Me![Number]
+656	1	'    End If
+657	1	'
+658	1	'End If
+659	0	End Sub
+660	0	
+661	0	
+662	0	
+663	0	
+664	0	
+665	0	Private Sub RawMaterial_NotInList(NewData As String, Response As Integer)
+666	1	'Allow more values to be added if necessary
+667	0	On Error GoTo err_RawMat_NotInList
+668	0	
+669	0	Dim retVal, sql, inputname
+670	0	
+671	0	retVal = MsgBox("This value is not in the list, are you sure you want to add it?", vbQuestion + vbYesNo, "Value not in list")
+672	0	If retVal = vbYes Then
+673	0	    Response = acDataErrAdded
+674	2	    sql = "INSERT INTO [ChippedStoneLOV_RawMaterials]([Material]) VALUES ('" & NewData & "');"
+675	0	    DoCmd.RunSQL sql
+676	0	Else
+677	0	    Response = acDataErrContinue
+678	0	End If
+679	0	
+680	0	   
+681	0	Exit Sub
+682	0	
+683	0	err_RawMat_NotInList:
+684	0	    Call General_Error_Trap
+685	0	    Exit Sub
+686	0	End Sub
+687	0	
+688	0	Private Sub RetrievalMethod_AfterUpdate()
+689	1	'set up fields depending on method selected
+690	0	On Error GoTo err_retMethod
+691	0	
+692	0	Dim retVal
+693	0	If Me![RetrievalMethod].OldValue = "Heavy Residue" Then
+694	0	    If Not IsNull(Me![txtFlotNo]) Or Me![cboFraction] <> "" Or Not IsNull(Me![txtVolume]) Or Not IsNull(Me![txtSampleNum]) Or Not IsNull(Me![txtWgt/L]) Or Not IsNull(Me![txtCount/L]) Then
+695	0	        retVal = MsgBox("Changing the Retrieval Method from Heavy Residue will mean you will lose all the Flotation data. Are you sure?", vbQuestion + vbYesNo, "Confirm Action")
+696	0	        If retVal = vbYes Then
+697	0	            Me![txtFlotNo] = Null
+698	0	            Me![cboFraction] = Null
+699	0	            Me![txtVolume] = Null
+700	0	            Me![txtSampleNum] = Null
+701	0	            Me![txtWgt/L] = Null
+702	0	            Me![txtCount/L] = Null
+703	0	            Me![cboPercent] = Null
+704	0	        Else
+705	0	            Me![RetrievalMethod] = "Heavy Residue"
+706	0	            Exit Sub
+707	0	        End If
+708	0	    End If
+709	0	ElseIf Me![RetrievalMethod].OldValue = "Dry Sieve" Then
+710	0	    If IsNull(Me![txtVolume]) Or Not IsNull(Me![txtWgt/L]) Or Not IsNull(Me![txtCount/L]) Then
+711	0	        retVal = MsgBox("Changing the Retrieval Method from Dry Sieve will mean you will lose the Volume data. Are you sure?", vbQuestion + vbYesNo, "Confirm Action")
+712	0	        If retVal = vbYes Then
+713	0	            Me![txtFlotNo] = Null
+714	0	            Me![cboFraction] = Null
+715	0	            Me![txtVolume] = Null
+716	0	            Me![txtSampleNum] = Null
+717	0	            Me![txtWgt/L] = Null
+718	0	            Me![txtCount/L] = Null
+719	0	            Me![cboPercent] = Null
+720	0	        Else
+721	0	            Me![RetrievalMethod] = "Dry Sieve"
+722	0	            Exit Sub
+723	0	        End If
+724	0	    End If
+725	0	End If
+726	0	
+727	0	Call SetUpFields
+728	0	
+729	1	'additionally if the method is dry sieve then get volume from unit sheet
+730	0	If Me![RetrievalMethod] = "Dry Sieve" Then
+731	0	    Dim getVol
+732	0	    getVol = DLookup("[Dry sieve volume]", "[Exca: Unit Sheet with relationships]", "[Unit Number] = " & Me![Unit])
+733	0	    If Not IsNull(getVol) Then
+734	0	        Me![txtVolume] = getVol
+735	0	        Call CalcWgtLDrySeive(Me)
+736	0	        Call CalcCountLDrySeive(Me)
+737	0	    Else
+738	0	        MsgBox "Unable to obtain the Dry Sieve Volume from the Unit Sheet, it might not have been entered", vbInformation, "Volume Missing"
+739	0	    End If
+740	0	End If
+741	0	
+742	0	Exit Sub
+743	0	
+744	0	err_retMethod:
+745	0	    Call General_Error_Trap
+746	0	    Exit Sub
+747	0	End Sub
+748	0	
+749	0	
+750	0	
+751	0	Private Sub RetrievalMethod_NotInList(NewData As String, Response As Integer)
+752	1	'Allow more values to be added if necessary
+753	0	On Error GoTo err_RetrievalMethod_NotInList
+754	0	
+755	0	Dim retVal, sql, inputname
+756	0	
+757	0	retVal = MsgBox("This value is not in the list, are you sure you want to add it?", vbQuestion + vbYesNo, "Value not in list")
+758	0	If retVal = vbYes Then
+759	0	    Response = acDataErrAdded
+760	2	    sql = "INSERT INTO [ChippedStone_RetrievalMethod]([RetrievalMethod]) VALUES ('" & NewData & "');"
+761	0	    DoCmd.RunSQL sql
+762	0	Else
+763	0	    Response = acDataErrContinue
+764	0	End If
+765	0	
+766	0	   
+767	0	Exit Sub
+768	0	
+769	0	err_RetrievalMethod_NotInList:
+770	0	    Call General_Error_Trap
+771	0	    Exit Sub
+772	0	End Sub
+773	0	
+774	0	
+775	0	
+776	0	Private Sub txtBag_AfterUpdate()
+777	1	'check existence of new bag number
+778	0	On Error GoTo err_txtbag
+779	0	
+780	0	    If IsNull(Me![txtBag].OldValue) Then
+781	0	        Dim checknum, bg
+782	2	        checknum = DLookup("[BagNo]", "[ChippedStone_Basic_Data]", "[BagNo] = '" & Me![txtBag] & "'")
+783	0	        If Not IsNull(checknum) Then
+784	1	            'exists
+785	0	            MsgBox "Sorry this bag number exists already, the system will take you to the record", vbInformation, "Duplicate Bag Number"
+786	0	            bg = Me![txtBag]
+787	1	            'Me![txtBag] = ""
+788	0	            Me.Undo
+789	0	            DoCmd.GoToControl Me![txtBag].Name
+790	0	            DoCmd.FindRecord bg
+791	0	            DoCmd.GoToControl Me![Unit].Name
+792	0	        End If
+793	0	    End If
+794	0	
+795	0	Exit Sub
+796	0	
+797	0	err_txtbag:
+798	0	    Call General_Error_Trap
+799	0	    Exit Sub
+800	0	End Sub
+801	0	
+802	0	Private Sub txtFlotNo_AfterUpdate()
+803	1	'check if flot number exists against flot log, get volume
+804	0	On Error GoTo err_flotnu
+805	0	    
+806	0	    Dim checknum
+807	0	    If Me![txtFlotNo] <> "" Then
+808	0	        checknum = DLookup("[Soil Volume]", "[view_ArchaeoBotany_Flot_Log]", "[Flot Number] = " & Me![txtFlotNo])
+809	0	        If IsNull(checknum) Then
+810	0	            MsgBox "Please note this Flot Number does not exist in the Flot log yet, please double check it.", vbExclamation, "Check Entry"
+811	0	        
+812	0	        Else
+813	1	            'get the volume
+814	0	            Me![txtVolume] = checknum
+815	0	            Call CalcCountL(Me)
+816	0	            Call CalcWgtL(Me)
+817	0	        End If
+818	0	    End If
+819	0	Exit Sub
+820	0	
+821	0	err_flotnu:
+822	0	    Call General_Error_Trap
+823	0	    Exit Sub
+824	0	End Sub
+825	0	
+826	0	Private Sub txtVolume_AfterUpdate()
+827	0	On Error GoTo err_txtVol
+828	0	
+829	0	If Me![RetrievalMethod] = "Heavy Residue" Then
+830	0	    Call CalcCountL(Me)
+831	0	    Call CalcWgtL(Me)
+832	0	ElseIf Me![RetrievalMethod] = "Dry Sieve" Then
+833	0	    Call CalcCountLDrySeive(Me)
+834	0	    Call CalcWgtLDrySeive(Me)
+835	0	End If
+836	0	Exit Sub
+837	0	
+838	0	err_txtVol:
+839	0	    Call General_Error_Trap
+840	0	    Exit Sub
+841	0	End Sub
+842	0	
+843	0	Private Sub Unit_AfterUpdate()
+844	0	
+845	1	'Dim retVal
+846	1	'If Me![Unit] <> "" Then
+847	1	'    If Me![Unit].OldValue <> "" And Me![Letter] <> "" And Me![Number] <> "" Then
+848	1	'        retVal = MsgBox("Altering the Unit effects the GID, are you sure you want to do this?", vbQuestion + vbYesNo, "Confirm Action")
+849	1	'        If retVal = vbYes Then
+850	1	'            Me![txtGID] = Me![Unit] & "." & Me![Letter] & Me![Number]
+851	1	'        Else
+852	1	'            Me![Unit] = Me![Unit].OldValue
+853	1	'        End If
+854	1	'    Else
+855	1	'        Me![txtGID] = Me![Unit] & "." & Me![Letter] & Me![Number]
+856	1	'    End If
+857	1	'
+858	1	'End If
+859	0	Me.Refresh
+860	0	End Sub
+861	0	
+862	0	
+863	0	
+864	0	Private Sub cmdUnitDesc_Click()
+865	0	On Error GoTo Err_cmdUnitDesc_Click
+866	0	
+867	0	If Me![Unit] <> "" Then
+868	1	    'check the unit number is in the unit desc form
+869	0	    Dim checknum, sql
+870	0	    checknum = DLookup("[Unit]", "[ChippedStone_UnitDescription]", "[Unit] = " & Me![Unit])
+871	0	    If IsNull(checknum) Then
+872	1	        'must add the unit to the table
+873	0	        sql = "INSERT INTo [ChippedStone_UnitDescription] ([Unit]) VALUES (" & Me![Unit] & ");"
+874	0	        DoCmd.RunSQL sql
+875	0	    End If
+876	0	    
+877	0	    DoCmd.OpenForm "Frm_CS_UnitDescription", acNormal, , "[Unit] = " & Me![Unit], acFormPropertySettings
+878	0	Else
+879	0	    MsgBox "No Unit number is present, cannot open the Unit Description form", vbInformation, "No Unit Number"
+880	0	End If
+881	0	Exit Sub
+882	0	
+883	0	Err_cmdUnitDesc_Click:
+884	0	    Call General_Error_Trap
+885	0	    Exit Sub
+886	0	    
+887	0	End Sub
+888	0	
+889	0	Private Sub Weight_AfterUpdate()
+890	1	'see if wgt/l can be calculated
+891	0	On Error GoTo err_weight
+892	0	
+893	0	If Me![RetrievalMethod] = "Heavy Residue" Then
+894	0	    Call CalcWgtL(Me)
+895	0	ElseIf Me![RetrievalMethod] = "Dry Sieve" Then
+896	0	    Call CalcWgtLDrySeive(Me)
+897	0	End If
+898	0	
+899	0	Exit Sub
+900	0	
+901	0	err_weight:
+902	0	    Call General_Error_Trap
+903	0	    Exit Sub
+904	0	
+905	0	End Sub
+906	0	Private Sub cmdUnitFilter_Click()
+907	1	'17/7/06 - TC request unit filter so easily see bags for the unit
+908	0	On Error GoTo Err_cmdUnitFilter_Click
+909	0	
+910	0	
+911	0	    If Me![Unit] <> "" Then
+912	0	        Me.Filter = "[Unit] = " & Me![Unit]
+913	0	        Me.FilterOn = True
+914	0	        Me![cmdFilterOff].Enabled = True
+915	0	        DoCmd.GoToControl "cmdFilterOff"
+916	0	        Me![cmdUnitFilter].Enabled = False
+917	0	    Else
+918	0	        MsgBox "No Unit number to Filter on", vbInformation, "No Unit Number"
+919	0	        Me.FilterOn = False
+920	0	        Me![cmdFilterOff].Enabled = False
+921	0	        Me![cmdUnitFilter].Enabled = True
+922	0	    End If
+923	0	
+924	0	
+925	0	    Exit Sub
+926	0	
+927	0	Err_cmdUnitFilter_Click:
+928	0	    Call General_Error_Trap
+929	0	    Exit Sub
+930	0	    
+931	0	End Sub
+932	0	Private Sub cmdFilterOff_Click()
+933	1	'remove unit filter - 17/6/06 part of TC filter for a unit request
+934	0	On Error GoTo Err_cmdFilterOff_Click
+935	0	
+936	0	Dim bagshown
+937	0	    bagshown = Me![txtBag]
+938	0	    Me![cmdUnitFilter].Enabled = True
+939	0	    Me.FilterOn = False
+940	0	    Me.Filter = ""
+941	0	    DoCmd.GoToControl "txtBag"
+942	0	    DoCmd.FindRecord bagshown
+943	0	    Me![cmdFilterOff].Enabled = False
+944	0	
+945	0	    Exit Sub
+946	0	
+947	0	Err_cmdFilterOff_Click:
+948	0	    Call General_Error_Trap
+949	0	    Exit Sub
+950	0	    
+951	0	End Sub

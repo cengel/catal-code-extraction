@@ -1,0 +1,278 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	
+5	0	Function StartUp()
+6	1	'*****************************************************************************
+7	1	' All actions necessary to start the system as smoothly as possible
+8	1	'
+9	1	' SAJ v.9 - actions from autoexac macro plus addition of login/attachment check
+10	1	'*****************************************************************************
+11	0	On Error GoTo err_startup
+12	0	
+13	1	DoCmd.RunCommand acCmdWindowHide 'hide the DB window from prying eyes
+14	1	'**** opening main menu moved from here lower down code
+15	0	
+16	1	'moved to being called from form Excavation login below, opened as dialog
+17	2	'If LogUserIn = True Then 'function in module TableLinkingProcedures - get user to login
+18	2	'    'if true then login ok and tables accessible - ready to go
+19	1	'Else
+20	2	'    'if loginuser = false then the system should have quit by now, this is a catchall
+21	1	'    MsgBox "The system may not of logged into the database correctly. If you encounter any problems please restart the application"
+22	1	'End If
+23	0	
+24	0	DoCmd.OpenForm "Excavation_Login", acNormal, , , acFormEdit, acDialog
+25	0	
+26	1	'you can hide the warning messages that Access popups up when
+27	1	'you do sql tasks in the background - however the negative side to
+28	1	'this is that you hide all these types of message which you may not
+29	1	'want to do - the options you have are:
+30	2	'   DoCmd.SetWarnings False 'turns off macro msgs
+31	1	'   Application.SetOption "Confirm Record Changes", False
+32	1	'   Application.SetOption "Confirm Document Deletions", False
+33	1	    Application.SetOption "Confirm Action Queries", False  'this will hide behind the scences sql actions
+34	2	'you could of course turn this on an off around each statement - I'm undecided at present
+35	0	
+36	1	'now the tables are all ok find out the current version
+37	0	SetCurrentVersion
+38	0	SetCurrentYear
+39	0	
+40	1	'**** open move from marked place above
+41	1	DoCmd.OpenForm "Excavation", acNormal, , , acFormReadOnly 'open main menu
+42	4	'DoCmd.Maximize 'really, should we? 'no I don't think so
+43	1	'refresh the main menu so the version number appears
+44	0	Forms![Excavation].refresh
+45	0	
+46	0	Exit Function
+47	0	
+48	0	err_startup:
+49	0	    Call General_Error_Trap
+50	1	    'now should the system quit out here?
+51	1	    'to be decided
+52	0	End Function
+53	0	
+54	0	Function CheckIfLOVValueUsed(LOVName, LOVField, LOVValue, CheckTable, CheckTableKeyField, CheckTableField, task, Optional extracrit)
+55	1	'******************************************************************************
+56	1	' This function is used by the Administration area of the site - it checks if
+57	1	' a LOV value can be edited or deleted by checking dependant tables
+58	1	' Inputs:   LOVName = lov table name
+59	1	'           LOVField = lov field name being checked
+60	1	'           LOVVAlue = LOV value being checked out
+61	1	'           CheckTable = dependant table name to check if value exists in
+62	1	'           CheckTableKeyField = key of dependant table
+63	1	'           CheckTAbleField = field name where LOV value stored in dependant table
+64	1	'           task = edit or delete
+65	1	'           extracrit = any extra criteria for record search, optional
+66	1	' Outputs:  msg back to user or OK
+67	1	' v9.2 SAJ
+68	1	'*****************************************************************************
+69	0	On Error GoTo err_CheckIFLOVValueUsed
+70	0	
+71	1	'only proceed if all inputs are present
+72	0	If LOVName <> "" And LOVField <> "" And LOVValue <> "" And CheckTable <> "" And CheckTableKeyField <> "" And CheckTableField <> "" And task <> "" Then
+73	0	
+74	0	    Dim mydb As Database, myrs As Recordset, sql As String, msg As String, msg1 As String, keyfld As Field, Count As Integer
+75	0	    Set mydb = CurrentDb
+76	0	    
+77	0	    If Not IsMissing(extracrit) Then
+78	2	        sql = "SELECT [" & CheckTableKeyField & "], [" & CheckTableField & "] FROM [" & CheckTable & "] WHERE [" & CheckTableField & "] = '" & LOVValue & "' " & extracrit & " ORDER BY [" & CheckTableKeyField & "];"
+79	0	    Else
+80	2	        sql = "SELECT [" & CheckTableKeyField & "], [" & CheckTableField & "] FROM [" & CheckTable & "] WHERE [" & CheckTableField & "] = '" & LOVValue & "' ORDER BY [" & CheckTableKeyField & "];"
+81	0	    End If
+82	0	    Set myrs = mydb.OpenRecordset(sql, dbOpenSnapshot)
+83	0	
+84	0	    If myrs.BOF And myrs.EOF Then
+85	0	        msg = "ok"
+86	0	    Else
+87	0	        myrs.MoveFirst
+88	0	        Count = 0
+89	0	        msg = "You cannot " & task & " this " & LOVField & " because the following records in the table " & CheckTable & " use it: "
+90	0	        msg1 = ""
+91	0	        Do Until myrs.EOF
+92	0	            Set keyfld = myrs.Fields(CheckTableKeyField)
+93	0	            If msg1 <> "" Then msg1 = msg1 & ", "
+94	0	            msg1 = msg1 & keyfld
+95	0	            Count = Count + 1
+96	1	            'there is a limit to amount of text in msgbox so may not be able to show more
+97	0	            If Count > 50 Then
+98	0	                msg1 = msg1 & ".....etc"
+99	0	                Exit Do
+100	0	            End If
+101	0	        myrs.MoveNext
+102	0	        Loop
+103	0	        
+104	0	        msg = msg & Chr(13) & Chr(13) & CheckTableKeyField & ": " & msg1
+105	0	        If task = "edit" Then
+106	1	            msg = msg & Chr(13) & Chr(13) & "It is suggested you add a new " & LOVField & " to the list and then change all records that refer to '"
+107	1	            msg = msg & LOVValue & "' to your new " & LOVField & ". You will then be able to delete it from the list."
+108	0	        ElseIf task = "delete" Then
+109	0	             msg = msg & Chr(13) & Chr(13) & "You must change all records that refer to this " & LOVField
+110	2	            msg = msg & " '" & LOVValue & "' before you will be able to delete it from the list."
+111	0	        End If
+112	0	    End If
+113	0	    myrs.Close
+114	0	    Set myrs = Nothing
+115	0	    mydb.Close
+116	0	    Set mydb = Nothing
+117	0	    
+118	0	    CheckIfLOVValueUsed = msg
+119	0	Else
+120	0	    CheckIfLOVValueUsed = "fail"
+121	0	End If
+122	0	Exit Function
+123	0	
+124	0	err_CheckIFLOVValueUsed:
+125	0	    Call General_Error_Trap
+126	0	    Exit Function
+127	0	End Function
+128	0	
+129	0	
+130	0	Function AdminDeletionCheck(CheckTable, CheckField, CheckVal, Term, retField)
+131	1	'******************************************************************************
+132	1	' This function is used by the Administration area of the site - it checks if
+133	1	' a LOV value can be edited or deleted by checking dependant tables
+134	1	' Inputs:   CheckTable = table to check if val is used in
+135	1	'           CheckField = field to check value against
+136	1	'           CheckVal = value to be checked for existent in the field Checkfield within CheckTable
+137	1	'           Term = user friendly term for object being checked
+138	1	'           retField = field value to return eg: if looking for units in features return the feature number
+139	1	' Outputs:  msg back to user or ""
+140	1	' v9.2 SAJ
+141	1	'*****************************************************************************
+142	0	On Error GoTo err_AdminDeletionCheck
+143	0	
+144	1	'only proceed if all inputs are present
+145	0	If CheckTable <> "" And CheckField <> "" And CheckVal <> "" And Term <> "" Then
+146	0	
+147	0	    Dim mydb As Database, myrs As Recordset, sql As String, msg As String, msg1 As String, keyfld As Field, Count As Integer
+148	0	    Set mydb = CurrentDb
+149	0	    
+150	0	    If CheckTable = "Exca: stratigraphy" And CheckField = "To_units" Then
+151	2	        sql = "SELECT [" & retField & "] FROM [" & CheckTable & "] WHERE [" & CheckField & "] = '" & CheckVal & "';"
+152	0	    
+153	1	    ElseIf CheckTable = "Exca: graphics list" Then 'graphics needs to define if feature num or unit
+154	0	        If CheckField = "Unit" Then
+155	2	           sql = "SELECT [" & retField & "] FROM [" & CheckTable & "] WHERE [Unit/feature number] = " & CheckVal & " AND lcase([Feature/Unit]) =  'u';"
+156	0	        ElseIf CheckField = "Feature" Then
+157	2	            sql = "SELECT [" & retField & "] FROM [" & CheckTable & "] WHERE [Unit/feature number] = " & CheckVal & " AND lcase([Feature/Unit]) =  'f';"
+158	0	        End If
+159	0	    Else
+160	0	        sql = "SELECT [" & retField & "] FROM [" & CheckTable & "] WHERE [" & CheckField & "] = " & CheckVal & ";"
+161	0	    End If
+162	0	    
+163	0	    Set myrs = mydb.OpenRecordset(sql, dbOpenSnapshot)
+164	0	
+165	0	    If myrs.BOF And myrs.EOF Then
+166	0	        msg = ""
+167	0	    Else
+168	0	        myrs.MoveFirst
+169	0	        Count = 0
+170	0	        msg = Term & ": "
+171	0	        msg1 = ""
+172	0	        Do Until myrs.EOF
+173	0	            Set keyfld = myrs.Fields(retField)
+174	0	            If msg1 <> "" Then msg1 = msg1 & ", "
+175	0	            msg1 = msg1 & keyfld
+176	0	            Count = Count + 1
+177	1	            'there is a limit to amount of text in msgbox so may not be able to show more
+178	0	            If Count > 50 Then
+179	0	                msg1 = msg1 & ".....etc"
+180	0	                Exit Do
+181	0	            End If
+182	0	        myrs.MoveNext
+183	0	        Loop
+184	0	        
+185	0	        msg = msg & msg1
+186	0	        
+187	0	    End If
+188	0	    myrs.Close
+189	0	    Set myrs = Nothing
+190	0	    mydb.Close
+191	0	    Set mydb = Nothing
+192	0	    
+193	0	    AdminDeletionCheck = msg
+194	0	Else
+195	0	    AdminDeletionCheck = ""
+196	0	End If
+197	0	Exit Function
+198	0	
+199	0	err_AdminDeletionCheck:
+200	0	    Call General_Error_Trap
+201	0	    Exit Function
+202	0	End Function
+203	0	
+204	0	Sub DeleteARecord(FromTable, FieldName, FieldValue, Text, mydb)
+205	1	'This is an admin function to delete records, used within a transaction if must not
+206	1	'be error trapped. The db workspace is passed in for the transaction
+207	1	'Inputs -   Fromtable - delete from what table
+208	1	'           Fieldname - field to id records to delete
+209	1	'           fieldvalue - criteria to delete
+210	3	'           Text - true = text field that requires '' around it
+211	1	'           mydb - currentdb connection sent thro for transaction
+212	0	
+213	0	
+214	0	Dim sql, myq As QueryDef
+215	0	Set myq = mydb.CreateQueryDef("")
+216	0	           
+217	0	        If Text = False Then
+218	1	            If FromTable = "Exca: graphics list" Then 'graphics needs to define if feature num or unit
+219	0	                If FieldName = "Unit" Then
+220	2	                    sql = "DELETE FROM [" & FromTable & "] WHERE [Unit/feature number] = " & FieldValue & " AND lcase([Feature/Unit]) =  'u';"
+221	0	                ElseIf FieldName = "Feature" Then
+222	2	                    sql = "DELETE FROM [" & FromTable & "] WHERE [Unit/feature number] = " & FieldValue & " AND lcase([Feature/Unit]) =  'f';"
+223	0	                End If
+224	0	        
+225	0	            Else
+226	0	                sql = "DELETE FROM [" & FromTable & "] WHERE [" & FieldName & "] = " & FieldValue & ";"
+227	0	            End If
+228	0	        Else
+229	2	            sql = "DELETE FROM [" & FromTable & "] WHERE [" & FieldName & "] = '" & FieldValue & "';"
+230	0	        End If
+231	0	                
+232	0	        myq.sql = sql
+233	0	        myq.Execute
+234	0	                
+235	0	myq.Close
+236	0	Set myq = Nothing
+237	0	
+238	0	
+239	0	End Sub
+240	0	
+241	0	Sub RenumARecord(FromTable, FieldName, newNum, oldNum, Text, mydb)
+242	1	'This is an admin function to renum records, used within a transaction if must not
+243	1	'be error trapped. The db workspace is passed in for the transaction
+244	1	'Inputs -   Fromtable - renum in what table
+245	1	'           Fieldname - field to id records to renum
+246	1	'           newNum - new number
+247	1	'           oldNum - original number
+248	3	'           Text - true = text field that requires '' around it
+249	1	'           mydb - currentdb connection sent thro for transaction
+250	0	
+251	0	
+252	0	Dim sql, myq As QueryDef
+253	0	Set myq = mydb.CreateQueryDef("")
+254	0	           
+255	0	        If Text = False Then
+256	1	            If FromTable = "Exca: graphics list" Then 'graphics needs to define if feature num or unit
+257	0	                If FieldName = "Unit" Then
+258	2	                    sql = "UPDATE [" & FromTable & "] SET [Unit/feature number] = " & newNum & " WHERE [Unit/feature number]=" & oldNum & " AND lcase([Feature/Unit]) =  'u';"
+259	0	                ElseIf FieldName = "Feature" Then
+260	2	                    sql = "UPDATE [" & FromTable & "] SET [Unit/feature number] = " & newNum & " WHERE [Unit/feature number]=" & oldNum & " AND lcase([Feature/Unit]) =  'f';"
+261	0	                End If
+262	0	        
+263	0	            Else
+264	0	                sql = "UPDATE [" & FromTable & "] SET [" & FromTable & "].[" & FieldName & "] = " & newNum & " WHERE [" & FromTable & "].[" & FieldName & "]=" & oldNum & ";"
+265	0	            End If
+266	0	        Else
+267	4	            sql = "UPDATE [" & FromTable & "] SET [" & FromTable & "].[" & FieldName & "] = '" & newNum & "' WHERE [" & FromTable & "].[" & FieldName & "]='" & oldNum & "';"
+268	0	        End If
+269	0	                
+270	0	        myq.sql = sql
+271	0	        myq.Execute
+272	0	                
+273	0	myq.Close
+274	0	Set myq = Nothing
+275	0	
+276	0	
+277	0	End Sub
+278	0	

@@ -1,0 +1,134 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	Dim toShow
+4	0	
+5	0	
+6	0	Private Sub cboSelect_AfterUpdate()
+7	0	On Error GoTo err_cboSelect
+8	0	
+9	0	If toShow = "unit number" Then
+10	0	    If Me![txtToFind] <> "" And Not IsNull(Me![txtToFind]) Then
+11	0	        Me![txtToFind] = Me![txtToFind] & " OR "
+12	0	    End If
+13	0	    
+14	0	    Me![txtToFind] = Me![txtToFind] & "[Exca: Unit sheet with Relationships].[Unit Number] = " & Me!cboSelect
+15	0	Else
+16	1	    'If Me!cboSelect <> "" Then
+17	1	    '    If Me![txtToFind] = "" Or IsNull(Me![txtToFind]) Then Me![txtToFind] = ","
+18	1	    '    Me![txtToFind] = Me![txtToFind] & Me!cboSelect & ","
+19	1	    'End If
+20	0	    If Me!cboSelect <> "" Then
+21	0	        If Me![txtToFind] <> "" And Not IsNull(Me![txtToFind]) Then Me![txtToFind] = Me![txtToFind] & " OR"
+22	2	        Me![txtToFind] = Me![txtToFind] & "[" & toShow & "] LIKE '%%," & Me!cboSelect & ",%%'"
+23	0	    End If
+24	0	End If
+25	0	Me![cboSelect] = ""
+26	0	DoCmd.GoToControl "cmdOK"
+27	0	Exit Sub
+28	0	
+29	0	err_cboSelect:
+30	0	    Call General_Error_Trap
+31	0	    Exit Sub
+32	0	End Sub
+33	0	
+34	0	
+35	0	
+36	0	Private Sub cmdCancel_Click()
+37	0	On Error GoTo err_cmdCancel
+38	0	    DoCmd.Close acForm, "frm_popsearch"
+39	0	Exit Sub
+40	0	
+41	0	err_cmdCancel:
+42	0	    Call General_Error_Trap
+43	0	    Exit Sub
+44	0	End Sub
+45	0	
+46	0	Private Sub cmdClear_Click()
+47	0	On Error GoTo err_cmdClear
+48	0	    Me![txtToFind] = ""
+49	0	    Me![cboSelect] = ""
+50	0	Exit Sub
+51	0	
+52	0	err_cmdClear:
+53	0	    Call General_Error_Trap
+54	0	    Exit Sub
+55	0	End Sub
+56	0	
+57	0	Private Sub cmdOK_Click()
+58	0	On Error GoTo err_cmdOK
+59	1	    Select Case toShow 'toshow is a module level variable that is set in on Open depending on the openargs
+60	0	        Case "building"
+61	0	            Forms![frm_search]![txtBuildingNumbers] = Me![txtToFind]
+62	0	        Case "space"
+63	0	            Forms![frm_search]![txtSpaceNumbers] = Me![txtToFind]
+64	0	        Case "feature"
+65	0	            Forms![frm_search]![txtFeatureNumbers] = Me![txtToFind]
+66	0	        Case "MellaartLevels"
+67	0	            Forms![frm_search]![txtLevels] = Me![txtToFind]
+68	0	        Case "HodderLevel"
+69	0	            Forms![frm_search]![txtHodderLevel] = Me![txtToFind]
+70	0	        Case "unit number"
+71	0	            Forms![frm_search]![txtUnitNumbers] = Me![txtToFind]
+72	0	        End Select
+73	0	
+74	0	DoCmd.Close acForm, "frm_popsearch"
+75	0	Exit Sub
+76	0	
+77	0	err_cmdOK:
+78	0	    Call General_Error_Trap
+79	0	    Exit Sub
+80	0	End Sub
+81	0	
+82	0	Private Sub Form_Open(Cancel As Integer)
+83	0	On Error GoTo err_open
+84	0	Dim existing, colonpos
+85	0	    If Not IsNull(Me.OpenArgs) Then
+86	1	        'MsgBox Me.OpenArgs
+87	0	        toShow = LCase(Me.OpenArgs)
+88	0	        colonpos = InStr(toShow, ";")
+89	0	        
+90	0	        If colonpos > 0 Then
+91	1	            'if there is a ; then this means there is some existing criteria to extract from openargs
+92	0	            existing = right(toShow, Len(toShow) - colonpos)
+93	1	            'MsgBox existing
+94	0	            toShow = Left(toShow, colonpos - 1)
+95	0	        End If
+96	0	        
+97	0	        Select Case toShow
+98	0	        Case "building"
+99	0	            Me![lblTitle].Caption = "Select Building Number"
+100	0	            Me![cboSelect].RowSource = "Select [Number] from [Exca: Building Details];"
+101	0	            If existing <> "" Then Me![txtToFind] = existing
+102	0	        Case "space"
+103	0	            Me![lblTitle].Caption = "Select Space Number"
+104	0	            Me![cboSelect].RowSource = "Select [Space Number] from [Exca: Space Sheet];"
+105	0	            If existing <> "" Then Me![txtToFind] = existing
+106	0	        Case "feature"
+107	0	            Me![lblTitle].Caption = "Select Feature Number"
+108	0	            Me![cboSelect].RowSource = "Select [Feature Number] from [Exca: Features];"
+109	0	            If existing <> "" Then Me![txtToFind] = existing
+110	0	        Case "Mellaartlevels"
+111	0	            Me![lblTitle].Caption = "Select Mellaart Level"
+112	0	            Me![cboSelect].RowSource = "Select [Level] from [Exca:LevelLOV];"
+113	0	            If existing <> "" Then Me![txtToFind] = existing
+114	0	        Case "Hodderlevel"
+115	0	            Me![lblTitle].Caption = "Select Hodder Level"
+116	2	            Me![cboSelect].RowSource = "SELECT DISTINCT [Exca: Space Sheet].HodderLevel FROM [Exca: Space Sheet] WHERE ((([Exca: Space Sheet].HodderLevel) <> '')) ORDER BY [Exca: Space Sheet].HodderLevel;"
+117	0	            If existing <> "" Then Me![txtToFind] = existing
+118	0	        Case "unit number"
+119	0	            Me![lblTitle].Caption = "Select Unit Number"
+120	0	            Me![cboSelect].RowSource = "Select [unit number] from [Exca: Unit Sheet] ORDER BY [unit number];"
+121	0	            If existing <> "" Then Me![txtToFind] = existing
+122	0	        End Select
+123	0	        
+124	0	        Me.refresh
+125	0	    End If
+126	0	
+127	0	
+128	0	
+129	0	Exit Sub
+130	0	
+131	0	err_open:
+132	0	    Call General_Error_Trap
+133	0	    Exit Sub
+134	0	End Sub

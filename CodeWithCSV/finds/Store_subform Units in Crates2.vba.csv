@@ -1,0 +1,321 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	Private Sub KnownFind()
+4	1	'new season 2006 if this find is known to the basic data table then display its material from there
+5	0	On Error GoTo err_knownfind
+6	0	
+7	0	If Me![Unit] <> "" And Me![FindLetter] <> "" And Me![FindNumber] <> "" Then
+8	0	    Dim getmaterial, getmaterialsub, getobject, GID
+9	0	    GID = Me![Unit] & "." & Me![FindLetter] & Me![FindNumber]
+10	0	    
+11	2	    getmaterial = DLookup("[MaterialGroupID]", "[Q_Basic_Data_Material_and_Type_with_Text]", "[GID] = '" & GID & "'")
+12	0	    If Not IsNull(getmaterial) Then Me![cboMaterialGroup] = getmaterial
+13	0	    
+14	2	    getmaterialsub = DLookup("[MaterialSubGroupID]", "[Q_Basic_Data_Material_and_Type_with_Text]", "[GID] = '" & GID & "'")
+15	0	    If Not IsNull(getmaterialsub) Then Me![cboMaterialSubgroup] = getmaterialsub
+16	0	
+17	2	    getobject = DLookup("[ObjectTypeID]", "[Q_Basic_Data_Material_and_Type_with_Text]", "[GID] = '" & GID & "'")
+18	0	    If Not IsNull(getobject) Then Me![cboDescription] = getobject
+19	0	
+20	0	End If
+21	0	Exit Sub
+22	0	
+23	0	err_knownfind:
+24	0	    Call General_Error_Trap
+25	0	    Exit Sub
+26	0	End Sub
+27	0	
+28	0	
+29	0	
+30	0	Private Sub cboDescription_GotFocus()
+31	1	'instead of setting the rowsource in properties set it here to ensure
+32	1	'previous records fields stay visible
+33	0	On Error GoTo err_cboDescFocus
+34	0	
+35	1	'Dim sql
+36	1	'sql = " SELECT Finds_Code_MaterialSubGroup_ObjectType.ObjectTypeID, Finds_Code_ObjectTypes.ObjectTypeText, "
+37	1	'sql = sql & "Finds_Code_MaterialSubGroup_ObjectType.MaterialSubGroupID FROM "
+38	1	'sql = sql & "Finds_Code_MaterialSubGroup_ObjectType INNER JOIN Finds_Code_ObjectTypes ON "
+39	1	'sql = sql & "Finds_Code_MaterialSubGroup_ObjectType.ObjectTypeID = Finds_Code_ObjectTypes.ObjectTypeID WHERE "
+40	1	'sql = sql & "(((Finds_Code_MaterialSubGroup_ObjectType.MaterialSubGroupID)=" & Forms![Store: Crate Register]![Store: subform Units in Crates].Form![cboMaterialSubGroup] & "));"
+41	1	'Me![cboDescription].RowSource = sql
+42	0	
+43	0	Exit Sub
+44	0	
+45	0	err_cboDescFocus:
+46	0	    Call General_Error_Trap
+47	0	    Exit Sub
+48	0	
+49	0	End Sub
+50	0	
+51	0	Private Sub cboMaterialGroup_AfterUpdate()
+52	0	On Error GoTo err_cboMat
+53	1	'replaced by got focus code of material subgroup
+54	1	'Me![cboMaterialSubGroup].Requery
+55	0	
+56	0	Exit Sub
+57	0	
+58	0	err_cboMat:
+59	0	    Call General_Error_Trap
+60	0	    Exit Sub
+61	0	End Sub
+62	0	
+63	0	
+64	0	
+65	0	Private Sub cboMaterialSubgroup_AfterUpdate()
+66	0	On Error GoTo err_cboMaterialSubgroup
+67	1	'replaced by got focus code of description
+68	1	'Me![cboDescription].Requery
+69	0	
+70	0	Exit Sub
+71	0	
+72	0	err_cboMaterialSubgroup:
+73	0	    Call General_Error_Trap
+74	0	    Exit Sub
+75	0	End Sub
+76	0	
+77	0	Private Sub cboMaterialSubGroup_GotFocus()
+78	1	'instead of setting the rowsource in properties set it here to ensure
+79	1	'previous records fields stay visible
+80	0	On Error GoTo err_cboMatSubGrp
+81	0	
+82	0	Me![cboMaterialSubgroup].RowSource = "SELECT Finds_Code_MaterialGroup_Subgroup.MaterialSubGroupID, Finds_Code_MaterialGroup_Subgroup.MaterialSubgroupText, Finds_Code_MaterialGroup_Subgroup.MaterialGroupID FROM Finds_Code_MaterialGroup_Subgroup WHERE (((Finds_Code_MaterialGroup_Subgroup.MaterialGroupID)=" & Forms![Store: Crate Register]![Store: subform Units in Crates].Form![cboMaterialGroup] & "));"
+83	0	
+84	0	Exit Sub
+85	0	
+86	0	err_cboMatSubGrp:
+87	0	    Call General_Error_Trap
+88	0	    Exit Sub
+89	0	End Sub
+90	0	
+91	0	Private Sub cboMoveCrate_AfterUpdate()
+92	1	'new in season 2006 - move an item to a new crate - SAJ
+93	0	On Error GoTo err_cboMove
+94	1	    'bad sarah, lazy programming this code is repeated in store: find unit in crate2 - centralised this when time, just leaving 2006
+95	0	    If Me![cboMoveCrate] <> "" Then
+96	1	        'the move will need to go into a transaction
+97	0	        On Error Resume Next
+98	0	        Dim mydb As DAO.Database, wrkdefault As Workspace, sql1, sql2, myq As QueryDef
+99	0	        Set wrkdefault = DBEngine.Workspaces(0)
+100	0	        Set mydb = CurrentDb
+101	0	        
+102	1	        ' Start of outer transaction.
+103	0	        wrkdefault.BeginTrans
+104	0	        
+105	1	        'insert into new crate
+106	0	        sql1 = "INSERT INTO [Store: Units in Crates] "
+107	0	        sql1 = sql1 & "( [Crate Number], [Unit number], Bag, [Letter/Number], Material, "
+108	0	        sql1 = sql1 & "MaterialSubgroup, Description, Notes, [Year], Area, Studied, "
+109	0	        sql1 = sql1 & "CrateNumber, CrateLetter, FindLetter, FindNumber, SampleNumber, "
+110	0	        sql1 = sql1 & "FlotNumber, EtutlukNumber, EnvanterNumber, MuseumAccessionNumber, "
+111	0	        sql1 = sql1 & "ExportLocation ) "
+112	4	        sql1 = sql1 & "SELECT '" & Me![cboMoveCrate] & "' AS 'Crate Number', "
+113	0	        sql1 = sql1 & "[Store: Units in Crates].[Unit number], [Store: Units in Crates].Bag, "
+114	0	        sql1 = sql1 & "[Store: Units in Crates].[Letter/Number], [Store: Units in Crates].Material, "
+115	0	        sql1 = sql1 & "[Store: Units in Crates].MaterialSubgroup, [Store: Units in Crates].Description, "
+116	0	        sql1 = sql1 & "[Store: Units in Crates].Notes, [Store: Units in Crates].Year, "
+117	0	        sql1 = sql1 & "[Store: Units in Crates].Area, [Store: Units in Crates].Studied, "
+118	6	        sql1 = sql1 & Me![cboMoveCrate].Column(2) & " AS 'CrateNumber', '" & Me![cboMoveCrate].Column(1) & "' AS 'CrateLetter', "
+119	0	        sql1 = sql1 & "[Store: Units in Crates].FindLetter, [Store: Units in Crates].FindNumber, "
+120	0	        sql1 = sql1 & "[Store: Units in Crates].SampleNumber, [Store: Units in Crates].FlotNumber, "
+121	0	        sql1 = sql1 & "[Store: Units in Crates].EtutlukNumber, [Store: Units in Crates].EnvanterNumber, "
+122	0	        sql1 = sql1 & "[Store: Units in Crates].MuseumAccessionNumber, [Store: Units in Crates].ExportLocation "
+123	0	        sql1 = sql1 & "FROM [Store: Units in Crates] "
+124	0	        sql1 = sql1 & "WHERE [Store: Units in Crates].rowID = " & Me![rowID] & ";"
+125	0	        
+126	0	        Set myq = mydb.CreateQueryDef("")
+127	0	        myq.sql = sql1
+128	0	        myq.Execute
+129	0	                
+130	0	        myq.Close
+131	0	        Set myq = Nothing
+132	0	        
+133	1	        'delete from here
+134	1	        'sql2 = "DELETE FROM [Store: Units in Crates] WHERE [Store: Units in Crates].rowID = " & Me![rowID] & ";"
+135	0	        If DeleteCrateRecord(Me![rowID], mydb) = False Then
+136	0	            MsgBox "The delete part of this operation has failed", vbCritical, "Operation Failed"
+137	0	        End If
+138	0	        
+139	0	        If Err.Number = 0 Then
+140	0	            wrkdefault.CommitTrans
+141	0	            MsgBox "Move has been successful"
+142	0	            Me.Requery
+143	0	            Me![cboMoveCrate] = ""
+144	0	        Else
+145	0	            wrkdefault.Rollback
+146	0	            MsgBox "A problem has occured and the move has been cancelled. The error message is: " & Err.Description
+147	0	        End If
+148	0	
+149	0	        mydb.Close
+150	0	        Set mydb = Nothing
+151	0	        wrkdefault.Close
+152	0	        Set wrkdefault = Nothing
+153	0	    
+154	0	    End If
+155	0	
+156	0	Exit Sub
+157	0	
+158	0	err_cboMove:
+159	0	    Call General_Error_Trap
+160	0	    Exit Sub
+161	0	End Sub
+162	0	
+163	0	
+164	0	Private Sub chkMove_Click()
+165	1	'reveal move crate button
+166	0	On Error GoTo err_chkmove
+167	0	
+168	0	    If Me!chkMove = True Then
+169	0	        Me![cboMoveCrate].Visible = True
+170	0	    Else
+171	0	        Me![cboMoveCrate].Visible = False
+172	0	    End If
+173	0	
+174	0	Exit Sub
+175	0	
+176	0	err_chkmove:
+177	0	    Call General_Error_Trap
+178	0	    Exit Sub
+179	0	End Sub
+180	0	
+181	0	Private Sub FindLetter_AfterUpdate()
+182	0	If Me![FindLetter] <> "" Or Not IsNull(Me![FindLetter]) Then
+183	0	    If UCase(Me![FindLetter]) <> "S" Then
+184	0	        Me![FindLetter] = UCase(Me![FindLetter])
+185	0	    End If
+186	0	End If
+187	1	'Call KnownFind
+188	0	End Sub
+189	0	
+190	0	Private Sub FindNumber_AfterUpdate()
+191	1	'Call KnownFind
+192	0	End Sub
+193	0	
+194	0	Private Sub Form_AfterUpdate()
+195	1	'moved from before update - saj season 2006
+196	0	On Error GoTo err_afterupdate
+197	0	
+198	0	    Forms![Store: Crate Register]![Date Changed] = Now()
+199	0	
+200	0	Exit Sub
+201	0	
+202	0	err_afterupdate:
+203	0	    Call General_Error_Trap
+204	0	    Exit Sub
+205	0	End Sub
+206	0	
+207	0	Private Sub Form_BeforeUpdate(Cancel As Integer)
+208	1	'again moved to after update
+209	1	'Forms![Store: Crate Register]![Date Changed] = Now()
+210	0	
+211	0	End Sub
+212	0	
+213	0	Private Sub Form_Current()
+214	1	'new season 2006 - the fields shown are dependant on the type of crate
+215	0	On Error GoTo err_current
+216	0	
+217	1	   ' Me![cboMaterialGroup].Requery
+218	1	   ' Me![cboMaterialSubGroup].Requery
+219	1	   ' Me![cboDescription].Requery
+220	0	   
+221	0	    Me![EtutlukNumber].Visible = False
+222	0	    Me![EnvanterNumber].Visible = False
+223	0	    Me![MuseumAccessionNumber].Visible = False
+224	0	    Me![ExportLocation].Visible = False
+225	0	    Me![Bag].Visible = False
+226	0	    Me![Studied].Visible = False
+227	0	    Me![txtNotes2].Visible = False
+228	0	    Me![lblNotes2].Visible = False
+229	0	    Me![txtNotes3].Visible = False
+230	0	    Me![lblNotes3].Visible = False
+231	0	    Me![lblAdditional].caption = "Notes"
+232	0	    Me![lblMuseum].Visible = False
+233	0	    
+234	0	    If LCase(Forms![Store: Crate Register]![CrateLetter]) = "et" Then
+235	1	         'etukluk crates must have an ET prefix
+236	0	        Me![EtutlukNumber].Visible = True
+237	0	        Me![lblAdditional].caption = "Etukluk No."
+238	0	        Me![txtNotes].Visible = False
+239	0	        Me![txtNotes3].Visible = False
+240	0	        Me![txtNotes2].Visible = True
+241	0	        Me![lblNotes2].Visible = True
+242	0	    ElseIf LCase(Forms![Store: Crate Register]![CrateLetter]) = "envanter" Then
+243	1	        'envanter crates must have envanter prefix
+244	0	        Me![EnvanterNumber].Visible = True
+245	0	        Me![MuseumAccessionNumber].Visible = True
+246	0	        Me![lblMuseum].Visible = True
+247	0	        Me![lblAdditional].caption = "Evanter No."
+248	0	        Me![txtNotes].Visible = False
+249	0	        Me![txtNotes3].Visible = False
+250	0	        Me![txtNotes2].Visible = True
+251	0	        Me![lblNotes2].Visible = True
+252	0	    ElseIf LCase(Forms![Store: Crate Register]![CrateLetter]) = "export" Then
+253	1	        'export crates must have export prefix
+254	0	        Me![ExportLocation].Visible = True
+255	0	        Me![lblAdditional].caption = "Export Location"
+256	0	        Me![txtNotes].Visible = False
+257	0	        Me![txtNotes3].Visible = False
+258	0	        Me![txtNotes2].Visible = True
+259	0	        Me![lblNotes2].Visible = True
+260	0	    Else
+261	1	        'all other crates have same fields apart from two
+262	0	        Me![txtNotes].Visible = True
+263	0	        
+264	0	        If LCase(Forms![Store: Crate Register]![CrateLetter]) = "ob" Then
+265	1	            'bag visible for chipped stone
+266	0	            Me![Bag].Visible = True
+267	0	            Me![txtNotes3].Visible = True
+268	0	            Me![lblNotes3].Visible = True
+269	0	            Me![txtNotes].Visible = False
+270	0	            Me![lblAdditional].caption = "Bag"
+271	0	        ElseIf LCase(Forms![Store: Crate Register]![CrateLetter]) = "fb" Then
+272	1	            'studied visible for faunal
+273	0	            Me![Studied].Visible = True
+274	0	            Me![txtNotes3].Visible = True
+275	0	            Me![lblNotes3].Visible = True
+276	0	            Me![txtNotes].Visible = False
+277	0	            Me![lblAdditional].caption = "Studied"
+278	0	        End If
+279	0	        
+280	0	        
+281	0	        Me![txtNotes2].Visible = False
+282	0	        
+283	0	    End If
+284	0	Exit Sub
+285	0	
+286	0	err_current:
+287	0	    Call General_Error_Trap
+288	0	    Exit Sub
+289	0	End Sub
+290	0	
+291	0	Private Sub Unit_AfterUpdate()
+292	2	'need to get area and year from excavation but can't link them in as a subform
+293	2	'as this is a continous form. Can't also set the field value on current as this will
+294	1	'make all records look the same until you move the focus down the row - instead store
+295	1	'the year and area in the units in crates table but grab it automatically from the exca
+296	1	'DB when updated
+297	1	'saj season 2006
+298	0	On Error GoTo err_unit
+299	0	
+300	0	    If Me![Unit] <> "" Then
+301	0	        Dim getarea, getyear
+302	0	        getarea = DLookup("[Area]", "[Exca: Unit sheet with relationships]", "[Unit number] = " & Me![Unit])
+303	0	        If Not IsNull(getarea) Then
+304	0	            Me![Area] = getarea
+305	0	        Else
+306	0	            MsgBox "The Area field has not been automically obtained from the Excavation database, please check the excavation database directly", vbInformation, "Area Field"
+307	0	        End If
+308	0	        
+309	0	        getyear = DLookup("[Year]", "[Exca: Unit sheet with relationships]", "[Year] = " & Me![Year])
+310	0	        If Not IsNull(getyear) Then
+311	0	            Me![Year] = getyear
+312	0	        Else
+313	0	            MsgBox "The Year field has not been automically obtained from the Excavation database, please check the excavation database directly", vbInformation, "Year Field"
+314	0	        End If
+315	0	    End If
+316	0	Exit Sub
+317	0	
+318	0	err_unit:
+319	0	    Call General_Error_Trap
+320	0	    Exit Sub
+321	0	End Sub

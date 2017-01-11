@@ -1,0 +1,409 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	Private Sub SetUpFields()
+4	0	On Error GoTo err_setupfields
+5	0	
+6	0	    If Me![cboCheckReason] <> "" Then
+7	0	        If Me![cboCheckReason] = "Priority Tour" Then
+8	0	            Me![PhytolithResultNotes].Visible = True
+9	0	            Me![lblNonPerm].Visible = True
+10	1	            'Me![SlidePrepNotes].Visible = False
+11	0	            Me![SiteCode].Visible = False
+12	0	            Me![SampleProcessYear].Visible = False
+13	0	            Me![LabSampleNumber].Visible = False
+14	0	            Me![cmdDataEntry].Visible = False
+15	0	        ElseIf Me![cboCheckReason] = "Phytolith Smear" Or Me![cboCheckReason] = "Sediment Sample" Then
+16	0	            Me![PhytolithResultNotes].Visible = False
+17	0	            Me![lblNonPerm].Visible = False
+18	1	            'Me![SlidePrepNotes].Visible = True
+19	0	            Me![SiteCode].Visible = True
+20	0	            Me![SampleProcessYear].Visible = True
+21	0	            Me![LabSampleNumber].Visible = True
+22	0	            Me![cmdDataEntry].Visible = True
+23	0	        End If
+24	0	    Else
+25	0	        Me![PhytolithResultNotes].Visible = False
+26	0	        Me![lblNonPerm].Visible = False
+27	1	        'Me![SlidePrepNotes].Visible = False
+28	0	        Me![SiteCode].Visible = False
+29	0	        Me![SampleProcessYear].Visible = False
+30	0	        Me![LabSampleNumber].Visible = False
+31	0	        Me![cmdDataEntry].Visible = True
+32	0	    End If
+33	0	Exit Sub
+34	0	
+35	0	err_setupfields:
+36	0	    Call General_Error_Trap
+37	0	    Exit Sub
+38	0	End Sub
+39	0	
+40	0	
+41	0	Private Sub cboFindSample_AfterUpdate()
+42	1	'find choosen sample id
+43	0	On Error GoTo err_cboFind
+44	0	    If Me![cboFindSample] <> "" Then
+45	0	        DoCmd.GoToControl "txtSampleID"
+46	0	        DoCmd.FindRecord Me![cboFindSample]
+47	0	    End If
+48	0	Exit Sub
+49	0	
+50	0	err_cboFind:
+51	0	    MsgBox "An error has occured: " & Err.Description
+52	0	    Exit Sub
+53	0	End Sub
+54	0	
+55	0	Private Sub cboCheckReason_AfterUpdate()
+56	0	Call SetUpFields
+57	0	
+58	0	End Sub
+59	0	
+60	0	Private Sub cmdClose_Click()
+61	0	On Error GoTo err_close
+62	0	    DoCmd.Close acForm, Me.Name
+63	0	Exit Sub
+64	0	
+65	0	err_close:
+66	0	    MsgBox "An error has occured: " & Err.Description
+67	0	End Sub
+68	0	
+69	0	Private Sub cmdDelete_Click()
+70	1	'delete here so can clean up sub tables
+71	0	On Error GoTo err_cmdDelete
+72	0	
+73	1	    'double check is admin
+74	0	    Dim permiss
+75	0	    permiss = GetGeneralPermissions
+76	0	    
+77	0	    If permiss <> "ADMIN" Then
+78	0	        MsgBox "You do not have permission to delete records. Contact your supervisor.", vbInformation, "Permission Denied"
+79	0	    Else
+80	0	        Dim retVal, sql
+81	0	        retVal = MsgBox("Really delete Sample ID: " & Me![txtSampleID] & "?", vbCritical + vbYesNoCancel, "Confirm Delete")
+82	0	        If retVal = vbYes Then
+83	2	            sql = "Delete from [Phytolith_Sample_Analysis_Details] WHERE [SampleID] = '" & Me![txtSampleID] & "';"
+84	0	            DoCmd.RunSQL sql
+85	0	            
+86	2	            sql = "Delete from [Phytolith_Sample_Core_Data] WHERE [SampleID] = '" & Me![txtSampleID] & "';"
+87	0	            DoCmd.RunSQL sql
+88	0	            
+89	0	            Me.Requery
+90	0	            DoCmd.GoToRecord acActiveDataObject, , acLast
+91	0	        End If
+92	0	    End If
+93	0	    
+94	0	Exit Sub
+95	0	
+96	0	err_cmdDelete:
+97	0	    Call General_Error_Trap
+98	0	    Exit Sub
+99	0	End Sub
+100	0	
+101	0	Private Sub cmdExport_Click()
+102	1	'This exports the core data about the sample shown on screen to excel
+103	0	
+104	0	On Error GoTo err_cmdExport
+105	1	'DoCmd.RunCommand acCmdOutputToExcel
+106	0	DoCmd.OutputTo acOutputQuery, "Q_ExportToExcel_PhytoData_OnScreen", acFormatXLS, "PhytoData for sample " & Me![SampleID] & ".xls", True
+107	0	
+108	0	Exit Sub
+109	0	
+110	0	err_cmdExport:
+111	1	   ' Call general_error_trap
+112	0	    Exit Sub
+113	0	End Sub
+114	0	
+115	0	Private Sub cmdExportAll_Click()
+116	1	'export all core information entered into database into excel
+117	0	On Error GoTo err_cmdExportAll
+118	0	
+119	0	    DoCmd.OutputTo acOutputTable, "Phytolith_Sample_Core_Data", acFormatXLS, "All Phyto Core Data from Catal Database.xls", True
+120	0	Exit Sub
+121	0	
+122	0	err_cmdExportAll:
+123	0	    MsgBox "An error has occured, the description is: " & Err.Description
+124	0	    Exit Sub
+125	0	End Sub
+126	0	
+127	0	Private Sub cmdExportAllSamples_Click()
+128	1	'export all sample info into excel
+129	0	On Error GoTo err_cmdExportAllSamples
+130	0	
+131	0	    DoCmd.OutputTo acOutputTable, "Phytolith_Sample_Analysis_Details", acFormatXLS, "All Phyto Sample data from Catal Database.xls", True
+132	0	Exit Sub
+133	0	
+134	0	err_cmdExportAllSamples:
+135	0	    MsgBox "An error has occured, the description is: " & Err.Description
+136	0	    Exit Sub
+137	0	End Sub
+138	0	
+139	0	Private Sub cmdExportThisSample_Click()
+140	1	'export just the sample shown on screen to excel
+141	0	On Error GoTo err_cmdExport
+142	0	
+143	0	    DoCmd.OutputTo acOutputQuery, "Q_ExportToExcel_Sample_OnScreen", acFormatXLS, "Phyto Sample Data for " & Me![SampleID] & ".xls", True
+144	0	Exit Sub
+145	0	
+146	0	err_cmdExport:
+147	0	    MsgBox "An error has occured, the description is: " & Err.Description
+148	0	    Exit Sub
+149	0	End Sub
+150	0	
+151	0	Private Sub cmdReady_Click()
+152	1	'set up the phyto names for data entry
+153	0	On Error GoTo err_cmdReady
+154	0	
+155	0	If (Forms![frm_Phyto_Data_Entry].[SampleProcessYear] <> "") And (Forms![frm_Phyto_Data_Entry].[SampleNumber] <> "") Then
+156	0	
+157	0	    Dim mydb As Database, myrs As DAO.Recordset, sql, sql1
+158	0	    Set mydb = CurrentDb
+159	2	    sql = "SELECT * FROM [PhytolithLOV_PhytoNames] WHERE [PhytoName] <> '' ORDER BY [PhytoID], [PhytoMultiOrSingle]"
+160	0	    Set myrs = mydb.OpenRecordset(sql)
+161	0	
+162	0	    If Not (myrs.BOF And myrs.EOF) Then
+163	0	        myrs.MoveFirst
+164	0	        Do Until myrs.EOF
+165	0	            sql1 = "INSERT INTO [Phytolith_Sample_Analysis_Details] ([SiteCode], [SampleProcessYear], [SampleNumber], [SampleID], [SingleOrMulti], [DicotOrMonocot], [PhytoName])"
+166	12	            sql1 = sql1 & " VALUES ('" & Forms![frm_Phyto_Data_Entry].[SiteCode] & "', '" & Forms![frm_Phyto_Data_Entry].[SampleProcessYear] & "', " & Forms![frm_Phyto_Data_Entry].[SampleNumber] & ", '" & Forms![frm_Phyto_Data_Entry].[SampleID] & "', '" & myrs![PhytoMultiOrSingle] & "', '" & myrs![DicotOrMonocot] & "','" & myrs![PhytoName] & "');"
+167	0	            DoCmd.RunSQL sql1
+168	0	            myrs.MoveNext
+169	0	        Loop
+170	0	    End If
+171	0	    
+172	0	    Me![frm_sub_phyto_data].Requery
+173	0	    Me![frm_sub_phyto_data].Visible = True
+174	0	    myrs.Close
+175	0	    Set myrs = Nothing
+176	0	    mydb.Close
+177	0	    Set mydb = Nothing
+178	0	Else
+179	0	    MsgBox "Please enter the Sample Process Year and Sample Number first"
+180	0	End If
+181	0	Exit Sub
+182	0	
+183	0	err_cmdReady:
+184	0	    MsgBox "An error has occured setting up the data ready for entry. The error description is as follows: " & Err.Description, vbCritical, "Error"
+185	0	    Exit Sub
+186	0	
+187	0	End Sub
+188	0	
+189	0	Private Sub cmdRecalc_Click()
+190	1	'DoCmd.GoToControl Me![frm_sub_phyto_data].Name
+191	1	'DoCmd.GoToControl Me![frm_sub_phyto_data].Form![PhytoCount].Name
+192	0	
+193	0	
+194	0	End Sub
+195	0	
+196	0	Private Sub cmdReport_Click()
+197	1	'report the data - this sample or all
+198	0	On Error GoTo err_report
+199	0	
+200	0	    Dim retVal
+201	0	    retVal = MsgBox("Do you want to report this sample only?" & Chr(13) & Chr(13) & "Press Yes to report " & Me![txtSampleID] & " only, press No to report on ALL samples", vbYesNoCancel + vbQuestion, "Report current sample only?")
+202	0	    If retVal = vbNo Then
+203	0	        DoCmd.OpenReport "Phytolith_Sample_Analysis_Details", acViewPreview
+204	0	    ElseIf retVal = vbYes Then
+205	2	        DoCmd.OpenReport "Phytolith_Sample_Analysis_Details", acViewPreview, , "[SampleID] ='" & Me![txtSampleID] & "'"
+206	0	    End If
+207	0	Exit Sub
+208	0	
+209	0	err_report:
+210	0	    MsgBox "An error has occured: " & Err.Description
+211	0	    Exit Sub
+212	0	
+213	0	End Sub
+214	0	
+215	0	Private Sub Command19_Click()
+216	1	'create a new record for a new sample
+217	0	On Error GoTo err_cmd19
+218	0	
+219	0	DoCmd.RunCommand acCmdRecordsGoToNew
+220	0	
+221	0	Exit Sub
+222	0	
+223	0	err_cmd19:
+224	0	    MsgBox "An error has occured setting up a new record, the error is as follows: " & Err.Description
+225	0	    Exit Sub
+226	0	End Sub
+227	0	
+228	0	
+229	0	
+230	0	
+231	0	
+232	0	Private Sub cmdDataEntry_Click()
+233	1	'move over to dataentry screen
+234	0	On Error GoTo err_dataentry
+235	0	
+236	0	    If Me![SiteCode] <> "" And Me![SampleProcessYear] <> "" And Me![LabSampleNumber] <> "" Then
+237	0	        DoCmd.OpenForm "frm_Phyto_Data_Entry", acNormal
+238	0	        DoCmd.RunCommand acCmdRecordsGoToNew
+239	0	        Forms![frm_Phyto_Data_Entry]![SiteCode] = Me![SiteCode]
+240	0	        Forms![frm_Phyto_Data_Entry]![SampleProcessYear] = Me![SampleProcessYear]
+241	0	        Forms![frm_Phyto_Data_Entry]![LabSampleNumber] = Me![LabSampleNumber]
+242	0	        Forms![frm_Phyto_Data_Entry]![txtSampleID] = Me![SiteCode] & "-" & Me![SampleProcessYear] & "-" & Me![LabSampleNumber]
+243	0	        Forms![frm_Phyto_Data_Entry]![Unit] = Me![Unit]
+244	1	        'new feb 2007 for flip
+245	0	        Forms![frm_Phyto_Data_Entry]![ExcaSampleLetter] = Me![SampleLetter]
+246	0	        Forms![frm_Phyto_Data_Entry]![ExcaSampleNumber] = Me![SampleNumber]
+247	0	        
+248	0	        DoCmd.Close acForm, Me.Name
+249	0	    Else
+250	0	        MsgBox "Please fill out select Phytolith smear and enter the Site Code, Year and Sample Number first", vbInformation, "Not enough information"
+251	0	    End If
+252	0	
+253	0	Exit Sub
+254	0	
+255	0	err_dataentry:
+256	0	    Call General_Error_Trap
+257	0	    Exit Sub
+258	0	
+259	0	End Sub
+260	0	
+261	0	Private Sub Combo61_NotInList(NewData As String, Response As Integer)
+262	1	'allow entry of new year
+263	0	On Error GoTo err_Year_NotInList
+264	0	
+265	0	Dim retVal, sql
+266	0	
+267	0	retVal = MsgBox("This year is not in the list, are you sure you want to add it?", vbQuestion + vbYesNo, "Value not in list")
+268	0	If retVal = vbYes Then
+269	0	    Response = acDataErrAdded
+270	2	    sql = "INSERT INTO [PhytolithLOV_AnalysisYear]([AnalysisYear]) VALUES ('" & NewData & "');"
+271	0	    DoCmd.RunSQL sql
+272	2	    ''Response = acDataErrContinue
+273	1	    'DoCmd.RunCommand acCmdSaveRecord
+274	1	    'Me![SampleProcessYear].Requery
+275	0	Else
+276	0	    Response = acDataErrContinue
+277	0	End If
+278	0	
+279	0	Exit Sub
+280	0	
+281	0	err_Year_NotInList:
+282	0	    MsgBox "An error has occured: " & Err.Description
+283	0	    Exit Sub
+284	0	End Sub
+285	0	
+286	0	Private Sub Form_Current()
+287	1	'set up display depending on reason for collection
+288	0	On Error GoTo err_curr
+289	0	
+290	0	    Call SetUpFields
+291	1	    'If IsNull(Me![FieldID]) Then DoCmd.RunCommand acCmdSaveRecord
+292	0	    Me.Refresh
+293	0	Exit Sub
+294	0	
+295	0	err_curr:
+296	0	    Call General_Error_Trap
+297	0	    Exit Sub
+298	0	End Sub
+299	0	
+300	0	Private Sub SampleNumber_AfterUpdate()
+301	1	'update the sample id
+302	0	On Error GoTo err_samplenum
+303	0	
+304	0	If Me![SampleProcessYear] <> "" And Me![SampleNumber] <> "" Then
+305	0	    Me![txtSampleID] = Me![SiteCode] & "-" & Me![SampleProcessYear] & "-" & Me![SampleNumber]
+306	0	Else
+307	0	    If Me![SampleProcessYear] <> "" Then
+308	0	        MsgBox "Altering this value effects the sample ID"
+309	0	        Me![SampleID] = Null
+310	0	    End If
+311	0	End If
+312	0	Exit Sub
+313	0	
+314	0	err_samplenum:
+315	0	    MsgBox "Error: " & Err.Description
+316	0	    Exit Sub
+317	0	
+318	0	End Sub
+319	0	
+320	0	Private Sub SampleProcessYear_AfterUpdate()
+321	1	'update the sample id
+322	0	On Error GoTo err_sampleyr
+323	0	
+324	0	If Me![SampleProcessYear] <> "" And Me![SampleNumber] <> "" Then
+325	0	    Me![txtSampleID] = Me![SiteCode] & "-" & Me![SampleProcessYear] & "-" & Me![SampleNumber]
+326	0	Else
+327	0	    If Me![SampleNumber] <> "" Then
+328	0	        MsgBox "Altering this value effects the sample ID"
+329	0	        Me![SampleID] = ""
+330	0	    End If
+331	0	End If
+332	0	Exit Sub
+333	0	
+334	0	err_sampleyr:
+335	0	    MsgBox "Error: " & Err.Description
+336	0	    Exit Sub
+337	0	End Sub
+338	0	
+339	0	Private Sub SampleProcessYear_NotInList(NewData As String, Response As Integer)
+340	1	'allow entry of new year
+341	0	On Error GoTo err_Year_NotInList
+342	0	
+343	0	Dim retVal, sql
+344	0	
+345	0	retVal = MsgBox("This year is not in the list, are you sure you want to add it?", vbQuestion + vbYesNo, "Value not in list")
+346	0	If retVal = vbYes Then
+347	0	    Response = acDataErrAdded
+348	2	    sql = "INSERT INTO [PhytolithLOV_AnalysisYear]([AnalysisYear]) VALUES ('" & NewData & "');"
+349	0	    DoCmd.RunSQL sql
+350	2	    ''Response = acDataErrContinue
+351	1	    'DoCmd.RunCommand acCmdSaveRecord
+352	1	    'Me![SampleProcessYear].Requery
+353	0	Else
+354	0	    Response = acDataErrContinue
+355	0	End If
+356	0	
+357	0	Exit Sub
+358	0	
+359	0	err_Year_NotInList:
+360	0	    MsgBox "An error has occured: " & Err.Description
+361	0	    Exit Sub
+362	0	End Sub
+363	0	
+364	0	Private Sub TotalMGPhyto_AfterUpdate()
+365	1	'warn the users that changing this value effects the weight %% calc
+366	0	On Error GoTo err_TotalMGPhyto
+367	0	
+368	0	Dim retVal
+369	0	
+370	0	If Me![TotalMGSediment] <> "" Then
+371	0	    If Me![Weight%%] <> "" And Me![TotalMGPhyto].OldValue <> "" Then
+372	0	        retVal = MsgBox("Changing this value affects the Weight %% calculation (Total MG Phyto / Total MG Sediment * 100). Are you sure you want to update this value?", vbQuestion + vbYesNo, "Check Entry")
+373	0	        If retVal = vbNo Then
+374	0	            Me![TotalMGPhyto] = Me![TotalMGPhyto].OldValue
+375	0	            Exit Sub
+376	0	        End If
+377	0	    End If
+378	0	    Me![Weight%%] = Me![TotalMGPhyto] / Me![TotalMGSediment] * 100
+379	0	End If
+380	0	Exit Sub
+381	0	
+382	0	err_TotalMGPhyto:
+383	0	    MsgBox "An error has occured trying to update the Weight %% field, the description is as follows: " & Err.Description, vbCritical, "Error"
+384	0	    Exit Sub
+385	0	
+386	0	End Sub
+387	0	
+388	0	Private Sub TotalMGSediment_AfterUpdate()
+389	1	'warn the users that changing this value effects the weight %% calc
+390	0	On Error GoTo err_TotalMGSediment
+391	0	
+392	0	Dim retVal
+393	0	
+394	0	If Me![TotalMGPhyto] <> "" Then
+395	0	    If Me![Weight%%] <> "" And Me![TotalMGSediment].OldValue <> "" Then
+396	0	        retVal = MsgBox("Changing this value affects the Weight %% calculation (Total MG Phyto / Total MG Sediment * 100). Are you sure you want to update this value?", vbQuestion + vbYesNo, "Check Entry")
+397	0	        If retVal = vbNo Then
+398	0	            Me![TotalMGSediment] = Me![TotalMGSediment].OldValue
+399	0	            Exit Sub
+400	0	        End If
+401	0	    End If
+402	0	    Me![Weight%%] = Me![TotalMGPhyto] / Me![TotalMGSediment] * 100
+403	0	End If
+404	0	Exit Sub
+405	0	
+406	0	err_TotalMGSediment:
+407	0	    MsgBox "An error has occured trying to update the Weight %% field, the description is as follows: " & Err.Description, vbCritical, "Error"
+408	0	    Exit Sub
+409	0	End Sub

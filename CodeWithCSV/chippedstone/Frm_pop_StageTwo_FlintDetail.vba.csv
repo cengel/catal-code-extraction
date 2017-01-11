@@ -1,0 +1,99 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cboFind_AfterUpdate()
+5	0	On Error GoTo err_cboFind
+6	0	
+7	0	If Me![cboFind] <> "" Then
+8	0	    If Me.FilterOn = True Then Me.FilterOn = False
+9	0	    Me![GID].Enabled = True
+10	0	    DoCmd.GoToControl Me![GID].Name
+11	0	    DoCmd.FindRecord Me![cboFind]
+12	0	    DoCmd.GoToControl Me![Weight].Name
+13	0	    Me![GID].Enabled = False
+14	0	End If
+15	0	
+16	0	Exit Sub
+17	0	
+18	0	err_cboFind:
+19	0	    Call General_Error_Trap
+20	0	    Exit Sub
+21	0	End Sub
+22	0	
+23	0	Private Sub Close_Click()
+24	0	cmdClose_Click
+25	0	
+26	0	End Sub
+27	0	
+28	0	Private Sub cmdClose_Click()
+29	1	'close this new 2009 form
+30	0	On Error GoTo err_close
+31	0	    DoCmd.Close acForm, Me.Name
+32	0	    
+33	0	
+34	0	Exit Sub
+35	0	
+36	0	err_close:
+37	0	    Call General_Error_Trap
+38	0	    Exit Sub
+39	0	End Sub
+40	0	
+41	0	Private Sub cmdGoFirst_Click()
+42	0	On Error GoTo Err_gofirst_Click
+43	0	
+44	0	
+45	0	    DoCmd.GoToRecord , , acFirst
+46	0	
+47	0	    Exit Sub
+48	0	
+49	0	Err_gofirst_Click:
+50	0	    Call General_Error_Trap
+51	0	End Sub
+52	0	
+53	0	Private Sub cmdGoLast_Click()
+54	0	On Error GoTo Err_goLast_Click
+55	0	
+56	0	
+57	0	    DoCmd.GoToRecord , , acLast
+58	0	
+59	0	    Exit Sub
+60	0	
+61	0	Err_goLast_Click:
+62	0	    Call General_Error_Trap
+63	0	End Sub
+64	0	
+65	0	Private Sub cmdGoNext_Click()
+66	0	On Error GoTo Err_goNext_Click
+67	0	
+68	0	
+69	0	    DoCmd.GoToRecord , , acNext
+70	0	
+71	0	    Exit Sub
+72	0	
+73	0	Err_goNext_Click:
+74	0	    Call General_Error_Trap
+75	0	End Sub
+76	0	
+77	0	Private Sub cmdGoPrev_Click()
+78	0	On Error GoTo Err_goPrev_Click
+79	0	
+80	0	
+81	0	    DoCmd.GoToRecord , , acPrevious
+82	0	
+83	0	    Exit Sub
+84	0	
+85	0	Err_goPrev_Click:
+86	0	    Call General_Error_Trap
+87	0	End Sub
+88	0	
+89	0	Private Sub Form_Open(Cancel As Integer)
+90	0	On Error GoTo err_open
+91	0	
+92	0	DoCmd.GoToControl "Weight"
+93	0	
+94	0	Exit Sub
+95	0	
+96	0	err_open:
+97	0	    Call General_Error_Trap
+98	0	    Exit Sub
+99	0	End Sub

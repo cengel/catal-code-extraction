@@ -1,0 +1,50 @@
+1	0	Option Compare Database
+2	0	
+3	0	
+4	0	Private Sub cmdCloseDiaryTaggedEntries_Click()
+5	0	On Error GoTo Err_Close_Form_Click
+6	0	
+7	0	    DoCmd.Close
+8	0	
+9	0	Exit_Close_Form_Click:
+10	0	    Exit Sub
+11	0	
+12	0	Err_Close_Form_Click:
+13	0	    MsgBox Err.Description
+14	0	    Resume Exit_Close_Form_Click
+15	0	    
+16	0	End Sub
+17	0	
+18	0	Private Sub cmdOpenDiaryEntry_Click()
+19	1	'new season 2012 - open single diary entry
+20	0	
+21	0	On Error GoTo err_opendiary
+22	1	    'DoCmd.OpenForm "Diary_SingleEntry_popup", acNormal, , ,acFormReadOnly, , Me![txt_diaryID]
+23	1	    'DoCmd.OpenForm "Diary_SingleEntry_popup", acNormal, , "ID=" & Me![txt_diaryID], acFormReadOnly, , Me![txt_diaryID]
+24	0	    DoCmd.OpenForm "Diary_SingleEntry_popup", acNormal, , "ID=" & Me![txtDiaryID], acFormReadOnly
+25	0	
+26	0	Exit Sub
+27	0	
+28	0	err_opendiary:
+29	0	    Call General_Error_Trap
+30	0	    Exit Sub
+31	0	    
+32	0	End Sub
+33	0	
+34	0	Private Sub Post_a_new_entry_Click()
+35	0	On Error GoTo Err_Post_a_new_entry_Click
+36	0	
+37	0	    Dim stDocName As String
+38	0	    Dim stLinkCriteria As String
+39	0	
+40	0	    stDocName = "Diary Form"
+41	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+42	0	
+43	0	Exit_Post_a_new_entry_Click:
+44	0	    Exit Sub
+45	0	
+46	0	Err_Post_a_new_entry_Click:
+47	0	    MsgBox Err.Description
+48	0	    Resume Exit_Post_a_new_entry_Click
+49	0	    
+50	0	End Sub

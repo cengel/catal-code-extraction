@@ -1,0 +1,338 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	1	Option Explicit 'saj
+3	0	Private Sub UpdateGID()
+4	1	'this is called by this form to update the GID field if either the
+5	1	'Unit, find letter or number fields are altered
+6	1	'replaces calls to macro Bone.Update contact Unit and GID
+7	1	' SAJ
+8	0	On Error GoTo err_UpdateGID
+9	0	
+10	0	 Me![GID] = [Forms]![Fauna_Bone_Contact]![Unit number] & "." & [Forms]![Fauna_Bone_Contact]![letter code] & [Forms]![Fauna_Bone_Contact]![find number]
+11	0	    
+12	0	
+13	0	Exit Sub
+14	0	
+15	0	err_UpdateGID:
+16	0	    Call General_Error_Trap
+17	0	    Exit Sub
+18	0	End Sub
+19	0	
+20	0	Private Sub button_goto_measurement_Click()
+21	1	'altered season 2006 - saj
+22	1	'check if any measurement records exist and if not ask user to create
+23	1	'this button is new here, requested by Rebecca and approved by Rissa
+24	0	On Error GoTo Err_button_goto_measurement_Click
+25	0	
+26	0	    Dim stDocName As String
+27	0	    Dim stLinkCriteria As String
+28	0	    Dim retVal, checknum, sql, getMeasurementSet
+29	0	    stDocName = "Fauna_Bone_Measurements"
+30	0	    
+31	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+32	0	    
+33	0	If Me![GID] <> "" Then
+34	1	    'new check for GID entered by saj
+35	1	    'the form is only minimised so must save data manually here - saj
+36	0	    DoCmd.RunCommand acCmdSaveRecord
+37	0	        
+38	1	    'new for season 2006 - see if the modification record exists if not create it - SAJ
+39	2	    checknum = DLookup("[GID]", "[Fauna_Bone_Measurements]", "[GID] = '" & Me![GID] & "'")
+40	0	    If IsNull(checknum) Then
+41	1	        'gid not exist there yet
+42	0	        retVal = MsgBox("No Measurement records exist yet for GID " & Me![GID] & ", do you want to create one now?", vbQuestion + vbYesNo, "Create New Modification Record")
+43	0	        If retVal = vbNo Then
+44	1	            'do nothing
+45	0	            Exit Sub
+46	0	        Else
+47	0	            getMeasurementSet = InputBox("Please enter the measurement set number below:", "Measurement Set")
+48	0	            If getMeasurementSet <> "" Then
+49	1	                'so create it ready for data entry
+50	4	                sql = "INSERT INTO [Fauna_Bone_Measurements] ([GID], [Unit number], [Letter code], [Find number], [Measurement Set]) VALUES ('" & Me![GID] & "'," & Me![Unit number] & ", '" & Me![letter code] & "', " & Me![find number] & ", " & getMeasurementSet & ");"
+51	0	                DoCmd.RunSQL sql
+52	0	            End If
+53	0	        End If
+54	0	    End If
+55	0	        
+56	0	        
+57	0	    DoCmd.Minimize
+58	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+59	0	Else
+60	0	    MsgBox "Please enter the GID fields for this record or select a GID first", vbInformation, "No Unit Number"
+61	0	End If
+62	0	
+63	0	Exit_button_goto_measurement_Click:
+64	0	    Exit Sub
+65	0	
+66	0	Err_button_goto_measurement_Click:
+67	0	    Call General_Error_Trap
+68	0	    Resume Exit_button_goto_measurement_Click
+69	0	End Sub
+70	0	
+71	0	Private Sub Button23_Click()
+72	1	'altered season 2006 - saj
+73	1	'error trap and new way of creating new rec
+74	0	On Error GoTo err_23
+75	0	
+76	0	Dim tempGID
+77	0	Dim tempUnit
+78	0	Dim tempLetter
+79	0	Dim tempFind
+80	0	Dim temporder
+81	0	
+82	0	tempGID = GID
+83	0	tempUnit = Unit_number
+84	0	tempLetter = Letter_code
+85	0	tempFind = Find_number
+86	0	temporder = ContactOrder
+87	0	
+88	1	    'get the last record entered
+89	0	        Dim mydb As DAO.Database, myrs As DAO.Recordset, lastrec
+90	0	        Set mydb = CurrentDb()
+91	2	        Set myrs = mydb.OpenRecordset("Select [ContactOrder] FROM [Fauna_Bone_Contact] WHERE [Unit Number] = " & Me![Unit number] & " AND Ucase([Letter Code]) = '" & Me![letter code] & "' AND [Find Number] = " & Me![find number] & " ORDER BY [Find number];", dbOpenSnapshot)
+92	0	        If Not (myrs.BOF And myrs.EOF) Then
+93	0	            myrs.MoveLast
+94	0	            lastrec = myrs![ContactOrder]
+95	0	        Else
+96	0	            lastrec = ""
+97	0	        End If
+98	0	        myrs.Close
+99	0	        Set myrs = Nothing
+100	0	        mydb.Close
+101	0	        Set mydb = Nothing
+102	0	
+103	1	'DoCmd.DoMenuItem MenuBar:=acFormBar, MenuName:=3, Command:=0
+104	0	DoCmd.RunCommand acCmdRecordsGoToNew
+105	0	
+106	0	GID = tempGID
+107	0	Unit_number = tempUnit
+108	0	Letter_code = tempLetter
+109	0	Find_number = tempFind
+110	0	If lastrec = "" Then
+111	0	    ContactOrder = temporder + 1
+112	0	Else
+113	0	    ContactOrder = lastrec + 1
+114	0	End If
+115	0	Exit Sub
+116	0	
+117	0	err_23:
+118	0	    Call General_Error_Trap
+119	0	    Exit Sub
+120	0	End Sub
+121	0	
+122	0	
+123	0	Sub button_goto_artefacts_Click()
+124	1	'season 2006, functionality modified slightly - SAJ
+125	0	On Error GoTo Err_button_goto_artefacts_Click
+126	0	
+127	0	    Dim stDocName As String
+128	0	    Dim stLinkCriteria As String
+129	0	
+130	0	    stDocName = "Fauna_Bone_Artifacts"
+131	0	   
+132	0	If Me![GID] <> "" Then
+133	1	    'new check for GID entered by saj
+134	1	    'the form is only minimised so must save data manually here - saj
+135	0	    DoCmd.RunCommand acCmdSaveRecord
+136	0	    
+137	1	    'saj - take over gid what ever the situation
+138	1	    'If [Forms]![Fauna_Bone_Basic_Faunal_Data].[Unit number] = 0 Then
+139	2	        stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+140	1	    'End If
+141	0	        
+142	0	    DoCmd.Minimize
+143	0	
+144	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+145	0	Else
+146	0	    MsgBox "Please enter the GID fields for this record or select a GID first", vbInformation, "No GID Number"
+147	0	End If
+148	0	
+149	0	Exit_button_goto_artefacts_Click:
+150	0	    Exit Sub
+151	0	
+152	0	Err_button_goto_artefacts_Click:
+153	0	    Call General_Error_Trap
+154	0	    Resume Exit_button_goto_artefacts_Click
+155	0	    
+156	0	End Sub
+157	0	Sub button_goto_unitBFD_Click()
+158	1	'season 2006, functionality modified slightly - SAJ
+159	0	
+160	0	On Error GoTo Err_button_goto_unitBFD_Click
+161	0	
+162	0	    Dim stDocName As String
+163	0	    Dim stLinkCriteria As String
+164	0	
+165	0	    stDocName = "Fauna_Bone_Basic_Faunal_Data"
+166	0	    
+167	0	If Me![GID] <> "" Then
+168	1	    'new check for GID entered by saj
+169	1	    'the form is only minimised so must save data manually here - saj
+170	0	    DoCmd.RunCommand acCmdSaveRecord
+171	0	    
+172	1	    'why is this working on just unit number not GID?
+173	1	    'If [Forms]![Fauna_Bone_Basic_Faunal_Data].[Unit number] = 0 Then
+174	1	    '    stLinkCriteria = "[Unit number]=" & Me![Unit number]
+175	1	    'End If
+176	2	    stLinkCriteria = "[GID]='" & Me![GID] & "'"
+177	0	    DoCmd.Minimize
+178	0	
+179	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+180	0	Else
+181	0	    MsgBox "Please enter the GID fields for this record or select a GID first", vbInformation, "No GID Number"
+182	0	End If
+183	0	
+184	0	Exit_button_goto_unitBFD_Click:
+185	0	    Exit Sub
+186	0	
+187	0	Err_button_goto_unitBFD_Click:
+188	0	    Call General_Error_Trap
+189	0	    Resume Exit_button_goto_unitBFD_Click
+190	0	    
+191	0	End Sub
+192	0	
+193	0	Private Sub cboFind_AfterUpdate()
+194	1	'new find combo by SAJ
+195	0	On Error GoTo err_cboFind
+196	0	
+197	0	If Me![cboFind] <> "" Then
+198	1	    'If Me.Filter <> "" Then
+199	3	    '        If Me.Filter <> "[GID] = '" & Me![cboFind].Column(1) & "'" Then
+200	1	    '            MsgBox "This form was opened to only show the record " & Me.Filter & ". This action has removed the filter and all records are available to view.", vbInformation, "Filter Removed"
+201	1	    '            Me.FilterOn = False
+202	1	    '            Me.Filter = ""
+203	1	    '        End If
+204	1	    '    End If
+205	0	    
+206	2	    Me.Filter = "[GID] = '" & Me![cboFind] & "' AND [ContactOrder] = " & Me![cboFind].Column(1)
+207	0	    Me.FilterOn = True
+208	1	    'DoCmd.GoToControl "GID"
+209	1	    'DoCmd.FindRecord Me![cboFind]
+210	0	
+211	0	End If
+212	0	
+213	0	Exit Sub
+214	0	
+215	0	err_cboFind:
+216	0	    Call General_Error_Trap
+217	0	    Exit Sub
+218	0	End Sub
+219	0	
+220	0	Private Sub cboFind_NotInList(NewData As String, response As Integer)
+221	1	'stop not in list msg loop
+222	0	On Error GoTo err_cbofindNot
+223	0	
+224	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+225	0	    response = acDataErrContinue
+226	0	    
+227	0	    Me![cboFind].Undo
+228	0	Exit Sub
+229	0	
+230	0	err_cbofindNot:
+231	0	    Call General_Error_Trap
+232	0	    Exit Sub
+233	0	End Sub
+234	0	
+235	0	Private Sub cmdMenu_Click()
+236	1	'new menu button
+237	0	On Error GoTo err_cmdMenu
+238	0	
+239	0	    DoCmd.OpenForm "Bone", acNormal
+240	0	    DoCmd.Close acForm, Me.Name
+241	0	Exit Sub
+242	0	
+243	0	err_cmdMenu:
+244	0	    Call General_Error_Trap
+245	0	    Exit Sub
+246	0	End Sub
+247	0	
+248	0	Private Sub Field135_AfterUpdate()
+249	1	'Type combo
+250	1	'changed from macro Bone.update type
+251	1	'new version 2.2 season 2006, make description 1 and 2 combos dependant on type selected here
+252	0	On Error GoTo err135
+253	0	Dim val
+254	0	
+255	0	    If Me![Field135] <> "" Then
+256	0	        val = CInt(Me![Field135])
+257	0	        
+258	0	        Select Case val
+259	0	        Case 1
+260	0	            Me![Description 1].RowSource = "SELECT Fauna_Code_Bone_Contact_Type1_Desc1.code, Fauna_Code_Bone_Contact_Type1_Desc1.[text equivalent] FROM Fauna_Code_Bone_Contact_Type1_Desc1; "
+261	0	            Me![Description 2].RowSource = "SELECT Fauna_Code_Bone_Contact_Type1_Desc2.code, Fauna_Code_Bone_Contact_Type1_Desc2.[text equivalent] FROM Fauna_Code_Bone_Contact_Type1_Desc2; "
+262	0	        Case 2
+263	0	            Me![Description 1].RowSource = "SELECT Fauna_Code_Bone_Contact_Type2_Desc1.code, Fauna_Code_Bone_Contact_Type2_Desc1.[text equivalent] FROM Fauna_Code_Bone_Contact_Type2_Desc1; "
+264	0	            Me![Description 2].RowSource = "SELECT Fauna_Code_Bone_Contact_Type2_Desc2.code, Fauna_Code_Bone_Contact_Type2_Desc2.[text equivalent] FROM Fauna_Code_Bone_Contact_Type2_Desc2; "
+265	0	        Case 3
+266	0	            Me![Description 1].RowSource = "SELECT Fauna_Code_Bone_Contact_Type3_Desc1.code, Fauna_Code_Bone_Contact_Type3_Desc1.[text equivalent] FROM Fauna_Code_Bone_Contact_Type3_Desc1; "
+267	0	            Me![Description 2].RowSource = "SELECT Fauna_Code_Bone_Contact_Type3_Desc2.code, Fauna_Code_Bone_Contact_Type3_Desc2.[text equivalent] FROM Fauna_Code_Bone_Contact_Type3_Desc2; "
+268	0	        Case 4
+269	0	            Me![Description 1].RowSource = "SELECT Fauna_Code_Bone_Contact_Type4_Desc1.code, Fauna_Code_Bone_Contact_Type4_Desc1.[text equivalent] FROM Fauna_Code_Bone_Contact_Type4_Desc1; "
+270	0	            Me![Description 2].RowSource = "SELECT Fauna_Code_Bone_Contact_Type4_Desc2.code, Fauna_Code_Bone_Contact_Type4_Desc2.[text equivalent] FROM Fauna_Code_Bone_Contact_Type4_Desc2; "
+271	0	        Case 5
+272	0	            Me![Description 1].RowSource = "SELECT Fauna_Code_Bone_Contact_Type5_Desc1.code, Fauna_Code_Bone_Contact_Type5_Desc1.[text equivalent] FROM Fauna_Code_Bone_Contact_Type5_Desc1; "
+273	0	            Me![Description 2].RowSource = "SELECT Fauna_Code_Bone_Contact_Type5_Desc2.code, Fauna_Code_Bone_Contact_Type5_Desc2.[text equivalent] FROM Fauna_Code_Bone_Contact_Type5_Desc2; "
+274	0	        End Select
+275	0	    End If
+276	0	
+277	0	
+278	0	Exit Sub
+279	0	
+280	0	err135:
+281	0	    Call General_Error_Trap
+282	0	    Exit Sub
+283	0	End Sub
+284	0	
+285	0	Private Sub Find_number_AfterUpdate()
+286	1	' added here 2006
+287	0	Call UpdateGID
+288	0	End Sub
+289	0	
+290	0	Private Sub Form_Current()
+291	1	'Type combo
+292	1	'changed from macro Bone.update type
+293	1	'new version 2.2 season 2006, make description 1 and 2 combos dependant on type selected here
+294	0	On Error GoTo err_current
+295	0	Dim val
+296	0	
+297	0	    If Me![Field135] <> "" Then
+298	0	        val = CInt(Me![Field135])
+299	0	        
+300	0	        Select Case val
+301	0	        Case 1
+302	0	            Me![Description 1].RowSource = "SELECT Fauna_Code_Bone_Contact_Type1_Desc1.code, Fauna_Code_Bone_Contact_Type1_Desc1.[text equivalent] FROM Fauna_Code_Bone_Contact_Type1_Desc1; "
+303	0	            Me![Description 2].RowSource = "SELECT Fauna_Code_Bone_Contact_Type1_Desc2.code, Fauna_Code_Bone_Contact_Type1_Desc2.[text equivalent] FROM Fauna_Code_Bone_Contact_Type1_Desc2; "
+304	0	        Case 2
+305	0	            Me![Description 1].RowSource = "SELECT Fauna_Code_Bone_Contact_Type2_Desc1.code, Fauna_Code_Bone_Contact_Type2_Desc1.[text equivalent] FROM Fauna_Code_Bone_Contact_Type2_Desc1; "
+306	0	            Me![Description 2].RowSource = "SELECT Fauna_Code_Bone_Contact_Type2_Desc2.code, Fauna_Code_Bone_Contact_Type2_Desc2.[text equivalent] FROM Fauna_Code_Bone_Contact_Type2_Desc2; "
+307	0	        Case 3
+308	0	            Me![Description 1].RowSource = "SELECT Fauna_Code_Bone_Contact_Type3_Desc1.code, Fauna_Code_Bone_Contact_Type3_Desc1.[text equivalent] FROM Fauna_Code_Bone_Contact_Type3_Desc1; "
+309	0	            Me![Description 2].RowSource = "SELECT Fauna_Code_Bone_Contact_Type3_Desc2.code, Fauna_Code_Bone_Contact_Type3_Desc2.[text equivalent] FROM Fauna_Code_Bone_Contact_Type3_Desc2; "
+310	0	        Case 4
+311	0	            Me![Description 1].RowSource = "SELECT Fauna_Code_Bone_Contact_Type4_Desc1.code, Fauna_Code_Bone_Contact_Type4_Desc1.[text equivalent] FROM Fauna_Code_Bone_Contact_Type4_Desc1; "
+312	0	            Me![Description 2].RowSource = "SELECT Fauna_Code_Bone_Contact_Type4_Desc2.code, Fauna_Code_Bone_Contact_Type4_Desc2.[text equivalent] FROM Fauna_Code_Bone_Contact_Type4_Desc2; "
+313	0	        Case 5
+314	0	            Me![Description 1].RowSource = "SELECT Fauna_Code_Bone_Contact_Type5_Desc1.code, Fauna_Code_Bone_Contact_Type5_Desc1.[text equivalent] FROM Fauna_Code_Bone_Contact_Type5_Desc1; "
+315	0	            Me![Description 2].RowSource = "SELECT Fauna_Code_Bone_Contact_Type5_Desc2.code, Fauna_Code_Bone_Contact_Type5_Desc2.[text equivalent] FROM Fauna_Code_Bone_Contact_Type5_Desc2; "
+316	0	        End Select
+317	0	    End If
+318	0	
+319	0	
+320	0	Exit Sub
+321	0	
+322	0	err_current:
+323	0	    Call General_Error_Trap
+324	0	    Exit Sub
+325	0	End Sub
+326	0	
+327	0	Private Sub Letter_code_AfterUpdate()
+328	1	' added here 2006
+329	0	Call UpdateGID
+330	0	End Sub
+331	0	
+332	0	Private Sub Unit_number_AfterUpdate()
+333	1	' originally on got focus was called macro: Bone.Update contact Unit and GID
+334	1	' this translated into code and call moved to here
+335	0	Call UpdateGID
+336	0	
+337	0	End Sub
+338	0	

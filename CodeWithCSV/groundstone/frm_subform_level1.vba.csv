@@ -1,0 +1,685 @@
+1	0	Option Compare Database
+2	0	
+3	0	Private Sub cboDegreeBurning_Change()
+4	0	On Error GoTo err_changeDegreeBurning
+5	0	Dim strText As String
+6	0	
+7	0	strText = Nz(Me.cboDegreeBurning.Text, "")
+8	0	
+9	0	If Len(strText) > 0 Then
+10	0	
+11	4	   Me.cboDegreeBurning.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Degree of Burning] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+12	0	Else
+13	0	    Me.cboDegreeBurning.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Degree of Burning] ORDER BY ScreenOrder"
+14	0	End If
+15	0	
+16	0	Me.cboDegreeBurning.Dropdown
+17	0	
+18	0	Exit Sub
+19	0	
+20	0	err_changeDegreeBurning:
+21	0	    Call General_Error_Trap
+22	0	    Exit Sub
+23	0	End Sub
+24	0	
+25	0	Private Sub cboDegreeBurning_Enter()
+26	0	On Error GoTo err_EnterDegreeBurning
+27	0	    Me.cboDegreeBurning.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Degree of Burning] ORDER BY ScreenOrder"
+28	0	    Me.cboDegreeBurning.Dropdown
+29	0	Exit Sub
+30	0	
+31	0	err_EnterDegreeBurning:
+32	0	    Call General_Error_Trap
+33	0	    Exit Sub
+34	0	End Sub
+35	0	
+36	0	Private Sub cboDegreeBurning_KeyDown(KeyCode As Integer, Shift As Integer)
+37	0	On Error GoTo err_KeyDownDegreeBurning
+38	0	    Me.cboDegreeBurning.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Degree of Burning] ORDER BY ScreenOrder"
+39	0	    Me.cboDegreeBurning.Dropdown
+40	0	Exit Sub
+41	0	
+42	0	err_KeyDownDegreeBurning:
+43	0	    Call General_Error_Trap
+44	0	    Exit Sub
+45	0	End Sub
+46	0	
+47	0	Private Sub cboGeologicalCategory_Change()
+48	0	On Error GoTo err_changeGeologicalCategory
+49	0	Dim strText As String
+50	0	
+51	0	strText = Nz(Me.cboGeologicalCategory.Text, "")
+52	0	
+53	0	If Len(strText) > 0 Then
+54	0	
+55	4	   Me.cboGeologicalCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Geological Category] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+56	0	Else
+57	0	    Me.cboGeologicalCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Geological Category] ORDER BY ScreenOrder"
+58	0	End If
+59	0	
+60	0	Me.cboGeologicalCategory.Dropdown
+61	0	
+62	0	Exit Sub
+63	0	
+64	0	err_changeGeologicalCategory:
+65	0	    Call General_Error_Trap
+66	0	    Exit Sub
+67	0	End Sub
+68	0	
+69	0	Private Sub cboGeologicalCategory_Enter()
+70	0	On Error GoTo err_EnterGeologicalCategory
+71	0	    Me.cboGeologicalCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Geological Category] ORDER BY ScreenOrder"
+72	0	    Me.cboGeologicalCategory.Dropdown
+73	0	Exit Sub
+74	0	
+75	0	err_EnterGeologicalCategory:
+76	0	    Call General_Error_Trap
+77	0	    Exit Sub
+78	0	End Sub
+79	0	
+80	0	Private Sub cboGeologicalCategory_KeyDown(KeyCode As Integer, Shift As Integer)
+81	0	On Error GoTo err_KeyDownGeologicalCategory
+82	0	    Me.cboGeologicalCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Geological Category] ORDER BY ScreenOrder"
+83	0	    Me.cboGeologicalCategory.Dropdown
+84	0	Exit Sub
+85	0	
+86	0	err_KeyDownGeologicalCategory:
+87	0	    Call General_Error_Trap
+88	0	    Exit Sub
+89	0	End Sub
+90	0	
+91	0	Private Sub cboGrObjectCategory_Change()
+92	0	On Error GoTo err_changeGrObjectCategory
+93	0	Dim strText As String
+94	0	
+95	0	strText = Nz(Me.cboGrObjectCategory.Text, "")
+96	0	
+97	0	If Len(strText) > 0 Then
+98	0	
+99	4	   Me.cboGrObjectCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Object Category] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+100	0	Else
+101	0	    Me.cboGrObjectCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Object Category] ORDER BY ScreenOrder"
+102	0	End If
+103	0	
+104	0	Me.cboGrObjectCategory.Dropdown
+105	0	
+106	0	Exit Sub
+107	0	
+108	0	err_changeGrObjectCategory:
+109	0	    Call General_Error_Trap
+110	0	    Exit Sub
+111	0	
+112	0	End Sub
+113	0	
+114	0	Private Sub cboGrObjectCategory_Enter()
+115	0	On Error GoTo err_EnterGrObjectCategory
+116	0	    Me.cboGrObjectCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Object Category] ORDER BY ScreenOrder"
+117	0	    Me.cboGrObjectCategory.Dropdown
+118	0	Exit Sub
+119	0	
+120	0	err_EnterGrObjectCategory:
+121	0	    Call General_Error_Trap
+122	0	    Exit Sub
+123	0	End Sub
+124	0	
+125	0	Private Sub cboGrObjectCategory_KeyDown(KeyCode As Integer, Shift As Integer)
+126	0	On Error GoTo err_KeyDownGrObjectCategory
+127	0	    Me.cboGrObjectCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Object Category] ORDER BY ScreenOrder"
+128	0	    Me.cboGrObjectCategory.Dropdown
+129	0	Exit Sub
+130	0	
+131	0	err_KeyDownGrObjectCategory:
+132	0	    Call General_Error_Trap
+133	0	    Exit Sub
+134	0	End Sub
+135	0	
+136	0	Private Sub cboLettercode_AfterUpdate()
+137	0	Dim checkLevel1, checkLevel2, checkOldGST
+138	0	Dim ctl As Control
+139	1	'update the GID
+140	0	On Error GoTo err_lc
+141	0	
+142	0	If Me![Lettercode] <> "K" And Me![Lettercode] <> "X" Then
+143	0	    MsgBox "Are you sure you want to assign the Letter Code " & Me![Lettercode] & "?"
+144	0	End If
+145	0	
+146	0	    Me![GID] = Me![Unit] & "." & Me![Lettercode] & Me![FindNumber]
+147	0	
+148	1	' if GID is complete, check for duplicates in Level1 and Level2
+149	0	If Me![Unit] <> "" And Me![Lettercode] <> "" And Me![FindNumber] <> "" Then
+150	1	    'check that GID not exists
+151	2	    checkLevel1 = DLookup("[GID]", "[dbo_Groundstone Level 1_2014]", "[GID] = '" & Me![GID] & "'")
+152	2	    checkLevel2 = DLookup("[GID]", "[dbo_Groundstone Level 2_2014]", "[GID] = '" & Me![GID] & "'")
+153	2	    checkOldGST = DLookup("[GID]", "[GroundStone: Basic_Data]", "[GID] = '" & Me![GID] & "'")
+154	0	    
+155	0	    If Not IsNull(checkLevel1) Then
+156	0	        MsgBox "GID Number " & Me![GID] & " already exists in Level 1 table.", vbExclamation, "Duplicate GID Number"
+157	0	        
+158	0	        If Not IsNull(Me![Lettercode].OldValue) Then
+159	1	            'return field to old value if there was one
+160	0	            Me![Unit] = Me![Lettercode].OldValue
+161	0	        Else
+162	1	            'oh the joys, to keep the focus on unit have to flip to year then back
+163	1	            'otherwise if will ignore you and go straight to year - dont believe me, comment out the gotocontrol year then!
+164	0	            DoCmd.GoToControl "GID"
+165	0	            DoCmd.GoToControl "Unit"
+166	0	            Me![Unit].SetFocus
+167	0	            DoCmd.RunCommand acCmdUndo
+168	0	        End If
+169	0	    ElseIf Not IsNull(checkLevel2) Then
+170	0	    MsgBox "GID Number " & Me![GID] & " already exists in Level 2 table.", vbExclamation, "Duplicate GID Number"
+171	0	        
+172	0	        If Not IsNull(Me![Lettercode].OldValue) Then
+173	1	            'return field to old value if there was one
+174	0	            Me![Unit] = Me![Lettercode].OldValue
+175	0	        Else
+176	1	            'oh the joys, to keep the focus on unit have to flip to year then back
+177	1	            'otherwise if will ignore you and go straight to year - dont believe me, comment out the gotocontrol year then!
+178	0	            DoCmd.GoToControl "GID"
+179	0	            DoCmd.GoToControl "Unit"
+180	0	            Me![Unit].SetFocus
+181	0	            DoCmd.RunCommand acCmdUndo
+182	0	        End If
+183	0	    Else
+184	1	        'the number does not exist so allow rest of data entry (except the fields from Exca)
+185	1	        'unlock all fields - CE June 2014
+186	0	        For Each ctl In Me.Controls
+187	0	            If (ctl.ControlType = acTextBox Or ctl.ControlType = acComboBox) Then
+188	0	                ctl.Locked = False
+189	0	            End If
+190	0	        Next ctl
+191	1	        'if GID is in old Groundstone DB just give a warning, but dont disable entry
+192	0	        If Not IsNull(checkOldGST) Then
+193	0	            MsgBox "GID Number " & Me![GID] & " already exists in the Old Groundstone table. Make sure you know what you are doing.", vbInformation, "Duplicate GID Number"
+194	0	        End If
+195	0	    End If
+196	0	End If
+197	0	
+198	0	Exit Sub
+199	0	
+200	0	err_lc:
+201	0	    Call General_Error_Trap
+202	0	    Exit Sub
+203	0	End Sub
+204	0	
+205	0	Private Sub cboPrimaryObject_Change()
+206	0	On Error GoTo err_changePrimaryObject
+207	0	Dim strText As String
+208	0	
+209	0	strText = Nz(Me.cboPrimaryObject.Text, "")
+210	0	
+211	0	If Len(strText) > 0 Then
+212	0	
+213	4	   Me.cboPrimaryObject.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Object Category Detail] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+214	0	Else
+215	0	    Me.cboPrimaryObject.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Object Category Detail] ORDER BY ScreenOrder"
+216	0	End If
+217	0	
+218	0	Me.cboPrimaryObject.Dropdown
+219	0	
+220	0	Exit Sub
+221	0	
+222	0	err_changePrimaryObject:
+223	0	    Call General_Error_Trap
+224	0	    Exit Sub
+225	0	End Sub
+226	0	
+227	0	Private Sub cboPrimaryObject_Enter()
+228	0	On Error GoTo err_EnterPrimaryObject
+229	0	    Me.cboPrimaryObject.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Object Category Detail] ORDER BY ScreenOrder"
+230	0	    Me.cboPrimaryObject.Dropdown
+231	0	Exit Sub
+232	0	
+233	0	err_EnterPrimaryObject:
+234	0	    Call General_Error_Trap
+235	0	    Exit Sub
+236	0	End Sub
+237	0	
+238	0	Private Sub cboPrimaryObject_KeyDown(KeyCode As Integer, Shift As Integer)
+239	0	On Error GoTo err_KeyDownPrimaryObject
+240	0	    Me.cboPrimaryObject.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Object Category Detail] ORDER BY ScreenOrder"
+241	0	    Me.cboPrimaryObject.Dropdown
+242	0	Exit Sub
+243	0	
+244	0	err_KeyDownPrimaryObject:
+245	0	    Call General_Error_Trap
+246	0	    Exit Sub
+247	0	End Sub
+248	0	
+249	0	Private Sub cboRawMaterial_Change()
+250	0	On Error GoTo err_changeRawMaterial
+251	0	Dim strText As String
+252	0	
+253	0	strText = Nz(Me.cboRawMaterial.Text, "")
+254	0	
+255	0	If Len(strText) > 0 Then
+256	0	
+257	4	   Me.cboRawMaterial.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Raw Material] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+258	0	Else
+259	0	    Me.cboRawMaterial.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Raw Material] ORDER BY ScreenOrder"
+260	0	End If
+261	0	
+262	0	Me.cboRawMaterial.Dropdown
+263	0	
+264	0	Exit Sub
+265	0	
+266	0	err_changeRawMaterial:
+267	0	    Call General_Error_Trap
+268	0	    Exit Sub
+269	0	End Sub
+270	0	
+271	0	Private Sub cboRawMaterial_Enter()
+272	0	On Error GoTo err_EnterRawMaterial
+273	0	    Me.cboRawMaterial.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Raw Material] ORDER BY ScreenOrder"
+274	0	    Me.cboRawMaterial.Dropdown
+275	0	Exit Sub
+276	0	
+277	0	err_EnterRawMaterial:
+278	0	    Call General_Error_Trap
+279	0	    Exit Sub
+280	0	End Sub
+281	0	
+282	0	Private Sub cboRawMaterial_KeyDown(KeyCode As Integer, Shift As Integer)
+283	0	On Error GoTo err_KeyDownRawMaterial
+284	0	    Me.cboRawMaterial.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Raw Material] ORDER BY ScreenOrder"
+285	0	    Me.cboRawMaterial.Dropdown
+286	0	Exit Sub
+287	0	
+288	0	err_KeyDownRawMaterial:
+289	0	    Call General_Error_Trap
+290	0	    Exit Sub
+291	0	End Sub
+292	0	
+293	0	Private Sub cboResidueType_Change()
+294	0	On Error GoTo err_changeResidueType
+295	0	Dim strText As String
+296	0	
+297	0	strText = Nz(Me.cboResidueType.Text, "")
+298	0	
+299	0	If Len(strText) > 0 Then
+300	0	
+301	4	   Me.cboResidueType.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Residue Type] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+302	0	Else
+303	0	    Me.cboResidueType.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Residue Type] ORDER BY ScreenOrder"
+304	0	End If
+305	0	
+306	0	Me.cboResidueType.Dropdown
+307	0	
+308	0	Exit Sub
+309	0	
+310	0	err_changeResidueType:
+311	0	    Call General_Error_Trap
+312	0	    Exit Sub
+313	0	End Sub
+314	0	
+315	0	Private Sub cboResidueType_Enter()
+316	0	On Error GoTo err_EnterResidueType
+317	0	    Me.cboResidueType.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Residue Type] ORDER BY ScreenOrder"
+318	0	    Me.cboResidueType.Dropdown
+319	0	Exit Sub
+320	0	
+321	0	err_EnterResidueType:
+322	0	    Call General_Error_Trap
+323	0	    Exit Sub
+324	0	End Sub
+325	0	
+326	0	Private Sub cboResidueType_KeyDown(KeyCode As Integer, Shift As Integer)
+327	0	On Error GoTo err_KeyDownResidueType
+328	0	    Me.cboResidueType.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Residue Type] ORDER BY ScreenOrder"
+329	0	    Me.cboResidueType.Dropdown
+330	0	Exit Sub
+331	0	
+332	0	err_KeyDownResidueType:
+333	0	    Call General_Error_Trap
+334	0	    Exit Sub
+335	0	End Sub
+336	0	
+337	0	Private Sub cboSizeCategory_Change()
+338	0	On Error GoTo err_changeSizeCategory
+339	0	Dim strText As String
+340	0	
+341	0	strText = Nz(Me.cboSizeCategory.Text, "")
+342	0	
+343	0	If Len(strText) > 0 Then
+344	0	
+345	4	   Me.cboSizeCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Size Category] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+346	0	Else
+347	0	    Me.cboSizeCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Size Category] ORDER BY ScreenOrder"
+348	0	End If
+349	0	
+350	0	Me.cboSizeCategory.Dropdown
+351	0	
+352	0	Exit Sub
+353	0	
+354	0	err_changeSizeCategory:
+355	0	    Call General_Error_Trap
+356	0	    Exit Sub
+357	0	End Sub
+358	0	
+359	0	Private Sub cboSizeCategory_Enter()
+360	0	On Error GoTo err_EnterSizeCategory
+361	0	    Me.cboSizeCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Size Category] ORDER BY ScreenOrder"
+362	0	    Me.cboSizeCategory.Dropdown
+363	0	Exit Sub
+364	0	
+365	0	err_EnterSizeCategory:
+366	0	    Call General_Error_Trap
+367	0	    Exit Sub
+368	0	End Sub
+369	0	
+370	0	Private Sub cboSizeCategory_KeyDown(KeyCode As Integer, Shift As Integer)
+371	0	On Error GoTo err_KeyDownSizeCategory
+372	0	    Me.cboSizeCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Size Category] ORDER BY ScreenOrder"
+373	0	    Me.cboSizeCategory.Dropdown
+374	0	Exit Sub
+375	0	
+376	0	err_KeyDownSizeCategory:
+377	0	    Call General_Error_Trap
+378	0	    Exit Sub
+379	0	End Sub
+380	0	
+381	0	Private Sub cboSourceRockSizeCategory_Change()
+382	0	On Error GoTo err_changeSourceRockSizeCategory
+383	0	Dim strText As String
+384	0	
+385	0	strText = Nz(Me.cboSourceRockSizeCategory.Text, "")
+386	0	
+387	0	If Len(strText) > 0 Then
+388	0	
+389	4	   Me.cboSourceRockSizeCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Source Rock Size Categories] WHERE [TextEquivalent] like '" & strText & "%%' OR [Code] like '" & strText & "%%' ORDER BY ScreenOrder"
+390	0	Else
+391	0	    Me.cboSourceRockSizeCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Source Rock Size Categories] ORDER BY ScreenOrder"
+392	0	End If
+393	0	
+394	0	Me.cboSourceRockSizeCategory.Dropdown
+395	0	
+396	0	Exit Sub
+397	0	
+398	0	err_changeSourceRockSizeCategory:
+399	0	    Call General_Error_Trap
+400	0	    Exit Sub
+401	0	End Sub
+402	0	
+403	0	Private Sub cboSourceRockSizeCategory_Enter()
+404	0	On Error GoTo err_EnterSourceRockSizeCategory
+405	0	    Me.cboSourceRockSizeCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Source Rock Size Categories] ORDER BY ScreenOrder"
+406	0	    Me.cboSourceRockSizeCategory.Dropdown
+407	0	Exit Sub
+408	0	
+409	0	err_EnterSourceRockSizeCategory:
+410	0	    Call General_Error_Trap
+411	0	    Exit Sub
+412	0	End Sub
+413	0	
+414	0	Private Sub cboSourceRockSizeCategory_KeyDown(KeyCode As Integer, Shift As Integer)
+415	0	On Error GoTo err_KeyDownSourceRockSizeCategory
+416	0	    Me.cboSourceRockSizeCategory.RowSource = "SELECT [Code], [TextEquivalent] FROM [dbo_Groundstone LOV Source Rock Size Categories] ORDER BY ScreenOrder"
+417	0	    Me.cboSourceRockSizeCategory.Dropdown
+418	0	Exit Sub
+419	0	
+420	0	err_KeyDownSourceRockSizeCategory:
+421	0	    Call General_Error_Trap
+422	0	    Exit Sub
+423	0	End Sub
+424	0	
+425	0	Private Sub FindNumber_AfterUpdate()
+426	1	'update the GID
+427	0	On Error GoTo err_fn
+428	0	Dim checkLevel1, checkLevel2, checkOldGST
+429	0	Dim ctl As Control
+430	0	Dim retVal, inputname, sql
+431	0	
+432	0	    Me![GID] = Me![Unit] & "." & Me![Lettercode] & Me![FindNumber]
+433	0	
+434	1	' if GID is complete, check for duplicates in Level1 and Level2
+435	0	If Me![Unit] <> "" And Me![Lettercode] <> "" And Me![FindNumber] <> "" Then
+436	1	    'check that GID not exists
+437	2	    checkLevel1 = DLookup("[GID]", "[dbo_Groundstone Level 1_2014]", "[GID] = '" & Me![GID] & "'")
+438	2	    checkLevel2 = DLookup("[GID]", "[dbo_Groundstone Level 2_2014]", "[GID] = '" & Me![GID] & "'")
+439	2	    checkOldGST = DLookup("[GID]", "[GroundStone: Basic_Data]", "[GID] = '" & Me![GID] & "'")
+440	0	
+441	0	    If Not IsNull(checkLevel1) Then
+442	0	        MsgBox "GID Number " & Me![GID] & " already exists in Level 1 table.", vbExclamation, "Duplicate GID Number"
+443	0	        
+444	0	        If Not IsNull(Me![FindNumber].OldValue) Then
+445	1	            'return field to old value if there was one
+446	0	            Me![Unit] = Me![FindNumber].OldValue
+447	0	        Else
+448	1	            'oh the joys, to keep the focus on unit have to flip to year then back
+449	1	            'otherwise if will ignore you and go straight to year - dont believe me, comment out the gotocontrol year then!
+450	0	            DoCmd.GoToControl "GID"
+451	0	            DoCmd.GoToControl "Unit"
+452	0	            Me![Unit].SetFocus
+453	0	            DoCmd.RunCommand acCmdUndo
+454	0	        End If
+455	0	    ElseIf Not IsNull(checkLevel2) Then
+456	0	    MsgBox "GID Number " & Me![GID] & " already exists in Level 2 table.", vbExclamation, "Duplicate GID Number"
+457	0	        
+458	0	        If Not IsNull(Me![FindNumber].OldValue) Then
+459	1	            'return field to old value if there was one
+460	0	            Me![Unit] = Me![FindNumber].OldValue
+461	0	        Else
+462	1	            'oh the joys, to keep the focus on unit have to flip to year then back
+463	1	            'otherwise if will ignore you and go straight to year - dont believe me, comment out the gotocontrol year then!
+464	0	            DoCmd.GoToControl "GID"
+465	0	            DoCmd.GoToControl "Unit"
+466	0	            Me![Unit].SetFocus
+467	0	            DoCmd.RunCommand acCmdUndo
+468	0	        End If
+469	0	    Else
+470	1	        'the number does not exist so allow rest of data entry (except the fields from Exca)
+471	1	        'unlock all fields - CE June 2014
+472	0	        For Each ctl In Me.Controls
+473	0	            If (ctl.ControlType = acTextBox Or ctl.ControlType = acComboBox) Then
+474	0	                ctl.Locked = False
+475	0	            End If
+476	0	        Next ctl
+477	1	        'if GID is in old Groundstone DB just give a warning, but dont disable entry
+478	1	        'changed 2015 - now the initials of the user who signs an item out of the old groundstone, are fed back there
+479	0	            If Not IsNull(checkOldGST) Then
+480	1	            'MsgBox " Make sure you know what you are doing.", vbInformation, "Duplicate GID Number"
+481	0	            retVal = MsgBox("GID Number " & Me![GID] & " already exists in the Old Groundstone table. Do you want to rerecord it?", vbQuestion + vbYesNo, "GID in old Groundstone")
+482	0	            If retVal = vbYes Then
+483	0	                inputname = InputBox("Please enter your initials for singning the item out of the old groundstone DB:", "Analyst Name")
+484	0	                If inputname <> "" Then
+485	4	                    sql = "UPDATE [dbo_Groundstone: Basic_Data_Pre2013_WithReRecordingFlag] SET [ReRecorded] = '" & inputname & " " & Date & "' WHERE [GID] = '" & Me![GID] & "';"
+486	0	                    DoCmd.RunSQL sql
+487	0	                Else
+488	0	                End If
+489	0	            Else
+490	1	                'SendKeys "{ESC}"
+491	0	                Me.Undo
+492	0	            End If
+493	0	        End If
+494	0	    End If
+495	0	End If
+496	0	
+497	0	Exit Sub
+498	0	
+499	0	err_fn:
+500	0	    Call General_Error_Trap
+501	0	    Exit Sub
+502	0	End Sub
+503	0	
+504	0	Private Sub Form_BeforeInsert(Cancel As Integer)
+505	1	' added locks to disable entry of other fields until we control for duplicate GID
+506	1	' in Level 1 and Level 2 tables when new GID is added
+507	1	' we remove the locks later when we do the check after updating
+508	1	' the three fields that allow for entry: Unit, Lettercode, Fieldnumber
+509	1	' CE June 2014
+510	0	
+511	0	On Error GoTo err_fbi
+512	0	
+513	0	Dim ctl As Control
+514	1	    'lock all fields except Unit, Letter, FindNo - CE June 2014
+515	0	    For Each ctl In Me.Controls
+516	0	        If (ctl.ControlType = acTextBox Or ctl.Name = "cboAnalyst") And Not (ctl.Name = "Unit" Or ctl.Name = "Lettercode" Or ctl.Name = "FindNumber") Then
+517	0	            ctl.Locked = True
+518	0	        End If
+519	0	    Next ctl
+520	0	 Exit Sub
+521	0	
+522	0	err_fbi:
+523	0	    Call General_Error_Trap
+524	0	    Exit Sub
+525	0	End Sub
+526	0	
+527	0	Private Sub GSNo_AfterUpdate()
+528	0	Dim checkLevel1, checkLevel2
+529	0	On Error GoTo err_gsno
+530	1	' check if GSno is already in use
+531	0	
+532	1	' - not clear why the DSlookup for checkLevel1 needs string as argument
+533	2	' - but if I don't do it this way I get a type mismatch
+534	0	    
+535	0	If Me![GSNo] <> "" Then
+536	1	    'checkLevel1 = DLookup("[GSno]", "[dbo_Groundstone Level 1_2014]", "[GSno] = " & Me![GSNo])
+537	2	    checkLevel1 = DLookup("[GSno]", "[dbo_Groundstone Level 1_2014]", "[GSno] = '" & Me![GSNo] & "'")
+538	0	    checkLevel2 = DLookup("[GSno]", "[dbo_Groundstone Level 2_2014]", "[GSno] = " & Me![GSNo])
+539	3	    'checkLevel2 = DLookup("[GSno]", "[dbo_Groundstone Level 2_2014]", "[GSno] = '" & Me![GSNo] & "'")
+540	0	    
+541	0	    If Not IsNull(checkLevel1) Then
+542	0	        MsgBox "GST Number " & Me![GSNo] & " already exists in Level 1 table.", vbExclamation, "Duplicate GST Number"
+543	0	        
+544	0	        If Not IsNull(Me![GSNo].OldValue) Then
+545	1	            'return field to old value if there was one
+546	0	            Me![GSNo] = Me![GSNo].OldValue
+547	0	        Else
+548	1	            'oh the joys, to keep the focus on unit have to flip to year then back
+549	1	            'otherwise if will ignore you and go straight to year - dont believe me, comment out the gotocontrol year then!
+550	0	            DoCmd.GoToControl "cboAnalyst"
+551	0	            DoCmd.GoToControl "GSno"
+552	0	            Me![GSNo].SetFocus
+553	0	            Me![GSNo] = Null
+554	0	        End If
+555	0	    End If
+556	0	    If Not IsNull(checkLevel2) Then
+557	0	    MsgBox "GST Number " & Me![GSNo] & " already exists in Level 2 table.", vbExclamation, "Duplicate GST Number"
+558	0	        
+559	0	        If Not IsNull(Me![Unit].OldValue) Then
+560	1	            'return field to old value if there was one
+561	0	            Me![GSNo] = Me![GSNo].OldValue
+562	0	        Else
+563	1	            'oh the joys, to keep the focus on unit have to flip to year then back
+564	1	            'otherwise if will ignore you and go straight to year - dont believe me, comment out the gotocontrol year then!
+565	0	            DoCmd.GoToControl "cboAnalyst"
+566	0	            DoCmd.GoToControl "GSNo"
+567	0	            Me![GSNo].SetFocus
+568	0	            Me![GSNo] = Null
+569	0	        End If
+570	0	    End If
+571	0	End If
+572	0	Exit Sub
+573	0	
+574	0	err_gsno:
+575	0	    Call General_Error_Trap
+576	0	    Exit Sub
+577	0	End Sub
+578	0	
+579	0	Private Sub Unit_AfterUpdate()
+580	0	Dim checkLevel1, checkLevel2, checkOldGST
+581	0	Dim ctl As Control
+582	0	Dim retVal, inputname, sql
+583	0	
+584	1	'update the GID
+585	0	On Error GoTo err_unit
+586	0	
+587	0	    Me![GID] = Me![Unit] & "." & Me![Lettercode] & Me![FindNumber]
+588	0	    
+589	1	' if GID is complete, check for duplicates in Level1 and Level2
+590	0	If Me![Unit] <> "" And Me![Lettercode] <> "" And Me![FindNumber] <> "" Then
+591	1	    'check that GID not exists
+592	2	    checkLevel1 = DLookup("[GID]", "[dbo_Groundstone Level 1_2014]", "[GID] = '" & Me![GID] & "'")
+593	2	    checkLevel2 = DLookup("[GID]", "[dbo_Groundstone Level 2_2014]", "[GID] = '" & Me![GID] & "'")
+594	2	    checkOldGST = DLookup("[GID]", "[GroundStone: Basic_Data]", "[GID] = '" & Me![GID] & "'")
+595	0	    
+596	0	    If Not IsNull(checkLevel1) Then
+597	0	        MsgBox "GID Number " & Me![GID] & " already exists in Level 1 table.", vbExclamation, "Duplicate GID Number"
+598	0	        
+599	0	        If Not IsNull(Me![Unit].OldValue) Then
+600	1	            'return field to old value if there was one
+601	0	            Me![Unit] = Me![Unit].OldValue
+602	0	        Else
+603	1	            'oh the joys, to keep the focus on unit have to flip to year then back
+604	1	            'otherwise if will ignore you and go straight to year - dont believe me, comment out the gotocontrol year then!
+605	0	            DoCmd.GoToControl "GID"
+606	0	            DoCmd.GoToControl "Unit"
+607	0	            Me![Unit].SetFocus
+608	0	            DoCmd.RunCommand acCmdUndo
+609	0	        End If
+610	0	    ElseIf Not IsNull(checkLevel2) Then
+611	0	    MsgBox "GID Number " & Me![GID] & " already exists in Level 2 table.", vbExclamation, "Duplicate GID Number"
+612	0	        
+613	0	        If Not IsNull(Me![Unit].OldValue) Then
+614	1	            'return field to old value if there was one
+615	0	            Me![Unit] = Me![Unit].OldValue
+616	0	        Else
+617	1	            'oh the joys, to keep the focus on unit have to flip to year then back
+618	1	            'otherwise if will ignore you and go straight to year - dont believe me, comment out the gotocontrol year then!
+619	0	            DoCmd.GoToControl "GID"
+620	0	            DoCmd.GoToControl "Unit"
+621	0	            Me![Unit].SetFocus
+622	0	            DoCmd.RunCommand acCmdUndo
+623	0	        End If
+624	0	    Else
+625	1	        'the number does not exist so allow rest of data entry (except the fields from Exca)
+626	1	        'unlock all fields - CE June 2014
+627	0	        For Each ctl In Me.Controls
+628	0	            If (ctl.ControlType = acTextBox Or ctl.ControlType = acComboBox) Then
+629	0	                ctl.Locked = False
+630	0	            End If
+631	0	        Next ctl
+632	1	        'if GID is in old Groundstone DB just give a warning, but dont disable entry
+633	1	        'changed 2015 (DL): when signing out a previously recorded item, the initials are automatically stored
+634	0	        If Not IsNull(checkOldGST) Then
+635	1	            'MsgBox " Make sure you know what you are doing.", vbInformation, "Duplicate GID Number"
+636	0	            retVal = MsgBox("GID Number " & Me![GID] & " already exists in the Old Groundstone table. Do you want to rerecord it?", vbQuestion + vbYesNo, "GID in old Groundstone")
+637	0	            If retVal = vbYes Then
+638	0	                inputname = InputBox("Please enter your initials for singning the item out of the old groundstone DB:", "Analyst Name")
+639	0	                If inputname <> "" Then
+640	4	                    sql = "UPDATE [Groundstone: Basic_Data_Pre2013_WithReRecordingFlag] SET [ReRecorded] = '" & inputname & " " & Date & "' WHERE [GID] = '" & Me![GID] & "';"
+641	1	                    'DoCmd.RunSQL sql
+642	0	                    Debug.Print sql
+643	0	                Else
+644	0	                End If
+645	0	            Else
+646	1	                'SendKeys "{ESC}"
+647	0	                Me.Undo
+648	0	            End If
+649	0	        End If
+650	0	    End If
+651	0	End If
+652	0	
+653	0	Exit Sub
+654	0	
+655	0	err_unit:
+656	0	    Call General_Error_Trap
+657	0	    Exit Sub
+658	0	
+659	0	End Sub
+660	0	
+661	0	Private Sub Unit_DblClick(Cancel As Integer)
+662	0	
+663	0	On Error GoTo Err_cmdUnitDesc_Click
+664	0	
+665	0	If Me![Unit] <> "" Then
+666	1	    'check the unit number is in the unit desc form
+667	0	    Dim checknum, sql
+668	0	    checknum = DLookup("[Unit]", "[dbo_Groundstone: Unit Description_2014]", "[Unit] = " & Me![Unit])
+669	0	    If IsNull(checknum) Then
+670	1	        'must add the unit to the table
+671	0	        sql = "INSERT INTo [dbo_Groundstone: Unit Description_2014] ([Unit]) VALUES (" & Me![Unit] & ");"
+672	0	        DoCmd.RunSQL sql
+673	0	    End If
+674	0	    
+675	0	    DoCmd.OpenForm "Frm_GS_UnitDescription_2014", acNormal, , "[Unit] = " & Me![Unit], acFormPropertySettings
+676	0	Else
+677	0	    MsgBox "No Unit number is present, cannot open the Unit Description form", vbInformation, "No Unit Number"
+678	0	End If
+679	0	Exit Sub
+680	0	
+681	0	Err_cmdUnitDesc_Click:
+682	0	    Call General_Error_Trap
+683	0	    Exit Sub
+684	0	
+685	0	End Sub

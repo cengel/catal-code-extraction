@@ -1,0 +1,359 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	
+5	0	Private Sub addnewsample_Click()
+6	1	'create a new record for a new sample
+7	0	On Error GoTo err_addnewsample_Click
+8	0	
+9	0	DoCmd.OpenForm "Phytolith_NewSampleRegister", acNormal
+10	0	DoCmd.GoToRecord , "Phytolith_NewSampleRegister", acNewRec
+11	0	Forms![Phytolith_NewSampleRegister].Form![UnitNumber].SetFocus
+12	0	
+13	0	Exit Sub
+14	0	
+15	0	err_addnewsample_Click:
+16	0	    MsgBox "An error has occured setting up a new record, the error is as follows: " & Err.Description
+17	0	    Exit Sub
+18	0	
+19	0	End Sub
+20	0	
+21	0	Private Sub cboFindUnit_AfterUpdate()
+22	0	On Error GoTo err_cboFindUnit_AfterUpdate
+23	0	
+24	0	    If Me![cboFindUnit] <> "" Then
+25	1	         'for existing number the field with be disabled, enable it as when find num
+26	1	        'is shown the on current event will deal with disabling it again
+27	0	        If Me![UnitNumber].Enabled = False Then Me![UnitNumber].Enabled = True
+28	0	        DoCmd.GoToControl "UnitNumber"
+29	0	        DoCmd.FindRecord Me![cboFindUnit]
+30	1	        '2009 move the blank down to after the gotocontrol as code in Year_lostfocus checks
+31	1	        'for a value when the year looses it - complicated passing of focus nightmare stuff
+32	1	        'Me![cboFindUnit] = ""
+33	1	        '2009 focus will bounce on Year fld and can be easily over written to make sure stays here
+34	0	        DoCmd.GoToControl "cboFindUnit"
+35	0	        Me![cboFindUnit] = ""
+36	0	    End If
+37	0	Exit Sub
+38	0	
+39	0	err_cboFindUnit_AfterUpdate:
+40	0	    Call General_Error_Trap
+41	0	    Exit Sub
+42	0	End Sub
+43	0	
+44	0	Private Sub cboFindUnit_NotInList(NewData As String, Response As Integer)
+45	1	'stop not in list msg loop - 2009
+46	0	On Error GoTo err_cbofindNotInList
+47	0	
+48	0	    MsgBox "Sorry this Unit cannot be found in the list", vbInformation, "No Match"
+49	0	    Response = acDataErrContinue
+50	0	    
+51	0	    Me![cboFindUnit].Undo
+52	1	    '2009 if not esc the list will stay pulled down making it hard to go direct to Add new or where ever as
+53	1	    'have to escape the pull down list first
+54	0	    SendKeys "{ESC}"
+55	0	Exit Sub
+56	0	
+57	0	err_cbofindNotInList:
+58	0	    Call General_Error_Trap
+59	0	    Exit Sub
+60	0	End Sub
+61	0	
+62	0	Private Sub cmdClose_Click()
+63	0	On Error GoTo err_close
+64	0	    DoCmd.Close acForm, Me.Name
+65	0	Exit Sub
+66	0	
+67	0	err_close:
+68	0	    MsgBox "An error has occured: " & Err.Description
+69	0	End Sub
+70	0	
+71	0	
+72	0	
+73	0	Private Sub cmdExport_Click()
+74	1	'This exports the core data about the sample shown on screen to excel
+75	0	
+76	0	On Error GoTo err_cmdExport
+77	1	'DoCmd.RunCommand acCmdOutputToExcel
+78	0	DoCmd.OutputTo acOutputQuery, "Q_ExportToExcel_PhytoData_OnScreen", acFormatXLS, "PhytoData for sample " & Me![SampleID] & ".xls", True
+79	0	
+80	0	Exit Sub
+81	0	
+82	0	err_cmdExport:
+83	1	   ' Call general_error_trap
+84	0	    Exit Sub
+85	0	End Sub
+86	0	
+87	0	Private Sub cmdExportAll_Click()
+88	1	'export all core information entered into database into excel
+89	0	On Error GoTo err_cmdExportAll
+90	0	
+91	0	    DoCmd.OutputTo acOutputTable, "Phytolith_Sample_Core_Data", acFormatXLS, "All Phyto Core Data from Catal Database.xls", True
+92	0	Exit Sub
+93	0	
+94	0	err_cmdExportAll:
+95	0	    MsgBox "An error has occured, the description is: " & Err.Description
+96	0	    Exit Sub
+97	0	End Sub
+98	0	
+99	0	Private Sub cmdExportAllSamples_Click()
+100	1	'export all sample info into excel
+101	0	On Error GoTo err_cmdExportAllSamples
+102	0	
+103	0	    DoCmd.OutputTo acOutputTable, "Phytolith_Sample_Analysis_Details", acFormatXLS, "All Phyto Sample data from Catal Database.xls", True
+104	0	Exit Sub
+105	0	
+106	0	err_cmdExportAllSamples:
+107	0	    MsgBox "An error has occured, the description is: " & Err.Description
+108	0	    Exit Sub
+109	0	End Sub
+110	0	
+111	0	Private Sub cmdExportThisSample_Click()
+112	1	'export just the sample shown on screen to excel
+113	0	On Error GoTo err_cmdExport
+114	0	
+115	0	    DoCmd.OutputTo acOutputQuery, "Q_ExportToExcel_Sample_OnScreen", acFormatXLS, "Phyto Sample Data for " & Me![SampleID] & ".xls", True
+116	0	Exit Sub
+117	0	
+118	0	err_cmdExport:
+119	0	    MsgBox "An error has occured, the description is: " & Err.Description
+120	0	    Exit Sub
+121	0	End Sub
+122	0	
+123	0	Private Sub cmdReady_Click()
+124	1	'set up the phyto names for data entry
+125	0	On Error GoTo err_cmdReady
+126	0	
+127	0	If (Forms![frm_Phyto_Data_Entry].[SampleProcessYear] <> "") And (Forms![frm_Phyto_Data_Entry].[SampleNumber] <> "") Then
+128	0	
+129	0	    Dim mydb As Database, myrs As DAO.Recordset, sql, sql1
+130	0	    Set mydb = CurrentDb
+131	2	    sql = "SELECT * FROM [PhytolithLOV_PhytoNames] WHERE [PhytoName] <> '' ORDER BY [PhytoID], [PhytoMultiOrSingle]"
+132	0	    Set myrs = mydb.OpenRecordset(sql)
+133	0	
+134	0	    If Not (myrs.BOF And myrs.EOF) Then
+135	0	        myrs.MoveFirst
+136	0	        Do Until myrs.EOF
+137	0	            sql1 = "INSERT INTO [Phytolith_Sample_Analysis_Details] ([SiteCode], [SampleProcessYear], [SampleNumber], [SampleID], [SingleOrMulti], [DicotOrMonocot], [PhytoName])"
+138	12	            sql1 = sql1 & " VALUES ('" & Forms![frm_Phyto_Data_Entry].[SiteCode] & "', '" & Forms![frm_Phyto_Data_Entry].[SampleProcessYear] & "', " & Forms![frm_Phyto_Data_Entry].[SampleNumber] & ", '" & Forms![frm_Phyto_Data_Entry].[SampleID] & "', '" & myrs![PhytoMultiOrSingle] & "', '" & myrs![DicotOrMonocot] & "','" & myrs![PhytoName] & "');"
+139	0	            DoCmd.RunSQL sql1
+140	0	            myrs.MoveNext
+141	0	        Loop
+142	0	    End If
+143	0	    
+144	0	    Me![frm_sub_phyto_data].Requery
+145	0	    Me![frm_sub_phyto_data].Visible = True
+146	0	    myrs.Close
+147	0	    Set myrs = Nothing
+148	0	    mydb.Close
+149	0	    Set mydb = Nothing
+150	0	Else
+151	0	    MsgBox "Please enter the Sample Process Year and Sample Number first"
+152	0	End If
+153	0	Exit Sub
+154	0	
+155	0	err_cmdReady:
+156	0	    MsgBox "An error has occured setting up the data ready for entry. The error description is as follows: " & Err.Description, vbCritical, "Error"
+157	0	    Exit Sub
+158	0	
+159	0	End Sub
+160	0	
+161	0	Private Sub cmdRecalc_Click()
+162	1	'DoCmd.GoToControl Me![frm_sub_phyto_data].Name
+163	1	'DoCmd.GoToControl Me![frm_sub_phyto_data].Form![PhytoCount].Name
+164	0	
+165	0	
+166	0	End Sub
+167	0	
+168	0	Private Sub cmdReport_Click()
+169	1	'report the data - this sample or all
+170	0	On Error GoTo err_report
+171	0	
+172	0	    Dim retVal
+173	0	    retVal = MsgBox("Do you want to report this sample only?" & Chr(13) & Chr(13) & "Press Yes to report " & Me![txtSampleID] & " only, press No to report on ALL samples", vbYesNoCancel + vbQuestion, "Report current sample only?")
+174	0	    If retVal = vbNo Then
+175	0	        DoCmd.OpenReport "Phytolith_Sample_Analysis_Details", acViewPreview
+176	0	    ElseIf retVal = vbYes Then
+177	2	        DoCmd.OpenReport "Phytolith_Sample_Analysis_Details", acViewPreview, , "[SampleID] ='" & Me![txtSampleID] & "'"
+178	0	    End If
+179	0	Exit Sub
+180	0	
+181	0	err_report:
+182	0	    MsgBox "An error has occured: " & Err.Description
+183	0	    Exit Sub
+184	0	
+185	0	End Sub
+186	0	
+187	0	
+188	0	
+189	0	Private Sub Combo61_NotInList(NewData As String, Response As Integer)
+190	1	'allow entry of new year
+191	0	On Error GoTo err_Year_NotInList
+192	0	
+193	0	Dim retVal, sql
+194	0	
+195	0	retVal = MsgBox("This year is not in the list, are you sure you want to add it?", vbQuestion + vbYesNo, "Value not in list")
+196	0	If retVal = vbYes Then
+197	0	    Response = acDataErrAdded
+198	2	    sql = "INSERT INTO [PhytolithLOV_AnalysisYear]([AnalysisYear]) VALUES ('" & NewData & "');"
+199	0	    DoCmd.RunSQL sql
+200	2	    ''Response = acDataErrContinue
+201	1	    'DoCmd.RunCommand acCmdSaveRecord
+202	1	    'Me![SampleProcessYear].Requery
+203	0	Else
+204	0	    Response = acDataErrContinue
+205	0	End If
+206	0	
+207	0	Exit Sub
+208	0	
+209	0	err_Year_NotInList:
+210	0	    MsgBox "An error has occured: " & Err.Description
+211	0	    Exit Sub
+212	0	End Sub
+213	0	
+214	0	Private Sub Form_Current()
+215	1	'set up display depending on reason for collection
+216	0	On Error GoTo err_curr
+217	0	
+218	0	Exit Sub
+219	0	
+220	0	err_curr:
+221	0	    Call General_Error_Trap
+222	0	    Exit Sub
+223	0	End Sub
+224	0	
+225	0	
+226	0	
+227	0	
+228	0	Private Sub Befehl99_Click()
+229	0	On Error GoTo Err_Befehl99_Click
+230	0	
+231	0	
+232	0	    Screen.PreviousControl.SetFocus
+233	0	    DoCmd.RunCommand acCmdFind
+234	0	
+235	0	Exit_Befehl99_Click:
+236	0	    Exit Sub
+237	0	
+238	0	Err_Befehl99_Click:
+239	0	    MsgBox Err.Description
+240	0	    Resume Exit_Befehl99_Click
+241	0	    
+242	0	End Sub
+243	0	
+244	0	
+245	0	Private Sub GoToFull_Click()
+246	0	
+247	0	On Error GoTo Err_GoToFull_Click
+248	0	
+249	0	    Dim stDocName As String
+250	0	    Dim stLinkCriteria As String
+251	0	    Dim checknum, msg, retVal, sql, insertArea, permiss
+252	0	    
+253	0	    stDocName = "frm_Phyto_Data_Entry"
+254	0	    
+255	0	    If Not IsNull(Me![UnitNumber]) Or Me![UnitNumber] <> "" Or Not IsNull(Me![SampleNumber]) Or Me![SampleNumber] <> "" Then
+256	1	        'check that feature num does exist
+257	0	        checknum = DLookup("[FieldID]", "[Phytolith_Sample_Analysis_Details]", "[Unit] = " & Me![UnitNumber] & " AND [LabSampleNumber] = " & Me![SampleNumber])
+258	0	        If IsNull(checknum) Then
+259	1	            'number not exist - now see what permissions user has
+260	0	            Debug.Print GetGeneralPermissions
+261	0	            permiss = GetGeneralPermissions
+262	0	            If permiss = "ADMIN" Or permiss = "RW" Or permiss = "exsuper" Then
+263	2	                msg = "This Sample DOES NOT EXIST in 'Sample Details'."
+264	0	                msg = msg & Chr(13) & Chr(13) & "Would you like to enter it now?"
+265	0	                retVal = MsgBox(msg, vbInformation + vbYesNo, "Sample does not exist")
+266	0	        
+267	0	                If retVal = vbNo Then
+268	0	                    MsgBox "No sample record to view, please alert the your team leader about this.", vbExclamation, "Missing Sample Record"
+269	0	                Else
+270	1	                    'add new records behind scences
+271	0	                    sql = "INSERT INTO [Phytolith_Sample_Analysis_Details] ([Unit], [LabSampleNumber]) VALUES (" & Me![UnitNumber] & ", " & Me![SampleNumber] & ");"
+272	0	                    DoCmd.RunSQL sql
+273	0	                    DoCmd.OpenForm stDocName, acNormal, , "[Unit] = " & Me![UnitNumber] & " AND [LabSampleNumber] = " & Me![SampleNumber], acFormEdit, acDialog
+274	0	                End If
+275	0	            Else
+276	1	                'user is readonly so just tell them record not exist
+277	0	                MsgBox "Sorry but this sample record has not been added to the system yet, there is no record to view.", vbInformation, "Missing Sample Record"
+278	0	            End If
+279	0	        Else
+280	1	            'record exists - open it
+281	0	            stLinkCriteria = "[Unit] = " & Me![UnitNumber] & " AND [LabSampleNumber] = " & Me![SampleNumber]
+282	1	            'DoCmd.OpenForm stDocName, , , stLinkCriteria
+283	1	            'DoCmd.OpenForm stDocName, acNormal, , stLinkCriteria, acFormReadOnly, acDialog
+284	1	            'decided against dialog as can open other forms on the feature form and they would appear underneath it
+285	0	            DoCmd.OpenForm stDocName, acNormal, , stLinkCriteria, acFormReadOnly
+286	0	        End If
+287	0	    Else
+288	0	        MsgBox "No Sample to view", vbInformation, "No Sample Number"
+289	0	    End If
+290	0	    
+291	0	Exit_GoToFull_Click:
+292	0	    Exit Sub
+293	0	
+294	0	
+295	0	Err_GoToFull_Click:
+296	0	    Call General_Error_Trap
+297	0	    Resume Exit_GoToFull_Click
+298	0	
+299	0	End Sub
+300	0	
+301	0	Private Sub GoToSample_Click()
+302	0	On Error GoTo Err_GoToSample_Click
+303	0	
+304	0	    Dim stDocName As String
+305	0	    Dim stLinkCriteria As String
+306	0	    Dim checknum, msg, retVal, sql, insertArea, permiss
+307	0	    Dim priorization
+308	0	    
+309	0	    stDocName = "frm_Phyto_FieldAnalysis"
+310	0	    
+311	0	    If Not IsNull(Me![UnitNumber]) Or Me![UnitNumber] <> "" Or Not IsNull(Me![SampleNumber]) Or Me![SampleNumber] <> "" Then
+312	1	        'check that feature num does exist
+313	0	        checknum = DLookup("[FieldID]", "[Phytolith_FieldAnalysis]", "[Unit] = " & Me![UnitNumber] & " AND [SampleNumber] = " & Me![SampleNumber])
+314	0	        If IsNull(checknum) Then
+315	1	            'number not exist - now see what permissions user has
+316	0	            Debug.Print GetGeneralPermissions
+317	0	            permiss = GetGeneralPermissions
+318	0	            If permiss = "ADMIN" Or permiss = "RW" Or permiss = "exsuper" Then
+319	2	                msg = "This Sample DOES NOT EXIST in 'Sample Details'."
+320	0	                msg = msg & Chr(13) & Chr(13) & "Would you like to enter it now?"
+321	0	                retVal = MsgBox(msg, vbInformation + vbYesNo, "Sample does not exist")
+322	0	        
+323	0	                If retVal = vbNo Then
+324	0	                    MsgBox "No sample record to view, please alert the your team leader about this.", vbExclamation, "Missing Sample Record"
+325	0	                Else
+326	1	                    'add new records behind scences
+327	0	                    If Me![priorityunit] = True Then
+328	0	                        priorization = "Priority Tour"
+329	0	                    Else
+330	0	                        priorization = ""
+331	0	                    End If
+332	4	                    sql = "INSERT INTO [Phytolith_FieldAnalysis] ([Unit], [SampleLetter], [SampleNumber], [CheckReason]) VALUES (" & Me![UnitNumber] & ", 's', " & Me![SampleNumber] & ", '" & priorization & "');"
+333	0	                    DoCmd.RunSQL sql
+334	0	                    DoCmd.OpenForm stDocName, acNormal, , "[Unit] = " & Me![UnitNumber] & " AND [SampleNumber] = " & Me![SampleNumber]
+335	0	                End If
+336	0	            Else
+337	1	                'user is readonly so just tell them record not exist
+338	0	                MsgBox "Sorry but this sample record has not been added to the system yet, there is no record to view.", vbInformation, "Missing Sample Record"
+339	0	            End If
+340	0	        Else
+341	1	            'record exists - open it
+342	0	            stLinkCriteria = "[Unit] = " & Me![UnitNumber] & " AND [SampleNumber] = " & Me![SampleNumber]
+343	1	            'DoCmd.OpenForm stDocName, , , stLinkCriteria
+344	1	            'DoCmd.OpenForm stDocName, acNormal, , stLinkCriteria, acFormReadOnly, acDialog
+345	1	            'decided against dialog as can open other forms on the feature form and they would appear underneath it
+346	0	            DoCmd.OpenForm stDocName, acNormal, , stLinkCriteria
+347	0	        End If
+348	0	    Else
+349	0	        MsgBox "No Sample to view", vbInformation, "No Sample Number"
+350	0	    End If
+351	0	    
+352	0	Exit_GoToSample_Click:
+353	0	    Exit Sub
+354	0	
+355	0	
+356	0	Err_GoToSample_Click:
+357	0	    Call General_Error_Trap
+358	0	    Resume Exit_GoToSample_Click
+359	0	End Sub

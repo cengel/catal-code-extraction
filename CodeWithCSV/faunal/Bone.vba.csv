@@ -1,0 +1,160 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdBackup_Click()
+5	1	'saj new to help faunal team take backups in case of central failure
+6	0	On Error GoTo err_backup
+7	0	
+8	0	Dim db As Database, nwname, msg, retVal, thepath
+9	0	
+10	1	'thepath = left(currentdb.Name,
+11	0	
+12	0	msg = "This facility allows you to take a local backup of the Faunal data. " & Chr(13) & Chr(13)
+13	1	'msg = msg & "At present this database can only be saved into the same directory as the current file which is: " & Chr(13) & Chr(13) & CurrentDb.Name & Chr(13) & Chr(13)
+14	0	msg = msg & "At present this database can only be saved into the same directory as the current file which is: " & Chr(13) & Chr(13) & "C:\Documents and Settings\All Users\Desktop\new database files" & Chr(13) & Chr(13)
+15	0	msg = msg & "You can name the database whatever you like by overtyping the default entry in the next box."
+16	0	MsgBox msg, vbInformation, "Backup Utility"
+17	0	
+18	0	nwname = InputBox("Backup Database Name:", "Database Name", "Catal_Fauna_Data_Backup_" & Format(Date, "ddmmmyy") & ".mdb")
+19	0	
+20	0	If nwname <> "" Then
+21	0	    If InStr(nwname, ".mdb") = 0 Then
+22	0	        nwname = nwname & ".mdb"
+23	0	    End If
+24	0	
+25	0	    nwname = "C:\Documents and Settings\All Users\Desktop\new database files\" & nwname
+26	0	    
+27	0	    If Dir(nwname) <> "" Then
+28	0	        retVal = MsgBox("A database of this name already exists, this process will overwrite this file. Proceed anyway?", vbCritical + vbYesNo, "Overwrite Warning")
+29	0	        If retVal = vbNo Then
+30	0	            Exit Sub
+31	0	        Else
+32	1	            Kill nwname 'kill any of same name
+33	0	        End If
+34	0	    End If
+35	0	
+36	1	    'create database of new name
+37	0	    Set db = Workspaces(0).CreateDatabase(nwname, dbLangGeneral)
+38	1	    'DoCmd.TransferDatabase acExport, "Microsoft Access", nwname, acTable, "Fauna_Bone_Faunal_Unit_Description", "Fauna_Bone_Faunal_Unit_Description", False
+39	0	    
+40	1	    'DoCmd.CopyObject nwname, "Fauna_Bone_Faunal_Unit_Description", acTable, "Fauna_Bone_Faunal_Unit_Description"
+41	0	
+42	1	    'now copy each table
+43	0	    DoCmd.Hourglass True
+44	0	    Me![txtMsg].Visible = True
+45	0	    Me![txtMsg] = "Backing up table:  Fauna_Bone_Basic_Faunal_Data"
+46	2	    DoCmd.RunSQL "SELECT Fauna_Bone_Basic_Faunal_Data.* INTO Fauna_Bone_Basic_Faunal_Data IN '" & nwname & "' FROM Fauna_Bone_Basic_Faunal_Data;"
+47	0	    Me![txtMsg] = "Backing up table:  Fauna_Bone_Faunal_Unit_Description"
+48	2	    DoCmd.RunSQL "SELECT Fauna_Bone_Faunal_Unit_Description.* INTO Fauna_Bone_Faunal_Unit_Description IN '" & nwname & "' FROM Fauna_Bone_Faunal_Unit_Description;"
+49	0	    Me![txtMsg] = "Backing up table:  Fauna_Bone_Short_Faunal_Description"
+50	2	    DoCmd.RunSQL "SELECT Fauna_Bone_Short_Faunal_Description.* INTO Fauna_Bone_Short_Faunal_Description IN '" & nwname & "' FROM Fauna_Bone_Short_Faunal_Description;"
+51	0	    Me![txtMsg] = "Backing up table:  Fauna_Bone_Cranial"
+52	2	    DoCmd.RunSQL "SELECT Fauna_Bone_Cranial.* INTO Fauna_Bone_Cranial IN '" & nwname & "' FROM Fauna_Bone_Cranial;"
+53	0	    Me![txtMsg] = "Backing up table:  Fauna_Bone_Postcranial"
+54	2	    DoCmd.RunSQL "SELECT Fauna_Bone_Postcranial.* INTO Fauna_Bone_Postcranial IN '" & nwname & "' FROM Fauna_Bone_Postcranial;"
+55	0	    Me![txtMsg] = "Backing up table:  Fauna_Bone_Measurements"
+56	2	    DoCmd.RunSQL "SELECT Fauna_Bone_Measurements.* INTO Fauna_Bone_Measurements IN '" & nwname & "' FROM Fauna_Bone_Measurements;"
+57	0	    Me![txtMsg] = "Backing up table:  Fauna_Bone_Modification"
+58	2	    DoCmd.RunSQL "SELECT Fauna_Bone_Modification.* INTO Fauna_Bone_Modification IN '" & nwname & "' FROM Fauna_Bone_Modification;"
+59	0	    Me![txtMsg] = "Backing up table:  Fauna_Bone_Artifacts"
+60	2	    DoCmd.RunSQL "SELECT Fauna_Bone_Artifacts.* INTO Fauna_Bone_Artifacts IN '" & nwname & "' FROM Fauna_Bone_Artifacts;"
+61	0	    Me![txtMsg] = "Backing up table:  Fauna_Bone_Contact"
+62	2	    DoCmd.RunSQL "SELECT Fauna_Bone_Contact.* INTO Fauna_Bone_Contact IN '" & nwname & "' FROM Fauna_Bone_Contact;"
+63	0	    Me![txtMsg] = "Backup completed to: " & db.Name
+64	0	    
+65	0	    retVal = MsgBox("Do you want to also backup all the code tables (there are 106 of them)?", vbQuestion + vbYesNo, "Backup Code Tables this time?")
+66	0	    If retVal = vbYes Then
+67	0	        Dim I, mydb As DAO.Database
+68	0	        Set mydb = CurrentDb
+69	0	        Dim tmptable As TableDef
+70	1	        For I = 0 To mydb.TableDefs.Count - 1 'loop the tables collection
+71	0	            Set tmptable = mydb.TableDefs(I)
+72	0	             
+73	0	            If InStr(LCase(tmptable.Name), "code") <> 0 Then
+74	0	                Me![txtMsg] = "Backing up table:  " & tmptable.Name
+75	2	                DoCmd.RunSQL "SELECT [" & tmptable.Name & "].* INTO [" & tmptable.Name & "] IN '" & nwname & "' FROM [" & tmptable.Name & "];"
+76	0	            End If
+77	0	            
+78	0	        Next I
+79	0	        Set tmptable = Nothing
+80	0	        Set mydb = Nothing
+81	0	    End If
+82	0	    db.Close
+83	0	    Set db = Nothing
+84	0	    
+85	0	    DoCmd.Hourglass False
+86	0	    MsgBox "Backup completed to " & nwname & " on " & Now()
+87	0	    Me![txtMsg].Visible = False
+88	0	Else
+89	0	    MsgBox "Sorry this facility cannot run without a backup file name being entered. Please try again.", vbInformation, "Operation Cancelled"
+90	0	End If
+91	0	Exit Sub
+92	0	
+93	0	err_backup:
+94	0	    DoCmd.Hourglass False
+95	0	    Me![txtMsg] = "Back up failed"
+96	0	    Call General_Error_Trap
+97	0	    Exit Sub
+98	0	End Sub
+99	0	
+100	0	Private Sub cmdQuit_Click()
+101	1	'new for version 1
+102	0	On Error GoTo err_cmdQuit
+103	0	    DoCmd.Quit acQuitSaveAll
+104	0	Exit Sub
+105	0	
+106	0	err_cmdQuit:
+107	0	    Call General_Error_Trap
+108	0	    Exit Sub
+109	0	End Sub
+110	0	
+111	0	Private Sub cmdQuit2_Click()
+112	0	Call cmdQuit_Click
+113	0	
+114	0	End Sub
+115	0	
+116	0	Private Sub cranial_button_Click()
+117	1	' This used to call macro Bone.cranial button
+118	2	' Had to be translated to ensure form opened with property settings = can't add new records
+119	1	' Season 2006
+120	0	On Error GoTo err_cranial
+121	0	
+122	0	    DoCmd.OpenForm "Fauna_Bone_Cranial", acNormal, , , acFormPropertySettings
+123	0	
+124	0	Exit Sub
+125	0	
+126	0	err_cranial:
+127	0	    Call General_Error_Trap
+128	0	    Exit Sub
+129	0	End Sub
+130	0	
+131	0	Private Sub postcranial_button_Click()
+132	1	' This used to call macro Bone.postcranial button
+133	2	' Had to be translated to ensure form opened with property settings = can't add new records
+134	1	' Season 2006
+135	0	On Error GoTo err_postcranial
+136	0	
+137	0	    DoCmd.OpenForm "Fauna_Bone_PostCranial", acNormal, , , acFormPropertySettings
+138	0	
+139	0	Exit Sub
+140	0	
+141	0	err_postcranial:
+142	0	    Call General_Error_Trap
+143	0	    Exit Sub
+144	0	
+145	0	End Sub
+146	0	
+147	0	Private Sub Unit_Description_Click()
+148	1	'translated from macro Bone.Faunal Unit Description Button -saj
+149	1	'season 2006
+150	0	On Error GoTo err_unitdes
+151	0	
+152	0	    DoCmd.OpenForm "Fauna_Bone_Faunal_Unit_Description", acNormal
+153	2	    'DoCmd.Close acForm, Me.Name '2006 leave open now
+154	0	    
+155	0	Exit Sub
+156	0	
+157	0	err_unitdes:
+158	0	    Call General_Error_Trap
+159	0	    Exit Sub
+160	0	End Sub

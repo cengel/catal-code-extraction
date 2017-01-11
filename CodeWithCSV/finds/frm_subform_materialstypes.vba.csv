@@ -1,0 +1,344 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cboMaterialGroup_AfterUpdate()
+5	0	On Error GoTo err_cboMat
+6	0	
+7	1	'Me.Refresh
+8	1	'Me![cboMaterialSubGroup].Requery
+9	0	
+10	1	'new 2008 - if change main material group it can make the other groups nonsensical
+11	1	'so check for oldvalue eg: changing a chipped stone record to botanical
+12	0	If Not IsNull(Me![cboMaterialGroup].OldValue) Then
+13	0	    MsgBox "Please update the subgroup and object type values to tally with this change", vbExclamation, "Material Group Change"
+14	0	End If
+15	0	
+16	0	If Me![cboMaterialGroup].Column(2) <> "" Then
+17	0	    Me![txtDB] = Me![cboMaterialGroup].Column(2)
+18	0	    
+19	0	    If Me![cboMaterialGroup].Column(3) <> "" Then
+20	0	        Me![txtForm] = Me![cboMaterialGroup].Column(3)
+21	0	    End If
+22	0	    
+23	0	    If Me![cboMaterialGroup].Column(4) <> "" Then
+24	0	        Me![txtID] = Me![cboMaterialGroup].Column(4)
+25	0	    End If
+26	0	    
+27	0	    If Me![cboMaterialGroup].Column(5) <> "" Then
+28	0	        Me![txtTable] = Me![cboMaterialGroup].Column(5)
+29	0	    End If
+30	0	
+31	0	End If
+32	0	
+33	0	If Me![txtDB] = "" Then
+34	0	    Me![cmdGoDB].Enabled = False
+35	0	Else
+36	0	    Me![cmdGoDB].Enabled = True
+37	0	End If
+38	0	Exit Sub
+39	0	
+40	0	err_cboMat:
+41	0	    Call General_Error_Trap
+42	0	    Exit Sub
+43	0	End Sub
+44	0	
+45	0	Private Sub cboMaterialSubgroup_AfterUpdate()
+46	0	On Error GoTo err_cboMaterialSubgroup
+47	0	
+48	1	'Me![cboObjectType].Requery
+49	0	
+50	0	If Me![cboMaterialSubgroup].Column(3) <> "" Then
+51	0	    Me![txtDB] = Me![cboMaterialSubgroup].Column(3)
+52	0	    
+53	0	    If Me![cboMaterialSubgroup].Column(4) <> "" Then
+54	0	        Me![txtForm] = Me![cboMaterialSubgroup].Column(4)
+55	0	    End If
+56	0	    
+57	0	    If Me![cboMaterialSubgroup].Column(5) <> "" Then
+58	0	        Me![txtID] = Me![cboMaterialSubgroup].Column(5)
+59	0	    End If
+60	0	    
+61	0	    If Me![cboMaterialSubgroup].Column(6) <> "" Then
+62	0	        Me![txtTable] = Me![cboMaterialSubgroup].Column(6)
+63	0	    End If
+64	0	End If
+65	0	
+66	0	If Me![txtDB] = "" Then
+67	0	    Me![cmdGoDB].Enabled = False
+68	0	Else
+69	0	    Me![cmdGoDB].Enabled = True
+70	0	End If
+71	0	Exit Sub
+72	0	
+73	0	err_cboMaterialSubgroup:
+74	0	    Call General_Error_Trap
+75	0	    Exit Sub
+76	0	End Sub
+77	0	
+78	0	Private Sub cboMaterialSubGroup_GotFocus()
+79	1	'instead of setting the rowsource in properties set it here to ensure
+80	1	'previous records fields stay visible
+81	0	On Error GoTo err_cboMatSubGrp
+82	0	
+83	0	Dim sql
+84	0	
+85	0	sql = "SELECT Finds_Code_MaterialGroup_Subgroup.MaterialSubGroupID, Finds_Code_MaterialGroup_Subgroup.MaterialSubgroupText, "
+86	0	sql = sql & "Finds_Code_MaterialGroup_Subgroup.MaterialGroupID, Finds_Code_MaterialGroup_Subgroup.RelatedDatabase, "
+87	0	sql = sql & "Finds_Code_MaterialGroup_Subgroup.FormToShow, Finds_Code_MaterialGroup_Subgroup.IDField, Finds_Code_MaterialGroup_Subgroup.TableName FROM Finds_Code_MaterialGroup_Subgroup "
+88	0	sql = sql & "WHERE (((Finds_Code_MaterialGroup_Subgroup.MaterialGroupID)=" & Forms![Finds: Basic Data]![frm_subform_materialstypes].Form![cboMaterialGroup] & "));"
+89	0	Me![cboMaterialSubgroup].RowSource = sql
+90	0	
+91	0	Exit Sub
+92	0	
+93	0	err_cboMatSubGrp:
+94	0	    Call General_Error_Trap
+95	0	    Exit Sub
+96	0	
+97	0	End Sub
+98	0	
+99	0	Private Sub cboObjectType_AfterUpdate()
+100	0	On Error GoTo err_cboDescFocus
+101	1	    'DoCmd.GoToControl Form![Finds: Basic Data]![Description].Name
+102	1	    'DoCmd.GoToControl "Description"
+103	0	Exit Sub
+104	0	
+105	0	err_cboDescFocus:
+106	0	    Call General_Error_Trap
+107	0	    Exit Sub
+108	0	End Sub
+109	0	
+110	0	Private Sub cboObjectType_GotFocus()
+111	1	'instead of setting the rowsource in properties set it here to ensure
+112	1	'previous records fields stay visible
+113	0	On Error GoTo err_cboDescFocus
+114	0	
+115	0	Dim sql
+116	0	sql = "SELECT Finds_Code_MaterialSubGroup_ObjectType.ObjectTypeID, Finds_Code_ObjectTypes.ObjectTypeText, Finds_Code_MaterialSubGroup_ObjectType.MaterialSubGroupID"
+117	0	sql = sql & " FROM Finds_Code_MaterialSubGroup_ObjectType INNER JOIN Finds_Code_ObjectTypes ON Finds_Code_MaterialSubGroup_ObjectType.ObjectTypeID = Finds_Code_ObjectTypes.ObjectTypeID"
+118	0	sql = sql & " WHERE (((Finds_Code_MaterialSubGroup_ObjectType.MaterialSubGroupID)= " & Forms![Finds: Basic Data]![frm_subform_materialstypes].Form![cboMaterialSubgroup] & "));"
+119	0	
+120	0	Me![cboObjectType].RowSource = sql
+121	0	
+122	0	Exit Sub
+123	0	
+124	0	err_cboDescFocus:
+125	0	    Call General_Error_Trap
+126	0	    Exit Sub
+127	0	End Sub
+128	0	
+129	0	Private Sub cmdGoDB_Click()
+130	0	On Error GoTo err_handler
+131	0	
+132	0	If Me![txtDB] <> "" Then
+133	0	    
+134	1	    'first check if the record is avail in the db
+135	0	    Dim checkrec, fieldname, tablename, crit
+136	0	    If Me![txtTable] <> "" Then
+137	0	        fieldname = Me![txtID]
+138	0	        tablename = Me![txtTable]
+139	2	        crit = Me![txtID] & " = '" & Me![txtGID] & "'"
+140	0	        checkrec = DLookup(fieldname, tablename, crit)
+141	0	        If IsNull(checkrec) Then
+142	2	            'can't find the record
+143	0	            MsgBox "This record does not exist in the related database, please contact the relevant team leader for more information", vbInformation, "Link Failed"
+144	0	            Exit Sub
+145	0	        End If
+146	0	    Else
+147	0	        MsgBox "Sorry but the system does not know which database to check for this record, please contact the Finds Officer", vbInformation, "Link failed"
+148	0	        Exit Sub
+149	0	    End If
+150	0	    
+151	0	    
+152	1	    'old code does not work with runtime as not take into account mdw
+153	1	     'Dim appAccess As Access.Application
+154	0	     Dim appAccess As New Access.Application
+155	2	     '' Create new instance of Microsoft Access.
+156	1	     'Set appAccess = CreateObject("Access.Application")
+157	0	    
+158	0	    Dim dbpath
+159	0	    dbpath = Replace(CurrentDb.Name, "Finds Register Central.mdb", Me![txtDB])
+160	2	     '' Open database in Microsoft Access window.
+161	0	     MsgBox "This is a demo of how system linking could work. Please note at present the " & Me![txtDB] & " system will now appear BUT when it does DO NOT remove focus from the " & Me![txtDB] & " database until you close it. Closing it will return you to the finds database. If you do not close " & Me![txtDB] & " first the system will freeze."
+162	1	     appAccess.OpenCurrentDatabase dbpath, False 'false = shared
+163	2	     '' Open given form.
+164	2	     ''as it will be: appAccess.DoCmd.OpenForm SchemeAdminForm, acNormal, , "[QuadNo] = " & Me![Lab Number], , acDialog
+165	3	     'appAccess.DoCmd.OpenForm "Frm_GS_Main", acNormal, , "GID = '1267.x3'", , acDialog
+166	0	
+167	1	'***** Current problem if you move focus off form you have to double click on
+168	1	'*****  mdb file name to get it back
+169	2	    '--'"G:\saj working\GroundStone-Official.mdb"
+170	1	    'the schemeDB should now be open so can get it as an object reference
+171	0	                        Set appAccess = getobject(dbpath)
+172	1	                        'having it as an object reference allows use of the openform command
+173	1	                        'to open the scheme admin form - it will hold focus till shut
+174	4	                      ''  appAccess.DoCmd.OpenForm "Frm_GS_Main", acNormal, , "GID = '1267.x3'", , acDialog
+175	0	                       
+176	0	                       appAccess.DoCmd.Maximize
+177	2	                        appAccess.DoCmd.OpenForm Me![txtForm], acNormal, , Me![txtID] & " = '" & Me![txtGID] & "'", , acDialog
+178	1	                        'once shut the code will continue - so must close connection to DB
+179	0	                        appAccess.DoCmd.Maximize
+180	0	                        appAccess.CloseCurrentDatabase
+181	1	                        'and quit the shell that it is runningin
+182	0	                        appAccess.Quit
+183	0	                        Set appAccess = Nothing
+184	1	    '--
+185	1	'     appAccess.CloseCurrentDatabase
+186	1	'     Set appAccess = Nothing
+187	0	                
+188	2	     '           'new code to take into account mdw
+189	0	                Dim wrkgrpPath, accessPath, cmd As String, shellobj
+190	0	                Dim ProcessHandle As Long
+191	0	                Dim ExitCode As Long
+192	0	
+193	1	                'first get user to enter password
+194	1	     '           g_temppwd = ""
+195	1	     '           DoCmd.OpenForm "FPopSchemeLogin", acNormal, , , , acDialog
+196	0	                
+197	1	     '           If g_temppwd <> "" Then
+198	0	                
+199	2	     '               'get path to msaccess.exe and current workgroup
+200	1	   '                 wrkgrpPath = SysCmd(acSysCmdGetWorkgroupFile)
+201	1	  '                  accessPath = SysCmd(acSysCmdAccessDir)
+202	1	     '               If wrkgrpPath <> "" And accessPath <> "" Then
+203	2	      '                  'can only proceed if workgroup and msaccess.exe are know
+204	1	 '                      Dim appAccess As Access.Application
+205	1	                       'build up string to open DB with workgroup
+206	1	 '                      cmd = Chr(34) & accessPath & "MSACCESS.EXE" & Chr(34) & " " & Chr(34) & "G:\saj working\GroundStone-Official.mdb" & Chr(34)
+207	3	 '                       cmd = cmd & " /nostartup '/user catalhoyuk" '& CurrentUser()
+208	2	                     '   cmd = cmd & " /user catalhoyuk" '& CurrentUser()
+209	2	                      '  cmd = cmd & " /pwd catalhoyuk " '& g_temppwd
+210	1	 '                       cmd = cmd & " /wrkgrp " & Chr(34) & wrkgrpPath & Chr(34)
+211	1	                        'this maybe slow so show processing with hourgladd
+212	1	 '                       DoCmd.Hourglass True
+213	0	                    
+214	1	                        'for security purposes now blank the pswd global
+215	1	       '                 g_temppwd = ""
+216	1	       '
+217	1	                        'to open access with the workgroup must use the shell command
+218	1	                        'window style is minimused with out focus - DO NOT use hide as will
+219	1	                        'not be able to see the form and will appear that it has hung
+220	1	  '                      shellobj = Shell(pathname:=cmd, windowstyle:=6)
+221	0	                        
+222	1	                        'the schemeDB should now be open so can get it as an object reference
+223	1	  '                      Set appAccess = GetObject("G:\saj working\GroundStone-Official.mdb")
+224	1	                        'having it as an object reference allows use of the openform command
+225	1	                        'to open the scheme admin form - it will hold focus till shut
+226	3	  '                      appAccess.DoCmd.OpenForm "Frm_GS_Main", acNormal, , "GID = '1267.x3'", , acDialog
+227	1	                        'once shut the code will continue - so must close connection to DB
+228	1	  '                      appAccess.CloseCurrentDatabase
+229	1	                        'and quit the shell that it is runningin
+230	1	  '                      appAccess.Quit
+231	1	  '                      Set appAccess = Nothing
+232	1	                       'end of processing so reset cursor
+233	1	  '                      DoCmd.Hourglass False
+234	1	       '             Else
+235	2	       '                 'tell user if workgroup cannot be found
+236	1	       '                 If wrkgrpPath = "" Then MsgBox "Path to Workgroup file cannot be found. Please ask an Administrator to update this value in the WEBPATHS screen", vbInformation, "Unable to proceed action"
+237	2	       '                 'tell the user if access.exe cannot be found
+238	1	       '                 If accessPath = "" Then MsgBox "The path to MSAccess cannot be located. Please contact the Administrator of this problem", vbInformation, "Unable to proceed action"
+239	1	       '             End If
+240	1	       '         Else
+241	2	       '             'tell user they cannot proceed
+242	1	       '             MsgBox "No password supplied. The scheme administration form cannot be opened", vbInformation, "Unable to proceed"
+243	1	       '         End If
+244	1	       '     End If
+245	0	End If
+246	0	Exit Sub
+247	0	
+248	0	err_handler:
+249	0	
+250	0	    If Err.Number = -2147467259 Or Err.Number = 432 Then
+251	1	       ' the user has entered the incorrect password - must shut the underlying shell
+252	1	'       If KillProcess(shellobj, 0) Then
+253	2	'         'MsgBox "App was terminated"
+254	1	'       End If
+255	0	       
+256	1	       'Set shellobj = Null
+257	0	        If Err.Number = -2147467259 Then MsgBox "The system cannot open the scheme database - you must enter a valid password", vbCritical, "Scheme cannot be opened"
+258	0	        If Err.Number = 432 Then MsgBox "The system cannot open the scheme database. The path to the database entered into the Scheme Administration screen cannot be found", vbCritical, "Scheme cannot be opened"
+259	0	        DoCmd.Hourglass False
+260	0	    Else
+261	0	        DoCmd.Hourglass False
+262	0	    
+263	0	        MsgBox "An error has occurred in General Procedures - OpenASchemeAtGivenForm(). The error is:" & Chr(13) & Chr(13) & Err.Number & " -- " & Err.Description
+264	0	    End If
+265	0	    Exit Sub
+266	0	
+267	0	
+268	0	
+269	0	
+270	0	
+271	0	End Sub
+272	0	
+273	0	Private Sub Form_Current()
+274	0	On Error GoTo err_current
+275	0	
+276	0	If Me.RecordsetClone.RecordCount > 1 Then
+277	1	'    Me.DefaultView = 1
+278	2	'    'DoCmd.RunCommand acCmdDatasheetView
+279	1	'    MsgBox ">1"
+280	0	    Forms![Finds: Basic Data]![frm_subform_materialstypes].Height = "1400"
+281	0	Else
+282	1	'    Me.DefaultView = 0
+283	2	'    'DoCmd.RunCommand acCmdFormView
+284	1	'    MsgBox "1"
+285	1	    'Me.Height = "2000"
+286	0	    Forms![Finds: Basic Data]![frm_subform_materialstypes].Height = "1000"
+287	0	End If
+288	0	
+289	0	Me![txtDB] = ""
+290	0	Me![txtForm] = ""
+291	0	Me![txtID] = ""
+292	0	
+293	1	'Me![cboMaterialGroup].Requery
+294	1	'Me![cboMaterialSubGroup].Requery
+295	1	'Me![cboObjectType].Requery
+296	0	Me![cboMaterialSubgroup].RowSource = "SELECT Finds_Code_MaterialGroup_Subgroup.MaterialSubGroupID, Finds_Code_MaterialGroup_Subgroup.MaterialSubgroupText, Finds_Code_MaterialGroup_Subgroup.MaterialGroupID, Finds_Code_MaterialGroup_Subgroup.RelatedDatabase,  Finds_Code_MaterialGroup_Subgroup.FormToShow, Finds_Code_MaterialGroup_Subgroup.IDField, Finds_Code_MaterialGroup_Subgroup.TableName FROM Finds_Code_MaterialGroup_Subgroup"
+297	0	Me![cboObjectType].RowSource = "SELECT Finds_Code_MaterialSubGroup_ObjectType.ObjectTypeID, Finds_Code_ObjectTypes.ObjectTypeText, Finds_Code_MaterialSubGroup_ObjectType.MaterialSubGroupID  FROM Finds_Code_MaterialSubGroup_ObjectType INNER JOIN Finds_Code_ObjectTypes ON Finds_Code_MaterialSubGroup_ObjectType.ObjectTypeID = Finds_Code_ObjectTypes.ObjectTypeID"
+298	0	
+299	1	'if subgroup has the DB take that
+300	0	If Me![cboMaterialSubgroup].Column(3) <> "" Then
+301	0	    Me![txtDB] = Me![cboMaterialSubgroup].Column(3)
+302	0	    
+303	0	    If Me![cboMaterialSubgroup].Column(4) <> "" Then
+304	0	        Me![txtForm] = Me![cboMaterialSubgroup].Column(4)
+305	0	    End If
+306	0	    
+307	0	    If Me![cboMaterialSubgroup].Column(5) <> "" Then
+308	0	        Me![txtID] = Me![cboMaterialSubgroup].Column(5)
+309	0	    End If
+310	0	
+311	0	    If Me![cboMaterialSubgroup].Column(6) <> "" Then
+312	0	        Me![txtTable] = Me![cboMaterialSubgroup].Column(6)
+313	0	    End If
+314	0	Else
+315	1	'if sugroup not have db, check if group has and test that
+316	0	    If Me![cboMaterialGroup].Column(2) <> "" Then
+317	0	        Me![txtDB] = Me![cboMaterialGroup].Column(2)
+318	0	    
+319	0	        If Me![cboMaterialGroup].Column(3) <> "" Then
+320	0	            Me![txtForm] = Me![cboMaterialGroup].Column(3)
+321	0	        End If
+322	0	    
+323	0	        If Me![cboMaterialGroup].Column(4) <> "" Then
+324	0	            Me![txtID] = Me![cboMaterialGroup].Column(4)
+325	0	        End If
+326	0	
+327	0	        If Me![cboMaterialGroup].Column(5) <> "" Then
+328	0	            Me![txtTable] = Me![cboMaterialGroup].Column(5)
+329	0	        End If
+330	0	    End If
+331	0	End If
+332	0	
+333	0	If Me![txtDB] = "" Then
+334	0	    Me![cmdGoDB].Enabled = False
+335	0	Else
+336	0	    Me![cmdGoDB].Enabled = True
+337	0	End If
+338	0	Exit Sub
+339	0	
+340	0	err_current:
+341	0	    Call General_Error_Trap
+342	0	    Exit Sub
+343	0	
+344	0	End Sub

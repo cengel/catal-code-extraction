@@ -1,0 +1,36 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Sub Phase_3_Click()
+5	0	On Error GoTo Err_Phase_3_Click
+6	0	
+7	1	'
+8	1	'    Dim stDocName As String
+9	1	'    Dim stLinkCriteria As String
+10	2	'' refresh
+11	1	'    DoCmd.DoMenuItem acFormBar, acRecordsMenu, 5, , acMenuVer70
+12	1	'    stDocName = "Bots98: Light Residue Phase 2"
+13	2	''go to record
+14	2	'    'stLinkCriteria = "([Unit]=" & Me![Unit] & " And [Sample]=""" & Me![Sample] & """ And [Flot Number]=" & Me![Flot Number] & ")"
+15	3	'    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+16	1	'    DoCmd.OpenForm stDocName, , , stLinkCriteria
+17	2	''close this form
+18	1	'    DoCmd.Close acForm, "Bots98: Flot Sheet"
+19	0	    
+20	0	    Dim stDocName As String
+21	0	    Dim stLinkCriteria As String
+22	1	' Refresh
+23	0	    DoCmd.DoMenuItem acFormBar, acRecordsMenu, 5, , acMenuVer70
+24	0	    stDocName = "Bots98: Light Residue Phase 3"
+25	0	    
+26	4	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "' AND [Material]=" & "'" & Me![Material] & "'"
+27	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+28	0	
+29	0	Exit_Phase_3_Click:
+30	0	    Exit Sub
+31	0	
+32	0	Err_Phase_3_Click:
+33	0	    MsgBox Err.Description
+34	0	    Resume Exit_Phase_3_Click
+35	0	    
+36	0	End Sub

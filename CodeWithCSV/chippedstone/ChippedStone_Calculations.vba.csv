@@ -1,0 +1,232 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	1	'This module deals with calculations
+5	0	
+6	0	Sub CalcWgtL(frm As Form)
+7	1	'calc wgt/l FOR HEAVY RESIDUE
+8	1	'weight field / volume field  * 100 / Percent
+9	0	
+10	0	On Error GoTo err_calcwgtL
+11	0	Dim result
+12	0	    
+13	1	    'must check if enough field filled in to undertake calc
+14	0	    If frm![Weight] <> "" And frm![txtVolume] <> "" And frm![cboPercent] <> "" Then
+15	1	        'yes correct fields there - calculate
+16	1	        'must use the forms names for these fields
+17	0	        result = frm![Weight] / frm![txtVolume] * 100 / frm![cboPercent]
+18	1	        'pass back the result to the wgt/l field on the form
+19	0	        frm![txtWgt/L] = result
+20	0	    End If
+21	0	Exit Sub
+22	0	
+23	0	err_calcwgtL:
+24	0	    Call General_Error_Trap
+25	0	    Exit Sub
+26	0	End Sub
+27	0	
+28	0	Sub CalcCountL(frm As Form)
+29	1	'calc count/l FOR HEAVY RESIDUE
+30	1	'count field / volume field  * 100 / Percent
+31	0	
+32	0	On Error GoTo err_CalcCountL
+33	0	Dim result
+34	0	    
+35	1	    'must check if enough field filled in to undertake calc
+36	0	    If frm![Count] <> "" And frm![txtVolume] <> "" And frm![cboPercent] <> "" Then
+37	1	        'yes correct fields there - calculate
+38	1	        'must use the forms names for these fields
+39	0	        result = frm![Count] / frm![txtVolume] * 100 / frm![cboPercent]
+40	1	        'pass back the result to the count/l field on the form
+41	0	        frm![txtCount/L] = result
+42	0	    End If
+43	0	Exit Sub
+44	0	
+45	0	err_CalcCountL:
+46	0	    Call General_Error_Trap
+47	0	    Exit Sub
+48	0	End Sub
+49	0	
+50	0	Sub CalcCountLDrySeive(frm As Form)
+51	1	'calc count/l FOR DRY SEIVE
+52	1	'count field / volume field
+53	0	
+54	0	On Error GoTo err_CalcCountLDS
+55	0	Dim result
+56	0	    
+57	1	    'must check if enough field filled in to undertake calc
+58	0	    If frm![Count] <> "" And frm![txtVolume] Then
+59	1	        'yes correct fields there - calculate
+60	1	        'must use the forms names for these fields
+61	0	        result = frm![Count] / frm![txtVolume]
+62	1	        'pass back the result to the count/l field on the form
+63	0	        frm![txtCount/L] = result
+64	0	    End If
+65	0	Exit Sub
+66	0	
+67	0	err_CalcCountLDS:
+68	0	    Call General_Error_Trap
+69	0	    Exit Sub
+70	0	End Sub
+71	0	
+72	0	Sub CalcWgtLDrySeive(frm As Form)
+73	1	'calc wgt/l FOR DRY SEIVE
+74	1	'weight field / volume field
+75	0	
+76	0	On Error GoTo err_calcwgtLDS
+77	0	Dim result
+78	0	    
+79	1	    'must check if enough field filled in to undertake calc
+80	0	    If frm![Weight] <> "" And frm![txtVolume] <> "" Then
+81	1	        'yes correct fields there - calculate
+82	1	        'must use the forms names for these fields
+83	0	        result = frm![Weight] / frm![txtVolume]
+84	1	        'pass back the result to the wgt/l field on the form
+85	0	        frm![txtWgt/L] = result
+86	0	    End If
+87	0	Exit Sub
+88	0	
+89	0	err_calcwgtLDS:
+90	0	    Call General_Error_Trap
+91	0	    Exit Sub
+92	0	End Sub
+93	0	
+94	0	
+95	0	Sub DoCalcsOnHistoricData(dataset)
+96	0	
+97	0	On Error GoTo err_deal
+98	0	
+99	0	Dim mydb As DAO.Database, myrs As DAO.Recordset, result, sql
+100	0	
+101	0	Set mydb = CurrentDb()
+102	0	If dataset = "" Then
+103	0	    sql = "ChippedStone_Basic_Data"
+104	0	Else
+105	0	    sql = dataset
+106	0	End If
+107	0	
+108	2	''Set myrs = mydb.OpenRecordset("ChippedStone_Basic_Data")
+109	0	Set myrs = mydb.OpenRecordset(sql)
+110	0	
+111	0	If Not myrs.EOF And Not myrs.BOF Then
+112	0	
+113	0	    myrs.MoveFirst
+114	0	    
+115	0	    Do Until myrs.EOF
+116	0	        myrs.Edit
+117	0	        If myrs![RetrievalMethod] = "Heavy Residue" Then
+118	0	            If myrs![Weight] <> "" And myrs![HRVolume] <> "" And myrs![HRSamplePercent] <> "" Then
+119	0	                result = myrs![Weight] / myrs![HRVolume] * 100 / myrs![HRSamplePercent]
+120	0	                myrs![Wgt/L] = result
+121	0	            End If
+122	0	            
+123	0	            If myrs![Count] <> "" And myrs![HRVolume] <> "" And myrs![HRSamplePercent] <> "" Then
+124	0	                result = myrs![Count] / myrs![HRVolume] * 100 / myrs![HRSamplePercent]
+125	1	                'pass back the result to the count/l field on the form
+126	0	                myrs![Count/L] = result
+127	0	            End If
+128	0	        
+129	0	        ElseIf myrs![RetrievalMethod] = "Dry Sieve" Then
+130	0	            If myrs![Weight] <> "" And myrs![HRVolume] <> "" Then
+131	0	                result = myrs![Weight] / myrs![HRVolume]
+132	0	                myrs![Wgt/L] = result
+133	0	            End If
+134	0	        
+135	0	            If myrs![Count] <> "" And myrs![HRVolume] Then
+136	0	                result = myrs![Count] / myrs![HRVolume]
+137	0	                myrs![Count/L] = result
+138	0	            End If
+139	0	        End If
+140	0	        myrs.Update
+141	0	    myrs.MoveNext
+142	0	    Loop
+143	0	
+144	0	End If
+145	0	
+146	0	myrs.Close
+147	0	Set myrs = Nothing
+148	0	
+149	0	mydb.Close
+150	0	Set mydb = Nothing
+151	0	
+152	0	Exit Sub
+153	0	
+154	0	err_deal:
+155	0	    Resume Next
+156	0	End Sub
+157	0	
+158	0	Sub GatherDataAndDoCalcs()
+159	1	'NEW 2010 - some data in th count and wgt /l fields never got filled out as the underlying
+160	1	'soil volume information was not available at the time of entry
+161	1	'this procedure finds these records and attempts to rectify it by checking if required data now exists
+162	0	On Error GoTo err_gather
+163	0	Dim mydb As DAO.Database, myrs As DAO.Recordset, result, getVol
+164	0	Set mydb = CurrentDb()
+165	0	    
+166	1	    'first of all deal with dry seive - get records where count/l abd wgt/l missing as soil vol missing
+167	0	    Dim sql1
+168	4	    sql1 = "SELECT * FROM ChippedStone_Basic_Data WHERE (((ChippedStone_Basic_Data.Weight) Is Not Null) AND ((ChippedStone_Basic_Data.RetrievalMethod)='dry sieve') AND ((ChippedStone_Basic_Data.HRVolume) Is Null) AND ((ChippedStone_Basic_Data.Unit) Is Not Null)) OR (((ChippedStone_Basic_Data.RetrievalMethod)='dry sieve') AND ((ChippedStone_Basic_Data.HRVolume) Is Null) AND ((ChippedStone_Basic_Data.Count) Is Not Null) AND ((ChippedStone_Basic_Data.Unit) Is Not Null));"
+169	0	    
+170	0	    Set myrs = mydb.OpenRecordset(sql1)
+171	0	
+172	0	    If Not myrs.EOF And Not myrs.BOF Then
+173	0	
+174	0	        myrs.MoveFirst
+175	0	    
+176	0	        Do Until myrs.EOF
+177	0	            
+178	0	            getVol = DLookup("[Dry sieve volume]", "[Exca: Unit Sheet with relationships]", "[Unit Number] = " & myrs![Unit])
+179	0	            If Not IsNull(getVol) Then
+180	0	                myrs.Edit
+181	0	                    myrs![HRVolume] = getVol
+182	0	                myrs.Update
+183	0	            End If
+184	0	            myrs.MoveNext
+185	0	        Loop
+186	0	
+187	0	    End If
+188	0	
+189	0	    myrs.Close
+190	0	    Set myrs = Nothing
+191	0	    
+192	1	    'now deal with flot number records - get records where count/l or wgt/l and soil vol missing
+193	0	    Dim sql2
+194	4	    sql2 = "SELECT * FROM ChippedStone_Basic_Data WHERE (((ChippedStone_Basic_Data.Weight) Is Not Null) AND ((ChippedStone_Basic_Data.RetrievalMethod)='heavy residue') AND ((ChippedStone_Basic_Data.HRVolume) Is Null) AND ((ChippedStone_Basic_Data.FlotNum) Is Not Null)) OR (((ChippedStone_Basic_Data.RetrievalMethod)='heavy residue') AND ((ChippedStone_Basic_Data.HRVolume) Is Null) AND ((ChippedStone_Basic_Data.Count) Is Not Null) AND ((ChippedStone_Basic_Data.FlotNum) Is Not Null));"
+195	0	
+196	0	    Set myrs = mydb.OpenRecordset(sql2)
+197	0	
+198	0	    If Not myrs.EOF And Not myrs.BOF Then
+199	0	
+200	0	        myrs.MoveFirst
+201	0	    
+202	0	        Do Until myrs.EOF
+203	0	            getVol = DLookup("[Soil Volume]", "[view_ArchaeoBotany_Flot_Log]", "[Flot Number] = " & myrs![FlotNum])
+204	0	            
+205	0	            If Not IsNull(getVol) Then
+206	0	                myrs.Edit
+207	0	                    myrs![HRVolume] = getVol
+208	0	                myrs.Update
+209	0	            End If
+210	0	            myrs.MoveNext
+211	0	        Loop
+212	0	
+213	0	    End If
+214	0	
+215	0	    myrs.Close
+216	0	    Set myrs = Nothing
+217	0	    
+218	0	    
+219	0	
+220	0	mydb.Close
+221	0	Set mydb = Nothing
+222	0	
+223	1	'now redo calcs on basic data table
+224	8	Call DoCalcsOnHistoricData("SELECT * FROM ChippedStone_Basic_Data WHERE (((ChippedStone_Basic_Data.[Wgt/L]) Is Null) AND ((ChippedStone_Basic_Data.RetrievalMethod)='heavy residue' Or (ChippedStone_Basic_Data.RetrievalMethod)='dry seive')) OR (((ChippedStone_Basic_Data.RetrievalMethod)='heavy residue' Or (ChippedStone_Basic_Data.RetrievalMethod)='dry seive') AND ((ChippedStone_Basic_Data.[Count/L]) Is Null));")
+225	0	
+226	0	Exit Sub
+227	0	
+228	0	err_gather:
+229	0	    Call General_Error_Trap
+230	0	    Exit Sub
+231	0	End Sub
+232	0	

@@ -1,0 +1,24 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Sub cmd_gotodebitage_Click()
+5	0	On Error GoTo Err_cmd_gotodebitage_Click
+6	0	
+7	0	    Dim stDocName As String
+8	0	    Dim stLinkCriteria As String
+9	0	
+10	0	    stDocName = "LithicForm:Debitage"
+11	0	    
+12	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+13	0	    
+14	0	    DoCmd.Close
+15	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+16	0	
+17	0	Exit_cmd_gotodebitage_Click:
+18	0	    Exit Sub
+19	0	
+20	0	Err_cmd_gotodebitage_Click:
+21	0	    MsgBox Err.Description
+22	0	    Resume Exit_cmd_gotodebitage_Click
+23	0	    
+24	0	End Sub

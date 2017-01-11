@@ -1,0 +1,116 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdAdmin_Click()
+5	1	'open the pub data screen
+6	0	On Error GoTo err_Admin
+7	0	
+8	0	    DoCmd.OpenForm "Frm_GS_AdminMenu", acNormal
+9	0	    DoCmd.Close acForm, Me.Name
+10	0	    
+11	0	Exit Sub
+12	0	
+13	0	err_Admin:
+14	0	    Call General_Error_Trap
+15	0	    Exit Sub
+16	0	End Sub
+17	0	
+18	0	Private Sub cmdOpenData_Click()
+19	1	'open the main data screen
+20	0	On Error GoTo err_OpenData
+21	0	
+22	0	    DoCmd.OpenForm "Frm_Level1", acNormal
+23	0	    DoCmd.Close acForm, Me.Name
+24	0	    
+25	0	Exit Sub
+26	0	
+27	0	err_OpenData:
+28	0	    Call General_Error_Trap
+29	0	    Exit Sub
+30	0	End Sub
+31	0	
+32	0	Private Sub cmdPub_Click()
+33	1	'open the pub data screen
+34	0	On Error GoTo err_pub
+35	0	
+36	0	    DoCmd.OpenForm "Frm_GS_Publications", acNormal
+37	0	
+38	0	Exit Sub
+39	0	
+40	0	err_pub:
+41	0	    Call General_Error_Trap
+42	0	    Exit Sub
+43	0	End Sub
+44	0	
+45	0	Private Sub cmdOpenData2_Click()
+46	1	'open the main data screen
+47	0	On Error GoTo err_OpenData2
+48	0	
+49	0	    DoCmd.OpenForm "Frm_Level2", acNormal
+50	0	    DoCmd.Close acForm, Me.Name
+51	0	    
+52	0	Exit Sub
+53	0	
+54	0	err_OpenData2:
+55	0	    Call General_Error_Trap
+56	0	    Exit Sub
+57	0	End Sub
+58	0	
+59	0	Private Sub cmdQuit_Click()
+60	1	'quit system
+61	0	On Error GoTo err_Quit
+62	0	
+63	0	    DoCmd.Quit acQuitSaveAll
+64	0	    
+65	0	
+66	0	Exit Sub
+67	0	
+68	0	err_Quit:
+69	0	    Call General_Error_Trap
+70	0	    Exit Sub
+71	0	End Sub
+72	0	
+73	0	Private Sub cmdSample_Click()
+74	1	'open the sample data screen
+75	0	On Error GoTo err_Sample
+76	0	
+77	0	    DoCmd.OpenForm "Frm_GS_Samples", acNormal
+78	0	
+79	0	Exit Sub
+80	0	
+81	0	err_Sample:
+82	0	    Call General_Error_Trap
+83	0	    Exit Sub
+84	0	End Sub
+85	0	
+86	0	Private Sub Form_Open(Cancel As Integer)
+87	1	'v9.2 SAJ - only adminstrators are allowed in here
+88	0	On Error GoTo err_Form_Open
+89	0	
+90	1	    'Dim permiss
+91	1	    'permiss = GetGeneralPermissions
+92	1	    'If permiss <> "ADMIN" Then
+93	1	    '    Me![cmdAdmin].Visible = False
+94	1	    'Else
+95	1	    '   Me![cmdAdmin].Visible = True
+96	1	    'End If
+97	0	Exit Sub
+98	0	
+99	0	err_Form_Open:
+100	0	    Call General_Error_Trap
+101	0	    Exit Sub
+102	0	End Sub
+103	0	
+104	0	Private Sub openOldDB_Click()
+105	0	
+106	0	On Error GoTo err_openOldDB
+107	0	
+108	0	    DoCmd.OpenForm "Frm_Basic_Data", acNormal
+109	0	    DoCmd.Close acForm, Me.Name
+110	0	    
+111	0	Exit Sub
+112	0	
+113	0	err_openOldDB:
+114	0	    Call General_Error_Trap
+115	0	    Exit Sub
+116	0	End Sub

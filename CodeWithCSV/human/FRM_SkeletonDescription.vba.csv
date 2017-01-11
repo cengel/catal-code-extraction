@@ -1,0 +1,181 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	
+5	0	
+6	0	Private Sub cboFind_AfterUpdate()
+7	1	'find skeleton record - SAJ
+8	0	On Error GoTo err_cboFind
+9	0	
+10	0	    If Me![cboFind] <> "" Then
+11	0	        Me.Filter = "[UnitNumber] = " & Me![cboFind] & " AND [Individual Number] = " & Me!cboFind.Column(1)
+12	0	        Me.FilterOn = True
+13	1	        'Me![cboFind] = ""
+14	0	    End If
+15	0	Exit Sub
+16	0	
+17	0	err_cboFind:
+18	0	    MsgBox Err.Description
+19	0	    Exit Sub
+20	0	End Sub
+21	0	
+22	0	Private Sub cboFind_NotInList(NewData As String, response As Integer)
+23	1	'stop not in list msg loop
+24	0	On Error GoTo err_cbofindNot
+25	0	
+26	0	    MsgBox "This skeleton number does not exist in the database", vbInformation, "No Match"
+27	0	    response = acDataErrContinue
+28	0	    
+29	0	    Me![cboFind].Undo
+30	0	    DoCmd.GoToControl "CmdOpenUnitDescFrm"
+31	0	Exit Sub
+32	0	
+33	0	err_cbofindNot:
+34	0	    Call General_Error_Trap
+35	0	    Exit Sub
+36	0	End Sub
+37	0	
+38	0	Private Sub cmdAll_Click()
+39	1	'take off any filter - saj
+40	0	On Error GoTo err_all
+41	1	    '2009
+42	1	    'Me.FilterOn = False
+43	1	    'Me.Filter = ""
+44	1	    '2009 - combo might only be showing for one unit - reset
+45	0	    Me![cboFind].RowSource = "SELECT [HR_BasicSkeletonData].[UnitNumber], [HR_BasicSkeletonData].[Individual number] FROM HR_BasicSkeletonData ORDER BY [HR_BasicSkeletonData].[UnitNumber], [HR_BasicSkeletonData].[Individual number];"
+46	0	Exit Sub
+47	0	
+48	0	err_all:
+49	0	    MsgBox Err.Description
+50	0	    Exit Sub
+51	0	End Sub
+52	0	
+53	0	Private Sub cmdGuide_Click()
+54	1	'new season 2010
+55	0	On Error GoTo err_cmdGuide
+56	0	
+57	0	    DoCmd.OpenForm "frm_pop_skeletonguide", acNormal, , , acFormReadOnly
+58	0	
+59	0	Exit Sub
+60	0	
+61	0	err_cmdGuide:
+62	0	    Call General_Error_Trap
+63	0	    Exit Sub
+64	0	
+65	0	End Sub
+66	0	
+67	0	Private Sub cmdNewSkeleton_Click()
+68	1	'add a new record
+69	0	On Error GoTo err_cmdNew
+70	1	    'season 2007 - locked unit field as this should only be entered via unit description
+71	1	    'so new records will apply to this unit
+72	0	    Dim thisUnit
+73	0	    thisUnit = Me![txtUnit]
+74	0	    DoCmd.GoToRecord acActiveDataObject, , acNewRec
+75	0	    Me![txtUnit].Locked = False
+76	0	    DoCmd.GoToControl "txtUnit"
+77	0	    Me![txtUnit] = thisUnit
+78	0	    Me![txtUnit].Locked = True
+79	0	    DoCmd.GoToControl "txtIndivid"
+80	0	
+81	0	Exit Sub
+82	0	
+83	0	err_cmdNew:
+84	0	    MsgBox Err.Description
+85	0	    Exit Sub
+86	0	End Sub
+87	0	
+88	0	Private Sub CmdOpenAgeSexFrm_Click()
+89	1	'check if record exists in age sext table first, if not create it
+90	0	On Error GoTo Err_CmdOpenAgeSexFrm_Click
+91	0	
+92	0	    Call DoRecordCheck("HR_ageing and sexing", Me![txtUnit], Me![txtIndivid], "Unit Number")
+93	0	
+94	0	    Dim stDocName As String
+95	0	    Dim stLinkCriteria As String
+96	0	
+97	0	    stDocName = "FRM_Ageing-sexing form"
+98	0	    DoCmd.OpenForm stDocName, , , "[Unit Number] = " & Me![txtUnit] & " AND [Individual Number] = " & Me![txtIndivid]
+99	0	    Forms![FRM_Ageing-sexing form]!cboFind.RowSource = "SELECT [HR_ageing and sexing].[unit number], [HR_ageing and sexing].[Individual number] FROM [HR_ageing and sexing] WHERE [HR_ageing and sexing].[Unit Number] = " & Me![UnitNumber] & " ORDER BY [HR_ageing and sexing].[Unit Number], [HR_ageing and sexing].[Individual number];"
+100	0	    
+101	0	    DoCmd.Close acForm, Me.Name
+102	0	Exit_CmdOpenAgeSexFrm_Click:
+103	0	    Exit Sub
+104	0	
+105	0	Err_CmdOpenAgeSexFrm_Click:
+106	0	    MsgBox Err.Description
+107	0	    Resume Exit_CmdOpenAgeSexFrm_Click
+108	0	    
+109	0	End Sub
+110	0	Private Sub CmdOpenMainMenuFrm_Click()
+111	0	On Error GoTo Err_CmdOpenMainMenuFrm_Click
+112	0	
+113	0	    Dim stDocName As String
+114	0	    Dim stLinkCriteria As String
+115	0	
+116	0	    stDocName = "FRM_MAINMENU"
+117	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+118	1	    'saj
+119	0	    DoCmd.Close acForm, Me.Name
+120	0	Exit_CmdOpenMainMenuFrm_Click:
+121	0	    Exit Sub
+122	0	
+123	0	Err_CmdOpenMainMenuFrm_Click:
+124	0	    MsgBox Err.Description
+125	0	    Resume Exit_CmdOpenMainMenuFrm_Click
+126	0	    
+127	0	End Sub
+128	0	
+129	0	Private Sub CmdOpenUnitDescFrm_Click()
+130	1	'open the unit description form if unit exists there, if not add it first
+131	0	On Error GoTo Err_cmdUnitDesc_Click
+132	0	
+133	0	If Me![txtUnit] <> "" Then
+134	1	    'check the unit number is in the unit desc form
+135	0	    Dim checknum, sql
+136	0	    checknum = DLookup("[UnitNumber]", "[HR_UnitDescription]", "[UnitNumber] = " & Me![txtUnit])
+137	0	    If IsNull(checknum) Then
+138	1	        'must add the unit to the table
+139	0	        sql = "INSERT INTo [HR_UnitDescription] ([UnitNumber]) VALUES (" & Me![txtUnit] & ");"
+140	0	        DoCmd.RunSQL sql
+141	0	    End If
+142	0	    
+143	0	    DoCmd.OpenForm "Frm_UnitDescription", acNormal, , "[UnitNumber] = " & Me![txtUnit], acFormPropertySettings
+144	0	    DoCmd.Close acForm, Me.Name
+145	0	Else
+146	0	    MsgBox "No Unit number is present, cannot open the Unit Description form", vbInformation, "No Unit Number"
+147	0	End If
+148	0	Exit Sub
+149	0	
+150	0	Err_cmdUnitDesc_Click:
+151	0	    MsgBox Err.Description
+152	0	    Exit Sub
+153	0	End Sub
+154	0	
+155	0	Private Sub Form_Delete(Cancel As Integer)
+156	1	'new may 2009, now cascade delete setup this is a dangerous operation - warn user
+157	0	On Error GoTo err_delete
+158	0	
+159	0	Dim permiss
+160	0	permiss = GetGeneralPermissions
+161	0	If (permiss = "ADMIN") Then
+162	0	    Dim response
+163	0	    response = MsgBox("Deleting this skeleton will mean permanent deletion of all data associated with this particular skeleton in this database." & Chr(13) & Chr(13) & "Do you really want to delete " & Me![txtUnit] & ".B" & Me![txtIndivid] & "?", vbCritical + vbYesNo, "Critical Delete")
+164	0	    If response = vbNo Then
+165	0	        Cancel = True
+166	0	    Else
+167	0	        Cancel = False
+168	0	    End If
+169	0	Else
+170	0	    MsgBox "You do not have permission to delete this record, please contact your team leader"
+171	0	    Cancel = True
+172	0	End If
+173	0	
+174	0	    
+175	0	
+176	0	Exit Sub
+177	0	
+178	0	err_delete:
+179	0	    Call General_Error_Trap
+180	0	    Exit Sub
+181	0	End Sub

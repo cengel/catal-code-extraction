@@ -1,0 +1,336 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	1	Option Explicit 'added by saj
+3	0	
+4	0	Sub Button_Goto_BFD_Click()
+5	0	On Error GoTo Err_Button_Goto_BFD_Click
+6	0	
+7	0	    Dim stDocName As String
+8	0	    Dim stLinkCriteria As String
+9	0	
+10	0	    stDocName = "Fauna_Bone_Basic_Faunal_Data"
+11	0	    
+12	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+13	0	If Me![GID] <> "" Then
+14	1	    'new check for GID entered by saj
+15	0	    DoCmd.Close
+16	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+17	0	Else
+18	0	    MsgBox "Please enter the GID fields for this record or select a GID first", vbInformation, "No Unit Number"
+19	0	End If
+20	0	
+21	0	Exit_Button_Goto_BFD_Click:
+22	0	    Exit Sub
+23	0	
+24	0	Err_Button_Goto_BFD_Click:
+25	0	    MsgBox Err.Description
+26	0	    Resume Exit_Button_Goto_BFD_Click
+27	0	
+28	0	End Sub
+29	0	Sub button_goto_measurement_Click()
+30	1	'altered season 2006 - saj
+31	1	'check if any measurement records exist and if not ask user to create
+32	0	
+33	0	On Error GoTo Err_button_goto_measurement_Click
+34	0	
+35	0	    Dim stDocName As String
+36	0	    Dim stLinkCriteria As String
+37	0	    Dim retVal, checknum, sql, getMeasurementSet
+38	0	    stDocName = "Fauna_Bone_Measurements"
+39	0	    
+40	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+41	0	    
+42	0	If Me![GID] <> "" Then
+43	1	    'new check for GID entered by saj
+44	1	    'the form is only minimised so must save data manually here - saj
+45	0	    DoCmd.RunCommand acCmdSaveRecord
+46	0	        
+47	1	    'new for season 2006 - see if the modification record exists if not create it - SAJ
+48	2	    checknum = DLookup("[GID]", "[Fauna_Bone_Measurements]", "[GID] = '" & Me![GID] & "'")
+49	0	    If IsNull(checknum) Then
+50	1	        'gid not exist there yet
+51	0	        retVal = MsgBox("No Measurement records exist yet for GID " & Me![GID] & ", do you want to create one now?", vbQuestion + vbYesNo, "Create New Modification Record")
+52	0	        If retVal = vbNo Then
+53	1	            'do nothing
+54	0	            Exit Sub
+55	0	        Else
+56	0	            getMeasurementSet = InputBox("Please enter the measurement set number below:", "Measurement Set")
+57	0	            If getMeasurementSet <> "" Then
+58	1	                'so create it ready for data entry
+59	4	                sql = "INSERT INTO [Fauna_Bone_Measurements] ([GID], [Unit number], [Letter code], [Find number], [Measurement Set]) VALUES ('" & Me![GID] & "'," & Me![Unit number] & ", '" & Me![letter code] & "', " & Me![find number] & ", " & getMeasurementSet & ");"
+60	0	                DoCmd.RunSQL sql
+61	0	            End If
+62	0	        End If
+63	0	    End If
+64	0	        
+65	0	        
+66	0	    DoCmd.Minimize
+67	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+68	0	Else
+69	0	    MsgBox "Please enter the GID fields for this record or select a GID first", vbInformation, "No Unit Number"
+70	0	End If
+71	0	
+72	0	Exit_button_goto_measurement_Click:
+73	0	    Exit Sub
+74	0	
+75	0	Err_button_goto_measurement_Click:
+76	0	    If Err.Number = 2046 And Me.Dirty = False Then
+77	1	        'save record has failed  - DB might be Read only, added dirty check to make sure nothing added
+78	0	        Resume Next
+79	0	    Else
+80	0	        Call General_Error_Trap
+81	0	        Resume Exit_button_goto_measurement_Click
+82	0	    End If
+83	0	End Sub
+84	0	Sub button_goto_modification_Click()
+85	1	'altered season 2006 - saj
+86	1	'check if modification record exists and if not ask user to create
+87	0	On Error GoTo Err_button_goto_modification_Click
+88	0	
+89	0	    Dim stDocName As String
+90	0	    Dim stLinkCriteria As String
+91	0	    Dim retVal, checknum, sql
+92	0	    
+93	0	    stDocName = "Fauna_Bone_Modification"
+94	0	    
+95	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+96	0	    
+97	0	If Me![GID] <> "" Then
+98	1	    'new check for GID entered by saj
+99	1	    'the form is only minimised so must save data manually here - saj
+100	0	    DoCmd.RunCommand acCmdSaveRecord
+101	0	    
+102	1	    'new for season 2006 - see if the modification record exists if not create it - SAJ
+103	2	    checknum = DLookup("[GID]", "[Fauna_Bone_Modification]", "[GID] = '" & Me![GID] & "'")
+104	0	    If IsNull(checknum) Then
+105	1	        'gid not exist there yet
+106	0	        retVal = MsgBox("No Modification record exists yet for GID " & Me![GID] & ", do you want to create one now?", vbQuestion + vbYesNo, "Create New Modification Record")
+107	0	        If retVal = vbNo Then
+108	1	            'do nothing
+109	0	            Exit Sub
+110	0	        Else
+111	1	            'so create it ready for data entry
+112	4	            sql = "INSERT INTO [Fauna_Bone_Modification] ([GID], [Unit number], [Letter code], [Find number]) VALUES ('" & Me![GID] & "'," & Me![Unit number] & ", '" & Me![letter code] & "', " & Me![find number] & ");"
+113	0	            DoCmd.RunSQL sql
+114	0	        End If
+115	0	    End If
+116	0	
+117	0	    DoCmd.Minimize
+118	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+119	0	Else
+120	0	    MsgBox "Please enter the GID fields for this record or select a GID first", vbInformation, "No Unit Number"
+121	0	End If
+122	0	
+123	0	Exit_button_goto_modification_Click:
+124	0	    Exit Sub
+125	0	
+126	0	Err_button_goto_modification_Click:
+127	0	    If Err.Number = 2046 And Me.Dirty = False Then
+128	1	        'save record has failed  - DB might be Read only, added dirty check to make sure nothing added
+129	0	        Resume Next
+130	0	    Else
+131	0	        Call General_Error_Trap
+132	0	        Resume Exit_button_goto_modification_Click
+133	0	    End If
+134	0	End Sub
+135	0	Sub button_goto_artefacts_Click()
+136	1	'altered season 2006 - saj
+137	1	'check if artifact record exists and if not ask user to create
+138	0	On Error GoTo Err_button_goto_artefacts_Click
+139	0	
+140	0	    Dim stDocName As String
+141	0	    Dim stLinkCriteria As String
+142	0	    Dim checknum, sql, retVal
+143	0	    
+144	0	    stDocName = "Fauna_Bone_Artifacts"
+145	0	    
+146	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+147	0	If Me![GID] <> "" Then
+148	1	    'new check for GID entered by saj
+149	1	    'the form is only minimised so must save data manually here - saj
+150	0	    DoCmd.RunCommand acCmdSaveRecord
+151	0	    
+152	1	    'new for season 2006 - see if the modification record exists if not create it - SAJ
+153	2	    checknum = DLookup("[GID]", "[Fauna_Bone_Artifacts]", "[GID] = '" & Me![GID] & "'")
+154	0	    If IsNull(checknum) Then
+155	1	        'gid not exist there yet
+156	0	        retVal = MsgBox("No Artifact record exists yet for GID " & Me![GID] & ", do you want to create one now?", vbQuestion + vbYesNo, "Create New Modification Record")
+157	0	        If retVal = vbNo Then
+158	1	            'do nothing
+159	0	            Exit Sub
+160	0	        Else
+161	1	            'so create it ready for data entry
+162	4	            sql = "INSERT INTO [Fauna_Bone_Artifacts] ([GID], [Unit number], [Letter code], [Find number]) VALUES ('" & Me![GID] & "'," & Me![Unit number] & ", '" & Me![letter code] & "', " & Me![find number] & ");"
+163	0	            DoCmd.RunSQL sql
+164	0	        End If
+165	0	    End If
+166	0	
+167	0	    
+168	0	    DoCmd.Minimize
+169	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+170	0	    
+171	0	    [Forms]![Fauna_Bone_Artifacts].[Unit number] = [Forms]![Fauna_Bone_Postcranial].[Unit number]
+172	0	    [Forms]![Fauna_Bone_Artifacts].[letter code] = [Forms]![Fauna_Bone_Postcranial].[letter code]
+173	0	    [Forms]![Fauna_Bone_Artifacts].[find number] = [Forms]![Fauna_Bone_Postcranial].[find number]
+174	1	    'if we are going to do this should do GID as well - added by SAJ
+175	0	    [Forms]![Fauna_Bone_Artifacts].[GID] = [Forms]![Fauna_Bone_Postcranial].[GID]
+176	0	
+177	0	Else
+178	0	    MsgBox "Please enter the GID fields for this record or select a GID first", vbInformation, "No Unit Number"
+179	0	End If
+180	0	
+181	0	Exit_button_goto_artefacts_Click:
+182	0	    Exit Sub
+183	0	
+184	0	Err_button_goto_artefacts_Click:
+185	0	    If Err.Number = 2046 And Me.Dirty = False Then
+186	1	        'save record has failed  - DB might be Read only, added dirty check to make sure nothing added
+187	0	        Resume Next
+188	0	    Else
+189	0	        Call General_Error_Trap
+190	0	        Resume Exit_button_goto_artefacts_Click
+191	0	    End If
+192	0	End Sub
+193	0	Sub button_goto_unitBFD_Click()
+194	0	On Error GoTo Err_button_goto_unitBFD_Click
+195	0	
+196	0	    Dim stDocName As String
+197	0	    Dim stLinkCriteria As String
+198	0	
+199	0	    stDocName = "Fauna_Bone_Basic_Faunal_Data"
+200	0	    
+201	0	    stLinkCriteria = "[Unit number]=" & Me![Unit number]
+202	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+203	0	
+204	0	Exit_button_goto_unitBFD_Click:
+205	0	    Exit Sub
+206	0	
+207	0	Err_button_goto_unitBFD_Click:
+208	0	    MsgBox Err.Description
+209	0	    Resume Exit_button_goto_unitBFD_Click
+210	0	    
+211	0	End Sub
+212	0	Sub button_goto_bfdgid_Click()
+213	0	On Error GoTo Err_button_goto_bfdgid_Click
+214	0	
+215	0	    Dim stDocName As String
+216	0	    Dim stLinkCriteria As String
+217	0	
+218	0	    stDocName = "Fauna_Bone_Basic_Faunal_Data"
+219	0	    
+220	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+221	0	        
+222	0	    DoCmd.Minimize
+223	0	
+224	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+225	0	
+226	0	Exit_button_goto_bfdgid_Click:
+227	0	    Exit Sub
+228	0	
+229	0	Err_button_goto_bfdgid_Click:
+230	0	    MsgBox Err.Description
+231	0	    Resume Exit_button_goto_bfdgid_Click
+232	0	    
+233	0	End Sub
+234	0	Sub cmd_gotobfdunit_Click()
+235	0	On Error GoTo Err_cmd_gotobfdunit_Click
+236	0	
+237	0	    Dim stDocName As String
+238	0	    Dim stLinkCriteria As String
+239	0	
+240	0	    stDocName = "Fauna_Bone_Basic_Faunal_Data"
+241	0	    
+242	0	    stLinkCriteria = "[Unit number]=" & Me![Unit number]
+243	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+244	0	
+245	0	Exit_cmd_gotobfdunit_Click:
+246	0	    Exit Sub
+247	0	
+248	0	Err_cmd_gotobfdunit_Click:
+249	0	    MsgBox Err.Description
+250	0	    Resume Exit_cmd_gotobfdunit_Click
+251	0	    
+252	0	End Sub
+253	0	
+254	0	Private Sub button_gotobfdunit_Click()
+255	0	
+256	0	End Sub
+257	0	
+258	0	
+259	0	Private Sub cboFind_AfterUpdate()
+260	1	'new find combo by SAJ - filter msg remved request from NR 5/7/06
+261	0	On Error GoTo err_cboFind
+262	0	
+263	0	If Me![cboFind] <> "" Then
+264	0	    If Me.Filter <> "" Then
+265	2	            If Me.Filter <> "[GID] = '" & Me![cboFind].Column(1) & "'" Then
+266	1	            '    MsgBox "This form was opened to only show the record " & Me.Filter & ". This action has removed the filter and all records are available to view.", vbInformation, "Filter Removed"
+267	0	                Me.FilterOn = False
+268	0	                Me.Filter = ""
+269	0	            End If
+270	0	        End If
+271	0	    DoCmd.GoToControl "GID"
+272	0	    DoCmd.FindRecord Me![cboFind]
+273	0	
+274	0	End If
+275	0	
+276	0	Exit Sub
+277	0	
+278	0	err_cboFind:
+279	0	    Call General_Error_Trap
+280	0	    Exit Sub
+281	0	End Sub
+282	0	
+283	0	Private Sub cboFind_NotInList(NewData As String, response As Integer)
+284	1	'stop not in list msg loop
+285	0	On Error GoTo err_cbofindNot
+286	0	
+287	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+288	0	    response = acDataErrContinue
+289	0	    
+290	0	    Me![cboFind].Undo
+291	0	Exit Sub
+292	0	
+293	0	err_cbofindNot:
+294	0	    Call General_Error_Trap
+295	0	    Exit Sub
+296	0	End Sub
+297	0	
+298	0	Private Sub cmdMenu_Click()
+299	1	'new menu button
+300	0	On Error GoTo err_cmdMenu
+301	0	
+302	0	    DoCmd.OpenForm "Bone", acNormal
+303	0	    DoCmd.Close acForm, Me.Name
+304	0	Exit Sub
+305	0	
+306	0	err_cmdMenu:
+307	0	    Call General_Error_Trap
+308	0	    Exit Sub
+309	0	End Sub
+310	0	
+311	0	Private Sub Form_Current()
+312	1	'this used to call Bone.Update PostCran Unit Letter and Find Number
+313	1	'which did the following:
+314	0	On Error GoTo err_curr
+315	0	
+316	2	'If [Forms]![Fauna_Bone_PostCranial]![Unit number] = 0 Then 'this was ok in MF but not in here as there is a unit 0!
+317	0	If IsNull([Forms]![Fauna_Bone_Postcranial]![Unit number]) Then
+318	0	    [Forms]![Fauna_Bone_Postcranial]![Unit number] = [Forms]![Fauna_Bone_Basic_Faunal_Data]![Unit number]
+319	0	    [Forms]![Fauna_Bone_Postcranial]![letter code] = [Forms]![Fauna_Bone_Basic_Faunal_Data]![letter code]
+320	0	    [Forms]![Fauna_Bone_Postcranial]![find number] = [Forms]![Fauna_Bone_Basic_Faunal_Data]![find number]
+321	0	    [Forms]![Fauna_Bone_Postcranial]![GID] = [Forms]![Fauna_Bone_Basic_Faunal_Data]![GID]
+322	0	End If
+323	0	DoCmd.GoToControl "Field23"
+324	0	Exit Sub
+325	0	
+326	0	err_curr:
+327	0	    If Err.Number = 2450 Then
+328	1	        'form not open so ignore this action
+329	0	        Exit Sub
+330	0	    Else
+331	0	        Call General_Error_Trap
+332	0	    End If
+333	0	Exit Sub
+334	0	End Sub
+335	0	
+336	0	

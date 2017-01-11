@@ -1,0 +1,8 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Public Const DBName = "Diary Central Database"
+5	0	
+6	0	Public VersionNumber
+7	0	
+8	0	Public GeneralPermissions

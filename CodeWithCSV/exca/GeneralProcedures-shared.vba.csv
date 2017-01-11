@@ -1,0 +1,464 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	1	'******************************************************************************
+4	1	' New module to hold general procedures that are shared across the diff db -easy to overwrite
+5	1	'
+6	1	' Intro by SAJ v.9 23/11/05 (on)
+7	1	'******************************************************************************
+8	0	
+9	0	
+10	0	
+11	0	Sub General_Error_Trap()
+12	1	'******************************************************************************
+13	1	' Display general error message
+14	1	'
+15	1	' SAJ v.9
+16	1	'******************************************************************************
+17	0	
+18	0	    MsgBox "The system has encountered an error. The message is as follows:" & Chr(13) & Chr(13) & Err.Description & Chr(13) & Chr(13) & "Error Code: " & Err.Number, vbOKOnly, "System Error"
+19	0	
+20	0	
+21	0	End Sub
+22	0	Function GetCurrentVersion()
+23	1	'******************************************************************************
+24	1	' Return current interface version number - if its empty its empty do not put
+25	1	' a trap to go set it as this is directly called by the main menu that appears
+26	1	' before the DB links have been checked and validated (therefore if you do this
+27	1	' the sql server login error will occur)
+28	1	'
+29	1	' SAJ v9
+30	1	'******************************************************************************
+31	0	On Error GoTo err_GetCurrentVersion
+32	0	
+33	0	    GetCurrentVersion = VersionNumber
+34	0	
+35	0	Exit Function
+36	0	
+37	0	err_GetCurrentVersion:
+38	0	    Call General_Error_Trap
+39	0	End Function
+40	0	
+41	0	Function SetCurrentVersion()
+42	1	'******************************************************************************
+43	1	' Return current interface version number stored in DB
+44	1	'
+45	1	' SAJ v9
+46	1	'******************************************************************************
+47	0	On Error GoTo err_SetCurrentVersion
+48	0	
+49	0	Dim retval, centralver
+50	0	retval = "v"
+51	0	If DBName <> "" Then
+52	0	    Dim mydb As Database, myrs As Recordset
+53	0	    Dim sql, theVersionNumberLocal
+54	0	    Set mydb = CurrentDb()
+55	0	    
+56	2	    sql = "SELECT [Version_Num] FROM [Database_Interface_Version_History] WHERE [MDB_Name] = '" & DBName & "' AND not isnull([DATE_RELEASED]) ORDER BY [Version_Num] DESC;"
+57	0	    Set myrs = mydb.OpenRecordset(sql, dbOpenSnapshot)
+58	0	    
+59	2	     '' Dim myrs As New ADODB.Recordset
+60	2	   '' myrs.Open sql, CurrentProject.Connection, adOpenKeySet, adLockOptimistic
+61	0	    
+62	0	    If Not (myrs.BOF And myrs.EOF) Then
+63	0	        myrs.MoveFirst
+64	0	        centralver = myrs![Version_num]
+65	0	        retval = retval & myrs![Version_num]
+66	0	        
+67	1	        'check local constant value held in module Globals-shared to see if this interface
+68	1	        'matches current version of central copy, if not tell the user
+69	2	        '2009 was a problem on PC's with where comma showing as decimal so try to capture
+70	0	        theVersionNumberLocal = VersionNumberLocal
+71	0	        If InStr(centralver, ",") > 0 Then centralver = Replace(centralver, ",", ".")
+72	0	        If InStr(theVersionNumberLocal, ",") > 0 Then theVersionNumberLocal = Replace(theVersionNumberLocal, ",", ".")
+73	0	        
+74	0	        If CDbl(centralver) <> CDbl(theVersionNumberLocal) Then
+75	0	            Dim msg
+76	0	            msg = "There is a new version of the Excavation database file available. " & Chr(13) & Chr(13) & _
+77	2	                    "Please close this copy now and run 'Update Databases.bat' on your desktop or " & _
+78	2	                    "copy the file 'Excavation Central Database.mdb' from G:\" & Year(Date) & " Central Server Databases " & _
+79	2	                    " into the 'New Database Files folder' on your desktop." & Chr(13) & Chr(13) & "If you do not do this" & _
+80	0	                    " you may experience problems using this database and you will not be able to utilise any new functionaility that has been added."
+81	0	            MsgBox msg, vbExclamation + vbOKOnly, "New version available"
+82	0	        End If
+83	0	    End If
+84	0	    
+85	0	    myrs.Close
+86	0	    Set myrs = Nothing
+87	0	    mydb.Close
+88	0	    Set mydb = Nothing
+89	0	    
+90	0	  
+91	0	Else
+92	0	    retval = retval & "X"
+93	0	End If
+94	0	
+95	0	VersionNumber = retval
+96	0	SetCurrentVersion = retval
+97	0	
+98	0	Exit Function
+99	0	err_SetCurrentVersion:
+100	0	    Call General_Error_Trap
+101	0	End Function
+102	0	
+103	0	Sub SetGeneralPermissions(username, pwd, connStr)
+104	1	'******************************************************************************
+105	1	' To make the link clearer between whether a user has only read-only rights or
+106	1	' read write access this code assigns a global var to flag what it knows.
+107	1	' SAJ v9.1
+108	1	'******************************************************************************
+109	0	On Error GoTo err_SetGeneralPermissions
+110	0	
+111	0	Dim tempVal, msg, usr
+112	0	
+113	1	'If the naming convention for users is maintained then the method below should work ok
+114	1	' but it is not very safe so replaced below
+115	1	'   If username = "" Then
+116	1	'        tempVal = "RO"
+117	1	'        msg = "Your login name is unknown to the system, you have been assigned READ ONLY permissions from now on." & Chr(13) & Chr(13) & "If this is incorrect please re-start the application and then if problems persist contact the Database Administrator."
+118	1	'   Else
+119	1	'        usr = UCase(username)
+120	1	'        If InStr(usr, "RO") <> 0 Or UCase(usr) = "CATALHOYUK" Then
+121	1	'            tempVal = "RO"
+122	1	'        ElseIf InStr(usr, "ADMIN") <> 0 Or usr = "RICH" Or usr = "MIA" Or usr = "SHAHINA" Or usr = "SARAH" Then
+123	1	'            tempVal = "ADMIN"
+124	1	'        ElseIf InStr(usr, "RW") <> 0 Then
+125	1	'            tempVal = "RW"
+126	1	'        Else
+127	1	'            tempVal = "RO"
+128	1	'            msg = "The system is unsure of the rights of your login name so you have been assigned " & _
+129	1	'                "READ ONLY permissions on this occassion." & Chr(13) & Chr(13) & "Please contact" & _
+130	2	'                " the Database Administrator with the following message:" & Chr(13) & Chr(13) & "The login '" & _
+131	2	'                username & "' does not fall into any of the known types, please update the " & _
+132	1	'                "SetGeneralPermissions code"
+133	1	'        End If
+134	1	'
+135	1	'    End If
+136	0	
+137	0	
+138	1	' Alternative way to do this is to check the DB permissions tables for the user
+139	1	' using a stored procedure to obtain whether the user has select permissions = RO
+140	1	' if update = RW and if delete = Admin
+141	0	Dim mydb As DAO.Database
+142	0	Dim myq1 As QueryDef
+143	0	    Set mydb = CurrentDb
+144	0	    Set myq1 = mydb.CreateQueryDef("")
+145	0	    myq1.Connect = connStr & ";UID=" & username & ";PWD=" & pwd
+146	0	    spString = connStr & ";UID=" & username & ";PWD=" & pwd
+147	0	    myq1.ReturnsRecords = True
+148	8	    ''myq1.sql = "sp_table_list_with_privileges_for_a_user '%%', 'dbo', null, '" & username & "'"
+149	6	    myq1.sql = "sp_table_privilege_overview_for_user '%%', 'dbo', null, '" & username & "'"
+150	0	
+151	0	    Dim myrs As Recordset
+152	0	    Set myrs = myq1.OpenRecordset
+153	2	    ''MsgBox myrs.Fields(0).Value
+154	0	    If myrs.Fields(0).Value = "" Then
+155	0	        tempVal = "RO"
+156	0	        msg = "Your permissions on the database cannot be defined, you have been assigned READ ONLY permissions from now on." & Chr(13) & Chr(13) & "If this is incorrect please re-start the application and then if problems persist contact the Database Administrator."
+157	0	    Else
+158	0	        usr = UCase(myrs.Fields(0).Value)
+159	0	        If InStr(usr, "RO") <> 0 Then
+160	0	            tempVal = "RO"
+161	0	        ElseIf InStr(usr, "ADMIN") <> 0 Then
+162	0	            If username = "exsuper" Then
+163	0	                tempVal = "exsuper"
+164	0	            Else
+165	0	                tempVal = "ADMIN"
+166	0	            End If
+167	0	        ElseIf InStr(usr, "RW") <> 0 Then
+168	0	            tempVal = "RW"
+169	0	        Else
+170	0	            tempVal = "RO"
+171	0	            msg = "The system is unsure of the rights of your login name so you have been assigned " & _
+172	0	                "READ ONLY permissions on this occassion." & Chr(13) & Chr(13) & "Please contact" & _
+173	1	                " the Database Administrator with the following message:" & Chr(13) & Chr(13) & "The login '" & _
+174	1	                username & "' does not fall into any of the known types, please update the " & _
+175	0	                "SetGeneralPermissions code"
+176	0	        End If
+177	0	    End If
+178	0	    
+179	0	    
+180	0	myrs.Close
+181	0	Set myrs = Nothing
+182	0	myq1.Close
+183	0	Set myq1 = Nothing
+184	0	mydb.Close
+185	0	Set mydb = Nothing
+186	0	
+187	0	If msg <> "" Then
+188	0	    MsgBox msg, vbInformation, "Permissions setup"
+189	0	End If
+190	2	''MsgBox tempVal
+191	0	GeneralPermissions = tempVal
+192	0	Exit Sub
+193	0	
+194	0	err_SetGeneralPermissions:
+195	0	    GeneralPermissions = "RO"
+196	0	    msg = "An error has occurred in the procedure: SetGeneralPermissions " & Chr(13) & Chr(13)
+197	0	    msg = msg & "The system is unsure of the rights of your login name so you have been assigned " & _
+198	0	                "READ ONLY permissions on this occassion." & Chr(13) & Chr(13) & "Please contact" & _
+199	1	                " the Database Administrator with the following message:" & Chr(13) & Chr(13) & "The login '" & _
+200	1	                username & "' does not fall into any of the known types"
+201	0	                
+202	0	    MsgBox msg, vbInformation, "Permissions setup"
+203	0	    Exit Sub
+204	0	End Sub
+205	0	Function GetGeneralPermissions()
+206	1	'******************************************************************************
+207	1	' Return the current users status - if its empty call set function to reset
+208	1	' but this will reset to RO
+209	1	'
+210	1	' SAJ v9
+211	1	'******************************************************************************
+212	0	On Error GoTo err_GetCurrentVersion
+213	0	
+214	0	    If GeneralPermissions = "" Then
+215	0	        SetGeneralPermissions "", "", ""
+216	0	    End If
+217	0	    
+218	0	    GetGeneralPermissions = GeneralPermissions
+219	0	
+220	0	Exit Function
+221	0	
+222	0	err_GetCurrentVersion:
+223	0	    Call General_Error_Trap
+224	0	End Function
+225	0	Sub ToggleFormReadOnly(frm As Form, readonly, Optional otherarg)
+226	1	'*****************************************************************************
+227	1	' To allow a form to toggle between readonly and edit. Changes look of form to
+228	1	' reflect its status. Sometimes allowing certain fields to be edited only.
+229	1	'
+230	1	' Inputs: frm = form name; readonly = T/F; otherarg = additional info on additions, deletions etc
+231	1	' SAJ v9.1
+232	1	'*****************************************************************************
+233	0	Dim ctl As Control, extra
+234	0	Dim intI As Integer, intCanEdit As Integer
+235	0	Const conTransparent = 0
+236	0	Const conWhite = 16777215
+237	0	    
+238	0	On Error GoTo err_trap
+239	0	    
+240	0	    If Not IsMissing(otherarg) Then extra = otherarg
+241	0	    
+242	1	    'if allow edits is set the combo searches dont work - instead locking each control lower down
+243	0	    If readonly = True Then
+244	0	        With frm
+245	0	            If extra <> "Additions" Then .AllowAdditions = False
+246	0	            .AllowDeletions = False
+247	1	'            .AllowEdits = False
+248	0	        End With
+249	0	    Else
+250	0	        With frm
+251	1	            'this next line is added to help with not allowing additions when a filter is set
+252	0	            If extra = "NoAdditions" Then .AllowAdditions = False
+253	0	            If extra <> "NoAdditions" Then .AllowAdditions = True
+254	0	            If extra <> "NoDeletions" Then .AllowDeletions = True
+255	1	'            .AllowEdits = True
+256	0	        End With
+257	0	    End If
+258	0	    
+259	0	    For Each ctl In frm.Controls
+260	0	        With ctl
+261	1	            'Debug.Print ctl.Name
+262	0	            Select Case .ControlType
+263	0	                Case acLabel
+264	0	                    .SpecialEffect = acEffectNormal
+265	0	                    .BorderStyle = conTransparent
+266	0	                Case acTextBox
+267	1	                    'there maybe some exceptions on some forms - keep main key editable for newrecords;
+268	1	                    'ignore fields that are always locked like mound
+269	2	                    ''If ((frm.Name = "Exca: Area Sheet") Or (frm.Name = "Exca: Building Sheet") Or (frm.Name = "Exca: Space Sheet") Or (frm.Name = "Exca: Feature Sheet" And .Name <> "Feature Number") Or (frm.Name = "Exca: Unit Sheet" And .Name <> "Unit Number")) And (.Name <> "Mound") Then
+270	0	                     If .Name <> "Mound" And (frm.Name <> "Exca: Feature Sheet" Or (frm.Name = "Exca: Feature Sheet" And .Name <> "Feature Number")) And (frm.Name <> "Exca: Unit Sheet" Or (frm.Name = "Exca: Unit Sheet" And .Name <> "Unit Number")) Then
+271	0	                        
+272	0	                        If readonly = False Then
+273	2	                            ''.SpecialEffect = acEffectSunken
+274	1	                            If frm.DefaultView <> 2 Then 'single or continuous
+275	0	                                .BackColor = conWhite
+276	0	                            Else
+277	1	                                frm.DatasheetBackColor = conWhite 'datasheet
+278	0	                            End If
+279	0	                            .Locked = False
+280	0	                        Else
+281	2	                            ''.SpecialEffect = acEffectNormal
+282	1	                            '.BackColor = frm.Detail.BackColor
+283	1	                            If frm.DefaultView <> 2 Then 'single or continuous
+284	0	                                .BackColor = frm.Section(0).BackColor
+285	0	                            Else
+286	1	                                'frm.DatasheetBackColor = frm.Section(0).BackColor
+287	1	                                'section color is -2147483633 this will set datasheet to BLACK!!???
+288	1	                                'how ever this works - you would not believe how long this took
+289	1	                                frm.DatasheetBackColor = RGB(236, 233, 216)   'datasheet
+290	0	                            End If
+291	0	                            .Locked = True
+292	0	                        End If
+293	0	                    End If
+294	0	                Case acComboBox
+295	2	                    'search combo's must not be affected
+296	2	                    ''If .Name = "cboCountry" Or InStr(.Name, "Edit") <> 0 Then
+297	0	                    If InStr(.Name, "Find") = 0 Then
+298	0	                        If readonly = False Then
+299	2	                            ''.SpecialEffect = acEffectSunken
+300	0	                            .BackColor = conWhite
+301	0	                            .Locked = False
+302	0	                        Else
+303	2	                            ''.SpecialEffect = acEffectNormal
+304	1	                            '.BackColor = frm.Detail.BackColor
+305	0	                            .BackColor = frm.Section(0).BackColor
+306	0	                            .Locked = True
+307	0	                        End If
+308	0	                    End If
+309	0	                Case acSubform, acCheckBox
+310	0	                    If readonly = False Then
+311	0	                        .Locked = False
+312	0	                        .Enabled = True
+313	0	                    Else
+314	1	                        'put in some extra checks as some subforms are readonly anyway but
+315	2	                        'can't be disabled as have buttons off to linking forms
+316	1	                        'amendment - just need to set enabled to true and its ok (?)
+317	1	                       ' If .Name <> "Exca: subform Features related to Building" And .Name <> "Exca: subform Spaces related to building" Then
+318	0	                             .Locked = True
+319	1	                             '.Enabled = False
+320	0	                             .Enabled = True
+321	1	                       ' End If
+322	0	                    End If
+323	0	                Case acOptionButton
+324	0	                    If readonly = False Then
+325	0	                        .Locked = False
+326	0	                    Else
+327	0	                         .Locked = True
+328	0	                    End If
+329	0	            End Select
+330	0	        End With
+331	0	    Next ctl
+332	0	    
+333	0	    Exit Sub
+334	0	    
+335	0	err_trap:
+336	0	        MsgBox "An error occurred setting readonly on/off. Code will resume next line" & Chr(13) & "Error: " & Err.Description & " - " & Chr(13), vbInformation, "Error Identified"
+337	0	        Resume Next
+338	0	    
+339	0	End Sub
+340	0	Sub test(KeyAscii As Integer)
+341	0	Dim strCharacter As String
+342	0	
+343	1	    ' Convert ANSI value to character string.
+344	1	    'strCharacter = Chr(KeyAscii)
+345	1	    ' Convert character to upper case, then to ANSI value.
+346	1	    'KeyAscii = Asc(UCase(strCharacter))
+347	0	    MsgBox KeyAscii
+348	0	End Sub
+349	0	
+350	0	Sub ListReferences()
+351	0	Dim refCurr As Reference
+352	0	
+353	0	  For Each refCurr In Application.References
+354	0	    Debug.Print refCurr.Name & ": " & refCurr.FullPath
+355	0	  Next
+356	0	
+357	0	End Sub
+358	0	
+359	0	Sub GetRolePermissions()
+360	1	'**************************************************************************************
+361	1	' This gets the latest set of permissions form each role and stores them in the table
+362	1	' Database_Roles_Permissions. Uses the SQL DMO server object
+363	1	'
+364	1	' SAJ 25/11/2005
+365	1	'**************************************************************************************
+366	0	Dim oServer, oDatabase, oDatabaserole, oRolePermission, currentTable
+367	0	On Error GoTo err_GetPermissionsForRoles
+368	0	
+369	0	Set oServer = CreateObject("SQLDMO.SQLServer")
+370	3	''oServer.LoginSecure = True 'windows auth
+371	2	''oServer.Connect "catalsql.arch.cam.ac.uk"
+372	0	oServer.LoginSecure = False
+373	0	oServer.Connect "catalsql.arch.cam.ac.uk", "catalhoyuk", "catalhoyuk"
+374	0	
+375	1	' Get and set a database object
+376	0	Set oDatabase = oServer.Databases("catalhoyuk")
+377	0	
+378	1	' Get and set a database role object
+379	0	Set oDatabaserole = oDatabase.DatabaseRoles
+380	0	
+381	0	
+382	0	
+383	1	' Here is the outer loop for the roles
+384	0	For Each oDatabaserole In oDatabase.DatabaseRoles
+385	0	    Debug.Print "Role Name: " & oDatabaserole.Name
+386	1	    ' Exclude the system roles
+387	0	
+388	1	        ' Get and set a permissions object - will fail for all db_* roles
+389	0	        Set oRolePermission = oDatabaserole.ListObjectPermissions(63)
+390	0	        
+391	1	        'is only available for user defined roles and will fail on these roles
+392	1	        'db_owner,db_accessadmin,db_securityadmin,db_ddladmin,db_backupoperator,db_datareader,db_datawriter,db_denydatareader,db_denydatawriter
+393	0	        If Err.Number <> 20551 Then
+394	1	            'so no error found for getting this roles permissions
+395	0	        
+396	0	            On Error GoTo err_GetPermissionsForRoles
+397	0	        
+398	1	            ' Inner loop for the permission, by object and group
+399	0	            For Each oRolePermission In oDatabaserole.ListObjectPermissions(63)
+400	1	                'this loop goes through each permission - so check if still referring to same table as last loop
+401	0	                currentTable = oRolePermission.ObjectName
+402	0	                 Debug.Print oDatabaserole.Name
+403	0	                    Debug.Print oRolePermission.ObjectOwner + "." + oRolePermission.ObjectName
+404	0	             Next
+405	0	        End If
+406	2	'    End If 'if dont want the public role this is the IF statement to re-instate
+407	0	
+408	1	Next 'next database role
+409	0	
+410	1	' Display if you want
+411	1	'MsgBox strMsgText, , "Permission, Object, Group"
+412	0	
+413	0	cleanup:
+414	0	    On Error Resume Next
+415	0	    
+416	0	    Set oRolePermission = Nothing
+417	0	    Set oDatabase = Nothing
+418	0	    Set oServer = Nothing
+419	1	    'MsgBox count
+420	0	Exit Sub
+421	0	
+422	0	err_GetPermissionsForRoles:
+423	1	    'catch ant errors
+424	0	    MsgBox Err.Description
+425	0	    
+426	0	    GoTo cleanup
+427	1	    'If Err.Number = 20551 Then
+428	1	    '    Exit For
+429	1	    'End If
+430	0	
+431	0	End Sub
+432	0	
+433	0	Function GetCurrentYear()
+434	1	'******************************************************************************
+435	1	' Return current year - as there is a year
+436	1	'
+437	1	' SAJ v9
+438	1	'******************************************************************************
+439	0	On Error GoTo err_GetCurrentYear
+440	0	
+441	0	    GetCurrentYear = ThisYear
+442	0	
+443	0	Exit Function
+444	0	
+445	0	err_GetCurrentYear:
+446	0	    Call General_Error_Trap
+447	0	End Function
+448	0	
+449	0	Function SetCurrentYear()
+450	1	'******************************************************************************
+451	1	' Set current year - as there is a year
+452	1	'
+453	1	' SAJ v9
+454	1	'******************************************************************************
+455	0	On Error GoTo err_SetCurrentYear
+456	0	
+457	0	    ThisYear = Year(Date)
+458	0	    SetCurrentYear = ThisYear
+459	0	
+460	0	Exit Function
+461	0	
+462	0	err_SetCurrentYear:
+463	0	    Call General_Error_Trap
+464	0	End Function

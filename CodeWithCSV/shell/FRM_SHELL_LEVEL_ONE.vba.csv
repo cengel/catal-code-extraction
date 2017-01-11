@@ -1,0 +1,162 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cboFind_AfterUpdate()
+5	1	'find combo
+6	0	On Error GoTo err_cboFind
+7	0	
+8	0	If Me![cboFind] <> "" Then
+9	0	
+10	0	    DoCmd.GoToControl "txtUnitNumber"
+11	0	    DoCmd.FindRecord Me![cboFind]
+12	0	    Me![cboFind] = ""
+13	0	End If
+14	0	
+15	0	Exit Sub
+16	0	
+17	0	err_cboFind:
+18	0	    Call General_Error_Trap
+19	0	    Exit Sub
+20	0	End Sub
+21	0	
+22	0	Private Sub cboFind_NotInList(NewData As String, response As Integer)
+23	1	'stop not in list msg loop
+24	0	On Error GoTo err_cbofindNot
+25	0	
+26	0	    MsgBox "This unit number has not been entered", vbInformation, "No Match"
+27	0	    response = acDataErrContinue
+28	0	    
+29	0	    Me![cboFind].Undo
+30	0	    DoCmd.GoToControl "cmdAddNew"
+31	0	Exit Sub
+32	0	
+33	0	err_cbofindNot:
+34	0	    Call General_Error_Trap
+35	0	    Exit Sub
+36	0	End Sub
+37	0	
+38	0	Private Sub cmdAddNew_Click()
+39	1	'add new unit
+40	0	On Error GoTo err_cmdAddNew
+41	0	
+42	0	    DoCmd.GoToRecord acActiveDataObject, Me.Name, acNewRec
+43	0	    DoCmd.GoToControl "txtUnitNumber"
+44	0	    
+45	0	
+46	0	Exit Sub
+47	0	
+48	0	err_cmdAddNew:
+49	0	    Call General_Error_Trap
+50	0	    Exit Sub
+51	0	End Sub
+52	0	
+53	0	Private Sub cmdCloseForm_Click()
+54	1	'close form to return to database window
+55	0	On Error GoTo err_closeform
+56	0	    DoCmd.OpenForm "FRM_menu"
+57	0	    DoCmd.Restore
+58	0	    DoCmd.Close acForm, Me.Name, acSaveYes
+59	0	    
+60	0	
+61	0	Exit Sub
+62	0	
+63	0	err_closeform:
+64	0	    Call General_Error_Trap
+65	0	    Exit Sub
+66	0	
+67	0	End Sub
+68	0	
+69	0	Private Sub cmdDelete_Click()
+70	1	'new 2009 - control the delete of a record to ensure both tables are clear
+71	0	On Error GoTo err_del
+72	0	
+73	0	Dim response
+74	0	    response = MsgBox("Do you really want to remove Unit " & Me!txtUnitNumber & " and all its related species identification from your database (this does not effect the excavation database)?", vbYesNo + vbQuestion, "Remove Record")
+75	0	    If response = vbYes Then
+76	0	        Dim sql
+77	0	        sql = "Delete FROM [Shell_Level_One_Data] WHERE [UnitNumber] = " & Me![txtUnitNumber] & ";"
+78	0	        DoCmd.RunSQL sql
+79	0	        
+80	0	        sql = "Delete from [Shell_UnitDescription] WHERE [UnitNumber] = " & Me![txtUnitNumber] & ";"
+81	0	        DoCmd.RunSQL sql
+82	0	        Me.Requery
+83	0	        MsgBox "Deletion completed", vbInformation, "Done"
+84	0	    End If
+85	0	Exit Sub
+86	0	
+87	0	err_del:
+88	0	    Call General_Error_Trap
+89	0	    Exit Sub
+90	0	End Sub
+91	0	
+92	0	Private Sub cmdQuit_Click()
+93	1	'quit application
+94	0	On Error GoTo err_cmdQuit
+95	0	
+96	0	    DoCmd.Quit acQuitSaveAll
+97	0	    
+98	0	Exit Sub
+99	0	
+100	0	err_cmdQuit:
+101	0	    Call General_Error_Trap
+102	0	    Exit Sub
+103	0	End Sub
+104	0	
+105	0	Private Sub cmdRefreshCount_Click()
+106	1	'requery subform to refresh count of bags
+107	0	On Error GoTo err_refreshcount
+108	0	    Me![FRM_SUB_TOTAL_BAGS_IN_A_UNIT].Requery
+109	0	    
+110	0	Exit Sub
+111	0	
+112	0	err_refreshcount:
+113	0	    Call General_Error_Trap
+114	0	    Exit Sub
+115	0	End Sub
+116	0	
+117	0	Private Sub Form_Current()
+118	1	'things to do for the display of each unit
+119	0	On Error GoTo err_current
+120	0	    
+121	0	    If Me!txtUnitNumber <> "" Then
+122	0	        Me!txtUnitNumber.Locked = True
+123	0	        Me!txtUnitNumber.BackColor = "-2147483633"
+124	0	    Else
+125	0	        Me!txtUnitNumber.Locked = False
+126	0	        Me!txtUnitNumber.BackColor = "16777215"
+127	0	    End If
+128	0	
+129	0	Exit Sub
+130	0	
+131	0	err_current:
+132	0	    Call General_Error_Trap
+133	0	    Exit Sub
+134	0	    
+135	0	End Sub
+136	0	
+137	0	Private Sub Form_Open(Cancel As Integer)
+138	1	'maximise
+139	0	On Error GoTo err_open
+140	0	    DoCmd.GoToControl "cboFind"
+141	0	    DoCmd.Maximize
+142	0	
+143	0	Exit Sub
+144	0	
+145	0	err_open:
+146	0	    Call General_Error_Trap
+147	0	    Exit Sub
+148	0	End Sub
+149	0	
+150	0	Private Sub txtUnitNumber_AfterUpdate()
+151	1	'new 2009 - update screen after new unit entered
+152	0	On Error GoTo err_unit
+153	0	
+154	0	    DoCmd.RunCommand acCmdSaveRecord
+155	0	    Me!frm_subform_Exca_Unit_Sheet.Requery
+156	0	    Me!cboFind.Requery
+157	0	Exit Sub
+158	0	
+159	0	err_unit:
+160	0	    Call General_Error_Trap
+161	0	    Exit Sub
+162	0	End Sub

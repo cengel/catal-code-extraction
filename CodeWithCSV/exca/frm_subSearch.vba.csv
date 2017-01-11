@@ -1,0 +1,14 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub Unit_Number_DblClick(Cancel As Integer)
+5	0	On Error GoTo err_unitdblclick
+6	0	
+7	0	    DoCmd.OpenForm "Exca: Unit Sheet", , , "[unit number] = " & Me![Unit Number]
+8	0	
+9	0	Exit Sub
+10	0	
+11	0	err_unitdblclick:
+12	0	    Call General_Error_Trap
+13	0	    Exit Sub
+14	0	End Sub

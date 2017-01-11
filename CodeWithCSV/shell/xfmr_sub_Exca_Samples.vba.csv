@@ -1,0 +1,7 @@
+1	0	Option Compare Database
+2	0	
+3	0	Private Sub Form_BeforeUpdate(Cancel As Integer)
+4	0	Me![Date Changed] = Now()
+5	0	End Sub
+6	0	
+7	0	

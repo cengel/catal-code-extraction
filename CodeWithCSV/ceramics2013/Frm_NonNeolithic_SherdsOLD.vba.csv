@@ -1,0 +1,237 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	
+5	0	
+6	0	Private Sub cboFilterUnit_AfterUpdate()
+7	1	'new 2010 filter for unit
+8	0	On Error GoTo err_filterunit
+9	0	
+10	0	If Me![cboFilterUnit] <> "" Then
+11	0	    Me.Filter = "[Unit] = " & Me![cboFilterUnit]
+12	0	    Me.FilterOn = True
+13	0	    Me![cmdRemoveFilter].Visible = True
+14	0	End If
+15	0	
+16	0	Exit Sub
+17	0	
+18	0	err_filterunit:
+19	0	    Call General_Error_Trap
+20	0	    Exit Sub
+21	0	
+22	0	End Sub
+23	0	
+24	0	Private Sub cboFindUnit_AfterUpdate()
+25	1	'********************************************
+26	1	'Find the selected unit from the list
+27	1	'********************************************
+28	0	On Error GoTo err_cboFindUnit_AfterUpdate
+29	0	
+30	0	    If Me![cboFindUnit] <> "" Then
+31	1	         'if a filter is on - turn off
+32	0	         If Me.FilterOn = True Then
+33	0	            Me.FilterOn = False
+34	0	            Me![cmdRemoveFilter].Visible = False
+35	0	            Me![cboFilterUnit] = ""
+36	0	        End If
+37	0	    
+38	1	         'for existing number the field will be disabled, enable it as when find num
+39	1	        'is shown the on current event will deal with disabling it again
+40	0	        If Me![txtShowUnit].Enabled = False Then Me![txtShowUnit].Enabled = True
+41	0	        DoCmd.GoToControl "txtShowUnit"
+42	0	        DoCmd.FindRecord Me![cboFindUnit], , , , True
+43	0	        Me![cboFindUnit] = ""
+44	0	        DoCmd.GoToControl "cboFindUnit"
+45	0	        Me![txtShowUnit].Enabled = False
+46	0	    End If
+47	0	Exit Sub
+48	0	
+49	0	err_cboFindUnit_AfterUpdate:
+50	0	    Call General_Error_Trap
+51	0	    Exit Sub
+52	0	End Sub
+53	0	
+54	0	
+55	0	Private Sub Close_Click()
+56	0	On Error GoTo err_cmdAddNew_Click
+57	0	
+58	0	    DoCmd.Close acForm, Me.Name
+59	0	    DoCmd.Restore
+60	0	Exit Sub
+61	0	
+62	0	err_cmdAddNew_Click:
+63	0	    Call General_Error_Trap
+64	0	    Exit Sub
+65	0	End Sub
+66	0	
+67	0	Private Sub cmdAddNew_Click()
+68	0	On Error GoTo err_cmdAddNew_Click
+69	3	   ' DoCmd.GoToControl "Period" 'seems to get focus into tab control and then error as says it can't hide control that has focus
+70	0	    DoCmd.GoToRecord acActiveDataObject, , acNewRec
+71	1	    'new record allow GID entry
+72	0	    Me![txtUnit].Enabled = True
+73	0	    Me![txtUnit].Locked = False
+74	0	    Me![txtUnit].BackColor = 16777215
+75	0	    Me![cboPeriod].Enabled = True
+76	0	    Me![cboPeriod].Locked = False
+77	0	    Me![cboPeriod].BackColor = 16777215
+78	0	    DoCmd.GoToControl "txtUnit"
+79	0	Exit Sub
+80	0	
+81	0	err_cmdAddNew_Click:
+82	0	    Call General_Error_Trap
+83	0	    Exit Sub
+84	0	End Sub
+85	0	
+86	0	Private Sub cmdAddSameUnit_Click()
+87	0	On Error GoTo err_cmdAddSameUnit_Click
+88	0	
+89	0	    Dim thisunit
+90	0	    thisunit = Me![txtUnit]
+91	0	    
+92	3	    'DoCmd.GoToControl "Period" 'seems to get focus into tab control and then error as says it can't hide control that has focus
+93	0	    DoCmd.GoToRecord acActiveDataObject, , acNewRec
+94	1	    'new record allow GID entry
+95	0	    If Not IsNull(thisunit) Then Me![txtUnit] = thisunit
+96	0	    Me![txtUnit].Enabled = True
+97	0	    Me![txtUnit].Locked = False
+98	0	    Me![txtUnit].BackColor = 16777215
+99	0	    Me![cboPeriod].Enabled = True
+100	0	    Me![cboPeriod].Locked = False
+101	0	    Me![cboPeriod].BackColor = 16777215
+102	0	    DoCmd.GoToControl "txtUnit"
+103	0	Exit Sub
+104	0	
+105	0	err_cmdAddSameUnit_Click:
+106	0	    Call General_Error_Trap
+107	0	    Exit Sub
+108	0	End Sub
+109	0	
+110	0	Private Sub cmdRemoveFilter_Click()
+111	0	On Error GoTo Err_cmdRemoveFilter
+112	0	
+113	0	    Me.Filter = ""
+114	0	    Me.FilterOn = False
+115	0	    Me![cboFilterUnit] = ""
+116	0	    DoCmd.GoToControl "cboFindUnit"
+117	0	    Me![cmdRemoveFilter].Visible = False
+118	0	
+119	0	    Exit Sub
+120	0	
+121	0	Err_cmdRemoveFilter:
+122	0	    Call General_Error_Trap
+123	0	    Exit Sub
+124	0	End Sub
+125	0	
+126	0	Private Sub Form_Current()
+127	0	
+128	0	On Error GoTo err_current
+129	0	
+130	0	    If (Me![txtUnit] = "" Or IsNull(Me![txtUnit])) Then
+131	1	'    And (Me![cboPeriod] = "" Or IsNull(Me![cboPeriod])) Then
+132	2	    'don't include find number as defaults to x
+133	1	    'If (Me![txtUnit] = "" Or IsNull(Me![txtUnit])) Then
+134	1	        'new record allow GID entry
+135	0	        Me![txtUnit].Enabled = True
+136	0	        Me![txtUnit].Locked = False
+137	0	        Me![txtUnit].BackColor = 16777215
+138	0	        Me![frm_sub_nonneolithic_2013].Enabled = True
+139	0	        Me![frm_sub_nonneolithic_2013].Locked = False
+140	0	        Me![frm_sub_nonneolithic_2013].BackColor = 16777215
+141	0	    Else
+142	1	        'existing entry lock
+143	0	        Me![txtUnit].Enabled = False
+144	0	        Me![txtUnit].Locked = True
+145	0	        Me![txtUnit].BackColor = Me.Section(0).BackColor
+146	0	        Me![frm_sub_nonneolithic_2013].Enabled = False
+147	0	        Me![frm_sub_nonneolithic_2013].Locked = True
+148	0	        Me![frm_sub_nonneolithic_2013].BackColor = Me.Section(0).BackColor
+149	0	    End If
+150	0	
+151	0	If Me.FilterOn = True Then
+152	0	    Me![cmdRemoveFilter].Visible = True
+153	0	End If
+154	0	Exit Sub
+155	0	
+156	0	err_current:
+157	1	    'when setting a new record the focus can be in the tab element and then the code above fails - trap this
+158	2	    If Err.Number = 2165 Then 'you can't hide a control that has the focus.
+159	0	        Resume Next
+160	0	    Else
+161	0	        Call General_Error_Trap
+162	0	    End If
+163	0	    Exit Sub
+164	0	
+165	0	
+166	0	End Sub
+167	0	
+168	0	Private Sub go_next_Click()
+169	0	On Error GoTo Err_go_next_Click
+170	0	
+171	0	
+172	0	    DoCmd.GoToRecord , , acNext
+173	0	
+174	0	Exit_go_next_Click:
+175	0	    Exit Sub
+176	0	
+177	0	Err_go_next_Click:
+178	0	    If Err.Number = 2105 Then
+179	0	        MsgBox "Entry for Period in this Unit already exists"
+180	0	    Else
+181	0	        MsgBox Err.Description
+182	0	        Resume Exit_go_next_Click
+183	0	    End If
+184	0	End Sub
+185	0	
+186	0	Private Sub go_previous2_Click()
+187	0	On Error GoTo Err_go_previous2_Click
+188	0	
+189	0	
+190	0	    DoCmd.GoToRecord , , acPrevious
+191	0	
+192	0	Exit_go_previous2_Click:
+193	0	    Exit Sub
+194	0	
+195	0	Err_go_previous2_Click:
+196	0	    If Err.Number = 2105 Then
+197	0	        MsgBox "Entry for Period in this Unit already exists"
+198	0	    Else
+199	0	        MsgBox Err.Description
+200	0	        Call General_Error_Trap
+201	0	        Resume Exit_go_previous2_Click
+202	0	    End If
+203	0	End Sub
+204	0	
+205	0	Private Sub go_to_first_Click()
+206	0	On Error GoTo Err_go_to_first_Click
+207	0	
+208	0	
+209	0	    DoCmd.GoToRecord , , acFirst
+210	0	
+211	0	Exit_go_to_first_Click:
+212	0	    Exit Sub
+213	0	
+214	0	Err_go_to_first_Click:
+215	0	    Call General_Error_Trap
+216	0	    Resume Exit_go_to_first_Click
+217	0	End Sub
+218	0	
+219	0	Private Sub go_to_last_Click()
+220	0	On Error GoTo Err_go_last_Click
+221	0	
+222	0	
+223	0	    DoCmd.GoToRecord , , acLast
+224	0	
+225	0	Exit_go_last_Click:
+226	0	    Exit Sub
+227	0	
+228	0	Err_go_last_Click:
+229	0	    Call General_Error_Trap
+230	0	    Resume Exit_go_last_Click
+231	0	End Sub
+232	0	
+233	0	
+234	0	Private Sub txtUnit_AfterUpdate()
+235	0	Call CheckUnitDescript(Me![txtUnit])
+236	0	
+237	0	End Sub

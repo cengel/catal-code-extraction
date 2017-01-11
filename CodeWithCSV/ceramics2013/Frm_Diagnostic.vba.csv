@@ -1,0 +1,633 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Sub DealWithElement(ctrl As Control)
+5	1	'this sets the tabs when the element tick boxes
+6	0	
+7	0	Select Case ctrl.Name
+8	0	Case "chkRim"
+9	0	    If ctrl = False Then
+10	0	        If Me![frm_sub_diagnostic_rim].Form.RecordsetClone.RecordCount = 0 Then
+11	0	            Me!tabcontrolElements.Pages(0).Visible = False
+12	0	        Else
+13	0	            MsgBox "There is rim data recorded, please delete this first"
+14	0	            ctrl = True
+15	0	        End If
+16	0	    Else
+17	0	        Me!tabcontrolElements.Pages(0).Visible = True
+18	0	        Me!tabcontrolElements.Pages(0).SetFocus
+19	0	        
+20	0	    End If
+21	0	Case "chkBase"
+22	0	    If ctrl = False Then
+23	0	        If Me![frm_sub_diagnostic_base].Form.RecordsetClone.RecordCount = 0 Then
+24	0	            Me!tabcontrolElements.Pages(1).Visible = False
+25	0	        Else
+26	0	            MsgBox "There is base data recorded, please delete this first"
+27	0	            ctrl = True
+28	0	        End If
+29	0	    Else
+30	0	        Me!tabcontrolElements.Pages(1).Visible = True
+31	0	        Me!tabcontrolElements.Pages(1).SetFocus
+32	0	    End If
+33	0	Case "chkLug"
+34	0	    If ctrl = False Then
+35	0	        If Me![frm_sub_diagnostic_lug].Form.RecordsetClone.RecordCount = 0 Then
+36	0	            Me!tabcontrolElements.Pages(2).Visible = False
+37	0	        Else
+38	0	            MsgBox "There is lug data recorded, please delete this first"
+39	0	            ctrl = True
+40	0	        End If
+41	0	    Else
+42	0	        Me!tabcontrolElements.Pages(2).Visible = True
+43	0	        Me!tabcontrolElements.Pages(2).SetFocus
+44	0	    End If
+45	0	Case "chkPedestal"
+46	0	    If ctrl = False Then
+47	0	        If Me![frm_sub_diagnostic_pedestal].Form.RecordsetClone.RecordCount = 0 Then
+48	0	            Me!tabcontrolElements.Pages(3).Visible = False
+49	0	        Else
+50	0	            MsgBox "There is pedestal data recorded, please delete this first"
+51	0	            ctrl = True
+52	0	        End If
+53	0	    Else
+54	0	        Me!tabcontrolElements.Pages(3).Visible = True
+55	0	        Me!tabcontrolElements.Pages(3).SetFocus
+56	0	    End If
+57	0	Case "chkLid"
+58	0	    If ctrl = False Then
+59	0	        If Me![frm_sub_diagnostic_lid].Form.RecordsetClone.RecordCount = 0 Then
+60	0	            Me!tabcontrolElements.Pages(4).Visible = False
+61	0	        Else
+62	0	            MsgBox "There is lid data recorded, please delete this first"
+63	0	            ctrl = True
+64	0	        End If
+65	0	    Else
+66	0	        Me!tabcontrolElements.Pages(4).Visible = True
+67	0	        Me!tabcontrolElements.Pages(4).SetFocus
+68	0	    End If
+69	0	Case "chkFoot"
+70	0	    If ctrl = False Then
+71	0	        If Me![frm_sub_diagnostic_foot].Form.RecordsetClone.RecordCount = 0 Then
+72	0	            Me!tabcontrolElements.Pages(5).Visible = False
+73	0	        Else
+74	0	            MsgBox "There is foot data recorded, please delete this first"
+75	0	            ctrl = True
+76	0	        End If
+77	0	    Else
+78	0	        Me!tabcontrolElements.Pages(5).Visible = True
+79	0	        Me!tabcontrolElements.Pages(5).SetFocus
+80	0	    End If
+81	0	Case "chkHandle"
+82	0	    If ctrl = False Then
+83	0	        If Me![frm_sub_diagnostic_handle].Form.RecordsetClone.RecordCount = 0 Then
+84	0	            Me!tabcontrolElements.Pages(6).Visible = False
+85	0	        Else
+86	0	            MsgBox "There is handle data recorded, please delete this first"
+87	0	            ctrl = True
+88	0	        End If
+89	0	    Else
+90	0	        Me!tabcontrolElements.Pages(6).Visible = True
+91	0	        Me!tabcontrolElements.Pages(6).SetFocus
+92	0	    End If
+93	0	Case "chkKnob"
+94	0	    If ctrl = False Then
+95	0	        If Me![frm_sub_diagnostic_knob].Form.RecordsetClone.RecordCount = 0 Then
+96	0	            Me!tabcontrolElements.Pages(7).Visible = False
+97	0	        Else
+98	0	            MsgBox "There is knob data recorded, please delete this first"
+99	0	            ctrl = True
+100	0	        End If
+101	0	    Else
+102	0	        Me!tabcontrolElements.Pages(7).Visible = True
+103	0	        Me!tabcontrolElements.Pages(7).SetFocus
+104	0	    End If
+105	0	Case "chkcarin"
+106	0	    If ctrl = False Then
+107	0	        If Me![frm_sub_diagnostic_carination].Form.RecordsetClone.RecordCount = 0 Then
+108	0	            Me!tabcontrolElements.Pages(9).Visible = False
+109	0	        Else
+110	0	            MsgBox "There is carination data recorded, please delete this first"
+111	0	            ctrl = True
+112	0	        End If
+113	0	    Else
+114	0	        Me!tabcontrolElements.Pages(9).Visible = True
+115	0	        Me!tabcontrolElements.Pages(9).SetFocus
+116	0	        
+117	0	    End If
+118	0	Case "chkDeco"
+119	0	    If ctrl = False Then
+120	0	        If Me![frm_sub_diagnostic_decoration].Form.RecordsetClone.RecordCount = 0 Then
+121	0	            Me!tabcontrolElements.Pages(8).Visible = False
+122	0	        Else
+123	0	            MsgBox "There is decoration information recorded, please delete this first"
+124	0	            ctrl = True
+125	0	        End If
+126	0	    Else
+127	0	        Me!tabcontrolElements.Pages(8).Visible = True
+128	0	        Me!tabcontrolElements.Pages(8).SetFocus
+129	0	        
+130	0	    End If
+131	0	Case "chkRareform"
+132	0	    If ctrl = False Then
+133	0	        If Me![frm_sub_diagnostic_rareform].Form.RecordsetClone.RecordCount = 0 Then
+134	0	            Me!tabcontrolElements.Pages(10).Visible = False
+135	0	        Else
+136	0	            MsgBox "There is rare form information recorded, please delete this first"
+137	0	            ctrl = True
+138	0	        End If
+139	0	    Else
+140	0	        Me!tabcontrolElements.Pages(10).Visible = True
+141	0	        Me!tabcontrolElements.Pages(10).SetFocus
+142	0	        
+143	0	    End If
+144	0	End Select
+145	1	'MsgBox ctrl.Name
+146	0	
+147	0	
+148	0	End Sub
+149	0	Private Sub Command23_Click()
+150	0	On Error GoTo Err_Command23_Click
+151	0	
+152	0	
+153	0	    Screen.PreviousControl.SetFocus
+154	0	    DoCmd.FindNext
+155	0	
+156	0	Exit_Command23_Click:
+157	0	    Exit Sub
+158	0	
+159	0	Err_Command23_Click:
+160	0	    MsgBox Err.Description
+161	0	    Resume Exit_Command23_Click
+162	0	    
+163	0	End Sub
+164	0	
+165	0	Private Sub cboFilterUnit_AfterUpdate()
+166	1	'new 2010 filter for unit
+167	0	On Error GoTo err_filterunit
+168	0	
+169	0	If Me![cboFilterUnit] <> "" Then
+170	0	    Me.Filter = "[Unit] = " & Me![cboFilterUnit]
+171	0	    Me.FilterOn = True
+172	0	    Me![cmdRemoveFilter].Visible = True
+173	0	End If
+174	0	
+175	0	Exit Sub
+176	0	
+177	0	err_filterunit:
+178	0	    Call General_Error_Trap
+179	0	    Exit Sub
+180	0	End Sub
+181	0	
+182	0	Private Sub cboFindUnit_AfterUpdate()
+183	1	'********************************************
+184	1	'Find the selected unit from the list
+185	1	'********************************************
+186	0	On Error GoTo err_cboFindUnit_AfterUpdate
+187	0	
+188	0	    If Me![cboFindUnit] <> "" Then
+189	1	         'if a filter is on - turn off
+190	0	         If Me.FilterOn = True Then
+191	0	            Me.FilterOn = False
+192	0	            Me![cmdRemoveFilter].Visible = False
+193	0	            Me![cboFilterUnit] = ""
+194	0	        End If
+195	0	         
+196	1	         'for existing number the field will be disabled, enable it as when find num
+197	1	        'is shown the on current event will deal with disabling it again
+198	0	        If Me![txtShowUnit].Enabled = False Then Me![txtShowUnit].Enabled = True
+199	0	        DoCmd.GoToControl "txtShowUnit"
+200	0	        DoCmd.FindRecord Me![cboFindUnit], , , , True
+201	0	        Me![cboFindUnit] = ""
+202	0	        DoCmd.GoToControl "cboFindUnit"
+203	0	        Me![txtShowUnit].Enabled = False
+204	0	    End If
+205	0	Exit Sub
+206	0	
+207	0	err_cboFindUnit_AfterUpdate:
+208	0	    Call General_Error_Trap
+209	0	    Exit Sub
+210	0	End Sub
+211	0	
+212	0	Private Sub chkBase_Click()
+213	0	DealWithElement Me!chkBase
+214	0	
+215	0	End Sub
+216	0	
+217	0	Private Sub chkCarin_Click()
+218	0	DealWithElement Me!chkCarin
+219	0	End Sub
+220	0	
+221	0	Private Sub chkDeco_Click()
+222	0	DealWithElement Me!chkDeco
+223	0	End Sub
+224	0	
+225	0	Private Sub chkFoot_Click()
+226	0	DealWithElement Me!chkFoot
+227	0	
+228	0	End Sub
+229	0	
+230	0	Private Sub chkHandle_Click()
+231	0	DealWithElement Me!chkHandle
+232	0	
+233	0	End Sub
+234	0	
+235	0	Private Sub chkKnob_Click()
+236	0	DealWithElement Me!chkKnob
+237	0	
+238	0	End Sub
+239	0	
+240	0	Private Sub chkLid_Click()
+241	0	DealWithElement Me!chkLid
+242	0	
+243	0	End Sub
+244	0	
+245	0	Private Sub chkLug_Click()
+246	0	DealWithElement Me!chkLug
+247	0	
+248	0	End Sub
+249	0	
+250	0	Private Sub chkPedestal_Click()
+251	0	DealWithElement Me!chkPedestal
+252	0	
+253	0	End Sub
+254	0	
+255	0	Private Sub chkRareform_Click()
+256	0	DealWithElement Me!chkRareform
+257	0	End Sub
+258	0	
+259	0	Private Sub chkRim_Click()
+260	0	DealWithElement Me!chkRim
+261	0	
+262	0	End Sub
+263	0	
+264	0	Private Sub Close_Click()
+265	0	On Error GoTo err_cmdAddNew_Click
+266	0	
+267	0	    DoCmd.Close acForm, Me.Name
+268	0	    DoCmd.Restore
+269	0	    
+270	0	Exit Sub
+271	0	
+272	0	err_cmdAddNew_Click:
+273	0	    Call General_Error_Trap
+274	0	    Exit Sub
+275	0	End Sub
+276	0	
+277	0	Private Sub cmdAddNew_Click()
+278	0	On Error GoTo err_cmdAddNew_Click
+279	0	
+280	0	    Dim thisunit
+281	0	    thisunit = Me![txtUnit]
+282	0	    
+283	2	    DoCmd.GoToControl "Phase" 'seems to get focus into tab control and then error as says it can't hide control that has focus
+284	0	    DoCmd.GoToRecord acActiveDataObject, , acNewRec
+285	1	    'new record allow GID entry
+286	0	    If Not IsNull(thisunit) Then Me![txtUnit] = thisunit
+287	0	    Me![txtUnit].Enabled = True
+288	0	    Me![txtUnit].Locked = False
+289	0	    Me![txtUnit].BackColor = 16777215
+290	0	    Me![LetterCode].Enabled = True
+291	0	    Me![LetterCode].Locked = False
+292	0	    Me![LetterCode].BackColor = 16777215
+293	0	    Me![FindNumber].Enabled = True
+294	0	    Me![FindNumber].Locked = False
+295	0	    Me![FindNumber].BackColor = 16777215
+296	0	    DoCmd.GoToControl "txtUnit"
+297	0	Exit Sub
+298	0	
+299	0	err_cmdAddNew_Click:
+300	0	    Call General_Error_Trap
+301	0	    Exit Sub
+302	0	End Sub
+303	0	
+304	0	Private Sub cmdAddNewUnit_Click()
+305	0	On Error GoTo err_cmdAddNew_Click
+306	2	    DoCmd.GoToControl "Phase" 'seems to get focus into tab control and then error as says it can't hide control that has focus
+307	0	    DoCmd.GoToRecord acActiveDataObject, , acNewRec
+308	1	    'new record allow GID entry
+309	0	    Me![txtUnit].Enabled = True
+310	0	    Me![txtUnit].Locked = False
+311	0	    Me![txtUnit].BackColor = 16777215
+312	0	    Me![LetterCode].Enabled = True
+313	0	    Me![LetterCode].Locked = False
+314	0	    Me![LetterCode].BackColor = 16777215
+315	0	    Me![FindNumber].Enabled = True
+316	0	    Me![FindNumber].Locked = False
+317	0	    Me![FindNumber].BackColor = 16777215
+318	0	    DoCmd.GoToControl "txtUnit"
+319	0	Exit Sub
+320	0	
+321	0	err_cmdAddNew_Click:
+322	0	    Call General_Error_Trap
+323	0	    Exit Sub
+324	0	End Sub
+325	0	
+326	0	Private Sub cmdDelete_Click()
+327	1	'allow deletion of entire record
+328	0	On Error GoTo err_delete
+329	0	
+330	0	Call DeleteDiagnosticRecord(Me![txtUnit], Me![LetterCode], Me![FindNumber])
+331	0	
+332	0	Exit Sub
+333	0	
+334	0	err_delete:
+335	0	    Call General_Error_Trap
+336	0	    Exit Sub
+337	0	    
+338	0	End Sub
+339	0	
+340	0	Private Sub cmdRemoveFilter_Click()
+341	0	On Error GoTo Err_cmdRemoveFilter
+342	0	
+343	0	    Me.Filter = ""
+344	0	    Me.FilterOn = False
+345	0	    Me![cboFilterUnit] = ""
+346	0	    DoCmd.GoToControl "cboFindUnit"
+347	0	    Me![cmdRemoveFilter].Visible = False
+348	0	
+349	0	    Exit Sub
+350	0	
+351	0	Err_cmdRemoveFilter:
+352	0	    Call General_Error_Trap
+353	0	    Exit Sub
+354	0	    
+355	0	End Sub
+356	0	
+357	0	Private Sub cmdReNum_Click()
+358	0	On Error GoTo err_ReNum
+359	0	Dim val
+360	0	
+361	0	    If Me![txtUnit] <> "" And Me!LetterCode <> "" And Me![FindNumber] <> "" Then
+362	0	        val = ReNumberDiagnostic(Me![txtUnit], Me!LetterCode, Me![FindNumber])
+363	1	        'new number if successful has been fed into find cbo so search to display.
+364	1	        'if failed to update then cbofind will be blank so nothing happens
+365	0	        cboFindUnit_AfterUpdate
+366	1	        'MsgBox val
+367	0	    Else
+368	0	        MsgBox "Incomplete GID to process", vbInformation, "Action Cancelled"
+369	0	    End If
+370	0	Exit Sub
+371	0	
+372	0	err_ReNum:
+373	0	    Call General_Error_Trap
+374	0	    Exit Sub
+375	0	End Sub
+376	0	
+377	0	Private Sub FindNumber_AfterUpdate()
+378	1	'This is the wierdest thing I have ever seen in Access - entering a new number eg: 999994.S1 after
+379	1	'tabbing out of the findnumber the subforms were all grabbing data from 17017.S1 even though the main
+380	1	'record were still the new number, this happened for all new numbers where the find number matched one for
+381	1	'unit 17017.
+382	1	'
+383	1	'NO IDEA WHY but putting save here stops it. Wish I knew why though! SAJ 9th July 2009
+384	0	On Error GoTo err_findnumber
+385	0	
+386	0	DoCmd.RunCommand acCmdSaveRecord
+387	0	
+388	0	Exit Sub
+389	0	
+390	0	err_findnumber:
+391	0	    Call General_Error_Trap
+392	0	    Exit Sub
+393	0	End Sub
+394	0	
+395	0	Private Sub Form_Current()
+396	0	
+397	0	On Error GoTo err_current
+398	0	
+399	0	    If (Me![txtUnit] = "" Or IsNull(Me![txtUnit])) And (Me![LetterCode] = "" Or IsNull(Me![LetterCode])) And (Me![FindNumber] = "" Or IsNull(Me![FindNumber])) Then
+400	2	    'don't include find number as defaults to x
+401	1	    'If (Me![txtUnit] = "" Or IsNull(Me![txtUnit])) Then
+402	1	        'new record allow GID entry
+403	0	        Me![txtUnit].Enabled = True
+404	0	        Me![txtUnit].Locked = False
+405	0	        Me![txtUnit].BackColor = 16777215
+406	0	        Me![LetterCode].Enabled = True
+407	0	        Me![LetterCode].Locked = False
+408	0	        Me![LetterCode].BackColor = 16777215
+409	0	        Me![FindNumber].Enabled = True
+410	0	        Me![FindNumber].Locked = False
+411	0	        Me![FindNumber].BackColor = 16777215
+412	0	    Else
+413	1	        'existing entry lock
+414	0	        Me![txtUnit].Enabled = False
+415	0	        Me![txtUnit].Locked = True
+416	0	        Me![txtUnit].BackColor = Me.Section(0).BackColor
+417	0	        Me![LetterCode].Enabled = False
+418	0	        Me![LetterCode].Locked = True
+419	0	        Me![LetterCode].BackColor = Me.Section(0).BackColor
+420	0	        Me![FindNumber].Enabled = False
+421	0	        Me![FindNumber].Locked = True
+422	0	        Me![FindNumber].BackColor = Me.Section(0).BackColor
+423	0	    End If
+424	0	
+425	1	'set focus to top
+426	0	If Me![txtUnit].Enabled = True Then
+427	0	    DoCmd.GoToControl "txtUnit"
+428	0	Else
+429	1	    'DoCmd.GoToControl "cboFindUnit"
+430	1	    ' added conditon below that this not be in datasheet view,
+431	1	    ' otherwise it will produce an error message
+432	1	    ' CE - June 2014
+433	0	    If Me.CurrentView <> 2 Then
+434	0	        DoCmd.GoToControl "cboFindUnit"
+435	0	    End If
+436	0	End If
+437	0	
+438	0	If Me![Rim] = True Then
+439	1	    'MsgBox "rim present"
+440	1	    'Me!tabcontrolElements.Pages(0).Enabled = True
+441	0	    Me!tabcontrolElements.Pages(0).Visible = True
+442	0	Else
+443	1	    'MsgBox "no rim"
+444	0	    Me!tabcontrolElements.Pages(0).Visible = False
+445	0	End If
+446	0	
+447	0	If Me![Base] = True Then
+448	0	    Me!tabcontrolElements.Pages(1).Visible = True
+449	0	Else
+450	0	    Me!tabcontrolElements.Pages(1).Visible = False
+451	0	End If
+452	0	
+453	0	If Me![Lug] = True Then
+454	0	    Me!tabcontrolElements.Pages(2).Visible = True
+455	0	Else
+456	0	    Me!tabcontrolElements.Pages(2).Visible = False
+457	0	End If
+458	0	
+459	0	If Me![Pedestal] = True Then
+460	0	    Me!tabcontrolElements.Pages(3).Visible = True
+461	0	Else
+462	0	    Me!tabcontrolElements.Pages(3).Visible = False
+463	0	End If
+464	0	
+465	0	If Me![Lid] = True Then
+466	0	    Me!tabcontrolElements.Pages(4).Visible = True
+467	0	Else
+468	0	    Me!tabcontrolElements.Pages(4).Visible = False
+469	0	End If
+470	0	
+471	0	If Me![Foot] = True Then
+472	0	    Me!tabcontrolElements.Pages(5).Visible = True
+473	0	Else
+474	0	    Me!tabcontrolElements.Pages(5).Visible = False
+475	0	End If
+476	0	
+477	0	If Me![Handle] = True Then
+478	0	    Me!tabcontrolElements.Pages(6).Visible = True
+479	0	Else
+480	0	    Me!tabcontrolElements.Pages(6).Visible = False
+481	0	End If
+482	0	
+483	0	If Me![Knob] = True Then
+484	0	    Me!tabcontrolElements.Pages(7).Visible = True
+485	0	Else
+486	0	    Me!tabcontrolElements.Pages(7).Visible = False
+487	0	End If
+488	0	
+489	0	If Me![Decoration] = True Then
+490	0	    Me!tabcontrolElements.Pages(8).Visible = True
+491	0	Else
+492	0	    Me!tabcontrolElements.Pages(8).Visible = False
+493	0	End If
+494	0	
+495	0	If Me![Carination] = True Then
+496	0	    Me!tabcontrolElements.Pages(9).Visible = True
+497	0	Else
+498	0	    Me!tabcontrolElements.Pages(9).Visible = False
+499	0	End If
+500	0	Exit Sub
+501	0	
+502	0	err_current:
+503	1	    'when setting a new record the focus can be in the tab element and then the code above fails - trap this
+504	2	    If Err.Number = 2165 Then 'you can't hide a control that has the focus.
+505	0	        Resume Next
+506	0	    Else
+507	0	        Call General_Error_Trap
+508	0	    End If
+509	0	    Exit Sub
+510	0	
+511	0	
+512	0	End Sub
+513	0	
+514	0	Private Sub Form_Open(Cancel As Integer)
+515	1	'new to disable admin features to non admin users
+516	0	On Error GoTo er_open
+517	0	
+518	0	If GetGeneralPermissions = "Admin" Then
+519	0	    Me!cmdReNum.Enabled = True
+520	0	    Me!cmdDelete.Enabled = True
+521	0	Else
+522	0	    Me!cmdReNum.Enabled = False
+523	0	    Me!cmdDelete.Enabled = False
+524	0	End If
+525	0	
+526	0	If Me.FilterOn = True Then
+527	0	    Me![cmdRemoveFilter].Visible = True
+528	0	End If
+529	0	
+530	0	
+531	0	Exit Sub
+532	0	
+533	0	er_open:
+534	0	    Call General_Error_Trap
+535	0	    Exit Sub
+536	0	End Sub
+537	0	
+538	0	Private Sub frm_sub_diagnostic_carination_Enter()
+539	0	
+540	0	End Sub
+541	0	
+542	0	Private Sub go_next_Click()
+543	0	On Error GoTo Err_go_next_Click
+544	0	
+545	0	
+546	0	    DoCmd.GoToRecord , , acNext
+547	0	
+548	0	Exit_go_next_Click:
+549	0	    Exit Sub
+550	0	
+551	0	Err_go_next_Click:
+552	0	    MsgBox Err.Description
+553	0	    Resume Exit_go_next_Click
+554	0	End Sub
+555	0	
+556	0	Private Sub go_previous2_Click()
+557	0	On Error GoTo Err_go_previous2_Click
+558	0	
+559	0	
+560	0	    DoCmd.GoToRecord , , acPrevious
+561	0	
+562	0	Exit_go_previous2_Click:
+563	0	    Exit Sub
+564	0	
+565	0	Err_go_previous2_Click:
+566	0	    Call General_Error_Trap
+567	0	    Resume Exit_go_previous2_Click
+568	0	End Sub
+569	0	
+570	0	Private Sub go_to_first_Click()
+571	0	On Error GoTo Err_go_to_first_Click
+572	0	
+573	0	
+574	0	    DoCmd.GoToRecord , , acFirst
+575	0	
+576	0	Exit_go_to_first_Click:
+577	0	    Exit Sub
+578	0	
+579	0	Err_go_to_first_Click:
+580	0	    Call General_Error_Trap
+581	0	    Resume Exit_go_to_first_Click
+582	0	End Sub
+583	0	
+584	0	Private Sub go_to_last_Click()
+585	0	On Error GoTo Err_go_last_Click
+586	0	
+587	0	
+588	0	    DoCmd.GoToRecord , , acLast
+589	0	
+590	0	Exit_go_last_Click:
+591	0	    Exit Sub
+592	0	
+593	0	Err_go_last_Click:
+594	0	    Call General_Error_Trap
+595	0	    Resume Exit_go_last_Click
+596	0	End Sub
+597	0	
+598	0	Private Sub txtUnit_AfterUpdate()
+599	0	Call CheckUnitDescript(Me![txtUnit])
+600	0	
+601	0	End Sub
+602	0	
+603	0	Private Sub WARE_CODE_NotInList(NewData As String, Response As Integer)
+604	0	On Error GoTo err_warecode_NotInList
+605	0	
+606	0	Dim retVal, sql
+607	0	retVal = MsgBox("This Ware Code does not appear in the pre-defined list. Have you checked the list to make sure there is no match?", vbQuestion + vbYesNo, "New ware code")
+608	0	If retVal = vbYes Then
+609	0	    MsgBox "Ok this ware code will now be added to the list", vbInformation, "New Ware Code Allowed"
+610	1	    'allow value,
+611	0	     Response = acDataErrAdded
+612	0	    
+613	0	    Dim desc
+614	0	    desc = InputBox("Please enter the description for this new code eg: DMS-fine", "Ware Code Description")
+615	0	    If desc <> "" Then
+616	4	        sql = "INSERT INTO [Ceramics_Code_Warecode_LOV] ([WareCode], [Description]) VALUES ('" & NewData & "', '" & desc & "');"
+617	0	    Else
+618	2	        sql = "INSERT INTO [Ceramics_Code_Warecode_LOV] ([WareCode]) VALUES ('" & NewData & "');"
+619	0	    End If
+620	0	    DoCmd.RunSQL sql
+621	0	    
+622	0	Else
+623	1	    'no leave it so they can edit it
+624	0	    Response = acDataErrContinue
+625	0	End If
+626	0	Exit Sub
+627	0	
+628	0	err_warecode_NotInList:
+629	0	    Call General_Error_Trap
+630	0	
+631	0	    Exit Sub
+632	0	
+633	0	End Sub

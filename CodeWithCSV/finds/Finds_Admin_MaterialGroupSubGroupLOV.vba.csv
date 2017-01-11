@@ -1,0 +1,193 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	0	Option Explicit
+3	1	'**************************************************
+4	1	' This form is new in v9.2 - SAJ
+5	1	'**************************************************
+6	0	
+7	0	
+8	0	
+9	0	
+10	0	Private Sub cboFindFeature_AfterUpdate()
+11	1	'v9.2 saj find a feature from the list
+12	0	On Error GoTo Err_find
+13	0	    If Me![cboFindFeature] <> "" Then
+14	0	        DoCmd.GoToControl "txtFeatureType"
+15	0	        DoCmd.FindRecord Me![cboFindFeature]
+16	0	        DoCmd.GoToControl "cboFindFeature"
+17	0	    End If
+18	1	    'Me.AllowEdits = False
+19	0	Exit Sub
+20	0	
+21	0	Err_find:
+22	1	    'Call General_Error_Trap
+23	0	    MsgBox Err.Description
+24	0	    Exit Sub
+25	0	End Sub
+26	0	
+27	0	
+28	0	
+29	0	
+30	0	
+31	0	
+32	0	
+33	0	Private Sub cboFindFeature_GotFocus()
+34	2	'v9.2 SAJ - as the form does not allow edits the list can't be selected from -
+35	1	'when list gets focus turn on allow edits and off again when loses it
+36	1	'Me.AllowEdits = True
+37	0	End Sub
+38	0	
+39	0	Private Sub cboFindFeature_LostFocus()
+40	2	'v9.2 SAJ - as the form does not allow edits the list can't be selected from -
+41	1	'when list gets focus turn on allow edits and off again when loses it
+42	1	'Me.AllowEdits = False
+43	0	End Sub
+44	0	
+45	0	Private Sub cmdAddNew_Click()
+46	1	'SAJ - add a new record
+47	0	On Error GoTo err_cmdAddNew_Click
+48	0	
+49	1	    'DoCmd.RunCommand acCmdRecordsGoToNew
+50	1	    'v3.2 - get name of new group via input box
+51	0	    Dim resp
+52	0	    resp = InputBox("Please enter the name of the new Material Group", "New Material Group")
+53	0	    If resp <> "" Then
+54	2	        'check name doesn't exist already
+55	0	        Dim checkit
+56	2	        checkit = DLookup("[MaterialGroup]", "[Finds_Code_MaterialGroup]", "[MaterialGroup] = '" & resp & "'")
+57	0	        If IsNull(checkit) Then
+58	1	            'ok to add
+59	0	            DoCmd.RunCommand acCmdRecordsGoToNew
+60	0	            Me![MaterialGroup] = resp
+61	0	            Me![Exca: Admin_Subform_FeatureSubType].Form![cboMaterialSubgroupText].Visible = True
+62	0	            Me![Exca: Admin_Subform_FeatureSubType].Form![txtMaterialSubgroupText].Visible = False
+63	1	            'DoCmd.GoToControl Me![Exca: Admin_Subform_FeatureSubType].Form![txtMaterialSubgroupText].Name
+64	0	            DoCmd.GoToControl "txtFeatureType"
+65	0	        Else
+66	1	            'already exists
+67	0	            MsgBox "This Material Group already exists, the system will display it now", vbInformation, "Material Group Exists"
+68	0	            DoCmd.GoToControl "txtFeatureType"
+69	0	            DoCmd.FindRecord resp
+70	0	            Me!cboFindFeature = resp
+71	0	            DoCmd.GoToControl "cboFindFeature"
+72	0	        End If
+73	0	    End If
+74	0	
+75	0	Exit Sub
+76	0	
+77	0	err_cmdAddNew_Click:
+78	1	   ' Call General_Error_Trap
+79	0	    Exit Sub
+80	0	End Sub
+81	0	
+82	0	Private Sub cmdPrint_Click()
+83	1	'new v4.3 2009 - all print out
+84	0	On Error GoTo err_print
+85	0	
+86	0	    DoCmd.OpenReport "R_materials", acViewPreview
+87	0	
+88	0	Exit Sub
+89	0	
+90	0	err_print:
+91	0	    Call General_Error_Trap
+92	0	    Exit Sub
+93	0	End Sub
+94	0	
+95	0	Private Sub Excavation_Click()
+96	1	'v9.2 SAJ - close the form
+97	0	    DoCmd.Close acForm, Me.Name
+98	0	End Sub
+99	0	
+100	0	
+101	0	
+102	0	Private Sub cmdEdit_Click()
+103	1	'v9.2 SAJ - check if user can edit this record
+104	1	' The feature type value is used on the Feature Sheet
+105	1	' so must check all this values to see if this type is used before allow edit
+106	1	' At present not offering global edits - this can be extended to offer this if required
+107	0	
+108	0	On Error GoTo Err_cmdEdit_Click
+109	0	
+110	1	'Dim checkValidAction, retVal
+111	1	'
+112	2	'    'check space sheet level field
+113	1	'    checkValidAction = CheckIfLOVValueUsed("Exca:FeatureTypeLOV", "FeatureType", Me![txtFeatureType], "Exca: Features", "Feature Number", "Feature Type", "edit")
+114	1	'
+115	1	'    If checkValidAction = "ok" Then
+116	2	'        'edit action can go ahead - at present simply offer an input box for this
+117	1	'        retVal = InputBox("No records refer to this Feature Type (" & Me![txtFeatureType] & ") so an edit is allowed." & Chr(13) & Chr(13) & "Please enter the edited Feature Type that you wish to replace this entry with:", "Enter edited Feature Type")
+118	1	'        If retVal <> "" Then
+119	1	'            Me![txtFeatureType] = retVal
+120	1	'        End If
+121	1	'    ElseIf checkValidAction = "fail" Then
+122	1	'        msgbox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+123	1	'    Else
+124	1	'        msgbox checkValidAction, vbExclamation, "Action Report"
+125	1	 '   End If
+126	0	    
+127	0	Exit_cmdEdit_Click:
+128	0	    Exit Sub
+129	0	
+130	0	Err_cmdEdit_Click:
+131	1	'    Call General_Error_Trap
+132	0	    Exit Sub
+133	0	    
+134	0	End Sub
+135	0	
+136	0	Private Sub cmdDelete_Click()
+137	1	'v9.2 SAJ - check if user can delete this record
+138	1	' The feature type value is used on the Feature Sheet
+139	1	' so must check all this values to see if this type is used before allow delete
+140	1	' At present not offering global edits - this can be extended to offer this if required
+141	0	
+142	0	On Error GoTo Err_cmdDelete_Click
+143	0	
+144	0	Dim checkValidAction, retVal
+145	0	
+146	1	    'first check if this has any subtypes
+147	1	'    If Not IsNull(Me![Exca: Admin_Subform_FeatureSubType].Form![FeatureTypeID]) Then
+148	1	'        msgbox "You must delete the Sub types associated with this feature first", vbInformation, "Invalid Action"
+149	1	'    Else
+150	1	'
+151	2	'        'check FEATURE sheet feature type field
+152	1	'        checkValidAction = CheckIfLOVValueUsed("Exca:FeatureTypeLOV", "FeatureType", Me![txtFeatureType], "Exca: Features", "Feature Number", "Feature Type", "delete")
+153	1	'        If checkValidAction = "ok" Then
+154	2	'        'delete action can go ahead - at present simply offer an input box for this
+155	1	'            retVal = msgbox("No records refer to this Feature Type (" & Me![txtFeatureType] & ") so deletion is allowed." & Chr(13) & Chr(13) & "Are you sure you want to delete " & Me![txtFeatureType] & " from the list of available Feature Types?", vbExclamation + vbYesNo, "Confirm Deletion")
+156	1	'            If retVal = vbYes Then
+157	1	'                Me.AllowDeletions = True
+158	1	'                DoCmd.RunCommand acCmdDeleteRecord
+159	1	'                Me.AllowDeletions = False
+160	1	'            End If
+161	1	'
+162	1	'        ElseIf checkValidAction = "fail" Then
+163	1	'            msgbox "Sorry but the system has been unable to check whether this value is used by any dependant tables, please contact the DBA", vbCritical, "Integrity Check Failed"
+164	1	'        Else
+165	2	'            'is error occured in CheckIfLOVValueUsed it will come back empty so err already displayed
+166	1	'            If Not IsEmpty(checkValidAction) Then msgbox checkValidAction, vbExclamation, "Action Report"
+167	1	'        End If
+168	1	'    End If
+169	0	Exit_cmdDelete_Click:
+170	0	    Exit Sub
+171	0	
+172	0	Err_cmdDelete_Click:
+173	1	'    Call General_Error_Trap
+174	0	    Exit Sub
+175	0	    
+176	0	End Sub
+177	0	
+178	0	Private Sub Form_Open(Cancel As Integer)
+179	1	'v9.2 SAJ - only adminstrators are allowed in here
+180	0	On Error GoTo err_Form_Open
+181	0	
+182	1	'    Dim permiss
+183	1	'    permiss = GetGeneralPermissions
+184	1	'    If permiss <> "ADMIN" Then
+185	1	'        msgbox "Sorry but only Administrators have access to this form"
+186	1	'        DoCmd.close acForm, Me.Name
+187	1	'    End If
+188	0	Exit Sub
+189	0	
+190	0	err_Form_Open:
+191	1	'    Call General_Error_Trap
+192	0	    Exit Sub
+193	0	End Sub

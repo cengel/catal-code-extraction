@@ -1,0 +1,199 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdRange_Click()
+5	1	'new season 2006, saj
+6	1	'allow user to enter a range of x number easily for the ame unit
+7	0	On Error GoTo err_cmdRange
+8	0	Dim retVal, assoUnit, assoLetter, assoStartNum, assoEndNum, sql
+9	0	    If Me![txtExcavationIDNumber] <> "" Then
+10	0	        retVal = MsgBox("Enter the object number range for Unit " & Me![txtExcavationIDNumber] & "?", vbYesNo + vbQuestion, "Unit to associate range to")
+11	0	        If retVal = vbYes Then
+12	0	            assoUnit = Me![txtExcavationIDNumber]
+13	0	        Else
+14	0	            assoUnit = InputBox("Please enter the Unit number associated with all the objects:", "Unit Number")
+15	0	        End If
+16	0	        
+17	0	        If assoUnit = "" Then
+18	0	            MsgBox "Operation Cancelled"
+19	0	        Else
+20	0	            assoLetter = InputBox("Please enter the finds letter associate with all the objects:", "Finds Letter", "X")
+21	0	            If assoLetter = "" Then
+22	0	                MsgBox "Operation Cancelled"
+23	0	            Else
+24	1	                'assoStartNum, assoEndNum
+25	0	                assoStartNum = InputBox("Please enter the first number of the range:", "Start of number range")
+26	0	                If assoStartNum = "" Then
+27	0	                    MsgBox "Operation Cancelled"
+28	0	                Else
+29	0	                    assoEndNum = InputBox("Please enter the last number of the range:", "Start of number range")
+30	0	                    If assoEndNum = "" Then
+31	0	                        MsgBox "Operation Cancelled, both a start and end number are required."
+32	0	                    Else
+33	0	                        If CInt(assoStartNum) > CInt(assoEndNum) Then
+34	0	                            MsgBox "Sorry but the start number is greater than the end number , invalid entry, please try again"
+35	0	                        Else
+36	0	                            Do Until CInt(assoStartNum) > CInt(assoEndNum)
+37	0	                                sql = "INSERT INTO [Conservation_ConservRef_RelatedTo] ([ConservationRef_Year], [ConservationRef_ID], [RelatedToID],[RelatedToSubTypeID], [ExcavationIDNumber], [FindLetter], [FindSampleNumber])"
+38	2	                                sql = sql & " VALUES ('" & Forms![Conserv: Basic Record]![txtConservationRef_Year] & "', " & Forms![Conserv: Basic Record]![txtConservationRef_ID] & "," & Forms![Conserv: Basic Record]![RelatedToID]
+39	2	                                sql = sql & ", " & Me![cboRelatedToSubTypeID] & "," & assoUnit & ", '" & assoLetter & "'," & assoStartNum & ");"
+40	0	                                DoCmd.RunSQL sql
+41	0	                                assoStartNum = assoStartNum + 1
+42	0	                            Loop
+43	0	                            Me.Requery
+44	0	                        End If
+45	0	                    End If
+46	0	                End If
+47	0	            End If
+48	0	        End If
+49	0	    End If
+50	0	
+51	0	Exit Sub
+52	0	
+53	0	err_cmdRange:
+54	0	    Call General_Error_Trap
+55	0	    Exit Sub
+56	0	End Sub
+57	0	
+58	0	Private Sub cmdView_Click()
+59	1	'set up which form to popup
+60	1	'saj
+61	0	On Error GoTo err_view
+62	0	
+63	0	    If Me![RelatedToID] = 1 Then
+64	1	        'building, space, feature, unit
+65	0	        If Me![RelatedToSubTypeID] = 1 Then
+66	0	            DoCmd.OpenForm "frm_subform_ExcaBuilding", acNormal, , "[Number] = " & Me![txtExcavationIDNumber], acFormReadOnly, acDialog
+67	0	        ElseIf Me![RelatedToSubTypeID] = 2 Then
+68	0	            DoCmd.OpenForm "frm_subform_ExcaSpace", acNormal, , "[Space Number] = " & Me![txtExcavationIDNumber], acFormReadOnly, acDialog
+69	0	        ElseIf Me![RelatedToSubTypeID] = 3 Then
+70	0	            DoCmd.OpenForm "frm_subform_ExcaFeature", acNormal, , "[Feature Number] = " & Me![txtExcavationIDNumber], acFormReadOnly, acDialog
+71	0	        ElseIf Me![RelatedToSubTypeID] = 4 Then
+72	0	            DoCmd.OpenForm "frm_subform_ExcaUnit", acNormal, , "[Unit Number] = " & Me![txtExcavationIDNumber], acFormReadOnly, acDialog
+73	0	        Else
+74	0	            MsgBox "Sorry option not recognised", vbExclamation, "Unknown Selection"
+75	0	        End If
+76	0	    ElseIf Me![RelatedToID] = 2 Then
+77	1	        'object
+78	1	        'temporarily we will use unit details here
+79	1	        'DoCmd.OpenForm "frm_subform_ExcaUnit", acNormal, , "[Unit Number] = " & Me![txtExcavationIDNumber], acFormReadOnly, acDialog
+80	1	        'however could be faunal etc and no link at present so open unit info = 2009 v5.1
+81	0	        If LCase(Me![cboFindLetter]) <> "x" Then
+82	0	            DoCmd.OpenForm "frm_subform_ExcaUnit", acNormal, , "[Unit Number] = " & Me![txtExcavationIDNumber], acFormReadOnly, acDialog
+83	0	        Else
+84	2	            DoCmd.OpenForm "frm_subform_materialstypes", acNormal, , "[GID] = '" & Me![txtExcavationIDNumber] & "." & Me![cboFindLetter] & Me![txtFindSampleNumber] & "'", acFormReadOnly, acDialog
+85	0	        End If
+86	0	    ElseIf Me![RelatedToID] = 3 Then
+87	1	        'sample
+88	1	        'temporarily we will use unit details here
+89	0	        DoCmd.OpenForm "frm_subform_ExcaUnit", acNormal, , "[Unit Number] = " & Me![txtExcavationIDNumber], acFormReadOnly, acDialog
+90	0	    ElseIf Me![RelatedToID] = 4 Then
+91	1	        'other
+92	0	
+93	0	    End If
+94	0	Exit Sub
+95	0	
+96	0	err_view:
+97	0	    Call General_Error_Trap
+98	0	    Exit Sub
+99	0	    
+100	0	End Sub
+101	0	
+102	0	Private Sub Form_Current()
+103	1	'Alter fields to view dependant on type of data to enter
+104	0	On Error GoTo err_current
+105	0	
+106	0	
+107	0	    Me![txtComment].Enabled = True
+108	0	    Me![lblRelatedTo].Caption = ""
+109	0	    Me![lblExIDNumber].Caption = ""
+110	0	    Me![lblFindSampleNumber].Caption = ""
+111	0	    Me![lblFindLetter].Caption = ""
+112	0	    Me![lblComment].Caption = "Comment"
+113	0	    Me![cmdView].Visible = True
+114	0	    
+115	0	    Me![cboRelatedToSubTypeID].RowSource = "SELECT Conservation_Code_ConservRef_RelatedToSubType.RelatedToSubTypeID, Conservation_Code_ConservRef_RelatedToSubType.RelatedToTypeID, Conservation_Code_ConservRef_RelatedToSubType.RelatedToSubTypeText FROM Conservation_Code_ConservRef_RelatedToSubType WHERE RelatedToTypeID = " & Forms![Conserv: Basic Record]![RelatedToID] & ";"
+116	0	    Me![cboRelatedToSubTypeID].Requery
+117	0	    
+118	8	    Me![cboFindLetter].RowSource = "SELECT [Exca: Letter codes].Letter, [Exca: Letter codes].ShortDescription FROM [Exca: Letter codes] WHERE ((([Exca: Letter codes].Letter)<>'E' And ([Exca: Letter codes].Letter)<>'G' And ([Exca: Letter codes].Letter)<>'T' And ([Exca: Letter codes].Letter)<>'W'));"
+119	0	    
+120	1	    'If Me![RelatedToID] = 1 Then
+121	0	    If Forms![Conserv: Basic Record]![RelatedToID] = 1 Then
+122	1	        'just an excavation id needed
+123	0	        Me![txtExcavationIDNumber].Enabled = True
+124	0	        Me![txtExcavationIDNumber].Locked = False
+125	0	        
+126	0	        Me![cboFindLetter].Enabled = False
+127	0	        Me![cboFindLetter].Locked = True
+128	0	        Me![cboFindLetter].BackColor = -2147483633
+129	0	        
+130	0	        Me![txtFindSampleNumber].Enabled = False
+131	0	        Me![txtFindSampleNumber].Locked = True
+132	0	        Me![txtFindSampleNumber].BackColor = -2147483633
+133	0	        
+134	0	        Me![lblRelatedTo].Caption = "Type"
+135	0	        Me![lblExIDNumber].Caption = "Number"
+136	0	        Me![lblFindSampleNumber].Caption = ""
+137	0	        Me![lblFindLetter].Caption = ""
+138	0	    ElseIf Forms![Conserv: Basic Record]![RelatedToID] = 4 Then
+139	1	        'other category just needs comment field filled at present
+140	0	        Me![txtExcavationIDNumber].Enabled = False
+141	0	        Me![txtExcavationIDNumber].Locked = True
+142	0	        Me![txtExcavationIDNumber].BackColor = -2147483633
+143	0	        
+144	0	        Me![cboFindLetter].Enabled = False
+145	0	        Me![cboFindLetter].Locked = True
+146	0	        Me![cboFindLetter].BackColor = -2147483633
+147	0	        
+148	0	        Me![txtFindSampleNumber].Enabled = False
+149	0	        Me![txtFindSampleNumber].Locked = True
+150	0	        Me![txtFindSampleNumber].BackColor = -2147483633
+151	0	        Me![lblFindSampleNumber].Caption = ""
+152	0	        Me![lblFindLetter].Caption = ""
+153	1	        'nothing to view so hide button
+154	0	        Me![cmdView].Visible = False
+155	0	    Else
+156	1	        'all other situations
+157	0	        Me![txtExcavationIDNumber].Enabled = True
+158	0	        Me![txtExcavationIDNumber].Locked = False
+159	0	        Me![txtExcavationIDNumber].BackColor = 16777215
+160	0	        
+161	0	        Me![cboFindLetter].Enabled = True
+162	0	        Me![cboFindLetter].Locked = False
+163	0	        Me![cboFindLetter].BackColor = 16777215
+164	0	        
+165	0	        Me![txtFindSampleNumber].Enabled = True
+166	0	        Me![txtFindSampleNumber].Locked = False
+167	0	        Me![txtFindSampleNumber].BackColor = 16777215
+168	0	        
+169	0	        Me![lblRelatedTo].Caption = "Type"
+170	0	        Me![lblExIDNumber].Caption = "Unit No."
+171	0	        
+172	2	        'If Me![RelatedToID] = 2 Then 'object
+173	0	        If Forms![Conserv: Basic Record]![RelatedToID] = 2 Then
+174	1	            'object
+175	0	            Me![lblFindSampleNumber].Caption = "Find No."
+176	1	            'set list to default to object
+177	0	            If IsNull(Me![cboRelatedToSubTypeID]) Then Me![cboRelatedToSubTypeID] = 5
+178	0	            If IsNull(Me![cboFindLetter]) Then Me![cboFindLetter] = "X"
+179	0	            Me![lblComment].Caption = "Find Type"
+180	2	        'ElseIf Me![RelatedToID] = 3 Then 'sample
+181	0	        ElseIf Forms![Conserv: Basic Record]![RelatedToID] = 3 Then
+182	1	            'sample
+183	0	            Me![lblFindSampleNumber].Caption = "Sample No."
+184	2	            Me![cboFindLetter].RowSource = "SELECT [Exca: Letter codes].Letter, [Exca: Letter codes].ShortDescription FROM [Exca: Letter codes] WHERE ([Exca: Letter codes].ShortDescription like '%%sample%%');"
+185	1	            'set list to default to sample
+186	0	            If IsNull(Me![cboRelatedToSubTypeID]) Then Me![cboRelatedToSubTypeID] = 6
+187	0	            If IsNull(Me![cboFindLetter]) Then Me![cboFindLetter] = "s"
+188	0	        Else
+189	0	            Me![lblFindSampleNumber].Caption = "Number"
+190	0	        End If
+191	0	        Me![lblFindLetter].Caption = "Letter"
+192	0	    End If
+193	0	
+194	0	Exit Sub
+195	0	
+196	0	err_current:
+197	0	    Call General_Error_Trap
+198	0	    Exit Sub
+199	0	End Sub

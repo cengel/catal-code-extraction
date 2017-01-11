@@ -1,0 +1,72 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdDelete_Click()
+5	1	'new in 2009 - first check they really want to delete
+6	0	On Error GoTo err_delete
+7	0	
+8	0	    Dim permiss
+9	0	    permiss = GetGeneralPermissions
+10	0	    If (permiss = "ADMIN") Then
+11	0	        Me![cmdDelete].Enabled = True
+12	0	    
+13	0	        Dim resp
+14	0	        resp = MsgBox("Do you really want to delete the skeleton " & Me![UnitNumber] & ".B" & Me![txtIndivid] & "? This will remove this individual from the database completely and permanently. ", vbCritical + vbYesNo, "Confirm Deletion")
+15	0	        If resp = vbYes Then
+16	1	            'ok delete this relationship - must do it both ways
+17	0	            Dim sql
+18	0	            sql = "Delete FROM [HR_BasicSkeletonData] WHERE [UnitNumber] = " & Me![UnitNumber] & " AND [Individual Number] = " & Me![txtIndivid] & ";"
+19	0	            DoCmd.RunSQL sql
+20	0	            Me.Requery
+21	1	            'remove focus from the delete button
+22	1	            'DoCmd.GoToControl "cmdAddRelation"
+23	0	        End If
+24	0	    Else
+25	0	        MsgBox "You do not have permissions to delete, please contact your team leader", vbExclamation, "Insufficient permissions"
+26	0	    End If
+27	0	   
+28	0	Exit Sub
+29	0	
+30	0	err_delete:
+31	0	    Call General_Error_Trap
+32	0	    Exit Sub
+33	0	End Sub
+34	0	
+35	0	Private Sub cmdView_Click()
+36	0	On Error GoTo Err_cmdView_Click
+37	0	
+38	0	    Dim stDocName As String
+39	0	    Dim stLinkCriteria As String
+40	0	    stLinkCriteria = "[UnitNumber] = " & Me![UnitNumber] & " AND [Individual Number] = " & Me![txtIndivid]
+41	0	    
+42	0	    stDocName = "FRM_SkeletonDescription"
+43	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+44	0	    Forms!FRM_SkeletonDescription!cboFind.RowSource = "SELECT [HR_BasicSkeletonData].[UnitNumber], [HR_BasicSkeletonData].[Individual number] FROM HR_BasicSkeletonData WHERE [HR_BasicSkeletonData].[UnitNumber] = " & Me![UnitNumber] & " ORDER BY [HR_BasicSkeletonData].[UnitNumber], [HR_BasicSkeletonData].[Individual number];"
+45	1	    'saj
+46	0	    DoCmd.Close acForm, "FRM_UnitDescription"
+47	0	Exit_cmdView_Click:
+48	0	    Exit Sub
+49	0	
+50	0	Err_cmdView_Click:
+51	0	    MsgBox Err.Description
+52	0	    Resume Exit_cmdView_Click
+53	0	End Sub
+54	0	
+55	0	Private Sub Form_Open(Cancel As Integer)
+56	1	'new 2009 - delete button
+57	0	On Error GoTo err_open
+58	0	
+59	0	Dim permiss
+60	0	    permiss = GetGeneralPermissions
+61	0	    If (permiss = "ADMIN") Then
+62	0	        Me![cmdDelete].Enabled = True
+63	0	    Else
+64	0	        Me![cmdDelete].Enabled = False
+65	0	    End If
+66	0	
+67	0	Exit Sub
+68	0	
+69	0	err_open:
+70	0	    Call General_Error_Trap
+71	0	    Exit Sub
+72	0	End Sub

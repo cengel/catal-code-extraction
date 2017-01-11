@@ -1,0 +1,66 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	
+5	0	
+6	0	
+7	0	
+8	0	
+9	0	Private Sub Check21_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+10	1	'late august 2009
+11	1	'this recordset actually lockes this field so it cant be edited-am so short on time having to work around
+12	1	'this with horrible hack to catch mouse click and action like an event
+13	0	On Error GoTo err_chkInclude
+14	0	
+15	0	Dim sql
+16	0	If Me!Check21 = True Then
+17	1	    'make the field false
+18	0	    sql = "UPDATE [HR_ageing and sexing] SET [IncludeinAgeSexGrouping] = false WHERE [Unit number] = " & Me!Unit & " AND [Individual Number] = " & Me![IndividualNumber] & ";"
+19	0	    DoCmd.RunSQL sql
+20	0	Else
+21	1	    'make the field true
+22	0	    sql = "UPDATE [HR_ageing and sexing] SET [IncludeinAgeSexGrouping] = true WHERE [Unit number] = " & Me!Unit & " AND [Individual Number] = " & Me![IndividualNumber] & ";"
+23	0	    DoCmd.RunSQL sql
+24	0	End If
+25	0	Me.Requery
+26	0	Exit Sub
+27	0	
+28	0	err_chkInclude:
+29	0	    Call General_Error_Trap
+30	0	    
+31	0	End Sub
+32	0	
+33	0	Private Sub cmdClose_Click()
+34	0	On Error GoTo err_close
+35	0	
+36	0	    DoCmd.Close acForm, Me.Name
+37	0	    
+38	0	
+39	0	Exit Sub
+40	0	
+41	0	err_close:
+42	0	    Call General_Error_Trap
+43	0	    Exit Sub
+44	0	End Sub
+45	0	
+46	0	
+47	0	Private Sub Form_Open(Cancel As Integer)
+48	1	'use open args to get the where criteria for this recordsource
+49	2	'problem is using the query Q_IncludeinAgeCategory doesn't work as its a distinct query that
+50	1	'needs to hide the related to fields. That means that passing in where criteria including relatedTo
+51	2	'does not work as this form can't actually see them!
+52	1	'late august 2009
+53	0	On Error GoTo err_open
+54	0	
+55	0	If Me.OpenArgs <> "" Then
+56	0	    Me.RecordSource = "SELECT DISTINCT [HR_Skeleton_RelatedTo_Skeleton].[Unit], [HR_Skeleton_RelatedTo_Skeleton].[IndividualNumber], [HR_ageing and sexing].[IncludeinAgeSexGrouping] FROM HR_Skeleton_RelatedTo_Skeleton LEFT JOIN [HR_ageing and sexing] ON ([HR_Skeleton_RelatedTo_Skeleton].[Unit]=[HR_ageing and sexing].[unit number]) AND ([HR_Skeleton_RelatedTo_Skeleton].[IndividualNumber]=[HR_ageing and sexing].[Individual number]) WHERE " & Me.OpenArgs & ";"
+57	0	
+58	0	End If
+59	0	
+60	0	Exit Sub
+61	0	
+62	0	err_open:
+63	0	    Call General_Error_Trap
+64	0	    Exit Sub
+65	0	    
+66	0	End Sub

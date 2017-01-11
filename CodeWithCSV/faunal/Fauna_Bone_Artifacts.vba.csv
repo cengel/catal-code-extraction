@@ -1,0 +1,136 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	1	Option Explicit 'saj
+3	0	
+4	0	Private Sub button_goto_contact_Click()
+5	0	On Error GoTo Err_button_goto_contact_Click
+6	0	
+7	0	    Dim stDocName As String
+8	0	    Dim stLinkCriteria As String
+9	0	
+10	0	    stDocName = "Fauna_Bone_Contact"
+11	0	    
+12	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+13	0	        
+14	0	    DoCmd.Minimize
+15	0	
+16	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+17	0	    
+18	0	    If IsNull([Forms]![Fauna_Bone_Contact].[GID]) Then
+19	1	        'no existing record
+20	0	        [Forms]![Fauna_Bone_Contact].[Unit number] = [Forms]![Fauna_Bone_Artifacts].[Unit number]
+21	0	        [Forms]![Fauna_Bone_Contact].[letter code] = [Forms]![Fauna_Bone_Artifacts].[letter code]
+22	0	        [Forms]![Fauna_Bone_Contact].[find number] = [Forms]![Fauna_Bone_Artifacts].[find number]
+23	0	        [Forms]![Fauna_Bone_Contact].[GID] = [Forms]![Fauna_Bone_Artifacts].[GID]
+24	0	        [Forms]![Fauna_Bone_Contact].[ContactOrder] = 1
+25	0	    End If
+26	0	Exit_button_goto_contact_Click:
+27	0	    Exit Sub
+28	0	
+29	0	Err_button_goto_contact_Click:
+30	0	    MsgBox Err.Description
+31	0	    Resume Exit_button_goto_contact_Click
+32	0	End Sub
+33	0	
+34	0	
+35	0	Private Sub button_goto_previousform_Click()
+36	0	On Error GoTo Err_button_goto_previousform_Click
+37	0	
+38	0	    Dim stDocName As String
+39	0	    Dim stLinkCriteria As String
+40	0	
+41	0	    stDocName = "Fauna_Bone_Basic_Faunal_Data"
+42	0	    
+43	1	    ' MR July 18, 2005
+44	2	    ' Assume that application logic doesn't require that GID is carried back
+45	1	    ' as it will be already in the form from the way in
+46	1	    'SAJ season 2006 can get to this form from main menu so need GID carried back
+47	1	    'to BFD to cover circumstance its not open already, commented out if
+48	2	    ''If [Forms]![Fauna_Bone_Basic_Faunal_Data].[Unit number] = 0 Then
+49	2	        stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+50	2	    ''End If
+51	0	        
+52	0	    If Me![GID] <> "" Then
+53	1	        'new check for GID entered by saj
+54	1	        'the form is only minimised so must save data manually here - saj
+55	0	        DoCmd.RunCommand acCmdSaveRecord
+56	0	        
+57	0	        DoCmd.Minimize
+58	0	
+59	0	        DoCmd.OpenForm stDocName, , , stLinkCriteria
+60	0	    Else
+61	0	        MsgBox "Please enter the GID fields for this record or select a GID first", vbInformation, "No GID Number"
+62	0	    End If
+63	0	    
+64	0	Exit_button_goto_previousform_Click:
+65	0	    Exit Sub
+66	0	
+67	0	Err_button_goto_previousform_Click:
+68	0	    Call General_Error_Trap
+69	0	    Resume Exit_button_goto_previousform_Click
+70	0	    
+71	0	End Sub
+72	0	
+73	0	
+74	0	Private Sub cboFind_AfterUpdate()
+75	1	'new find combo by SAJ - filter msg removed request from NR 5/7/06
+76	0	On Error GoTo err_cboFind
+77	0	
+78	0	If Me![cboFind] <> "" Then
+79	0	    If Me.Filter <> "" Then
+80	2	            If Me.Filter <> "[GID] = '" & Me![cboFind].Column(1) & "'" Then
+81	1	            '    MsgBox "This form was opened to only show the record " & Me.Filter & ". This action has removed the filter and all records are available to view.", vbInformation, "Filter Removed"
+82	0	                Me.FilterOn = False
+83	0	                Me.Filter = ""
+84	0	            End If
+85	0	        End If
+86	0	    DoCmd.GoToControl "GID"
+87	0	    DoCmd.FindRecord Me![cboFind]
+88	0	
+89	0	End If
+90	0	
+91	0	Exit Sub
+92	0	
+93	0	err_cboFind:
+94	0	    Call General_Error_Trap
+95	0	    Exit Sub
+96	0	End Sub
+97	0	
+98	0	Private Sub cboFind_NotInList(NewData As String, response As Integer)
+99	1	'stop not in list msg loop
+100	0	On Error GoTo err_cbofindNot
+101	0	
+102	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+103	0	    response = acDataErrContinue
+104	0	    
+105	0	    Me![cboFind].Undo
+106	0	Exit Sub
+107	0	
+108	0	err_cbofindNot:
+109	0	    Call General_Error_Trap
+110	0	    Exit Sub
+111	0	End Sub
+112	0	
+113	0	Private Sub cmdMenu_Click()
+114	1	'new menu button
+115	0	On Error GoTo err_cmdMenu
+116	0	
+117	0	    DoCmd.OpenForm "Bone", acNormal
+118	0	    DoCmd.Close acForm, Me.Name
+119	0	Exit Sub
+120	0	
+121	0	err_cmdMenu:
+122	0	    Call General_Error_Trap
+123	0	    Exit Sub
+124	0	End Sub
+125	0	
+126	0	Private Sub Form_Current()
+127	1	'new goto control command here
+128	0	On Error GoTo err_current
+129	0	DoCmd.GoToControl "Field102"
+130	0	
+131	0	Exit Sub
+132	0	
+133	0	err_current:
+134	0	    Call General_Error_Trap
+135	0	    Exit Sub
+136	0	End Sub

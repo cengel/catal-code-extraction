@@ -1,0 +1,31 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	1	'**********************************************************
+4	1	' This subform is new in version 9.2 - as a feature can be
+5	1	' in many spaces the space field has been removed from the
+6	1	' Feature tables and normalised out int Exca: Features in Spaces
+7	1	' SAJ v9.2
+8	1	'**********************************************************
+9	0	
+10	0	
+11	0	
+12	0	Private Sub cmdDelete_Click()
+13	0	On Error GoTo Err_cmdDelete_Click
+14	0	
+15	1	'2010 make it easier to delete rather than using pop up
+16	0	Dim resp
+17	0	resp = MsgBox("Are you sure you want to delete the phasing " & Me![txtOccupationPhase] & " from this unit?", vbQuestion + vbYesNo, "Confirm Deletion")
+18	0	If resp = vbYes Then
+19	0	    Me![txtOccupationPhase].Locked = False
+20	0	    DoCmd.RunCommand acCmdDeleteRecord
+21	0	    Me![txtOccupationPhase].Locked = True
+22	0	End If
+23	0	
+24	0	Exit_cmdDelete_Click:
+25	0	    Exit Sub
+26	0	
+27	0	Err_cmdDelete_Click:
+28	0	    MsgBox Err.Description
+29	0	    Resume Exit_cmdDelete_Click
+30	0	    
+31	0	End Sub

@@ -1,0 +1,830 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	0	Option Explicit
+3	0	
+4	0	Private Sub Building_AfterUpdate()
+5	1	'***********************************************************************
+6	1	' Intro of a validity check to ensure building num entered here is ok
+7	1	' if not tell the user and allow them to enter. SF not want it to restrict
+8	1	' entry and trusts excavators to enter building num when they can
+9	1	'
+10	1	' SAJ v9.1
+11	1	'***********************************************************************
+12	0	On Error GoTo err_Building_AfterUpdate
+13	0	
+14	0	Dim checknum, msg, retval
+15	0	
+16	0	If Me![Building] <> "" Then
+17	1	    'first check its valid
+18	0	    If IsNumeric(Me![Building]) Then
+19	2	        'new 2009 winter - if a user gets number wrong they can't delete it and many then put 0
+20	2	        'building 0 keeps appearing and we don't want it so put a check in
+21	0	        If Me![Building] = 0 Then
+22	0	            MsgBox "Building 0 is invalid, this entry will be removed", vbInformation, "Invalid Entry"
+23	0	            Me![Building] = ""
+24	0	        Else
+25	1	            'check that building num does exist
+26	0	            checknum = DLookup("[Number]", "[Exca: Building Details]", "[Number] = " & Me![Building])
+27	0	            If IsNull(checknum) Then
+28	0	                msg = "This Building Number DOES NOT EXIST in the database, you must remember to enter it."
+29	0	                msg = msg & Chr(13) & Chr(13) & "Would you like to enter it now?"
+30	0	                retval = MsgBox(msg, vbInformation + vbYesNo, "Building Number does not exist")
+31	0	        
+32	0	                If retval = vbNo Then
+33	1	                    MsgBox "Ok, but you must remember to enter it soon otherwise you'll be chased!", vbExclamation, "Remember!"
+34	0	                Else
+35	0	                    DoCmd.OpenForm "Exca: Building Sheet", acNormal, , , acFormAdd, acDialog, "NEW,Num:" & Me![Building] & ",Area:" & Me![Field26]
+36	0	                End If
+37	0	            Else
+38	1	                'valid number, enable view button
+39	0	                Me![cmdGoToBuilding].Enabled = True
+40	0	            End If
+41	1	            'building number entered so internal space - new season 2009
+42	0	            Me![chkExternal] = False
+43	0	        End If
+44	0	    Else
+45	1	        'not a vaild numeric building number
+46	0	        MsgBox "The Building number is invalid, please enter a numeric value only", vbInformation, "Invalid Entry"
+47	0	    End If
+48	0	Else
+49	1	    'no building number entered so external space - new season 2009
+50	0	    Me![chkExternal] = True
+51	0	End If
+52	0	
+53	0	Exit Sub
+54	0	
+55	0	err_Building_AfterUpdate:
+56	0	    Call General_Error_Trap
+57	0	    Exit Sub
+58	0	End Sub
+59	0	
+60	0	
+61	0	
+62	0	
+63	0	
+64	0	
+65	0	Private Sub cboFindSpace_AfterUpdate()
+66	1	'********************************************
+67	1	'Find the selected space number from the list
+68	1	'
+69	1	'SAJ v9.1
+70	1	'********************************************
+71	0	On Error GoTo err_cboFindSpace_AfterUpdate
+72	0	
+73	0	    If Me![cboFindSpace] <> "" Then
+74	1	        'if number is disabled then must enable if for the search
+75	1	        'it will be reset to disabled by the code in form oncurrent
+76	0	        If Me![Space number].Enabled = False Then Me![Space number].Enabled = True
+77	0	        DoCmd.GoToControl "Space Number"
+78	0	        DoCmd.FindRecord Me![cboFindSpace]
+79	0	        Me![cboFindSpace] = ""
+80	0	    End If
+81	0	Exit Sub
+82	0	
+83	0	err_cboFindSpace_AfterUpdate:
+84	0	    Call General_Error_Trap
+85	0	    Exit Sub
+86	0	End Sub
+87	0	
+88	0	Private Sub cboFindSpace_NotInList(NewData As String, response As Integer)
+89	1	'stop not in list msg loop - 2009
+90	0	On Error GoTo err_cbofindNot
+91	0	
+92	0	    MsgBox "Sorry this Space cannot be found in the list", vbInformation, "No Match"
+93	0	    response = acDataErrContinue
+94	0	    
+95	0	    Me![cboFindSpace].Undo
+96	0	Exit Sub
+97	0	
+98	0	err_cbofindNot:
+99	0	    Call General_Error_Trap
+100	0	    Exit Sub
+101	0	End Sub
+102	0	
+103	0	Private Sub cboHodderPhase_AfterUpdate()
+104	1	'NEW WINTER 2009 - READY FOR INTRO OF NEW PHASING MODEL
+105	0	On Error GoTo err_phase
+106	0	
+107	0	    If Me![cboHodderPhase] <> "" Then
+108	0	        Me![txtHodderPhase] = Me![Area] & "." & Me![cboHodderPhase]
+109	0	        
+110	1	        'winter 2010 - bear in mind the timeperiod field of the unit must be updated to reflect any change
+111	1	        'in 2010 some have got out of sync eg: phased post chalc but still say Neolithic
+112	0	        Dim sql
+113	0	        If Me![cboHodderPhase] = "Post-Chalcolithic" Then
+114	0	            sql = "UPDATE ([Exca: Space Sheet] INNER JOIN [Exca: Units in Spaces] ON [Exca: Space Sheet].[Space number] = "
+115	0	            sql = sql & "[Exca: Units in Spaces].In_space) INNER JOIN [Exca: Unit Sheet] ON [Exca: Units in Spaces].Unit = "
+116	2	            sql = sql & "[Exca: Unit Sheet].[Unit Number] SET [Exca: Unit Sheet].TimePeriod = 'Post-Chalcolithic' "
+117	0	            sql = sql & "WHERE ((([Exca: Space Sheet].[Space number])=" & Me![Space number] & "));"
+118	0	            DoCmd.RunSQL sql
+119	0	        ElseIf Me![cboHodderPhase] = "Chalcolithic" Then
+120	0	            sql = "UPDATE ([Exca: Space Sheet] INNER JOIN [Exca: Units in Spaces] ON [Exca: Space Sheet].[Space number] = "
+121	0	            sql = sql & "[Exca: Units in Spaces].In_space) INNER JOIN [Exca: Unit Sheet] ON [Exca: Units in Spaces].Unit = "
+122	2	            sql = sql & "[Exca: Unit Sheet].[Unit Number] SET [Exca: Unit Sheet].TimePeriod = 'Chalcolithic' "
+123	0	            sql = sql & "WHERE ((([Exca: Space Sheet].[Space number])=" & Me![Space number] & "));"
+124	0	            DoCmd.RunSQL sql
+125	1	        ElseIf Len(Me![cboHodderPhase]) < 3 Then 'will be a ?letter or letter = neolithic - this will ignore unknown etc
+126	0	            sql = "UPDATE ([Exca: Space Sheet] INNER JOIN [Exca: Units in Spaces] ON [Exca: Space Sheet].[Space number] = "
+127	0	            sql = sql & "[Exca: Units in Spaces].In_space) INNER JOIN [Exca: Unit Sheet] ON [Exca: Units in Spaces].Unit = "
+128	2	            sql = sql & "[Exca: Unit Sheet].[Unit Number] SET [Exca: Unit Sheet].TimePeriod = 'Neolithic' "
+129	0	            sql = sql & "WHERE ((([Exca: Space Sheet].[Space number])=" & Me![Space number] & "));"
+130	0	            DoCmd.RunSQL sql
+131	0	            
+132	0	        
+133	0	        End If
+134	0	        
+135	0	
+136	0	    Else
+137	0	        Dim response
+138	0	        response = MsgBox("Do you wish the Hodder Level field to be blank?", vbYesNo + vbQuestion, "Action confirmation")
+139	0	        If response = vbYes Then
+140	0	            Me![txtHodderPhase] = ""
+141	0	        End If
+142	0	        
+143	0	    End If
+144	0	    Me![cboHodderPhase] = ""
+145	0	Exit Sub
+146	0	
+147	0	err_phase:
+148	0	    Call General_Error_Trap
+149	0	    Exit Sub
+150	0	End Sub
+151	0	
+152	0	Private Sub chkExternal_AfterUpdate()
+153	0	On Error GoTo err_chk
+154	1	'new 2009 - phasing list here only if external space
+155	0	If Me!chkExternal = True Then
+156	0	    Me![Exca: subform Phases related to Space].Enabled = True
+157	0	    Me![Exca: subform Phases related to Space].Locked = False
+158	0	Else
+159	0	    Me![Exca: subform Phases related to Space].Enabled = False
+160	0	    Me![Exca: subform Phases related to Space].Locked = True
+161	0	End If
+162	0	
+163	1	'new 2010
+164	0	If Me![ExternalToBuilding] = True Then
+165	0	    Me![ExternalSpaceInfillingProcess].Enabled = True
+166	0	    Me![cboOutline].Enabled = True
+167	0	Else
+168	0	    Me![ExternalSpaceInfillingProcess].Enabled = False
+169	0	    Me![cboOutline].Enabled = False
+170	0	End If
+171	0	
+172	0	If Me![ExternalToBuilding] = True Then
+173	0	    Me![ExternalSpaceInfillingProcess].Enabled = True
+174	0	Else
+175	0	    If Me![ExternalSpaceInfillingProcess] <> "" Or Me![cboOutline] <> "" Then
+176	0	        Dim resp
+177	0	        resp = MsgBox("Only external spaces can have an infilling process / outline, this value will therefore be removed. You must assign it to the building. Are you sure you wish to make this change?", vbYesNo + vbExclamation, "This affects infilling process")
+178	0	        If resp = vbYes Then
+179	0	            Me![ExternalSpaceInfillingProcess] = ""
+180	0	            Me![ExternalSpaceInfillingProcess].Enabled = False
+181	0	            Me![cboOutline] = ""
+182	0	            Me![cboOutline].Enabled = False
+183	0	        Else
+184	0	            Me![ExternalToBuilding] = True
+185	0	        End If
+186	0	    End If
+187	0	End If
+188	0	Exit Sub
+189	0	
+190	0	err_chk:
+191	0	    Call General_Error_Trap
+192	0	    Exit Sub
+193	0	End Sub
+194	0	
+195	0	Private Sub cmdAddNew_Click()
+196	1	'********************************************
+197	1	'Add a new record
+198	1	'
+199	1	'SAJ v9.1
+200	1	'********************************************
+201	0	On Error GoTo err_cmdAddNew_Click
+202	0	
+203	0	    DoCmd.GoToRecord acActiveDataObject, , acNewRec
+204	0	    DoCmd.GoToControl "Space Number"
+205	0	Exit Sub
+206	0	
+207	0	err_cmdAddNew_Click:
+208	0	    Call General_Error_Trap
+209	0	    Exit Sub
+210	0	End Sub
+211	0	
+212	0	Private Sub cmdGoToBuilding_Click()
+213	1	'***********************************************************
+214	1	' Open building form with a filter on the number related
+215	1	' to the button. Open as readonly.
+216	1	'
+217	1	' SAJ v9.1
+218	1	'***********************************************************
+219	0	On Error GoTo Err_cmdGoToBuilding_Click
+220	0	Dim checknum, msg, retval, permiss
+221	0	
+222	0	If Not IsNull(Me![Building]) Or Me![Building] <> "" Then
+223	1	    'check that building num does exist
+224	0	    checknum = DLookup("[Number]", "[Exca: Building Details]", "[Number] = " & Me![Building])
+225	0	    If IsNull(checknum) Then
+226	1	        'number not exist - now see what permissions user has
+227	0	        permiss = GetGeneralPermissions
+228	0	        If permiss = "ADMIN" Or permiss = "RW" Or permiss = "exsuper" Then
+229	0	            msg = "This Building Number DOES NOT EXIST in the database."
+230	0	            msg = msg & Chr(13) & Chr(13) & "Would you like to enter it now?"
+231	0	            retval = MsgBox(msg, vbInformation + vbYesNo, "Building Number does not exist")
+232	0	        
+233	0	            If retval = vbNo Then
+234	0	                MsgBox "No building record to view, please alert the your team leader about this.", vbExclamation, "Missing Building Record"
+235	0	            Else
+236	0	                DoCmd.OpenForm "Exca: Building Sheet", acNormal, , , acFormAdd, acDialog, "NEW,Num:" & Me![Building] & ",Area:" & Me![Field26]
+237	0	            End If
+238	0	        Else
+239	1	            'user is readonly so just tell them record not exist
+240	0	            MsgBox "Sorry but this building record has not been added to the system yet, there is no record to view.", vbInformation, "Missing Building Record"
+241	0	        End If
+242	0	    Else
+243	1	        'record exists - open it
+244	0	        Dim stDocName As String
+245	0	        Dim stLinkCriteria As String
+246	0	
+247	0	        stDocName = "Exca: Building Sheet"
+248	0	    
+249	0	        stLinkCriteria = "[Number]= " & Me![Building]
+250	1	        'DoCmd.OpenForm stDocName, acNormal, , stLinkCriteria, acFormReadOnly, acDialog, "FILTER"
+251	1	        'decided against dialog as you can open other forms from building form and they would appear beneath it
+252	0	        DoCmd.OpenForm stDocName, acNormal, , stLinkCriteria, acFormReadOnly, , "FILTER"
+253	0	    End If
+254	0	    
+255	0	End If
+256	0	
+257	0	Exit Sub
+258	0	
+259	0	Err_cmdGoToBuilding_Click:
+260	0	    Call General_Error_Trap
+261	0	    Exit Sub
+262	0	End Sub
+263	0	
+264	0	Private Sub cmdGoToImage_Click()
+265	1	'********************************************************************
+266	1	' New button for 2009 which allows any available images to be
+267	1	' displayed
+268	1	' SAJ
+269	1	'********************************************************************
+270	0	On Error GoTo err_cmdGoToImage_Click
+271	0	
+272	0	Dim mydb As DAO.Database
+273	0	Dim tmptable As TableDef, tblConn, I, msg, fldid
+274	0	Set mydb = CurrentDb
+275	0	
+276	1	    'get the field id for unit in the catalog that matches this year
+277	1	    'NEW 2007 method where by portfolio now uses its own sql database
+278	0	    Dim myq1 As QueryDef, connStr
+279	0	    Set mydb = CurrentDb
+280	0	    Set myq1 = mydb.CreateQueryDef("")
+281	0	    myq1.Connect = mydb.TableDefs(0).Connect & ";UID=portfolio;PWD=portfolio"
+282	0	    myq1.ReturnsRecords = True
+283	2	    'myq1.sql = "sp_Portfolio_GetUnitFieldID " & Me![Year] - year here is random as there isn't one
+284	0	    myq1.sql = "sp_Portfolio_GetSpaceFieldID_2009 2009"
+285	0	    
+286	0	    Dim myrs As Recordset
+287	0	    Set myrs = myq1.OpenRecordset
+288	2	    ''MsgBox myrs.Fields(0).Value
+289	0	    If myrs.Fields(0).Value = "" Or myrs.Fields(0).Value = 0 Then
+290	0	        fldid = 0
+291	0	    Else
+292	0	        fldid = myrs.Fields(0).Value
+293	0	    End If
+294	0	        
+295	0	    myrs.Close
+296	0	    Set myrs = Nothing
+297	0	    myq1.Close
+298	0	    Set myq1 = Nothing
+299	0	    
+300	0	    
+301	0	    
+302	1	    For I = 0 To mydb.TableDefs.Count - 1 'loop the tables collection
+303	0	    Set tmptable = mydb.TableDefs(I)
+304	0	             
+305	0	    If tmptable.Connect <> "" Then
+306	0	        tblConn = tmptable.Connect
+307	0	        Exit For
+308	0	    End If
+309	0	    Next I
+310	0	    
+311	0	    If tblConn <> "" Then
+312	1	        'If InStr(tblConn, "catalsql") = 0 Then
+313	0	        If InStr(tblConn, "catalsql") = 0 Then
+314	1	            'if on site the image can be loaded from the server directly into Access
+315	0	            DoCmd.OpenForm "Image_Display", acNormal, , "[IntValue] = " & Me![Space number] & " AND [Field_ID] = " & fldid, acFormReadOnly, acDialog, 2009
+316	0	            
+317	0	        Else
+318	1	            'database is running remotely must access images via internet
+319	0	            msg = "As you are working remotely the system will have to display the images in a web browser." & Chr(13) & Chr(13)
+320	0	            msg = msg & "At present this part of the website is secure, you must enter following details to gain access:" & Chr(13) & Chr(13)
+321	0	            msg = msg & "Username: catalhoyuk" & Chr(13)
+322	0	            msg = msg & "Password: SiteDatabase1" & Chr(13) & Chr(13)
+323	0	            msg = msg & "When you have finished viewing the images close your browser to return to the database."
+324	0	            MsgBox msg, vbInformation, "Photo Web Link"
+325	0	            
+326	0	            Application.FollowHyperlink (ImageLocationOnWeb & "?field=feature&id=" & Me![Space number])
+327	0	        End If
+328	0	
+329	0	    Else
+330	0	        
+331	0	    End If
+332	0	    
+333	0	    Set tmptable = Nothing
+334	0	    mydb.Close
+335	0	    Set mydb = Nothing
+336	0	    
+337	0	Exit Sub
+338	0	
+339	0	err_cmdGoToImage_Click:
+340	0	    Call General_Error_Trap
+341	0	    Exit Sub
+342	0	
+343	0	End Sub
+344	0	
+345	0	Private Sub cmdHelp_Click()
+346	0	On Error GoTo Err_cmdHelp_Click
+347	0	
+348	1	'either pop up a window or have a message
+349	0	MsgBox "A help message to explain the post excavation fields will appear soon", vbInformation, "Help"
+350	0	    
+351	0	
+352	0	Exit_cmdHelp_Click:
+353	0	    Exit Sub
+354	0	
+355	0	Err_cmdHelp_Click:
+356	0	    Resume Exit_cmdHelp_Click
+357	0	    
+358	0	End Sub
+359	0	
+360	0	Private Sub cmdPrintSpaceSheet_Click()
+361	1	'new for 2009
+362	0	On Error GoTo err_cmdSpace
+363	0	
+364	0	    Dim resp, both
+365	0	    both = MsgBox("Do you want a list of the associated Units as well?", vbQuestion + vbYesNo, "Units?")
+366	0	        DoCmd.OpenReport "R_SpaceSheet", acViewPreview, , "[Space Number] = " & Me![Space number]
+367	0	        If both = vbYes Then DoCmd.OpenReport "R_Units_in_Spaces", acViewPreview, , "[In_Space] = " & Me![Space number]
+368	0	
+369	0	Exit Sub
+370	0	
+371	0	err_cmdSpace:
+372	0	    Call General_Error_Trap
+373	0	    Exit Sub
+374	0	End Sub
+375	0	
+376	0	Private Sub cmdReportProblem_Click()
+377	1	'bring up a popup to allow user to report a problem
+378	0	On Error GoTo err_reportprob
+379	0	    DoCmd.OpenForm "frm_pop_problemreport", , , , acFormAdd, acDialog, "space;" & Me![Space number]
+380	0	
+381	0	Exit Sub
+382	0	
+383	0	err_reportprob:
+384	0	    Call General_Error_Trap
+385	0	    Exit Sub
+386	0	End Sub
+387	0	
+388	0	Private Sub cmdViewSpacesketch_Click()
+389	0	On Error GoTo err_ViewSpacesketch_Click
+390	0	    Dim Path
+391	0	    Dim fname, newfile
+392	0	    
+393	1	    'check if can find sketch image
+394	1	    'using global constanst sktechpath Declared in globals-shared
+395	1	    'path = "\\catal\Site_Sketches\Features\Sketches"
+396	0	    Path = sketchpath2015 & "spaces\sketches\"
+397	0	    Path = Path & "S" & Me![Space number] & "*" & ".jpg"
+398	0	    
+399	0	    fname = Dir(Path & "*", vbNormal)
+400	0	    While fname <> ""
+401	0	        newfile = fname
+402	0	        fname = Dir()
+403	0	    Wend
+404	0	    Path = sketchpath2015 & "spaces\sketches\" & newfile
+405	0	    
+406	0	    If Dir(Path) = "" Then
+407	1	        'directory not exist
+408	0	        MsgBox "The sketch plan of this space has not been scanned in yet.", vbInformation, "No Sketch available to view"
+409	0	    Else
+410	0	        DoCmd.OpenForm "frm_pop_spacesketch", acNormal, , , acFormReadOnly, , Me![Space number]
+411	0	    End If
+412	0	 
+413	0	Exit Sub
+414	0	
+415	0	err_ViewSpacesketch_Click:
+416	0	    Call General_Error_Trap
+417	0	    Exit Sub
+418	0	End Sub
+419	0	
+420	0	Private Sub Excavation_Click()
+421	1	' removed open excavation form (menu) as this form
+422	1	' can now be called by other forms
+423	1	' SAJ v9.1
+424	0	    Dim stDocName As String
+425	0	    Dim stLinkCriteria As String
+426	0	
+427	1	    'stDocName = "Excavation"
+428	1	    'DoCmd.OpenForm stDocName, , , stLinkCriteria
+429	0	    DoCmd.Close acForm, "Exca: Space Sheet"
+430	0	End Sub
+431	0	
+432	0	
+433	0	
+434	0	Private Sub Field26_AfterUpdate()
+435	1	'TALK TO SHAHINA ABOUT THE WAY THIS SHOULD WORK - SHE SAYS LEAVE IT EDITABLE AT PRESENT
+436	1	'Dim checkBuildingArea
+437	1	'If Me![Field26].OldValue <> "" And Not IsNull(Me![Building]) Then
+438	1	'    checkBuildingArea = DLookup("[Area]", "[Exca: Building Details]", "[Number] = " & Me![Building] & "")
+439	1	'
+440	1	'    If Not IsNull(checkBuildingArea) Then
+441	1	'        If checkBuildingArea <> Me![Field26] Then
+442	1	'            MsgBox "This area alteration means this Space is recorded as being in a different Area to the Building number " & Me![Building]
+443	1	'        End If
+444	1	'    End If
+445	1	'End If
+446	2	'new 2008 - the mound wasn't getting updated!
+447	0	Me![Mound] = Me!Field26.Column(1)
+448	0	End Sub
+449	0	
+450	0	Private Sub Form_BeforeUpdate(Cancel As Integer)
+451	1	'***************************************************************************
+452	1	' If no space number entered key violation occurs - intercept and provide
+453	1	' nice msg, plus way to escape msg loop
+454	1	'
+455	1	' SAJ v9.1
+456	1	'***************************************************************************
+457	0	On Error GoTo err_Form_BeforeUpdate
+458	0	
+459	0	If IsNull(Me![Space number] And (Not IsNull(Me![Field26]) Or Not IsNull(Me![Building]) Or Not IsNull(Me![Level]) Or (Not IsNull(Me![Description]) And Me![Description] <> ""))) Then
+460	0	    MsgBox "You must enter a space number otherwise the record cannot be saved." & Chr(13) & Chr(13) & "If you wish to cancel this record being entered and start again completely press ESC", vbInformation, "Incomplete data"
+461	0	    Cancel = True
+462	0	    DoCmd.GoToControl "Space Number"
+463	0	ElseIf IsNull(Me![Space number]) And IsNull(Me![Field26]) And IsNull(Me![Building]) And IsNull(Me![Level]) And (IsNull(Me![Description]) Or Me![Description] = "") Then
+464	1	    'blank record that was edited but all data scrubbed - system still thinks it should
+465	1	    'try and save the record as it created a shell for it so just tell it to undo
+466	0	    Me.Undo
+467	0	End If
+468	0	
+469	0	If Me.Dirty And (IsNull(Me![LastUpdatedBy]) Or Me![LastUpdatedBy] = "") Then
+470	0	    MsgBox "You must enter your name in the Last Updated By field", vbInformation, "Last Updated By Field not filled out"
+471	0	    Cancel = True
+472	0	    DoCmd.GoToControl "LastUpdatedBy"
+473	0	End If
+474	0	
+475	0	Me![LastUpdatedDate] = Date
+476	0	
+477	0	Exit Sub
+478	0	
+479	0	err_Form_BeforeUpdate:
+480	0	    Call General_Error_Trap
+481	0	    Exit Sub
+482	0	End Sub
+483	0	
+484	0	Private Sub Form_Current()
+485	1	'***********************************************************************
+486	1	' Things to check for each record: if no building number then disable goto button
+487	1	' New requirement that space number cannot be edited after entry. This
+488	1	' can only be done by an administrator so lock field here
+489	1	' SAJ v9.1, v9.2
+490	1	'***********************************************************************
+491	0	On Error GoTo err_Form_Current
+492	0	
+493	0	    If Me![Building] = "" Or IsNull(Me![Building]) Then
+494	0	        Me![cmdGoToBuilding].Enabled = False
+495	0	    Else
+496	0	        Me![cmdGoToBuilding].Enabled = True
+497	0	    End If
+498	0	    
+499	0	    If Me![Space number] <> "" Then
+500	1	    'space number exists, lock field
+501	0	        Me![Space number].Locked = True
+502	0	        Me![Space number].Enabled = False
+503	0	        Me![Space number].BackColor = Me.Section(0).BackColor
+504	0	        
+505	0	        Me![Building].SetFocus
+506	0	    Else
+507	1	    'no space number - new record allow entry
+508	0	        Me![Space number].Locked = False
+509	0	        Me![Space number].Enabled = True
+510	0	        Me![Space number].BackColor = 16777215
+511	0	        
+512	0	        Me![Space number].SetFocus
+513	0	    End If
+514	0	    
+515	1	    'new for v9.2 intro of LevelLOV and certain/uncertain option
+516	2	    ''MsgBox Me![LevelCertain]
+517	0	    If Me![MellaartLevelCertain] = True Then
+518	1	        'if level is certain then enable level list
+519	0	        Me![Level].Enabled = True
+520	0	        Me![cboUncertainLevelStart].Enabled = False
+521	0	        Me![cboUnCertainLevelEnd].Enabled = False
+522	0	    Else
+523	1	        'level is uncertain, allow edits to level start and end but not level
+524	0	        Me![Level].Enabled = False
+525	0	        Me![cboUncertainLevelStart].Enabled = True
+526	0	        Me![cboUnCertainLevelEnd].Enabled = True
+527	0	    End If
+528	0	    
+529	1	'see unit sheet oncurrent for explaination of why altered - image form now does the check
+530	3	''    'new 2009
+531	3	'''find out is any images available
+532	0	Dim imageCount, Imgcaption
+533	2	''
+534	2	''Dim mydb As DAO.Database
+535	2	''Dim myq1 As QueryDef, connStr
+536	2	''    Set mydb = CurrentDb
+537	2	''    Set myq1 = mydb.CreateQueryDef("")
+538	2	''    myq1.Connect = mydb.TableDefs(0).Connect & ";UID=portfolio;PWD=portfolio"
+539	2	''    myq1.ReturnsRecords = True
+540	6	''    myq1.sql = "sp_Portfolio_CountImagesForSpace_2009 '" & Me![Space number] & "', ''"
+541	2	''
+542	2	''    Dim myrs As Recordset
+543	2	''    Set myrs = myq1.OpenRecordset
+544	4	''    ''MsgBox myrs.Fields(0).Value
+545	2	''    If myrs.Fields(0).Value = "" Or myrs.Fields(0).Value = 0 Then
+546	2	''           imageCount = 0
+547	2	''    Else
+548	2	''        imageCount = myrs.Fields(0).Value
+549	2	''   End If
+550	0	
+551	2	''myrs.close
+552	2	''Set myrs = Nothing
+553	0	
+554	0	backhere:
+555	2	''myq1.close
+556	2	''Set myq1 = Nothing
+557	2	''mydb.close
+558	2	''Set mydb = Nothing
+559	0	    
+560	2	''If imageCount > 0 Then
+561	2	''    Imgcaption = imageCount
+562	2	''    If imageCount = 1 Then
+563	2	''        Imgcaption = Imgcaption & " Image to Display"
+564	2	''    Else
+565	2	''       Imgcaption = Imgcaption & " Images to Display"
+566	2	''    End If
+567	2	''    Me![cmdGoToImage].Caption = Imgcaption
+568	2	''    Me![cmdGoToImage].Enabled = True
+569	2	''Else
+570	2	''    Me![cmdGoToImage].Caption = "No Image to Display"
+571	2	''    Me![cmdGoToImage].Enabled = False
+572	2	''End If
+573	0	
+574	0	Imgcaption = "Images of Space"
+575	0	Me![cmdGoToImage].Caption = Imgcaption
+576	0	Me![cmdGoToImage].Enabled = True
+577	0	
+578	3	'''OFFSITE 2009 - ignore photos and sketches offsite
+579	3	'''JUST TAKE THIS LINE OUT ON SITE TO RETRIEVE FUNCTIONALITY
+580	2	''Me![cmdGoToImage].Enabled = False
+581	0	
+582	1	'new 2009 - phasing list here only if external space
+583	0	If Me!chkExternal = True Then
+584	0	    Me![Exca: subform Phases related to Space].Enabled = True
+585	0	    Me![Exca: subform Phases related to Space].Locked = False
+586	0	Else
+587	0	    Me![Exca: subform Phases related to Space].Enabled = False
+588	0	    Me![Exca: subform Phases related to Space].Locked = True
+589	0	End If
+590	0	
+591	1	'new 2010
+592	0	If Me![ExternalToBuilding] = True Then
+593	0	    Me![ExternalSpaceInfillingProcess].Enabled = True
+594	0	    Me![cboOutline].Enabled = True
+595	0	Else
+596	0	    Me![ExternalSpaceInfillingProcess].Enabled = False
+597	0	    Me![cboOutline].Enabled = False
+598	0	End If
+599	0	
+600	0	Exit Sub
+601	0	
+602	0	err_Form_Current:
+603	1	    If Err.Number = 3146 Then 'odbc call failed, crops up every so often on all
+604	1	    'sheets bar unit and have NO idea why except it always starts with building with no photos
+605	1	    'but not all time, it occurs on Set myrs1 = myq1.OpenRecordset statement, tried everything
+606	1	    '    Resume Next
+607	0	        imageCount = "?"
+608	0	        GoTo backhere
+609	0	    Else
+610	0	        Call General_Error_Trap
+611	0	        Exit Sub
+612	0	    End If
+613	0	End Sub
+614	0	
+615	0	Private Sub Form_Open(Cancel As Integer)
+616	1	'******************************************************
+617	1	' Chck status of form on open to see if filtered or locked
+618	1	' so determine which controls to enable
+619	1	'
+620	1	' SAJ v9.1
+621	1	'******************************************************
+622	0	On Error GoTo err_Form_Open
+623	0	
+624	0	If Me.FilterOn = True Or Me.AllowEdits = False Then
+625	1	    'disable find and add new in this instance find will not work
+626	1	    'and should not be able to add records
+627	0	    Me![cboFindSpace].Enabled = False
+628	0	    Me![cmdAddNew].Enabled = False
+629	0	    Me.AllowAdditions = False
+630	0	Else
+631	1	    'new end of season 2008 to ensure not within record when opened, try and prevent overwriting
+632	0	    DoCmd.GoToControl "cboFindSpace"
+633	0	End If
+634	0	
+635	1	'now sort out view depending on permissions
+636	0	Dim permiss
+637	0	permiss = GetGeneralPermissions
+638	0	If (permiss = "ADMIN" Or permiss = "RW" Or permiss = "exsuper") And (Me.AllowAdditions = True Or Me.AllowDeletions = True Or Me.AllowEdits = True) Then
+639	2	    'SAJ season 2006 - don't allow deletions from this screen
+640	0	    ToggleFormReadOnly Me, False, "NoDeletions"
+641	0	Else
+642	0	    ToggleFormReadOnly Me, True
+643	0	    Me![cmdAddNew].Enabled = False
+644	0	End If
+645	0	
+646	1	'new 2009 - repeat from oncurrent but seems to be needed here to prevent first record being
+647	1	'editable - phasing list here only if external space
+648	0	If Me!chkExternal = True Then
+649	0	    Me![Exca: subform Phases related to Space].Enabled = True
+650	0	    Me![Exca: subform Phases related to Space].Locked = False
+651	0	Else
+652	0	    Me![Exca: subform Phases related to Space].Enabled = False
+653	0	    Me![Exca: subform Phases related to Space].Locked = True
+654	0	End If
+655	0	
+656	1	'new 2010
+657	0	If Me![ExternalToBuilding] = True Then
+658	0	    Me![ExternalSpaceInfillingProcess].Enabled = True
+659	0	    Me![cboOutline].Enabled = True
+660	0	Else
+661	0	    Me![ExternalSpaceInfillingProcess].Enabled = False
+662	0	    Me![cboOutline].Enabled = False
+663	0	End If
+664	0	
+665	0	Exit Sub
+666	0	
+667	0	err_Form_Open:
+668	0	    Call General_Error_Trap
+669	0	    Exit Sub
+670	0	
+671	0	End Sub
+672	0	
+673	0	Private Sub frmLevelCertain_AfterUpdate()
+674	1	'*************************************************************************
+675	1	' New in v9.2 - levels can now be certain or uncertain. Uncertain levels
+676	1	' can have a start and end entry. If the user changes their mind the value must
+677	1	' be moved between these lists.
+678	1	'SAJ v9.2
+679	1	'*************************************************************************
+680	0	On Error GoTo err_frmLevelCertain_AfterUpdate
+681	0	Dim retval
+682	0	
+683	0	If Me![frmLevelCertain] = -1 Then
+684	1	    'user has selected level as certain, allow them to choose a level from the list
+685	1	    'and disable the start end combos
+686	0	    If Me![cboUncertainLevelStart] <> "" And Me![cboUnCertainLevelEnd] <> "" Then
+687	0	        retval = MsgBox("Do you want the Start Level to become the certain level for this Space?", vbQuestion + vbYesNo, "Set Level")
+688	0	        If retval = vbYes Then
+689	0	            Me![Level] = Me![cboUncertainLevelStart]
+690	0	        Else
+691	0	            retval = MsgBox("Do you want the End Level to become the certain level for this Space?", vbQuestion + vbYesNo, "Set Level")
+692	0	            If retval = vbYes Then
+693	0	                Me![Level] = Me![cboUnCertainLevelEnd]
+694	0	            Else
+695	0	                retval = MsgBox("The start and end level fields will now be cleared and you will have to select the Certain level from that list. Are you sure you want to continue?", vbQuestion + vbYesNo, "Uncertain Levels will be cleared")
+696	0	                If retval = vbYes Then
+697	0	                    Me![cboUncertainLevelStart] = ""
+698	0	                    Me![cboUnCertainLevelEnd] = ""
+699	0	                Else
+700	0	                    Me![frmLevelCertain] = 0
+701	0	                End If
+702	0	            End If
+703	0	        End If
+704	0	    ElseIf Me![cboUncertainLevelStart] <> "" Then
+705	0	        retval = MsgBox("Do you want the Start Level to become the certain level for this Space?", vbQuestion + vbYesNo, "Set Level")
+706	0	        If retval = vbYes Then Me![Level] = Me![cboUncertainLevelStart]
+707	0	        Me![cboUncertainLevelStart] = ""
+708	0	    ElseIf Me![cboUnCertainLevelEnd] <> "" Then
+709	0	        retval = MsgBox("Do you want the End Level to become the certain level for this Space?", vbQuestion + vbYesNo, "Set Level")
+710	0	        If retval = vbYes Then Me![Level] = Me![cboUnCertainLevelEnd]
+711	0	        Me![cboUnCertainLevelEnd] = ""
+712	0	    End If
+713	0	    
+714	1	    If Me![frmLevelCertain] = -1 Then 'they have decide not to change their mind
+715	0	        Me![Level].Enabled = True
+716	0	        Me![cboUncertainLevelStart].Enabled = False
+717	0	        Me![cboUnCertainLevelEnd].Enabled = False
+718	0	    End If
+719	0	Else
+720	1	    'level uncertain so allow start end but not certain level
+721	0	    Me![Level].Enabled = False
+722	0	    If Me![Level] <> "" Then
+723	0	        Me![cboUncertainLevelStart] = Me![Level]
+724	0	        Me![Level] = ""
+725	0	    End If
+726	0	    Me![cboUncertainLevelStart].Enabled = True
+727	0	    Me![cboUnCertainLevelEnd].Enabled = True
+728	0	End If
+729	0	Exit Sub
+730	0	
+731	0	err_frmLevelCertain_AfterUpdate:
+732	0	    Call General_Error_Trap
+733	0	    Exit Sub
+734	0	
+735	0	End Sub
+736	0	
+737	0	Private Sub Level_NotInList(NewData As String, response As Integer)
+738	1	'***********************************************************************
+739	1	' Intro of a validity check to make users a little more aware of the data
+740	1	' they are entering here. The combo here is trying to prevent different entries
+741	1	' that represent the same thing. Users are allowed to enter new values but just made aware
+742	1	'
+743	1	' SAJ v9.1
+744	1	' SAJ v9.2 - now the list is only updateable by the administrator via Admin interface
+745	1	' rowsource of this combo changed from:
+746	1	' SELECT [Qry:SpaceSheet_Distinct_Levels].Level FROM [Qry:SpaceSheet_Distinct_Levels];
+747	1	' to
+748	1	' Exca:LevelLOV
+749	1	'***********************************************************************
+750	1	'On Error GoTo err_Level_NotInList
+751	1	'
+752	1	'Dim retVal
+753	1	'retVal = MsgBox("This level has not been used on this screen before, are you sure you wish to add it to the list?", vbInformation + vbYesNo, "New Level Value")
+754	1	'If retVal = vbYes Then
+755	2	'    'allow value, as this is distinct query based list we must save the record
+756	2	'    'first but need to turn off limittolist first to be able to do so an alternative
+757	2	'    'way to do this would be to dlookup on entry when not limited
+758	2	'    'to list but this method is quicker (but messier) as not require DB lookup 1st
+759	1	'    Response = acDataErrContinue
+760	2	'    Me![Level].LimitToList = False 'turn off limit to list so record can be saved
+761	2	'    DoCmd.RunCommand acCmdSaveRecord 'save rec
+762	2	'    Me![Level].Requery 'requery combo to get new value in list
+763	2	'    Me![Level].LimitToList = True 'put back on limit to list
+764	1	'Else
+765	2	'    'no leave it so they can edit it
+766	1	'    Response = acDataErrContinue
+767	1	'End If
+768	1	'Exit Sub
+769	1	'
+770	1	'err_Level_NotInList:
+771	1	'    Call General_Error_Trap
+772	1	'    Exit Sub
+773	1	'
+774	0	End Sub
+775	0	
+776	0	Private Sub Space_number_AfterUpdate()
+777	1	'***********************************************************************
+778	1	' Intro of a validity check to ensure duplicate space numbers not entered
+779	1	' which would result in nasty key violation msg back from sql server
+780	1	'
+781	1	' SAJ v9.1
+782	1	'***********************************************************************
+783	0	On Error GoTo err_Space_Number_AfterUpdate
+784	0	
+785	0	Dim checknum
+786	0	
+787	0	If Me![Space number] <> "" Then
+788	1	    'check that space num not exist
+789	0	    checknum = DLookup("[Space Number]", "[Exca: Space Sheet]", "[Space Number] = " & Me![Space number])
+790	0	    If Not IsNull(checknum) Then
+791	0	        MsgBox "Sorry but this Space Number already exists, please enter another number.", vbInformation, "Duplicate Space Number"
+792	0	        
+793	0	        If Not IsNull(Me![Space number].OldValue) Then
+794	1	            'return field to old value if there was one
+795	0	            Me![Space number] = Me![Space number].OldValue
+796	0	        Else
+797	1	            'if its a new record and no oldval (ie: null error is try to set it to oldval)
+798	1	            'then just undo entry - me![number].undo does not undo this field, only
+799	1	            'me.undo will but this removes all edits in all fields so must gather them first (!!)
+800	0	            Dim currBuild, currarea, currdesc, currLevel
+801	0	            currBuild = Me![Building]
+802	0	            currarea = Me![Field26]
+803	0	            currLevel = Me![Level]
+804	0	            currdesc = Me![Description]
+805	0	            DoCmd.GoToControl "Space Number"
+806	0	            Me.Undo
+807	0	            
+808	1	            'reset all fields, for some reason if description is null (and currdesc is null)
+809	2	            'it won't set it back to null, instead "". This throws out the form_beforeupdate
+810	1	            'code, to ensure this not happen have added the if not isnull check, so only updates
+811	1	            'field if there was an original value
+812	0	            If Not IsNull(currBuild) Then Me![Building] = currBuild
+813	0	            If Not IsNull(currarea) Then Me![Field26] = currarea
+814	0	            If Not IsNull(currLevel) Then Me![Level] = currLevel
+815	0	            If Not IsNull(currdesc) Then Me![Description] = currdesc
+816	0	            
+817	1	            'for some reason have to send focus to another field to bring it back
+818	1	            'otherwise goes onto area- setfocus not work either
+819	0	            DoCmd.GoToControl "Description"
+820	0	            DoCmd.GoToControl "Space Number"
+821	0	        End If
+822	0	    End If
+823	0	End If
+824	0	
+825	0	Exit Sub
+826	0	
+827	0	err_Space_Number_AfterUpdate:
+828	0	    Call General_Error_Trap
+829	0	    Exit Sub
+830	0	End Sub

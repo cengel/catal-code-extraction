@@ -1,0 +1,130 @@
+1	0	Option Compare Database
+2	1	Option Explicit 'saj
+3	0	
+4	0	
+5	0	Private Sub Update_GID()
+6	1	'sub used by gid fields written by anja adapted by saj to error trap and include letter code fld
+7	0	On Error GoTo err_updategid
+8	0	
+9	1	'Me![GID] = Me![Unit] & "." & Me![Find Number]
+10	0	
+11	0	Me![GID] = Me![txtUnit] & "." & Me![cboFindLetter] & Me![txtFindNumber]
+12	0	If Me![txtUnit] <> "" And Me![cboFindLetter] <> "" And Me![txtFindNumber] <> "" Then
+13	0	    Me.Refresh
+14	0	End If
+15	0	Exit Sub
+16	0	
+17	0	err_updategid:
+18	0	    Call General_Error_Trap
+19	0	    Exit Sub
+20	0	End Sub
+21	0	
+22	0	
+23	0	
+24	0	
+25	0	
+26	0	Private Sub cboFindUnit_AfterUpdate()
+27	1	'********************************************
+28	1	'Find the selected gid from the list
+29	1	'********************************************
+30	0	On Error GoTo err_cboFindUnit_AfterUpdate
+31	0	
+32	0	    If Me![cboFindUnit] <> "" Then
+33	1	         'update subform
+34	0	         If Me![cboFindUnit] = "Archaeobots" Then
+35	0	            Me![frm_subform_dblink].SourceObject = "frm_subform_bots"
+36	0	         ElseIf Me![cboFindUnit] = "Chipped Stone" Then
+37	0	             Me![frm_subform_dblink].SourceObject = "frm_subform_chippedstone"
+38	0	         ElseIf Me![cboFindUnit] = "Faunal" Then
+39	0	             Me![frm_subform_dblink].SourceObject = "frm_subform_faunal"
+40	0	         ElseIf Me![cboFindUnit] = "Groundstone" Then
+41	0	             Me![frm_subform_dblink].SourceObject = "frm_subform_Groundstone"
+42	0	         ElseIf Me![cboFindUnit] = "Excavation X finds" Then
+43	0	             Me![frm_subform_dblink].SourceObject = "frm_subform_ExcaXFinds"
+44	0	         
+45	0	         End If
+46	0	    End If
+47	0	    
+48	0	    If Me![cboUnit] <> "" Then
+49	0	        Call cboUnit_AfterUpdate
+50	0	    End If
+51	0	Exit Sub
+52	0	
+53	0	err_cboFindUnit_AfterUpdate:
+54	0	    Call General_Error_Trap
+55	0	    Exit Sub
+56	0	End Sub
+57	0	
+58	0	Private Sub cboUnit_AfterUpdate()
+59	0	On Error GoTo err_cboUnit
+60	0	
+61	0	    If Me![cboUnit] <> "" Then
+62	0	        DoCmd.GoToControl "frm_subform_dblink"
+63	0	        Me![frm_subform_dblink].Form.FilterOn = True
+64	0	        If Me![cboFindUnit] = "Faunal" Or Me![cboFindUnit] = "Archaeobots" Or Me![cboFindUnit] = "Excavation X finds" Then
+65	0	            
+66	0	            Me![frm_subform_dblink].Form.Filter = "[unit number] =" & Me![cboUnit]
+67	0	        
+68	0	        Else
+69	0	            Me![frm_subform_dblink].Form.Filter = "[unit] =" & Me![cboUnit]
+70	0	        End If
+71	0	        
+72	0	        
+73	0	    End If
+74	0	
+75	0	
+76	0	Exit Sub
+77	0	
+78	0	err_cboUnit:
+79	0	    Call General_Error_Trap
+80	0	    Exit Sub
+81	0	End Sub
+82	0	
+83	0	Private Sub Close_Click()
+84	0	On Error GoTo err_cmdAddNew_Click
+85	0	
+86	0	    DoCmd.Close acForm, Me.Name
+87	0	Exit Sub
+88	0	
+89	0	err_cmdAddNew_Click:
+90	0	    Call General_Error_Trap
+91	0	    Exit Sub
+92	0	End Sub
+93	0	
+94	0	
+95	0	
+96	0	
+97	0	
+98	0	
+99	0	
+100	0	
+101	0	
+102	0	
+103	0	
+104	0	
+105	0	
+106	0	Private Sub cmdAll_Click()
+107	0	On Error GoTo err_cmdAll
+108	0	
+109	0	    DoCmd.GoToControl "frm_subform_dblink"
+110	0	    Me![frm_subform_dblink].Form.FilterOn = False
+111	0	    Me![cboUnit] = ""
+112	0	Exit Sub
+113	0	
+114	0	err_cmdAll:
+115	0	    Call General_Error_Trap
+116	0	    Exit Sub
+117	0	End Sub
+118	0	
+119	0	Private Sub Form_Open(Cancel As Integer)
+120	0	On Error GoTo err_open
+121	0	
+122	0	    Me![frm_subform_dblink].SourceObject = ""
+123	0	    Me![cboUnit] = ""
+124	0	    Me![cboFindUnit] = ""
+125	0	Exit Sub
+126	0	
+127	0	err_open:
+128	0	    Call General_Error_Trap
+129	0	    Exit Sub
+130	0	End Sub

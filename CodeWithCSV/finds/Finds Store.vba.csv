@@ -1,0 +1,254 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	0	
+3	0	Private Sub Area_Sheet_Click()
+4	0	On Error GoTo Err_Area_Sheet_Click
+5	0	
+6	0	    Dim stDocName As String
+7	0	    Dim stLinkCriteria As String
+8	0	
+9	0	    stDocName = "Exca: Area Sheet"
+10	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+11	0	
+12	0	Exit_Area_Sheet_Click:
+13	0	    Exit Sub
+14	0	
+15	0	Err_Area_Sheet_Click:
+16	0	    MsgBox Err.Description
+17	0	    Resume Exit_Area_Sheet_Click
+18	0	End Sub
+19	0	
+20	0	
+21	0	Private Sub Building_Sheet_Click()
+22	0	On Error GoTo Err_Building_Sheet_Click
+23	0	
+24	0	    Dim stDocName As String
+25	0	    Dim stLinkCriteria As String
+26	0	
+27	0	    stDocName = "Exca: Building Sheet"
+28	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+29	0	
+30	0	Exit_Building_Sheet_Click:
+31	0	    Exit Sub
+32	0	
+33	0	Err_Building_Sheet_Click:
+34	0	    MsgBox Err.Description
+35	0	    Resume Exit_Building_Sheet_Click
+36	0	End Sub
+37	0	
+38	0	Private Sub Button10_Click()
+39	0	Building_Sheet_Click
+40	0	End Sub
+41	0	
+42	0	Private Sub Button11_Click()
+43	0	Space_Sheet_Button_Click
+44	0	End Sub
+45	0	
+46	0	
+47	0	Private Sub Button12_Click()
+48	0	Feature_Sheet_Button_Click
+49	0	End Sub
+50	0	
+51	0	
+52	0	Private Sub Button13_Click()
+53	0	Unit_Sheet_Click
+54	0	End Sub
+55	0	
+56	0	
+57	0	Private Sub Button17_Click()
+58	0	Area_Sheet_Click
+59	0	End Sub
+60	0	
+61	0	Private Sub Button9_Click()
+62	0	Return_to_Master_Con_Click
+63	0	End Sub
+64	0	
+65	0	Private Sub Command18_Click()
+66	0	Open_priority_Click
+67	0	End Sub
+68	0	
+69	0	Private Sub Feature_Sheet_Button_Click()
+70	0	On Error GoTo Err_Feature_Sheet_Button_Click
+71	0	
+72	0	    Dim stDocName As String
+73	0	    Dim stLinkCriteria As String
+74	0	
+75	0	    stDocName = "Exca: Feature Sheet"
+76	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+77	0	
+78	0	Exit_Feature_Sheet_Button_Click:
+79	0	    Exit Sub
+80	0	
+81	0	Err_Feature_Sheet_Button_Click:
+82	0	    MsgBox Err.Description
+83	0	    Resume Exit_Feature_Sheet_Button_Click
+84	0	End Sub
+85	0	
+86	0	
+87	0	Sub Open_priority_Click()
+88	0	On Error GoTo Err_Open_priority_Click
+89	0	
+90	0	    Dim stDocName As String
+91	0	    Dim stLinkCriteria As String
+92	0	
+93	0	    stDocName = "Exca: Priority Detail"
+94	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+95	0	
+96	0	Exit_Open_priority_Click:
+97	0	    Exit Sub
+98	0	
+99	0	Err_Open_priority_Click:
+100	0	    MsgBox Err.Description
+101	0	    Resume Exit_Open_priority_Click
+102	0	    
+103	0	End Sub
+104	0	
+105	0	Private Sub Return_to_Master_Con_Click()
+106	0	On Error GoTo Err_Return_to_Master_Con_Click
+107	0	
+108	0	    Dim stDocName As String
+109	0	    Dim stLinkCriteria As String
+110	0	
+111	0	    stDocName = "Catal Data Entry"
+112	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+113	0	    DoCmd.Close acForm, "Excavation"
+114	0	    
+115	0	Exit_Return_to_Master_Con_Click:
+116	0	    Exit Sub
+117	0	
+118	0	Err_Return_to_Master_Con_Click:
+119	0	    MsgBox Err.Description
+120	0	    Resume Exit_Return_to_Master_Con_Click
+121	0	
+122	0	End Sub
+123	0	
+124	0	Private Sub Space_Sheet_Button_Click()
+125	0	On Error GoTo Err_Space_Sheet_Button_Click
+126	0	
+127	0	    Dim stDocName As String
+128	0	    Dim stLinkCriteria As String
+129	0	
+130	0	    stDocName = "Exca: Space Sheet"
+131	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+132	0	
+133	0	Exit_Space_Sheet_Button_Click:
+134	0	    Exit Sub
+135	0	
+136	0	Err_Space_Sheet_Button_Click:
+137	0	    MsgBox Err.Description
+138	0	    Resume Exit_Space_Sheet_Button_Click
+139	0	
+140	0	End Sub
+141	0	
+142	0	
+143	0	Private Sub Unit_Sheet_Click()
+144	0	On Error GoTo Err_Unit_Sheet_Click
+145	0	
+146	0	    Dim stDocName As String
+147	0	    Dim stLinkCriteria As String
+148	0	
+149	0	    stDocName = "Exca: Unit Sheet"
+150	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+151	0	
+152	0	Exit_Unit_Sheet_Click:
+153	0	    Exit Sub
+154	0	
+155	0	Err_Unit_Sheet_Click:
+156	0	    MsgBox Err.Description
+157	0	    Resume Exit_Unit_Sheet_Click
+158	0	
+159	0	End Sub
+160	0	
+161	0	
+162	0	Sub Command19_Click()
+163	0	On Error GoTo Err_Command19_Click
+164	0	
+165	0	
+166	0	    DoCmd.Close
+167	0	
+168	0	Exit_Command19_Click:
+169	0	    Exit Sub
+170	0	
+171	0	Err_Command19_Click:
+172	0	    MsgBox Err.Description
+173	0	    Resume Exit_Command19_Click
+174	0	    
+175	0	End Sub
+176	0	Sub Quit_Click()
+177	0	On Error GoTo Err_Quit_Click
+178	0	
+179	0	
+180	0	    DoCmd.Quit
+181	0	
+182	0	Exit_Quit_Click:
+183	0	    Exit Sub
+184	0	
+185	0	Err_Quit_Click:
+186	0	    MsgBox Err.Description
+187	0	    Resume Exit_Quit_Click
+188	0	    
+189	0	End Sub
+190	0	Sub open_register_Click()
+191	0	On Error GoTo Err_open_register_Click
+192	0	
+193	0	    Dim stDocName As String
+194	0	    Dim stLinkCriteria As String
+195	0	
+196	0	    stDocName = "Store: Crate Register"
+197	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+198	0	
+199	0	Exit_open_register_Click:
+200	0	    Exit Sub
+201	0	
+202	0	Err_open_register_Click:
+203	0	    MsgBox Err.Description
+204	0	    Resume Exit_open_register_Click
+205	0	    
+206	0	End Sub
+207	0	Sub preview_report_Click()
+208	0	On Error GoTo Err_preview_report_Click
+209	0	
+210	0	    Dim stDocName As String
+211	0	
+212	0	    stDocName = "Finds Store: Crate Register"
+213	0	    DoCmd.OpenReport stDocName, acPreview
+214	0	
+215	0	Exit_preview_report_Click:
+216	0	    Exit Sub
+217	0	
+218	0	Err_preview_report_Click:
+219	0	    MsgBox Err.Description
+220	0	    Resume Exit_preview_report_Click
+221	0	    
+222	0	End Sub
+223	0	Private Sub Command23_Click()
+224	0	On Error GoTo Err_Command23_Click
+225	0	
+226	0	    Dim stDocName As String
+227	0	
+228	0	    stDocName = "Finds Store: Crate Register"
+229	0	    DoCmd.OpenReport stDocName, acPreview
+230	0	
+231	0	Exit_Command23_Click:
+232	0	    Exit Sub
+233	0	
+234	0	Err_Command23_Click:
+235	0	    MsgBox Err.Description
+236	0	    Resume Exit_Command23_Click
+237	0	    
+238	0	End Sub
+239	0	Private Sub SearchbyUnits_Click()
+240	0	On Error GoTo Err_SearchbyUnits_Click
+241	0	
+242	0	    Dim stDocName As String
+243	0	
+244	0	    stDocName = "Unit Based Query Report"
+245	0	    DoCmd.OpenReport stDocName, acPreview
+246	0	
+247	0	Exit_SearchbyUnits_Click:
+248	0	    Exit Sub
+249	0	
+250	0	Err_SearchbyUnits_Click:
+251	0	    MsgBox Err.Description
+252	0	    Resume Exit_SearchbyUnits_Click
+253	0	    
+254	0	End Sub

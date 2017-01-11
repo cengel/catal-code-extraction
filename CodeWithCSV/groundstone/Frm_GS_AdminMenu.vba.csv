@@ -1,0 +1,98 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdOpenData_Click()
+5	1	'open the main data screen
+6	0	On Error GoTo err_OpenData
+7	0	
+8	0	    DoCmd.OpenForm "Frm_GS_Main", acNormal
+9	0	
+10	0	Exit Sub
+11	0	
+12	0	err_OpenData:
+13	0	    Call General_Error_Trap
+14	0	    Exit Sub
+15	0	End Sub
+16	0	
+17	0	Private Sub cmdArteClass_Click()
+18	0	On Error GoTo err_cmdArteClass
+19	0	
+20	0	    DoCmd.OpenForm "Frm_Admin_ArtefactClass", acNormal
+21	0	
+22	0	Exit Sub
+23	0	
+24	0	err_cmdArteClass:
+25	0	    Call General_Error_Trap
+26	0	    Exit Sub
+27	0	End Sub
+28	0	
+29	0	Private Sub cmdArteType_Click()
+30	0	On Error GoTo err_cmdArteType
+31	0	
+32	0	    DoCmd.OpenForm "Frm_Admin_ArtefactTypeSubTypeLOV", acNormal
+33	0	
+34	0	Exit Sub
+35	0	
+36	0	err_cmdArteType:
+37	0	    Call General_Error_Trap
+38	0	    Exit Sub
+39	0	End Sub
+40	0	
+41	0	
+42	0	
+43	0	Private Sub cmdFraction_Click()
+44	0	On Error GoTo err_cmdPercent
+45	0	
+46	0	    DoCmd.OpenForm "Frm_Admin_FractionLOV", acNormal
+47	0	
+48	0	Exit Sub
+49	0	
+50	0	err_cmdPercent:
+51	0	    Call General_Error_Trap
+52	0	    Exit Sub
+53	0	
+54	0	End Sub
+55	0	
+56	0	Private Sub cmdPercent_Click()
+57	0	
+58	0	On Error GoTo err_cmdPercent
+59	0	
+60	0	    DoCmd.OpenForm "Frm_Admin_FlotPercent", acNormal
+61	0	
+62	0	Exit Sub
+63	0	
+64	0	err_cmdPercent:
+65	0	    Call General_Error_Trap
+66	0	    Exit Sub
+67	0	End Sub
+68	0	
+69	0	Private Sub cmdQuit_Click()
+70	1	'quit system
+71	0	On Error GoTo err_Quit
+72	0	
+73	0	    DoCmd.Close acForm, Me.Name
+74	0	    
+75	0	
+76	0	Exit Sub
+77	0	
+78	0	err_Quit:
+79	0	    Call General_Error_Trap
+80	0	    Exit Sub
+81	0	End Sub
+82	0	
+83	0	Private Sub Form_Open(Cancel As Integer)
+84	1	'v9.2 SAJ - only adminstrators are allowed in here
+85	0	On Error GoTo err_Form_Open
+86	0	
+87	0	    Dim permiss
+88	0	    permiss = GetGeneralPermissions
+89	0	    If permiss <> "ADMIN" Then
+90	0	        MsgBox "Sorry but only Administrators have access to this form"
+91	0	        DoCmd.Close acForm, Me.Name
+92	0	    End If
+93	0	Exit Sub
+94	0	
+95	0	err_Form_Open:
+96	0	    Call General_Error_Trap
+97	0	    Exit Sub
+98	0	End Sub

@@ -1,0 +1,121 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub Form_Current()
+5	0	On Error GoTo err_current
+6	0	
+7	0	    If Me!species <> "" Then
+8	0	        Dim sql
+9	2	        sql = "SELECT Shell_Species_LOV.[type number], Shell_Species_LOV.genus, Shell_Species_LOV.DESCRIPTION FROM Shell_Species_LOV WHERE Shell_Species_LOV.genus like  '" & Me![species] & "%%';"
+10	0	    
+11	0	    Else
+12	0	        sql = "SELECT Shell_Species_LOV.[type number], Shell_Species_LOV.genus, Shell_Species_LOV.DESCRIPTION FROM Shell_Species_LOV;"
+13	0	    End If
+14	0	    Me![type].RowSource = sql
+15	0	    Me.Refresh
+16	0	
+17	0	Exit Sub
+18	0	
+19	0	err_current:
+20	0	    Call General_Error_Trap
+21	0	    Exit Sub
+22	0	End Sub
+23	0	
+24	0	Private Sub species_AfterUpdate()
+25	1	'when genus selected filter down type list to given numbers
+26	0	On Error GoTo err_species
+27	0	
+28	0	    If Me!species <> "" Then
+29	0	        Dim sql
+30	2	        sql = "SELECT Shell_Species_LOV.[type number], Shell_Species_LOV.genus, Shell_Species_LOV.DESCRIPTION FROM Shell_Species_LOV WHERE Shell_Species_LOV.genus Like '" & Me![species] & "%%';"
+31	0	    
+32	0	    Else
+33	0	        sql = "SELECT Shell_Species_LOV.[type number], Shell_Species_LOV.genus, Shell_Species_LOV.DESCRIPTION FROM Shell_Species_LOV;"
+34	0	    End If
+35	0	    Me![type].RowSource = sql
+36	0	    Me.Refresh
+37	0	
+38	0	Exit Sub
+39	0	
+40	0	err_species:
+41	0	    Call General_Error_Trap
+42	0	    Exit Sub
+43	0	End Sub
+44	0	
+45	0	Private Sub species_NotInList(NewData As String, response As Integer)
+46	1	'add new species
+47	0	On Error GoTo err_species
+48	0	    Dim sql, respon
+49	0	    respon = MsgBox("This species does not exist in the list. Do you wish to add it?" & _
+50	0	                Chr(13) & Chr(13) & "Yes - will add it for use in future " & Chr(13) & _
+51	0	                "No - enters the value here in this field but does not add it to the general list" & Chr(13) & _
+52	0	                "Cancel - allows re-selection from the list", _
+53	0	         vbYesNoCancel)
+54	1	    'If MsgBox("This species does not exist in the list. Do you wish to add it?", _
+55	1	    '     vbOKCancel) = vbOK Then
+56	1	        ' Set Response argument to indicate that datais being added.
+57	0	   If respon = vbYes Then
+58	0	        response = acDataErrAdded
+59	1	        ' Add string in NewData argument to row source.
+60	0	        Dim retstr
+61	0	        retstr = InputBox("Please enter the type number to match this species:", "Type Number")
+62	0	        If retstr <> "" Then
+63	2	            sql = "INSERT INTO Shell_Species_LOV ([genus], [type number]) VALUES ('" & NewData & "', " & retstr & ");"
+64	0	            DoCmd.RunSQL sql
+65	0	        Else
+66	0	            response = acDataErrContinue
+67	0	            Me![species].Undo
+68	0	        End If
+69	0	    ElseIf respon = vbNo Then
+70	0	        Me![species].LimitToList = False
+71	0	        response = acDataErrContinue
+72	0	        Me![species] = NewData
+73	0	        Me![species].LimitToList = True
+74	0	        DoCmd.GoToControl "type letter"
+75	0	    Else
+76	1	        ' Cancel = suppress error message and undo changes.
+77	0	        response = acDataErrContinue
+78	0	        Me![species].Undo
+79	0	    End If
+80	0	
+81	0	Exit Sub
+82	0	
+83	0	err_species:
+84	0	    Call General_Error_Trap
+85	0	    Exit Sub
+86	0	
+87	0	End Sub
+88	0	
+89	0	Private Sub type_NotInList(NewData As String, response As Integer)
+90	1	'add new number
+91	0	On Error GoTo err_type
+92	0	    Dim sql, respon
+93	2	    respon = MsgBox("This type number does not exist in the list for the genus '" & Me![species] & "'. Do you wish to add it?" & _
+94	0	                Chr(13) & Chr(13) & "Yes - will add it for use with this genus in future " & Chr(13) & _
+95	0	                "No - enters the value here in this field but does not add it to the general list" & Chr(13) & _
+96	0	                "Cancel - allows re-selection from the list", _
+97	0	         vbYesNoCancel)
+98	0	     If respon = vbYes Then
+99	1	        ' Set Response argument to indicate that datais being added.
+100	0	        response = acDataErrAdded
+101	1	        ' Add string in NewData argument to row source.
+102	4	        sql = "INSERT INTO Shell_Species_LOV ([genus], [type number]) VALUES ('" & Me![species] & "', '" & NewData & "');"
+103	0	        DoCmd.RunSQL sql
+104	0	    ElseIf respon = vbNo Then
+105	0	        Me![type].LimitToList = False
+106	0	        response = acDataErrContinue
+107	0	        Me![type] = NewData
+108	0	        Me![type].LimitToList = True
+109	0	        DoCmd.GoToControl "type letter"
+110	0	    Else
+111	1	        ' Cancel = suppress error message and undo changes.
+112	0	        response = acDataErrContinue
+113	0	        Me![type].Undo
+114	0	    End If
+115	0	
+116	0	Exit Sub
+117	0	
+118	0	err_type:
+119	0	    Call General_Error_Trap
+120	0	    Exit Sub
+121	0	End Sub

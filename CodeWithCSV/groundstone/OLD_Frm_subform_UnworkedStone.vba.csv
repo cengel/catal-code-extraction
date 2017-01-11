@@ -1,0 +1,39 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub Ctl_2_AfterUpdate()
+5	1	'update total
+6	0	If IsNumeric(Me![Ctl_2]) Then
+7	0	    Me.Total = Me.Ctl_2 + Me.Ctl2_4 + Me.Ctl_4
+8	0	Else
+9	0	    MsgBox "Please enter a numeric value", vbExclamation, "Invalid Entry"
+10	0	    Me![Ctl_2] = Me![Ctl_2].OldValue
+11	0	End If
+12	0	End Sub
+13	0	
+14	0	Private Sub Ctl_2_GotFocus()
+15	1	'Me.Total = Me.Ctl_2 + Me.Ctl2_4 + Me.Ctl_4
+16	0	End Sub
+17	0	
+18	0	Private Sub Ctl_4_AfterUpdate()
+19	1	'update total
+20	0	If IsNumeric(Me![Ctl_4]) Then
+21	0	    Me.Total = Me.Ctl_2 + Me.Ctl2_4 + Me.Ctl_4
+22	0	Else
+23	0	    MsgBox "Please enter a numeric value", vbExclamation, "Invalid Entry"
+24	0	    Me![Ctl_4] = Me![Ctl_4].OldValue
+25	0	End If
+26	0	End Sub
+27	0	
+28	0	Private Sub Ctl2_4_AfterUpdate()
+29	1	'update total
+30	0	If IsNumeric(Me![Ctl2_4]) Then
+31	0	    Me.Total = Me.Ctl_2 + Me.Ctl2_4 + Me.Ctl_4
+32	0	Else
+33	0	    MsgBox "Please enter a numeric value", vbExclamation, "Invalid Entry"
+34	0	    Me![Ctl2_4] = Me![Ctl2_4].OldValue
+35	0	End If
+36	0	End Sub
+37	0	
+38	0	
+39	0	

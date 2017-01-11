@@ -1,0 +1,68 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Sub DuplicateCurrentRecord()
+5	0	
+6	0	On Error GoTo err_dup
+7	0	
+8	1	    'get user to input new GID - if not quit
+9	0	    
+10	0	    
+11	1	        'check new GID does not already exist
+12	0	
+13	0	
+14	0	
+15	0	Exit Sub
+16	0	
+17	0	err_dup:
+18	0	    Call General_Error_Trap
+19	0	    Exit Sub
+20	0	
+21	0	End Sub
+22	0	
+23	0	Function FindLastGIDforUnit(getUnit)
+24	1	'find the last GID for a unit
+25	1	'more complicated than it should be as we the id number is not split into component parts
+26	0	On Error GoTo err_lastgid
+27	0	
+28	0	Dim mydb As DAO.Database, myrs As DAO.Recordset, sql, returnVal
+29	0	
+30	0	If getUnit <> "" Then
+31	1	    'first tried splitting the id number into unit, letter, num on the fly via Q_Figurine_GID_Split
+32	1	    'but could not sort this query correctly to get the last number - so hack time - use this query
+33	1	    'to feed a temporary table which is dumped and refilled every time the user calls this function
+34	0	    sql = "DELETE * FROM [Temp_Fig_GID_Split];"
+35	0	    DoCmd.RunSQL sql
+36	0	    
+37	0	    sql = "INSERT INTO Temp_Fig_GID_Split ([Id number], [Unit], Letter, Num) SELECT [Id number], [Unit], Letter, Num FROM Q_Figurine_GID_Split;"
+38	0	    DoCmd.RunSQL sql
+39	0	    
+40	0	    
+41	1	    'data ready now can extract our unit
+42	2	    sql = "SELECT Max(Temp_Fig_GID_Split.Num) AS LastNum FROM Temp_Fig_GID_Split WHERE (Temp_Fig_GID_Split.Unit = " & getUnit & ") And (Temp_Fig_GID_Split.Letter = 'H') ORDER BY Max(Temp_Fig_GID_Split.Num);"
+43	0	    
+44	0	    Set mydb = CurrentDb
+45	0	    Set myrs = mydb.OpenRecordset(sql, dbOpenDynaset)
+46	0	    
+47	0	    If Not (myrs.BOF And myrs.EOF) Then
+48	0	        myrs.MoveLast
+49	2	        ''MsgBox myrs![LastNum]
+50	0	        returnVal = myrs![LastNum]
+51	0	    Else
+52	0	        returnVal = "Not found"
+53	0	    End If
+54	0	    
+55	0	    myrs.Close
+56	0	    Set myrs = Nothing
+57	0	    mydb.Close
+58	0	    Set mydb = Nothing
+59	0	End If
+60	0	
+61	0	FindLastGIDforUnit = returnVal
+62	0	Exit Function
+63	0	
+64	0	err_lastgid:
+65	0	    Call General_Error_Trap
+66	0	    Exit Function
+67	0	
+68	0	End Function

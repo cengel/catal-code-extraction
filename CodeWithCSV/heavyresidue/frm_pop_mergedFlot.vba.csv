@@ -1,0 +1,60 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdClose_Click()
+5	0	On Error GoTo err_close
+6	0	
+7	0	    DoCmd.Close acForm, Me.Name
+8	0	    
+9	0	Exit Sub
+10	0	
+11	0	err_close:
+12	0	    Call General_Error_Trap
+13	0	    Exit Sub
+14	0	End Sub
+15	0	
+16	0	Private Sub ContainsFlot_AfterUpdate()
+17	1	'new 2011
+18	0	On Error GoTo err_contains
+19	0	
+20	0	    Me![FlotRecordedInHR] = Me!txtFlot
+21	0	Exit Sub
+22	0	
+23	0	err_contains:
+24	0	    Call General_Error_Trap
+25	0	    Exit Sub
+26	0	End Sub
+27	0	
+28	0	Private Sub Form_Open(Cancel As Integer)
+29	1	'new 2011
+30	0	On Error GoTo err_open
+31	0	
+32	0	If Not IsNull(Me.OpenArgs) Then
+33	0	    Me![txtFlot] = Me.OpenArgs
+34	0	    Me!lblFlot.Caption = "Flot number " & Me![txtFlot] & " consists of Flot numbers:"
+35	0	    
+36	0	    Me.RecordSource = "SELECT * FROM [Heavy Residue: Flot Merge Log] WHERE [FlotRecordedInHR] = " & Me![txtFlot] & ";"
+37	0	    
+38	0	End If
+39	0	Exit Sub
+40	0	
+41	0	err_open:
+42	0	    Call General_Error_Trap
+43	0	    Exit Sub
+44	0	
+45	0	End Sub
+46	0	Private Sub Command26_Click()
+47	0	On Error GoTo Err_Command26_Click
+48	0	
+49	0	
+50	0	    Screen.PreviousControl.SetFocus
+51	0	    DoCmd.FindNext
+52	0	
+53	0	Exit_Command26_Click:
+54	0	    Exit Sub
+55	0	
+56	0	Err_Command26_Click:
+57	0	    MsgBox Err.Description
+58	0	    Resume Exit_Command26_Click
+59	0	    
+60	0	End Sub

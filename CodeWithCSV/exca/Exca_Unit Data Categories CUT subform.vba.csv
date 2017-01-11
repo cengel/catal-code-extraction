@@ -1,0 +1,27 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	
+5	0	Private Sub Form_Open(Cancel As Integer)
+6	1	'**********************************************************************
+7	1	' Set up form view depending on permissions
+8	1	' SAJ v9.1
+9	1	'**********************************************************************
+10	0	On Error GoTo err_Form_Open
+11	0	
+12	0	    Dim permiss
+13	0	    permiss = GetGeneralPermissions
+14	0	    If permiss = "ADMIN" Or permiss = "RW" Or permiss = "exsuper" Then
+15	0	        ToggleFormReadOnly Me, False
+16	0	    Else
+17	1	        'set read only form here, just once
+18	0	        ToggleFormReadOnly Me, True
+19	1	        'see subform Skeleton Sheet on open for reason for this line
+20	0	        If Me.AllowAdditions = False Then Me.AllowAdditions = True
+21	0	    End If
+22	0	Exit Sub
+23	0	
+24	0	err_Form_Open:
+25	0	    Call General_Error_Trap
+26	0	    Exit Sub
+27	0	End Sub

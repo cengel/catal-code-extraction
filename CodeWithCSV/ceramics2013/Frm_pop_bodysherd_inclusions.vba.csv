@@ -1,0 +1,75 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdClose_Click()
+5	0	On Error GoTo err_close
+6	0	    
+7	0	    DoCmd.Close acForm, Me.Name
+8	0	
+9	0	Exit Sub
+10	0	
+11	0	err_close:
+12	0	    Call General_Error_Trap
+13	0	    Exit Sub
+14	0	End Sub
+15	0	
+16	0	Private Sub cmdDelete_Click()
+17	0	On Error GoTo errDel
+18	0	
+19	0	Dim Response
+20	0	Response = MsgBox("Do you really want to delete this inclusion group for Unit: " & Me!Unit & " , Ware code: " & Me![WARE CODE] & ", Surface Treatment: " & Me!SurfaceTreatment & "?", vbCritical + vbYesNo, "Confirm Deletion")
+21	0	If Response = vbYes Then
+22	0	    Dim sql
+23	0	    sql = "Delete from Ceramics_Body_Sherd_inclusionsdetermined where inclusion_group_id = " & Me!InclusionGroupID & ";"
+24	0	    DoCmd.RunSQL sql
+25	0	    
+26	0	    sql = "Delete from Ceramics_Body_Sherd_inclusion_group where inclusiongroupid = " & Me!InclusionGroupID & ";"
+27	0	    DoCmd.RunSQL sql
+28	0	    
+29	0	    MsgBox "Deletion successful"
+30	0	    DoCmd.Close acForm, Me.Name
+31	0	    
+32	0	End If
+33	0	
+34	0	Exit Sub
+35	0	
+36	0	errDel:
+37	0	    Call General_Error_Trap
+38	0	End Sub
+39	0	
+40	0	Private Sub Form_Open(Cancel As Integer)
+41	0	On Error GoTo err_open
+42	0	
+43	0	    If Not IsNull(Me.OpenArgs) Then
+44	1	        'this means a new inclusion group so must get unit and warecode from openargs
+45	0	        Dim args, getUnit, getWarecode, getsurfaceT
+46	0	        Dim firstamp, secondamp
+47	0	        args = Me.OpenArgs
+48	0	        firstamp = InStr(args, "&")
+49	0	        secondamp = InStr(firstamp + 1, args, "&")
+50	0	        
+51	0	        getUnit = Left(args, InStr(args, "&") - 1)
+52	0	        getWarecode = Mid(args, firstamp + 1, (secondamp - 1) - firstamp)
+53	0	        getsurfaceT = Right(args, Len(args) - secondamp)
+54	0	        
+55	0	        DoCmd.RunCommand acCmdRecordsGoToNew
+56	0	        
+57	0	        Me![Unit].Locked = False
+58	0	        Me![WARE CODE].Locked = False
+59	0	        Me![SurfaceTreatment].Locked = False
+60	0	        
+61	0	        Me![Unit] = getUnit
+62	0	        Me![WARE CODE] = getWarecode
+63	0	        Me![SurfaceTreatment] = getsurfaceT
+64	0	        
+65	0	        Me![Unit].Locked = True
+66	0	        Me![WARE CODE].Locked = True
+67	0	        Me![SurfaceTreatment].Locked = True
+68	0	    End If
+69	0	
+70	0	Exit Sub
+71	0	
+72	0	err_open:
+73	0	    Call General_Error_Trap
+74	0	    Exit Sub
+75	0	End Sub

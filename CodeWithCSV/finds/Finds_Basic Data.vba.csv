@@ -1,0 +1,717 @@
+1	0	Option Compare Database
+2	1	Option Explicit 'saj
+3	0	Private Sub FindFacility(what)
+4	1	'idea copied from crates register and utilised here, kept basic
+5	1	'saj season 2008, v3.3
+6	0	On Error GoTo Err_find
+7	0	
+8	0	
+9	0	    Dim stDocName As String
+10	0	    Dim stLinkCriteria As String
+11	0	    Dim message As String, title As String, Unit As String, default As String
+12	0	    Dim Material As String, descrip As String
+13	0	    Dim un, lett, num
+14	0	    
+15	0	    If what = "unit" Then
+16	1	        message = "Enter a unit number"   ' Set prompt.
+17	1	        title = "Searching Finds Register" ' Set title.
+18	1	        default = "1000"   ' Set default.
+19	1	        ' Display message, title, and default value.
+20	0	        Unit = InputBox(message, title, default)
+21	1	        If Unit = "" Then Exit Sub 'saj catch no entry
+22	3	        'stLinkCriteria = "[Unit Number] like '*" & Unit & "*'"
+23	1	        'saj - jules wants to just find numbers directly
+24	0	        stLinkCriteria = "[Unit Number] =" & Unit
+25	0	    ElseIf what = "material" Then
+26	1	        message = "Enter a material"   ' Set prompt.
+27	1	        title = "Searching Finds Register" ' Set title.
+28	1	        default = ""   ' Set default.
+29	1	        ' Display message, title, and default value.
+30	0	        Material = InputBox(message, title, default)
+31	1	        If Material = "" Then Exit Sub 'saj catch no entry
+32	2	        stLinkCriteria = "[Material Group] like '*" & Material & "*'"
+33	0	    ElseIf what = "descrip" Then
+34	1	        message = "Enter a description"   ' Set prompt.
+35	1	        title = "Searching Finds Register" ' Set title.
+36	1	        default = ""   ' Set default.
+37	1	        ' Display message, title, and default value.
+38	0	        descrip = InputBox(message, title, default)
+39	1	        If descrip = "" Then Exit Sub 'saj catch no entry
+40	2	        stLinkCriteria = "[Description] like '*" & descrip & "*'"
+41	0	    ElseIf what = "subgroup" Then
+42	2	        'message = "Enter a subgroup"   ' Set prompt.
+43	1	        title = "Searching Finds Register" ' Set title.
+44	1	        default = ""   ' Set default.
+45	1	        ' Display message, title, and default value.
+46	1	        message = "Enter a Material Group"   ' Set prompt.
+47	0	        un = InputBox(message, title, default)
+48	1	        If un = "" Then Exit Sub 'saj catch no entry
+49	1	        message = "Enter a material subgroup"   ' Set prompt.
+50	0	        lett = InputBox(message, title, default)
+51	1	        If lett = "" Then Exit Sub 'saj catch no entry
+52	2	        'message = "Enter a number"   ' Set prompt.
+53	1	        'num = InputBox(message, title, default)
+54	2	        'If num = "" Then Exit Sub 'saj catch no entry
+55	4	        stLinkCriteria = "[Material Group] ='" & un & "' AND [Material Subgroup] ='" & lett & "'"
+56	0	    ElseIf what = "object" Then
+57	1	        message = "Enter object type"   ' Set prompt.
+58	1	        title = "Searching Finds Register" ' Set title.
+59	1	        default = ""   ' Set default.
+60	1	        ' Display message, title, and default value.
+61	0	        Material = InputBox(message, title, default)
+62	1	        If Material = "" Then Exit Sub 'saj catch no entry
+63	2	        stLinkCriteria = "[Object Type] = '" & Material & "'"
+64	0	    ElseIf what = "all" Then
+65	2	        'message = "Enter a subgroup"   ' Set prompt.
+66	1	        title = "Searching Finds Register" ' Set title.
+67	1	        default = ""   ' Set default.
+68	1	        ' Display message, title, and default value.
+69	1	        message = "Enter a Material Group"   ' Set prompt.
+70	0	        un = InputBox(message, title, default)
+71	1	        If un = "" Then Exit Sub 'saj catch no entry
+72	1	        message = "Enter a material subgroup"   ' Set prompt.
+73	0	        lett = InputBox(message, title, default)
+74	1	        If lett = "" Then Exit Sub 'saj catch no entry
+75	1	        message = "Enter an object type"   ' Set prompt.
+76	0	        num = InputBox(message, title, default)
+77	1	        If num = "" Then Exit Sub 'saj catch no entry
+78	6	        stLinkCriteria = "[Material Group] ='" & un & "' AND [Material Subgroup] ='" & lett & "' AND [Object Type] = '" & num & "'"
+79	0	    Else
+80	0	        Exit Sub
+81	0	    End If
+82	0	    stDocName = "frm_pop_search_finds:BasicData"
+83	3	    'stLinkCriteria = "[Unit Number] like '*" & Unit & "*'"
+84	1	    'DoCmd.OpenForm stDocName, acFormDS, , stLinkCriteria
+85	0	    DoCmd.OpenForm stDocName, acFormDS, , stLinkCriteria, acFormReadOnly
+86	0	    
+87	0	Exit_find:
+88	0	    Exit Sub
+89	0	
+90	0	Err_find:
+91	0	    MsgBox Err.Description
+92	0	    Resume Exit_find
+93	0	End Sub
+94	0	
+95	0	Private Sub Update_GID()
+96	1	'sub used by gid fields written by anja adapted by saj to error trap and include letter code fld
+97	0	On Error GoTo err_updategid
+98	0	
+99	1	'Me![GID] = Me![Unit] & "." & Me![Find Number]
+100	0	
+101	0	Me![GID] = Me![txtUnit] & "." & Me![cboFindLetter] & Me![txtFindNumber]
+102	0	If Me![txtUnit] <> "" And Me![cboFindLetter] <> "" And Me![txtFindNumber] <> "" Then
+103	0	    Me.Refresh
+104	0	End If
+105	0	Exit Sub
+106	0	
+107	0	err_updategid:
+108	0	    Call General_Error_Trap
+109	0	    Exit Sub
+110	0	End Sub
+111	0	
+112	0	Private Sub cboFindLetter_AfterUpdate()
+113	1	'new season 2006 - saj
+114	0	On Error GoTo err_cbofindletter
+115	0	
+116	0	    Update_GID
+117	1	    'Forms![Finds: Basic Data].Refresh
+118	0	
+119	0	Exit Sub
+120	0	
+121	0	err_cbofindletter:
+122	0	    Call General_Error_Trap
+123	0	    Exit Sub
+124	0	    
+125	0	End Sub
+126	0	
+127	0	
+128	0	
+129	0	Private Sub cboFindUnit_AfterUpdate()
+130	1	'********************************************
+131	1	'Find the selected gid from the list
+132	1	'********************************************
+133	0	On Error GoTo err_cboFindUnit_AfterUpdate
+134	0	
+135	0	    If Me![cboFindUnit] <> "" Then
+136	1	         'for existing number the field will be disabled, enable it as when find num
+137	1	        'is shown the on current event will deal with disabling it again
+138	0	        If Me![GID].Enabled = False Then Me![txtUnit].Enabled = True
+139	0	        DoCmd.GoToControl "GID"
+140	0	        DoCmd.FindRecord Me![cboFindUnit]
+141	0	        Me![cboFindUnit] = ""
+142	0	    End If
+143	0	Exit Sub
+144	0	
+145	0	err_cboFindUnit_AfterUpdate:
+146	0	    Call General_Error_Trap
+147	0	    Exit Sub
+148	0	End Sub
+149	0	
+150	0	Private Sub cboFindUnit_NotInList(NewData As String, Response As Integer)
+151	1	'stop not in list msg loop
+152	0	On Error GoTo err_cbofindNot
+153	0	
+154	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+155	0	    Response = acDataErrContinue
+156	0	    
+157	0	    Me![cboFindUnit].Undo
+158	0	Exit Sub
+159	0	
+160	0	err_cbofindNot:
+161	0	    Call General_Error_Trap
+162	0	    Exit Sub
+163	0	End Sub
+164	0	
+165	0	Private Sub Close_Click()
+166	0	On Error GoTo err_cmdAddNew_Click
+167	0	
+168	0	    DoCmd.Close acForm, Me.Name
+169	0	Exit Sub
+170	0	
+171	0	err_cmdAddNew_Click:
+172	0	    Call General_Error_Trap
+173	0	    Exit Sub
+174	0	End Sub
+175	0	
+176	0	Private Sub cmdAddNew_Click()
+177	0	
+178	0	On Error GoTo err_cmdAddNew_Click
+179	0	
+180	0	    DoCmd.GoToRecord acActiveDataObject, , acNewRec
+181	1	    'new record allow GID entry
+182	0	    Me![txtUnit].Enabled = True
+183	0	    Me![txtUnit].Locked = False
+184	0	    Me![txtUnit].BackColor = 16777215
+185	0	    Me![cboFindLetter].Enabled = True
+186	0	    Me![cboFindLetter].Locked = False
+187	0	    Me![cboFindLetter].BackColor = 16777215
+188	0	    Me![txtFindNumber].Enabled = True
+189	0	    Me![txtFindNumber].Locked = False
+190	0	    Me![txtFindNumber].BackColor = 16777215
+191	0	    
+192	0	    DoCmd.GoToControl "txtUnit"
+193	0	Exit Sub
+194	0	
+195	0	err_cmdAddNew_Click:
+196	0	    Call General_Error_Trap
+197	0	    Exit Sub
+198	0	End Sub
+199	0	
+200	0	Private Sub cmdDelete_Click()
+201	1	'new version 4.4 - 2009
+202	0	On Error GoTo err_delete
+203	0	
+204	0	    Dim retVal
+205	0	    retVal = MsgBox("This action will delete the record for find " & Me![txtUnit] & "." & Me![cboFindLetter] & Me![txtFindNumber] & ", are you really sure you want to delete this record?", vbCritical + vbYesNo, "Confirm Deletion")
+206	0	    If retVal = vbYes Then
+207	1	        'ok proceed
+208	0	        On Error Resume Next
+209	0	        Dim mydb As DAO.Database, wrkdefault As Workspace, sql1, sql2, myq As QueryDef
+210	0	        Dim myrs As DAO.Recordset
+211	0	        Set wrkdefault = DBEngine.Workspaces(0)
+212	0	        Set mydb = CurrentDb
+213	0	        
+214	1	        ' Start of outer transaction.
+215	0	        wrkdefault.BeginTrans
+216	0	        
+217	2	        sql1 = "DELETE FROM [Finds: Basic Data] WHERE [Unit] = " & Me!txtUnit & " AND [FindLetter] = '" & Me!cboFindLetter & "' AND [FindNumber] = " & Me!txtFindNumber & ";"
+218	0	        Set myq = mydb.CreateQueryDef("")
+219	0	        myq.sql = sql1
+220	0	        myq.Execute
+221	0	    
+222	2	        sql2 = "DELETE FROM [Finds_Basic_Data_Materials_and_Type] WHERE [Unit] = " & Me!txtUnit & " AND [FindLetter] = '" & Me!cboFindLetter & "' AND [FindNumber] = " & Me!txtFindNumber & ";"
+223	0	        Set myq = mydb.CreateQueryDef("")
+224	0	        myq.sql = sql2
+225	0	        myq.Execute
+226	0	        
+227	0	        If Err.Number = 0 Then
+228	0	            wrkdefault.CommitTrans
+229	0	            MsgBox "Record Deleted"
+230	0	            Me.Requery
+231	0	            Me![cboFindUnit].Requery
+232	0	        Else
+233	0	            wrkdefault.Rollback
+234	0	            MsgBox "A problem has occured and the deletion has been cancelled. The error message is: " & Err.Description
+235	0	        End If
+236	0	
+237	0	        mydb.Close
+238	0	        Set mydb = Nothing
+239	0	        wrkdefault.Close
+240	0	        Set wrkdefault = Nothing
+241	0	    
+242	0	    End If
+243	0	    
+244	0	    
+245	0	Exit Sub
+246	0	
+247	0	err_delete:
+248	0	    Call General_Error_Trap
+249	0	    Exit Sub
+250	0	End Sub
+251	0	
+252	0	Private Sub cmdEdit_Click()
+253	1	'new 2008, allow GID edit in finds:basic data and Finds_Basic_Data_Materials_and_Type
+254	0	On Error GoTo err_cmdEdit
+255	0	    
+256	0	    If Me![txtUnit] <> "" Then
+257	0	        Dim getUnit, getLetter, getNum
+258	0	        getUnit = InputBox("Please edit the Unit number:", "Unit", Me![txtUnit])
+259	0	        If getUnit = "" Then Exit Sub
+260	0	        getLetter = InputBox("Please edit the Letter:", "Letter Code", Me![cboFindLetter])
+261	0	        If getLetter = "" Then Exit Sub
+262	0	        getNum = InputBox("Please edit the Find number:", "Find Number", Me![txtFindNumber])
+263	0	        If getNum = "" Then Exit Sub
+264	0	        
+265	1	        'ok must check if new number already exists
+266	0	        Dim checkit, sql
+267	2	        checkit = DLookup("Unit", "[finds: basic data]", "Unit = " & getUnit & " AND FindLetter = '" & getLetter & "' AND FindNumber = " & getNum)
+268	0	        If IsNull(checkit) Then
+269	1	            'ok can make the change, now check if the GID is in Finds_Basic_Data_Materials_and_Type and change there first
+270	2	            checkit = DLookup("unit", "Finds_Basic_Data_Materials_and_Type", "Unit = " & Me![txtUnit] & " AND FindLetter = '" & Me![cboFindLetter] & "' AND FindNumber = " & Me![txtFindNumber])
+271	0	            If Not IsNull(checkit) Then
+272	4	                sql = "UPDATE [Finds_Basic_Data_Materials_and_Type] SET Unit = " & getUnit & ", FindLetter = '" & getLetter & "', FindNumber = " & getNum & " WHERE Unit = " & Me![txtUnit] & " AND FindLetter = '" & Me![cboFindLetter] & "' AND FindNumber = " & Me![txtFindNumber] & ";"
+273	0	                DoCmd.RunSQL sql
+274	0	            End If
+275	0	            Me![txtUnit] = getUnit
+276	0	            Me![cboFindLetter] = getLetter
+277	0	            Me![txtFindNumber] = getNum
+278	0	            Me![GID] = getUnit & "." & getLetter & getNum
+279	0	            MsgBox "GID changed successfully", vbInformation, "Operation Complete"
+280	0	        Else
+281	0	            MsgBox "Sorry but this GID exists in the database already, you cannot make this change. Use the find facility to view the record with this GID.", vbInformation, "Key Violation"
+282	0	        End If
+283	0	    End If
+284	0	
+285	0	Exit Sub
+286	0	
+287	0	err_cmdEdit:
+288	0	    Call General_Error_Trap
+289	0	    Exit Sub
+290	0	End Sub
+291	0	
+292	0	
+293	0	
+294	0	Private Sub cmdfindlocate_Click()
+295	0	On Error GoTo err_cmdfindlocate
+296	1	'new 2015, allow assigning crate number to a x-find - DL
+297	0	
+298	0	Dim sql As String
+299	0	
+300	1	'[Store: Units in Crates subform]
+301	0	[Store: Units in Crates subform].Form.AllowEdits = True
+302	0	[Store: Units in Crates subform].Form![Crate Letter].Enabled = True
+303	0	[Store: Units in Crates subform].Form![Crate Letter].Locked = False
+304	0	[Store: Units in Crates subform].Form![Crate Number].Enabled = True
+305	0	[Store: Units in Crates subform].Form![Crate Number].Locked = False
+306	0	[Store: Units in Crates subform].Form![Material].Locked = False
+307	0	[Store: Units in Crates subform].Form![Material].Enabled = True
+308	0	[Store: Units in Crates subform].Form![Description].Locked = False
+309	0	[Store: Units in Crates subform].Form![Description].Enabled = True
+310	0	
+311	2	sql = "INSERT INTO [Store: Units in Crates] ([Unit number], [FindSampleLetter], [FindNumber]) VALUES (" & Me![txtUnit] & ", '" & Me![cboFindLetter] & "', " & Me![txtFindNumber] & ");"
+312	0	DoCmd.RunSQL sql
+313	0	Debug.Print sql
+314	0	Me.Refresh
+315	0	Me![Store: Units in Crates subform].Form![Crate Letter].SetFocus
+316	0	
+317	0	
+318	1	'    If Me![Crate Number] <> "" Then
+319	1	'    Else
+320	3	'        DoCmd.OpenForm "Store: Crate Register", acNormal, , "[Crate Number] = '" & Me![Store: Units in Crates subform].Form![Crate Number] & "'"
+321	1	'    End If
+322	0	Exit Sub
+323	0	
+324	0	err_cmdfindlocate:
+325	0	    Call General_Error_Trap
+326	0	    Exit Sub
+327	0	
+328	0	End Sub
+329	0	
+330	0	Private Sub cmdMaterial_Click()
+331	0	Call FindFacility("material")
+332	0	End Sub
+333	0	
+334	0	Private Sub Command66_Click()
+335	0	Call FindFacility("subgroup")
+336	0	End Sub
+337	0	
+338	0	Private Sub Command67_Click()
+339	0	Call FindFacility("object")
+340	0	End Sub
+341	0	
+342	0	Private Sub Command68_Click()
+343	0	Call FindFacility("all")
+344	0	End Sub
+345	0	
+346	0	Private Sub Command69_Click()
+347	0	Call FindFacility("descrip")
+348	0	End Sub
+349	0	
+350	0	
+351	0	
+352	0	Private Sub Form_BeforeInsert(Cancel As Integer)
+353	1	'new for v4.2 - 2009
+354	0	On Error GoTo err_Form_AfterUpdate
+355	0	Me![LastUpdated] = Now()
+356	0	Exit Sub
+357	0	
+358	0	err_Form_AfterUpdate:
+359	0	    Call General_Error_Trap
+360	0	    Exit Sub
+361	0	End Sub
+362	0	
+363	0	Private Sub Form_Open(Cancel As Integer)
+364	1	'on error goto err_open
+365	0	
+366	0	If GetGeneralPermissions = "Admin" Then
+367	0	    Me![cmdDelete].Visible = True
+368	0	    Me![cmdEdit].Visible = True
+369	0	Else
+370	0	    Me![cmdDelete].Visible = False
+371	0	    Me![cmdEdit].Visible = False
+372	0	End If
+373	0	
+374	0	DoCmd.GoToControl "cboFindUnit"
+375	0	Exit Sub
+376	0	
+377	0	
+378	0	err_open:
+379	0	    Call General_Error_Trap
+380	0	    Exit Sub
+381	0	End Sub
+382	0	
+383	0	Private Sub go_next_Click()
+384	0	On Error GoTo Err_go_next_Click
+385	0	
+386	0	
+387	0	    DoCmd.GoToRecord , , acNext
+388	0	
+389	0	Exit_go_next_Click:
+390	0	    Exit Sub
+391	0	
+392	0	Err_go_next_Click:
+393	0	    Call General_Error_Trap
+394	0	    Resume Exit_go_next_Click
+395	0	End Sub
+396	0	
+397	0	Private Sub go_previous2_Click()
+398	0	On Error GoTo Err_go_previous2_Click
+399	0	
+400	0	
+401	0	    DoCmd.GoToRecord , , acPrevious
+402	0	
+403	0	Exit_go_previous2_Click:
+404	0	    Exit Sub
+405	0	
+406	0	Err_go_previous2_Click:
+407	0	    Call General_Error_Trap
+408	0	    Resume Exit_go_previous2_Click
+409	0	End Sub
+410	0	
+411	0	Private Sub go_to_first_Click()
+412	0	On Error GoTo Err_go_to_first_Click
+413	0	
+414	0	
+415	0	    DoCmd.GoToRecord , , acFirst
+416	0	
+417	0	Exit_go_to_first_Click:
+418	0	    Exit Sub
+419	0	
+420	0	Err_go_to_first_Click:
+421	0	    Call General_Error_Trap
+422	0	    Resume Exit_go_to_first_Click
+423	0	End Sub
+424	0	
+425	0	Private Sub go_to_last_Click()
+426	0	On Error GoTo Err_go_last_Click
+427	0	
+428	0	
+429	0	    DoCmd.GoToRecord , , acLast
+430	0	
+431	0	Exit_go_last_Click:
+432	0	    Exit Sub
+433	0	
+434	0	Err_go_last_Click:
+435	0	    Call General_Error_Trap
+436	0	    Resume Exit_go_last_Click
+437	0	End Sub
+438	0	
+439	0	Private Sub gotocrate_Click()
+440	0	On Error GoTo err_gotocrate_Click
+441	0	
+442	2	DoCmd.OpenForm "Store: Crate Register", , , "CrateLetter = '" & [Store: Units in Crates subform].Form![Crate Letter] & "' AND CrateNumber = " & [Store: Units in Crates subform].Form![Crate Number]
+443	0	Forms![Store: Crate Register].SetFocus
+444	0	Exit Sub
+445	0	
+446	0	err_gotocrate_Click:
+447	0	    Call General_Error_Trap
+448	0	    Exit Sub
+449	0	End Sub
+450	0	
+451	0	Private Sub txtFindNumber_AfterUpdate()
+452	1	'find num call to Update GID removed from On enter and On change events and just left here
+453	1	'plus error trap intro - season 2006 - saj
+454	0	On Error GoTo err_txtfindnumber
+455	0	
+456	0	    Update_GID
+457	1	    'Forms![Finds: Basic Data].Refresh
+458	0	
+459	0	Exit Sub
+460	0	
+461	0	err_txtfindnumber:
+462	0	    Call General_Error_Trap
+463	0	    Exit Sub
+464	0	    
+465	0	End Sub
+466	0	
+467	0	
+468	0	Private Sub Form_Current()
+469	1	'disabled SAJ
+470	1	'If Me![Conservation Ref] <> nil Then
+471	1	' Me![conservation].Enabled = True
+472	1	' Else
+473	1	' Me![conservation].Enabled = False
+474	1	'End If
+475	0	 
+476	1	'new code for 2006
+477	0	On Error GoTo err_current
+478	0	
+479	1	'add possibility to locate a find directly into a crate
+480	0	
+481	0	    Dim strSQL As String
+482	0	    Dim rst As DAO.Recordset
+483	0	    
+484	0	    If Not IsNull(Me![txtUnit]) Then
+485	1	    'maybe findletter and number can be Null: Or IsNull(Me![cboFindLetter]) Or IsNull(Me![txtFindNumber])
+486	2	    strSQL = "SELECT [CrateLetter], [CrateNumber], [Unit number], [FindSampleLetter], [FindNumber], [SampleNumber] FROM [Store: Units in Crates] WHERE [Unit number]=" & Me![txtUnit] & " AND [FindSampleLetter]='" & Me![cboFindLetter] & "' AND [FindNumber]=" & Me![txtFindNumber] & " ORDER BY [CrateLetter], [CrateNumber] ASC;"
+487	0	                Debug.Print strSQL
+488	0	                Set rst = CurrentDb.OpenRecordset(strSQL)
+489	0	                
+490	0	                If Not (rst.EOF) Then
+491	0	                    Debug.Print rst![CrateLetter] & " " & rst![CrateNumber]
+492	0	                    Me![cmdfindlocate].Visible = False
+493	0	                    Me![gotocrate].Visible = True
+494	0	                Else
+495	0	                    Debug.Print "X-Find does not exist"
+496	0	                    Me![cmdfindlocate].Visible = True
+497	0	                    Me![gotocrate].Visible = False
+498	0	                End If
+499	0	    Else
+500	0	        Me![cmdfindlocate].Visible = True
+501	0	        Me![gotocrate].Visible = False
+502	0	    End If
+503	1	    'If (Me![txtUnit] = "" Or IsNull(Me![txtUnit])) And (Me![cboFindLetter] = "" Or IsNull(Me![cboFindLetter])) And (Me![txtFindNumber] = "" Or IsNull(Me![txtFindNumber])) Then
+504	2	    'don't include find number as defaults to x
+505	0	    If (Me![txtUnit] = "" Or IsNull(Me![txtUnit])) And (Me![txtFindNumber] = "" Or IsNull(Me![txtFindNumber])) Then
+506	1	        'new record allow GID entry
+507	0	        Me![txtUnit].Enabled = True
+508	0	        Me![txtUnit].Locked = False
+509	0	        Me![txtUnit].BackColor = 16777215
+510	0	        Me![cboFindLetter].Enabled = True
+511	0	        Me![cboFindLetter].Locked = False
+512	0	        Me![cboFindLetter].BackColor = 16777215
+513	0	        Me![txtFindNumber].Enabled = True
+514	0	        Me![txtFindNumber].Locked = False
+515	0	        Me![txtFindNumber].BackColor = 16777215
+516	0	    Else
+517	1	        'existing entry lock
+518	0	        Me![txtUnit].Enabled = False
+519	0	        Me![txtUnit].Locked = True
+520	0	        Me![txtUnit].BackColor = Me.Section(0).BackColor
+521	0	        Me![cboFindLetter].Enabled = False
+522	0	        Me![cboFindLetter].Locked = True
+523	0	        Me![cboFindLetter].BackColor = Me.Section(0).BackColor
+524	0	        Me![txtFindNumber].Enabled = False
+525	0	        Me![txtFindNumber].Locked = True
+526	0	        Me![txtFindNumber].BackColor = Me.Section(0).BackColor
+527	0	    End If
+528	0	    
+529	0	Exit Sub
+530	0	
+531	1	'Me![frm_subform_materialstypes].Requery
+532	1	'Me![frm_subform_materialstypes].Form![cboMaterialSubGroup].Requery
+533	0	
+534	0	    
+535	0	    
+536	0	err_current:
+537	0	    Call General_Error_Trap
+538	0	    Exit Sub
+539	0	
+540	0	End Sub
+541	0	
+542	0	Private Sub Unit_AfterUpdate()
+543	1	'Unit call to Update GID removed from On enter and On change events and just left here
+544	1	'plus error trap intro - season 2006 - saj
+545	0	On Error GoTo err_unit
+546	0	
+547	0	Update_GID
+548	2	'don't need
+549	1	'Forms![Finds: Basic Data].Refresh
+550	0	
+551	0	Exit Sub
+552	0	
+553	0	err_unit:
+554	0	    Call General_Error_Trap
+555	0	    Exit Sub
+556	0	End Sub
+557	0	
+558	0	
+559	0	
+560	0	
+561	0	
+562	0	
+563	0	
+564	0	Sub first_Click()
+565	0	On Error GoTo Err_first_Click
+566	0	
+567	0	
+568	0	    DoCmd.GoToRecord , , acFirst
+569	0	
+570	0	Exit_first_Click:
+571	0	    Exit Sub
+572	0	
+573	0	Err_first_Click:
+574	0	    MsgBox Err.Description
+575	0	    Resume Exit_first_Click
+576	0	    
+577	0	End Sub
+578	0	Sub prev_Click()
+579	0	On Error GoTo Err_prev_Click
+580	0	
+581	0	
+582	0	    DoCmd.GoToRecord , , acPrevious
+583	0	
+584	0	Exit_prev_Click:
+585	0	    Exit Sub
+586	0	
+587	0	Err_prev_Click:
+588	0	    MsgBox Err.Description
+589	0	    Resume Exit_prev_Click
+590	0	    
+591	0	End Sub
+592	0	Sub next_Click()
+593	0	On Error GoTo Err_next_Click
+594	0	
+595	0	
+596	0	    DoCmd.GoToRecord , , acNext
+597	0	
+598	0	Exit_next_Click:
+599	0	    Exit Sub
+600	0	
+601	0	Err_next_Click:
+602	0	    MsgBox Err.Description
+603	0	    Resume Exit_next_Click
+604	0	    
+605	0	End Sub
+606	0	Sub last_Click()
+607	0	On Error GoTo Err_last_Click
+608	0	
+609	0	
+610	0	    DoCmd.GoToRecord , , acLast
+611	0	
+612	0	Exit_last_Click:
+613	0	    Exit Sub
+614	0	
+615	0	Err_last_Click:
+616	0	    MsgBox Err.Description
+617	0	    Resume Exit_last_Click
+618	0	    
+619	0	End Sub
+620	0	Sub new_Click()
+621	0	On Error GoTo Err_new_Click
+622	0	
+623	0	
+624	0	    DoCmd.GoToRecord , , acNewRec
+625	0	
+626	0	Exit_new_Click:
+627	0	    Exit Sub
+628	0	
+629	0	Err_new_Click:
+630	0	    MsgBox Err.Description
+631	0	    Resume Exit_new_Click
+632	0	    
+633	0	End Sub
+634	0	Sub closeCommand45_Click()
+635	0	On Error GoTo Err_closeCommand45_Click
+636	0	
+637	0	
+638	0	    DoCmd.Close
+639	0	
+640	0	Exit_closeCommand45_Click:
+641	0	    Exit Sub
+642	0	
+643	0	Err_closeCommand45_Click:
+644	0	    MsgBox Err.Description
+645	0	    Resume Exit_closeCommand45_Click
+646	0	    
+647	0	End Sub
+648	0	Sub find_Click()
+649	0	On Error GoTo Err_find_Click
+650	0	
+651	0	
+652	0	    Screen.PreviousControl.SetFocus
+653	0	    GID.SetFocus
+654	0	    DoCmd.DoMenuItem acFormBar, acEditMenu, 10, , acMenuVer70
+655	0	
+656	0	Exit_find_Click:
+657	0	    Exit Sub
+658	0	
+659	0	Err_find_Click:
+660	0	    MsgBox Err.Description
+661	0	    Resume Exit_find_Click
+662	0	    
+663	0	End Sub
+664	0	Sub cons_Click()
+665	0	On Error GoTo Err_cons_Click
+666	0	
+667	0	    Dim stDocName As String
+668	0	    Dim stLinkCriteria As String
+669	0	
+670	0	    stDocName = "Conserv: Basic Record"
+671	0	    
+672	2	    stLinkCriteria = "[Conserv: Basic Record.GID]=" & "'" & Me![GID] & "'"
+673	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+674	0	
+675	0	Exit_cons_Click:
+676	0	    Exit Sub
+677	0	
+678	0	Err_cons_Click:
+679	0	    MsgBox Err.Description
+680	0	    Resume Exit_cons_Click
+681	0	    
+682	0	End Sub
+683	0	Sub conservation_Click()
+684	0	On Error GoTo Err_conservation_Click
+685	0	
+686	0	    Dim stDocName As String
+687	0	    Dim stLinkCriteria As String
+688	0	
+689	0	    stDocName = "Conserv: Basic Record"
+690	0	    
+691	2	    stLinkCriteria = "[GID1]=" & "'" & Me![GID] & "'"
+692	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+693	0	
+694	0	Exit_conservation_Click:
+695	0	    Exit Sub
+696	0	
+697	0	Err_conservation_Click:
+698	0	    MsgBox Err.Description
+699	0	    Resume Exit_conservation_Click
+700	0	    
+701	0	End Sub
+702	0	
+703	0	
+704	0	Private Sub txtUnit_AfterUpdate()
+705	1	'new season 2006 - saj
+706	0	On Error GoTo err_txtUnit
+707	0	
+708	0	    Update_GID
+709	1	    'Forms![Finds: Basic Data].Refresh
+710	0	    
+711	0	
+712	0	Exit Sub
+713	0	
+714	0	err_txtUnit:
+715	0	    Call General_Error_Trap
+716	0	    Exit Sub
+717	0	End Sub

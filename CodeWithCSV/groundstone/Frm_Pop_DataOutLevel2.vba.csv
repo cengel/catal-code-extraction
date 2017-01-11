@@ -1,0 +1,153 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdAction_Click()
+5	1	'************************************************************************
+6	1	' Process output depending on values selected on screen
+7	1	' SAJ
+8	1	'************************************************************************
+9	0	On Error GoTo err_cmdAction
+10	0	Dim which, where, sql, rpt
+11	0	
+12	0	    If Me![optgrpWhich] = 1 Then
+13	1	        'report
+14	0	        which = "report"
+15	0	    ElseIf Me![optgrpWhich] = 2 Then
+16	1	        'excel
+17	0	        which = "excel"
+18	0	    Else
+19	0	        MsgBox "Please select to either report or export data to excel", vbInformation, "No action to carry out"
+20	0	        which = ""
+21	0	        Exit Sub
+22	0	    End If
+23	0	
+24	0	   If which <> "" Then
+25	0	        If Me![optgrpData] = 1 Then
+26	1	            'current only
+27	2	            where = "[dbo_Groundstone Level 2_2014].[GID] = '" & Me![txtRec] & "'"
+28	0	        ElseIf Me![optgrpData] = 2 Then
+29	1	            'range
+30	0	            If Me![cboStart] = "" Or Me![cboEnd] = "" Then
+31	0	                MsgBox "Please enter both a Start and End value for the range of records to output.", vbInformation, "Insufficient Data"
+32	0	                Exit Sub
+33	0	            Else
+34	4	                where = "[dbo_Groundstone Level 2_2014].[GID] BETWEEN '" & Me![cboStart] & "' AND '" & Me![cboEnd] & "'"
+35	0	            End If
+36	0	        ElseIf Me![optgrpData] = 3 Then
+37	1	            'all
+38	0	            where = ""
+39	0	        End If
+40	0	   
+41	0	        
+42	0	        sql = "SELECT * FROM [Q_GS_Level2_with_Excavation]"
+43	0	        
+44	0	        If where <> "" Then sql = sql & " where " & where
+45	0	        sql = sql & ";"
+46	0	   
+47	0	   
+48	0	        If which = "report" Then
+49	0	            rpt = "R_Basic"
+50	0	            DoCmd.OpenReport rpt, acViewPreview, , where
+51	0	         
+52	1	            'MsgBox "Sorry the report will have appeared behind the form, click on it to bring it to the front" & Chr(13) & Chr(13) & "This is an outstanding problem.", vbInformation, "Report Location"
+53	0	            Reports![R_Basic].SetFocus
+54	0	            
+55	1	            'DoCmd.Close acForm, Me.Name
+56	0	            DoCmd.Close acForm, "Frm_Pop_DataOutLevel2"
+57	0	            
+58	1	            'rpt.SetFocus
+59	0	        ElseIf which = "excel" Then
+60	0	            Dim mydb As Database, myq As QueryDef
+61	0	            Set mydb = CurrentDb
+62	0	            Set myq = mydb.CreateQueryDef("GSExcelExport")
+63	0	            
+64	0	            myq.sql = sql
+65	0	            myq.ReturnsRecords = False
+66	0	            
+67	1	            'Outputto truncates values to max 255bytes. Notes field is bound to have more text inserted
+68	1	            'Changing to TransferSpreadsheet method, that might bring compatbility issues with older versions
+69	1	            'Need to have an eye on this - DL 2015
+70	1	            'DoCmd.OutputTo acOutputQuery, "GSExcelExport", acFormatXLS, , True
+71	0	            DoCmd.TransferSpreadsheet acExport, acSpreadsheetTypeExcel8, "GSExcelExport", "GSExcelExport", True
+72	0	            
+73	0	            mydb.QueryDefs.Delete ("GSExcelExport")
+74	0	            
+75	0	            myq.Close
+76	0	            Set myq = Nothing
+77	0	            mydb.Close
+78	0	            Set mydb = Nothing
+79	0	            
+80	0	            DoCmd.Close acForm, Me.Name
+81	0	        End If
+82	0	   End If
+83	0	Exit Sub
+84	0	
+85	0	err_cmdAction:
+86	0	    If Err.Number = 3012 Then
+87	1	        'query already exists
+88	0	        mydb.QueryDefs.Delete ("GSExcelExport")
+89	0	        Resume
+90	0	    ElseIf Err.Number = 2465 Then
+91	1	        'application error when try to give form the focus
+92	2	        ''Resume
+93	0	        DoCmd.Close acForm, Me.Name
+94	0	    Else
+95	0	        Call General_Error_Trap
+96	0	    End If
+97	0	    Exit Sub
+98	0	
+99	0	End Sub
+100	0	
+101	0	Private Sub Form_Open(Cancel As Integer)
+102	1	'**********************************************************************
+103	1	' This form allows the user to select what data they wish to output and in
+104	1	' what format. OpenArgs are required to specify what the current record was
+105	1	' and whether it was worked
+106	1	' This must take the format: record
+107	1	' SAJ
+108	1	'**********************************************************************
+109	0	On Error GoTo err_open
+110	0	
+111	0	If Not IsNull(Me.OpenArgs) Then
+112	0	    Dim rec
+113	0	    rec = Me.OpenArgs
+114	0	    
+115	0	    Me![txtRec] = rec
+116	0	    
+117	0	    Me![cboStart].RowSource = "SELECT DISTINCT [GID] FROM [dbo_Groundstone Level 2_2014] ORDER BY [GID];"
+118	0	    Me![cboEnd].RowSource = "SELECT DISTINCT [GID] FROM [dbo_Groundstone Level 2_2014] ORDER BY [GID];"
+119	0	    
+120	0	Else
+121	0	    MsgBox "This form has been called without the necessary parameters, it will now close", vbCritical, "Insufficient Parameters"
+122	0	    DoCmd.Close acForm, Me.Name
+123	0	End If
+124	0	
+125	0	
+126	0	Exit Sub
+127	0	
+128	0	err_open:
+129	0	    Call General_Error_Trap
+130	0	    Exit Sub
+131	0	End Sub
+132	0	
+133	0	Private Sub optgrpData_Click()
+134	1	'***********************************************************************
+135	1	' enable/disable range combos depending on value selected
+136	1	' SAJ
+137	1	'***********************************************************************
+138	0	On Error GoTo err_optgrpData
+139	0	
+140	0	If Me![optgrpData] = 2 Then
+141	0	    Me![cboStart].Enabled = True
+142	0	    Me![cboEnd].Enabled = True
+143	0	Else
+144	0	    Me![cboStart].Enabled = False
+145	0	    Me![cboEnd].Enabled = False
+146	0	End If
+147	0	
+148	0	Exit Sub
+149	0	
+150	0	err_optgrpData:
+151	0	    Call General_Error_Trap
+152	0	    Exit Sub
+153	0	End Sub

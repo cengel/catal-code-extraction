@@ -1,0 +1,117 @@
+1	0	Option Compare Database
+2	1	'************************************************************************
+3	1	' This form is new to obtain user login to the database
+4	1	'
+5	1	' SAJ v9
+6	1	'************************************************************************
+7	0	
+8	0	
+9	0	Private Sub cmdCancel_Click()
+10	1	'************************************************************************
+11	1	' Without a user name and password the system cannot run so give the option
+12	1	' to try again or to quit.
+13	1	'
+14	1	' SAJ v9
+15	1	'************************************************************************
+16	0	On Error GoTo cmdCancel_Click
+17	0	Dim retVal
+18	0	
+19	0	retVal = MsgBox("The system cannot continue without a login name and password." & Chr(13) & Chr(13) & "Are you sure you want to quit the system?", vbCritical + vbYesNo, "Confirm System Closure")
+20	0	    If retVal = vbYes Then
+21	0	        MsgBox "The system will now quit", vbCritical + vbOKOnly, "Invalid Login"
+22	0	        DoCmd.Quit acQuitSaveAll
+23	0	    End If
+24	0	    DoCmd.GoToControl "txtLogin"
+25	0	Exit Sub
+26	0	
+27	0	cmdCancel_Click:
+28	0	    Call General_Error_Trap
+29	0	End Sub
+30	0	
+31	0	Private Sub cmdOK_Click()
+32	1	'************************************************************************
+33	1	' Check both a user name and pwd provided if not prompt user to enter
+34	1	' If provided feed off to procedure to refresh the link on one table
+35	1	' with this info to a. check if links are ok, b. ensure access knows the
+36	1	' users details to allow entry to rest of tables
+37	1	'
+38	1	' SAJ v9
+39	1	'************************************************************************
+40	0	On Error GoTo cmdOK_Click
+41	0	Dim retVal
+42	0	
+43	0	If IsNull(Me![txtLogin]) Or IsNull(Me![txtPwd]) Then
+44	1	    'entered blank login or pwd double check user wants to cancel
+45	0	    retVal = MsgBox("Sorry but the system cannot continue without both a login name and a password. Do you want to try again?", vbCritical + vbYesNo, "Login required")
+46	1	    If retVal = vbYes Then 'try again
+47	0	        DoCmd.GoToControl "txtLogin"
+48	0	        Exit Sub
+49	2	    Else 'no, don't try again so quit system
+50	0	        retVal = MsgBox("The system cannot continue without a login name and password." & Chr(13) & Chr(13) & "Are you sure you want to quit the system?", vbCritical + vbYesNo, "Confirm System Closure")
+51	0	        If retVal = vbYes Then
+52	0	            MsgBox "The system will now quit", vbCritical + vbOKOnly, "Invalid Login"
+53	0	            DoCmd.Quit acQuitSaveAll
+54	2	        Else 'no I don't want to quit system, ie: try again
+55	0	            DoCmd.GoToControl "txtLogin"
+56	0	            Exit Sub
+57	0	        End If
+58	0	    End If
+59	0	        
+60	0	Else
+61	1	    'login and pwd provided
+62	0	    Me![lblMsg].Visible = True
+63	0	    Me![lblMsg] = "System is checking your login"
+64	0	    DoCmd.RepaintObject acForm, Me.Name
+65	0	    
+66	0	    DoCmd.Hourglass True
+67	0	    If LogUserIn(Me![txtLogin], Me![txtPwd]) = True Then
+68	1	        'function in module TableLinkingProcedures - validate user login
+69	1	        'if true then login ok and tables accessible - ready to go
+70	1	        DoCmd.Close acForm, "Login" 'shut form as modal
+71	0	    Else
+72	2	        ''OLD: if loginuser = false then the system should have quit by now, this is a catchall
+73	2	        ''OLD: MsgBox "The system may not of logged into the database correctly. If you encounter any problems please restart the application"
+74	2	        'ok the login as failed and the user either has asked to try again, or they haven't taken the option to quit so they
+75	1	        'must remain here until they get it right or quit
+76	0	    End If
+77	0	    DoCmd.Hourglass False
+78	0	End If
+79	0	
+80	0	
+81	0	Exit Sub
+82	0	
+83	0	cmdOK_Click:
+84	0	    Call General_Error_Trap
+85	0	    DoCmd.Hourglass False
+86	1	    DoCmd.Close acForm, "Excavation_Login" 'this may be better as a simply quit the system, will see, however must shut form as modal
+87	0	End Sub
+88	0	
+89	0	Private Sub Form_KeyPress(KeyAscii As Integer)
+90	1	'***************************************************************************
+91	1	' Capture the return key press and action it like all other login boxes
+92	1	' ie: replicate pressing he ok button.
+93	3	' Sussed it, you have to set the form method 'Key Preview' to yes to catch it here
+94	1	'
+95	1	' SAJ v9.1
+96	1	'***************************************************************************
+97	0	On Error Resume Next
+98	1	'MsgBox KeyAscii
+99	0	If KeyAscii = 13 Then
+100	2	    ''MsgBox KeyAscii
+101	0	    cmdOK_Click
+102	0	End If
+103	0	End Sub
+104	0	
+105	0	Private Sub txtPwd_KeyPress(KeyAscii As Integer)
+106	2	'couldn't get it here - but it works Form_KeyPress
+107	1	'when the user presses return from password box make it act like a usual login box by triggering ok
+108	1	'If KeyAscii = 13 Then
+109	1	'    MsgBox KeyAscii
+110	1	'    cmdOK_Click
+111	1	'End If
+112	0	End Sub
+113	0	
+114	0	Private Sub txtPwd_LostFocus()
+115	1	'this is related to trying to get the keypress aboveworking
+116	1	'MsgBox KeyAscii & "rrr"
+117	0	End Sub

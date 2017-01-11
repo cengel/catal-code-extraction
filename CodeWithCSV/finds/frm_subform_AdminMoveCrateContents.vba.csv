@@ -1,0 +1,88 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdClose_Click()
+5	0	On Error GoTo err_cmdClose
+6	0	
+7	0	    DoCmd.Close acForm, Me.Name
+8	0	Exit Sub
+9	0	
+10	0	err_cmdClose:
+11	0	    Call General_Error_Trap
+12	0	    Exit Sub
+13	0	End Sub
+14	0	
+15	0	Private Sub cmdNow_Click()
+16	1	'new season 2007 version v2
+17	0	On Error GoTo err_cmdNow
+18	0	
+19	0	    If (Me![cboFrom] <> "" And Me![cboFrom] <> "") And (Me![cboFrom] <> Me![cboTo]) Then
+20	0	        Dim Response, sql1
+21	0	        Response = MsgBox("Are you sure you wish to move the contents of Crate " & Me![cboFrom] & " into Crate " & Me![cboTo] & " (joining any existing contents " & Me![cboTo] & " already has) " & Chr(13) & " and thus emptying " & Me![cboFrom] & " of all its records?", vbQuestion + vbYesNo, "Confirm Action")
+22	0	        If Response = vbYes Then
+23	0	        
+24	1	            'rename cboFrom units in crates to cboTo crate
+25	1	            '2009 v4.2 change to structure
+26	7	            'sql1 = "UPDATE [Store: Units in Crates] SET [Store: Units in Crates].[Crate Number] = '" & Me![cboTo] & "', [Store: Units in Crates].CrateNumber = " & Me![cboTo].Column(2) & ", [Store: Units in Crates].CrateLetter = '" & Me![cboTo].Column(1) & "' WHERE [Crate Number] ='" & Me![cboFrom] & "';"
+27	4	            sql1 = "UPDATE [Store: Units in Crates] SET [Store: Units in Crates].CrateNumber = " & Me![cboTo].Column(2) & ", [Store: Units in Crates].CrateLetter = '" & Me![cboTo].Column(1) & "' WHERE [CrateLetter] ='" & Me![cboFrom].Column(1) & "' AND [CrateNumber] = " & Me![cboFrom].Column(2) & ";"
+28	0	                On Error Resume Next
+29	0	                Dim mydb As DAO.Database, wrkdefault As Workspace, myq As QueryDef
+30	0	                Set wrkdefault = DBEngine.Workspaces(0)
+31	0	                Set mydb = CurrentDb
+32	0	        
+33	1	                ' Start of outer transaction.
+34	0	                wrkdefault.BeginTrans
+35	0	                Set myq = mydb.CreateQueryDef("")
+36	0	                myq.sql = sql1
+37	0	                myq.Execute
+38	0	                
+39	0	                myq.Close
+40	0	                Set myq = Nothing
+41	0	            
+42	0	                If Err.Number = 0 Then
+43	0	                    wrkdefault.CommitTrans
+44	0	                    MsgBox "Crate Contents Moved Successfully"
+45	0	                    
+46	0	                Else
+47	0	                    wrkdefault.Rollback
+48	0	                    MsgBox "A problem has occured and the move has been cancelled. The error message is: " & Err.Description
+49	0	                End If
+50	0	
+51	0	                mydb.Close
+52	0	                Set mydb = Nothing
+53	0	                wrkdefault.Close
+54	0	                Set wrkdefault = Nothing
+55	0	        
+56	0	        End If
+57	0	    
+58	0	    Else
+59	0	        MsgBox "You must select a valid To and From crate to proceed", vbExclamation, "Invalid Crate Selection"
+60	0	        Exit Sub
+61	0	    End If
+62	0	
+63	0	
+64	0	Exit Sub
+65	0	
+66	0	err_cmdNow:
+67	0	    Call General_Error_Trap
+68	0	    Exit Sub
+69	0	End Sub
+70	0	
+71	0	
+72	0	
+73	0	Private Sub Form_Open(Cancel As Integer)
+74	1	'new season 2007
+75	0	
+76	0	    Dim permiss
+77	0	    permiss = GetGeneralPermissions
+78	0	    If permiss <> "ADMIN" Then
+79	0	        MsgBox "Sorry but only Administrators have access to this form"
+80	0	        DoCmd.Close acForm, Me.Name
+81	0	    End If
+82	0	Exit Sub
+83	0	
+84	0	err_Form_Open:
+85	0	    Call General_Error_Trap
+86	0	   Exit Sub
+87	0	
+88	0	End Sub

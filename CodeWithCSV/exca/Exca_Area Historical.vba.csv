@@ -1,0 +1,31 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdClose_Click()
+5	1	'second close button to be obvious as opened as dialog
+6	0	    Excavation_Click
+7	0	End Sub
+8	0	
+9	1	'********************************************************************
+10	1	' This whole form is new in v9.1
+11	1	'********************************************************************
+12	0	
+13	0	
+14	0	
+15	0	Private Sub Excavation_Click()
+16	0	On Error GoTo err_Excavation_Click
+17	1	    'Dim stDocName As String
+18	1	    'Dim stLinkCriteria As String
+19	0	
+20	1	    'stDocName = "Excavation"
+21	1	    'DoCmd.OpenForm stDocName, , , stLinkCriteria
+22	0	    DoCmd.Close acForm, "Exca: Area Historical"
+23	0	Exit Sub
+24	0	
+25	0	err_Excavation_Click:
+26	0	    Call General_Error_Trap
+27	0	    Exit Sub
+28	0	End Sub
+29	0	
+30	0	
+31	0	

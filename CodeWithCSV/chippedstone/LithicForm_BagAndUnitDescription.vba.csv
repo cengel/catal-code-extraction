@@ -1,0 +1,240 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub AnalysisLevel_AfterUpdate()
+5	0	
+6	0	If Me![AnalysisLevel] = "Second" Then
+7	0	    Me![button.goto.debitage].Enabled = True
+8	0	Else: Me![button.goto.debitage].Enabled = False
+9	0	
+10	0	End If
+11	0	
+12	0	End Sub
+13	0	
+14	0	
+15	0	Private Sub Bag_AfterUpdate()
+16	0	
+17	0	Me![cmd.gotonew].Enabled = True
+18	0	
+19	0	End Sub
+20	0	
+21	0	
+22	0	Private Sub Form_Current()
+23	0	
+24	0	If Me![AnalysisLevel] = "first" Or IsNull(Me![AnalysisLevel]) Then
+25	0	    Me![button.goto.debitage].Enabled = False
+26	0	Else
+27	0	    Me![button.goto.debitage].Enabled = True
+28	0	End If
+29	0	
+30	0	If Me![Bag] = 0 Then
+31	0	    Me![cmd.gotonew].Enabled = False
+32	0	Else
+33	0	    Me![cmd.gotonew].Enabled = True
+34	0	End If
+35	0	
+36	0	End Sub
+37	0	
+38	0	
+39	0	Sub OpenForm_Blades_Click()
+40	0	
+41	0	On Error GoTo Err_OpenForm_Blades_Click
+42	0	
+43	0	    Dim stDocName As String
+44	0	    Dim stLinkCriteria As String
+45	0	    Dim stPrimaryAnalysis As String
+46	0	
+47	0	    stDocName = "LithicForm:Blades"
+48	0	    stPrimaryAnalysis = "first"
+49	0	    
+50	0	    stLinkCriteria = "[Bag]=" & Me![Bag]
+51	0	
+52	0	If Me![Regular Blades] = 0 And Me![Non-Regular Blades] = 0 Or Me.AnalysisLevel = stPrimaryAnalysis Then
+53	0	    MsgBox "No data.", 0, "Error"
+54	0	        
+55	0	Else
+56	0	    DoCmd.Minimize
+57	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+58	0	            
+59	0	End If
+60	0	
+61	0	Exit_OpenForm_Blades_Click:
+62	0	    Exit Sub
+63	0	
+64	0	Err_OpenForm_Blades_Click:
+65	0	    MsgBox Err.Description
+66	0	    Resume Exit_OpenForm_Blades_Click
+67	0	    
+68	0	End Sub
+69	0	
+70	0	
+71	0	Sub OpenForm_Debitage_Click()
+72	0	On Error GoTo Err_OpenForm_Debitage_Click
+73	0	
+74	0	    Dim stDocName As String
+75	0	    Dim stLinkCriteria As String
+76	0	    Dim stPrimaryAnalysis As String
+77	0	    
+78	0	    stPrimaryAnalysis = "first"
+79	0	    stDocName = "LithicForm:Debitage"
+80	0	    
+81	0	    stLinkCriteria = "[Bag]=" & Me![Bag]
+82	0	    
+83	0	If Me.AnalysisLevel = stPrimaryAnalysis Then
+84	0	    MsgBox "Secondary analysis data not available.", 0, "Error"
+85	0	Else
+86	0	    DoCmd.Minimize
+87	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+88	0	            
+89	0	End If
+90	0	
+91	0	Exit_OpenForm_Debitage_Click:
+92	0	    Exit Sub
+93	0	
+94	0	Err_OpenForm_Debitage_Click:
+95	0	    MsgBox Err.Description
+96	0	    Resume Exit_OpenForm_Debitage_Click
+97	0	    
+98	0	End Sub
+99	0	Sub OpenForm_Cores_Click()
+100	0	On Error GoTo Err_OpenForm_Cores_Click
+101	0	
+102	0	    Dim stDocName As String
+103	0	    Dim stLinkCriteria As String
+104	0	    Dim stPrimaryAnalysis As String
+105	0	
+106	0	    stDocName = "LithicForm:Cores"
+107	0	    stPrimaryAnalysis = "first"
+108	0	    
+109	0	    stLinkCriteria = "[Bag]=" & Me![Bag]
+110	0	    
+111	0	
+112	0	If Me![Blade Cores] = 0 And Me![Flake Cores] = 0 Or Me.AnalysisLevel = stPrimaryAnalysis Then
+113	0	    MsgBox "No data.", 0, "Error"
+114	0	    
+115	0	Else
+116	0	    DoCmd.Minimize
+117	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+118	0	    
+119	0	End If
+120	0	
+121	0	Exit_OpenForm_Cores_Click:
+122	0	    Exit Sub
+123	0	
+124	0	Err_OpenForm_Cores_Click:
+125	0	    MsgBox Err.Description
+126	0	    Resume Exit_OpenForm_Cores_Click
+127	0	    
+128	0	End Sub
+129	0	Sub OpenForm_ModifiedBlanks_Click()
+130	0	On Error GoTo Err_OpenForm_ModifiedBlanks_Click
+131	0	
+132	0	    Dim stDocName As String
+133	0	    Dim stLinkCriteria As String
+134	0	    Dim stPrimaryAnalysis As String
+135	0	
+136	0	    stDocName = "LithicForm:ModifiedBlanks"
+137	0	    stPrimaryAnalysis = "first"
+138	0	    
+139	0	    stLinkCriteria = "[Bag]=" & Me![Bag]
+140	0	
+141	0	If Me![Retouched Flakes] = 0 And Me![Retouched Blades] = 0 And IsNull(Me![Other Retouched]) Or Me.AnalysisLevel = stPrimaryAnalysis Then
+142	0	    MsgBox "No data.", 0, "Error"
+143	0	        
+144	0	Else
+145	0	    DoCmd.Minimize
+146	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+147	0	            
+148	0	End If
+149	0	Exit_OpenForm_ModifiedBlanks_Click:
+150	0	    Exit Sub
+151	0	
+152	0	Err_OpenForm_ModifiedBlanks_Click:
+153	0	    MsgBox Err.Description
+154	0	    Resume Exit_OpenForm_ModifiedBlanks_Click
+155	0	    
+156	0	End Sub
+157	0	Sub OpenForm_Biface_Click()
+158	0	On Error GoTo Err_OpenForm_Biface_Click
+159	0	
+160	0	    Dim stDocName As String
+161	0	    Dim stLinkCriteria As String
+162	0	    Dim stPrimaryAnalysis As String
+163	0	
+164	0	    stDocName = "LithicForm:Bifaces"
+165	0	    stPrimaryAnalysis = "first"
+166	0	    
+167	0	    stLinkCriteria = "[Bag]=" & Me![Bag]
+168	0	    
+169	0	If Me![Fragmentary P/Bs] = 0 And Me![Complete P/Bs] = 0 Or Me.AnalysisLevel = stPrimaryAnalysis Then
+170	0	    MsgBox "No data.", 0, "Error"
+171	0	        
+172	0	Else
+173	0	    DoCmd.Minimize
+174	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+175	0	            
+176	0	End If
+177	0	
+178	0	Exit_OpenForm_Biface_Click:
+179	0	    Exit Sub
+180	0	
+181	0	Err_OpenForm_Biface_Click:
+182	0	    MsgBox Err.Description
+183	0	    Resume Exit_OpenForm_Biface_Click
+184	0	    
+185	0	End Sub
+186	0	Sub OpenForm_UnitTotals_Click()
+187	0	On Error GoTo Err_OpenForm_UnitTotals_Click
+188	0	
+189	0	    Dim stDocName As String
+190	0	    Dim stLinkCriteria As String
+191	0	
+192	0	    stDocName = "LithicForm:UnitCounts"
+193	0	    
+194	0	    stLinkCriteria = "[Unit]=" & Me![Unit]
+195	0	    DoCmd.Minimize
+196	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+197	0	
+198	0	Exit_OpenForm_UnitTotals_Click:
+199	0	    Exit Sub
+200	0	
+201	0	Err_OpenForm_UnitTotals_Click:
+202	0	    MsgBox Err.Description
+203	0	    Resume Exit_OpenForm_UnitTotals_Click
+204	0	    
+205	0	End Sub
+206	0	Sub button_goto_debitage_Click()
+207	0	On Error GoTo Err_button_goto_debitage_Click
+208	0	
+209	0	    Dim stDocName As String
+210	0	    Dim stLinkCriteria As String
+211	0	
+212	0	    stDocName = "LithicForm:Debitage"
+213	0	    stLinkCriteria = "[Bag]=" & Me![Bag]
+214	0	    
+215	0	    DoCmd.Minimize
+216	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+217	0	
+218	0	Exit_button_goto_debitage_Click:
+219	0	    Exit Sub
+220	0	
+221	0	Err_button_goto_debitage_Click:
+222	0	    MsgBox Err.Description
+223	0	    Resume Exit_button_goto_debitage_Click
+224	0	    
+225	0	End Sub
+226	0	Sub cmd_gotonew_Click()
+227	0	On Error GoTo Err_cmd_gotonew_Click
+228	0	
+229	0	
+230	0	    DoCmd.GoToRecord , , acNewRec
+231	0	    Bag.SetFocus
+232	0	
+233	0	Exit_cmd_gotonew_Click:
+234	0	    Exit Sub
+235	0	
+236	0	Err_cmd_gotonew_Click:
+237	0	    MsgBox Err.Description
+238	0	    Resume Exit_cmd_gotonew_Click
+239	0	    
+240	0	End Sub

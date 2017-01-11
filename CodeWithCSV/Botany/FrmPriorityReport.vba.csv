@@ -1,0 +1,257 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdGoFirst_Click()
+5	1	'********************************************************************
+6	1	' Go to first record
+7	1	' SAJ
+8	1	'********************************************************************
+9	0	On Error GoTo Err_cmdgofirst_Click
+10	0	
+11	0	    DoCmd.GoToControl "txtFlotNumber"
+12	0	    DoCmd.GoToRecord , , acFirst
+13	0	
+14	0	    Exit Sub
+15	0	
+16	0	Err_cmdgofirst_Click:
+17	0	    Call General_Error_Trap
+18	0	    Exit Sub
+19	0	End Sub
+20	0	
+21	0	Private Sub cmdGoLast_Click()
+22	1	'********************************************************************
+23	1	' Go to last record
+24	1	' SAJ
+25	1	'********************************************************************
+26	0	On Error GoTo Err_cmdgoLast_Click
+27	0	
+28	0	    DoCmd.GoToControl "txtFlotNumber"
+29	0	    DoCmd.GoToRecord , , acLast
+30	0	
+31	0	    Exit Sub
+32	0	
+33	0	Err_cmdgoLast_Click:
+34	0	    Call General_Error_Trap
+35	0	    Exit Sub
+36	0	End Sub
+37	0	
+38	0	Private Sub cmdGoNext_Click()
+39	1	'********************************************************************
+40	1	' Go to next record
+41	1	' SAJ
+42	1	'********************************************************************
+43	0	On Error GoTo Err_cmdgoNext_Click
+44	0	
+45	0	    DoCmd.GoToControl "txtFlotNumber"
+46	0	    DoCmd.GoToRecord , , acNext
+47	0	
+48	0	    Exit Sub
+49	0	
+50	0	Err_cmdgoNext_Click:
+51	0	    If Err.Number = 2105 Then
+52	0	        MsgBox "No more records to show", vbInformation, "End of records"
+53	0	    Else
+54	0	        Call General_Error_Trap
+55	0	    End If
+56	0	    Exit Sub
+57	0	End Sub
+58	0	
+59	0	Private Sub cmdgoprevious_Click()
+60	1	'********************************************************************
+61	1	' Go to previous record
+62	1	' SAJ
+63	1	'********************************************************************
+64	0	On Error GoTo Err_cmdgoprevious_Click
+65	0	
+66	0	    DoCmd.GoToControl "txtFlotNumber"
+67	0	    DoCmd.GoToRecord , , acPrevious
+68	0	
+69	0	    Exit Sub
+70	0	
+71	0	Err_cmdgoprevious_Click:
+72	0	    If Err.Number = 2105 Then
+73	0	        MsgBox "Already at the begining of the recordset", vbInformation, "Begining of records"
+74	0	    Else
+75	0	        Call General_Error_Trap
+76	0	    End If
+77	0	    Exit Sub
+78	0	End Sub
+79	0	
+80	0	Private Sub cmdgotonew_Click()
+81	1	'********************************************************************
+82	1	' Create new record
+83	1	' SAJ
+84	1	'********************************************************************
+85	0	On Error GoTo Err_cmdgonew_Click
+86	0	
+87	0	    DoCmd.GoToRecord , , acNewRec
+88	0	    DoCmd.GoToControl "txtFlotNumber"
+89	0	
+90	0	    Exit Sub
+91	0	
+92	0	Err_cmdgonew_Click:
+93	0	    Call General_Error_Trap
+94	0	    Exit Sub
+95	0	End Sub
+96	0	
+97	0	
+98	0	Private Sub cboFindFlot_AfterUpdate()
+99	1	'******************************************************************
+100	1	' Search for a flot number from the list
+101	1	' SAJ
+102	1	'******************************************************************
+103	0	On Error GoTo err_FindFlot
+104	0	
+105	0	If Me![cboFindFlot] <> "" Then
+106	0	
+107	0	    DoCmd.GoToControl "txtFlotNumber"
+108	0	    DoCmd.FindRecord Me![cboFindFlot]
+109	0	End If
+110	0	
+111	0	Exit Sub
+112	0	
+113	0	err_FindFlot:
+114	0	    Call General_Error_Trap
+115	0	    Exit Sub
+116	0	End Sub
+117	0	
+118	0	Private Sub cmdClose_Click()
+119	1	'********************************************************************
+120	1	' Close form and return to main menu
+121	1	' SAJ
+122	1	'********************************************************************
+123	0	On Error GoTo err_close
+124	0	    DoCmd.OpenForm "FrmMainMenu"
+125	0	    DoCmd.Close acForm, Me.Name
+126	0	    
+127	0	
+128	0	Exit Sub
+129	0	err_close:
+130	0	    Call General_Error_Trap
+131	0	    Exit Sub
+132	0	End Sub
+133	0	
+134	0	Private Sub cmdOutput_Click()
+135	1	'open output options pop up
+136	0	On Error GoTo err_Output
+137	0	
+138	0	    If Me![txtFlotNumber] <> "" Then
+139	0	        DoCmd.OpenForm "FrmPopDataOutputOptions", acNormal, , , , acDialog, "Bot: Priority Report;" & Me![txtFlotNumber]
+140	0	    Else
+141	0	        MsgBox "The output options form cannot be shown when there is no Flot Number on screen", vbInformation, "Action Cancelled"
+142	0	    End If
+143	0	
+144	0	Exit Sub
+145	0	
+146	0	err_Output:
+147	0	    Call General_Error_Trap
+148	0	    Exit Sub
+149	0	End Sub
+150	0	
+151	0	Private Sub cmdRecalc_Click()
+152	1	'*******************************************************************
+153	1	' Recalc the wood, parenc, dung and seed/chaff values
+154	1	' SAJ
+155	1	'*******************************************************************
+156	0	On Error GoTo err_cmdRecalc
+157	0	    
+158	0	    Dim getFourmmFraction, getWood, getParenc, getDung, result1, result2, result3, result4
+159	0	    getFourmmFraction = DLookup("[4 mm Fraction]", "[Bot: Priority Sample]", "[Flot Number] = " & Me![txtFlotNumber])
+160	0	    If Not IsNull(getFourmmFraction) Then
+161	1	        'calc the values required
+162	0	        getWood = DLookup("[4 mm Wood]", "[Bot: Priority Sample]", "[Flot Number] = " & Me![txtFlotNumber])
+163	0	        If Not IsNull(getWood) Then
+164	0	            result1 = Calc_WoodParenceDung_ml_per_litre(Me![txtFlotNumber], getWood, getFourmmFraction)
+165	0	            Me![Wood_ml_Per_Litre] = Round(result1, 2)
+166	0	        End If
+167	0	    
+168	0	        getParenc = DLookup("[4 mm Parenc]", "[Bot: Priority Sample]", "[Flot Number] = " & Me![txtFlotNumber])
+169	0	        If Not IsNull(getParenc) Then
+170	0	            result2 = Calc_WoodParenceDung_ml_per_litre(Me![txtFlotNumber], getParenc, getFourmmFraction)
+171	0	            Me![Parenc_ml_Per_Litre] = Round(result2, 2)
+172	0	        End If
+173	0	    
+174	0	        getDung = DLookup("[4 mm Dung]", "[Bot: Priority Sample]", "[Flot Number] = " & Me![txtFlotNumber])
+175	0	        If Not IsNull(getDung) Then
+176	0	            result3 = Calc_WoodParenceDung_ml_per_litre(Me![txtFlotNumber], getDung, getFourmmFraction)
+177	0	            Me![Dung_ml_Per_Litre] = Round(result3, 2)
+178	0	        End If
+179	0	        
+180	0	        result4 = Calc_seedchaff_per_litre(Me![txtFlotNumber])
+181	0	        Me![Seeds_Chaff_Per_Litre] = Round(result4, 2)
+182	0	        
+183	0	    Else
+184	0	        MsgBox "The system cannot obtain the 4mm fraction value so cannot recalculate the fields", vbCritical, "Error Obtaining Fraction"
+185	0	    End If
+186	0	Exit Sub
+187	0	
+188	0	err_cmdRecalc:
+189	0	    Call General_Error_Trap
+190	0	    Exit Sub
+191	0	End Sub
+192	0	
+193	0	
+194	0	
+195	0	Private Sub Form_Open(Cancel As Integer)
+196	1	'*****************************************************************************
+197	1	' Check for any open args to set record to focus on and set up view of form
+198	1	'
+199	1	' SAJ
+200	1	'*****************************************************************************
+201	0	On Error GoTo err_open
+202	0	
+203	0	If Not IsNull(Me.OpenArgs) Then
+204	1	    'flot number passed in must find it
+205	0	    DoCmd.GoToControl "txtFlotNumber"
+206	0	    DoCmd.FindRecord Me.OpenArgs
+207	0	End If
+208	0	    
+209	0	Exit Sub
+210	0	
+211	0	err_open:
+212	0	    Call General_Error_Trap
+213	0	    Exit Sub
+214	0	End Sub
+215	0	
+216	0	Private Sub tglDataSheet_Click()
+217	1	'********************************************************************
+218	1	' The user wants to see the basic data in datasheet view
+219	1	' SAJ
+220	1	'********************************************************************
+221	1	'On Error GoTo Err_tglDataSheet
+222	1	'
+223	1	'If Me!tglDataSheet = True Then
+224	1	'    Me!FrmSubPriority.SetFocus
+225	2	'    'Me!FrmSubBasicData.Form![cboOptions].Visible = True
+226	1	'    DoCmd.RunCommand acCmdSubformDatasheet
+227	1	'    Me!tglFormV = False
+228	1	'End If
+229	1	'Exit Sub
+230	0	
+231	1	'Err_tglDataSheet:
+232	1	'    Call General_Error_Trap
+233	1	'    Exit Sub
+234	0	End Sub
+235	0	
+236	0	Private Sub tglFormV_Click()
+237	1	'********************************************************************
+238	1	' The user wants to see the basic data in form view
+239	1	' SAJ
+240	1	'********************************************************************
+241	1	'On Error GoTo Err_tglFormV
+242	0	
+243	1	'If Me!tglFormV = True Then
+244	1	'
+245	1	'    Me!FrmSubPriority.SetFocus
+246	1	'    Me!FrmSubPriority![Flot Number].SetFocus
+247	1	'    DoCmd.RunCommand acCmdSubformDatasheet
+248	0	
+249	2	'    'Me!FrmSubBasicData.Form.DefaultView = 2
+250	1	'    Me!tglDataSheet = False
+251	1	'End If
+252	1	'Exit Sub
+253	0	
+254	1	'Err_tglFormV:
+255	1	'    Call General_Error_Trap
+256	1	'    Exit Sub
+257	0	End Sub

@@ -1,0 +1,756 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	Private Sub UpdateFullConservRef()
+4	1	'Season 2006 - update the full conservation ref to keep it in sync with the
+5	1	'year and Id fields
+6	1	'SAJ
+7	0	On Error GoTo err_UpdateFullCOnservRef
+8	0	Dim theYear, theID
+9	1	    'txtConservationRef_Year
+10	1	    'txtConservationRef_ID
+11	0	    If Not IsNull(txtConservationRef_Year) And Not IsNull(txtConservationRef_ID) Then
+12	0	        
+13	0	        theYear = Right(Me![txtConservationRef_Year], 2)
+14	0	        
+15	0	        If Len(Me![txtConservationRef_ID]) = 1 Then
+16	0	            theID = "00" & Me![txtConservationRef_ID]
+17	0	        ElseIf Len(Me![txtConservationRef_ID]) = 2 Then
+18	0	            theID = "0" & Me![txtConservationRef_ID]
+19	0	        Else
+20	0	            theID = Me![txtConservationRef_ID]
+21	0	        End If
+22	0	        Me![FullConservation_Ref] = theYear & "." & theID
+23	0	    
+24	0	    End If
+25	0	
+26	0	Exit Sub
+27	0	
+28	0	err_UpdateFullCOnservRef:
+29	0	    Call General_Error_Trap
+30	0	    Exit Sub
+31	0	End Sub
+32	0	
+33	0	
+34	0	Private Sub cboFind_AfterUpdate()
+35	1	'find conservation ref
+36	0	On Error GoTo err_cboFind
+37	0	
+38	0	    If Me![cboFind] <> "" Then
+39	0	        Me![txtFullRef].Enabled = True
+40	0	        
+41	0	        DoCmd.GoToControl "txtFullRef"
+42	0	        DoCmd.FindRecord Me![cboFind]
+43	0	        
+44	0	        DoCmd.GoToControl "cboFind"
+45	0	        Me![txtFullRef].Enabled = False
+46	0	    End If
+47	0	
+48	0	Exit Sub
+49	0	
+50	0	err_cboFind:
+51	0	    Call General_Error_Trap
+52	0	    Exit Sub
+53	0	
+54	0	End Sub
+55	0	
+56	0	
+57	0	
+58	0	Private Sub cboPackingList_AfterUpdate()
+59	1	'new for season 2006
+60	1	'user selects treatment from the list and it fills the text into the treatment field
+61	0	On Error GoTo err_pack
+62	0	
+63	0	    If Me![cboPackingList] <> "" Then
+64	0	        Me![Packing] = Me![Packing] & " " & Me![cboPackingList]
+65	0	        Me![cboPackingList] = ""
+66	0	    End If
+67	0	Exit Sub
+68	0	
+69	0	err_pack:
+70	0	    Call General_Error_Trap
+71	0	    Exit Sub
+72	0	End Sub
+73	0	
+74	0	Private Sub cboRelatedToID_AfterUpdate()
+75	1	'new for seaon 2006
+76	1	'enable subform
+77	0	On Error GoTo err_cboRelatedToID
+78	0	
+79	0	    Me![frm_subform_conservation_ref_relatedto].Locked = False
+80	0	    Me![frm_subform_conservation_ref_relatedto].Enabled = True
+81	0	    DoCmd.RunCommand acCmdSaveRecord
+82	0	    Me![frm_subform_conservation_ref_relatedto].Form.Requery
+83	1	    'Me![frm_subform_conservation_ref_relatedto].Form.Refresh
+84	1	    'Me![frm_subform_conservation_ref_relatedto].Form.Repaint
+85	0	    
+86	1	    'if the relationship is to an object/s show cmdRange button on the relatedto subform
+87	1	    'so a range of X numbers can be entered automatically
+88	0	    If Me![cboRelatedToID] = 2 Then
+89	0	        Me![frm_subform_conservation_ref_relatedto].Form![cmdRange].Visible = True
+90	0	    Else
+91	0	        Me![frm_subform_conservation_ref_relatedto].Form![cmdRange].Visible = False
+92	0	    End If
+93	0	Exit Sub
+94	0	
+95	0	err_cboRelatedToID:
+96	0	    Call General_Error_Trap
+97	0	    Exit Sub
+98	0	End Sub
+99	0	
+100	0	Private Sub cboTreatmentList_AfterUpdate()
+101	1	'new for season 2006
+102	1	'user selects treatment from the list and it fills the text into the treatment field
+103	0	On Error GoTo err_treat
+104	0	
+105	0	    If Me![cboTreatmentList] <> "" Then
+106	0	        Me![Treatment] = Me![Treatment] & " " & Me![cboTreatmentList]
+107	0	        Me![cboTreatmentList] = ""
+108	0	    End If
+109	0	Exit Sub
+110	0	
+111	0	err_treat:
+112	0	    Call General_Error_Trap
+113	0	    Exit Sub
+114	0	End Sub
+115	0	
+116	0	Private Sub cmdAddNew_Click()
+117	1	'********************************************
+118	1	'Add a new record
+119	1	'
+120	1	'SAJ
+121	1	'********************************************
+122	0	On Error GoTo err_cmdAddNew_Click
+123	0	
+124	0	    DoCmd.GoToRecord acActiveDataObject, , acNewRec
+125	0	    DoCmd.GoToControl "txtConservationRef_Year"
+126	0	Exit Sub
+127	0	
+128	0	err_cmdAddNew_Click:
+129	0	    Call General_Error_Trap
+130	0	    Exit Sub
+131	0	End Sub
+132	0	
+133	0	Private Sub cmdAdminMenu_Click()
+134	1	'new for season 2006 - open admin menu
+135	0	On Error GoTo err_cmdAdmin
+136	0	
+137	1	    'double check is admin
+138	0	    Dim permiss
+139	0	    permiss = GetGeneralPermissions
+140	0	    
+141	0	    If permiss <> "ADMIN" Then
+142	0	        MsgBox "You do not have permission to open this screen", vbInformation, "Permission Denied"
+143	0	    Else
+144	0	        DoCmd.OpenForm "frm_Admin_Menu"
+145	0	        
+146	0	    End If
+147	0	    
+148	0	Exit Sub
+149	0	
+150	0	err_cmdAdmin:
+151	0	    Call General_Error_Trap
+152	0	    Exit Sub
+153	0	
+154	0	End Sub
+155	0	
+156	0	Private Sub cmdDelete_Click()
+157	1	'new for season 2006 - delete here so can clean up sub tables
+158	0	On Error GoTo err_cmdDelete
+159	0	
+160	1	    'double check is admin
+161	0	    Dim permiss
+162	0	    permiss = GetGeneralPermissions
+163	0	    
+164	0	    If permiss <> "ADMIN" Then
+165	0	        MsgBox "You do not have permission to delete records. Contact your supervisor.", vbInformation, "Permission Denied"
+166	0	    Else
+167	0	        Dim retVal, sql
+168	0	        retVal = MsgBox("Really delete conservation record: " & Me![txtConservationRef_Year] & "." & txtConservationRef_ID & "?", vbCritical + vbYesNoCancel, "Confirm Delete")
+169	0	        If retVal = vbYes Then
+170	2	            sql = "Delete from [Conservation_ConservRef_RelatedTo] WHERE [ConservationRef_Year] = '" & Me![txtConservationRef_Year] & "' AND [ConservationRef_ID] = " & Me![txtConservationRef_ID] & ";"
+171	0	            DoCmd.RunSQL sql
+172	0	            
+173	2	            sql = "Delete from [Conservation_Photos] WHERE [ConservationRef_Year] = '" & Me![txtConservationRef_Year] & "' AND [ConservationRef_ID] = " & Me![txtConservationRef_ID] & ";"
+174	0	            DoCmd.RunSQL sql
+175	0	        
+176	2	            sql = "Delete from [Conservation_Basic_Record] WHERE [ConservationRef_Year] = '" & Me![txtConservationRef_Year] & "' AND [ConservationRef_ID] = " & Me![txtConservationRef_ID] & ";"
+177	0	            DoCmd.RunSQL sql
+178	0	            
+179	0	            Me.Requery
+180	0	            DoCmd.GoToRecord acActiveDataObject, , acLast
+181	0	        End If
+182	0	    End If
+183	0	    
+184	0	Exit Sub
+185	0	
+186	0	err_cmdDelete:
+187	0	    Call General_Error_Trap
+188	0	    Exit Sub
+189	0	
+190	0	End Sub
+191	0	
+192	0	Private Sub cmdGoToImage_Click()
+193	1	'********************************************************************
+194	1	' New button for season 2006 which allows any available images to be
+195	1	' displayed - links to the view on Image_Metadata table that has been exported
+196	1	' from Portfolio
+197	1	' SAJ
+198	1	'********************************************************************
+199	0	On Error GoTo err_cmdGoToImage_Click
+200	0	
+201	3	'DoCmd.OpenForm "Image_Display", acNormal, , "[Lab Record ID] = '" & Me![FullConservation_Ref] & "'", acFormReadOnly, acDialog
+202	0	    
+203	0	Dim mydb As DAO.Database
+204	0	Dim tmptable As TableDef, tblConn, I, msg, LabTeamID, LabRecordID
+205	0	Set mydb = CurrentDb
+206	0	
+207	1	    'new 2009 - get back the portfolio lab team id and lab record id as this might change as portfolio recatalogues
+208	1	    'this code is the same for all labs
+209	0	    Dim myq1 As QueryDef, connStr
+210	0	    Set mydb = CurrentDb
+211	0	    Set myq1 = mydb.CreateQueryDef("")
+212	0	    myq1.Connect = mydb.TableDefs(0).Connect & ";UID=portfolio;PWD=portfolio"
+213	0	    myq1.ReturnsRecords = True
+214	0	    myq1.sql = "sp_Portfolio_Return_Lab_Team_FieldIDs"
+215	0	    
+216	0	    Dim myrs As Recordset
+217	0	    Set myrs = myq1.OpenRecordset
+218	2	    ''MsgBox myrs.Fields(0).Value
+219	0	    If myrs!LabRecordID.Value = "" Or myrs!LabRecordID.Value = 0 Then
+220	0	        LabRecordID = 0
+221	0	    Else
+222	0	        LabRecordID = myrs!LabRecordID.Value
+223	0	    End If
+224	0	        
+225	0	    If myrs!LabTeam.Value = "" Or myrs!LabTeam.Value = 0 Then
+226	0	        LabTeamID = 0
+227	0	    Else
+228	0	        LabTeamID = myrs!LabTeam.Value
+229	0	    End If
+230	0	    
+231	0	    myrs.Close
+232	0	    Set myrs = Nothing
+233	0	    myq1.Close
+234	0	    Set myq1 = Nothing
+235	0	    
+236	0	    
+237	0	    
+238	1	    For I = 0 To mydb.TableDefs.Count - 1 'loop the tables collection
+239	0	    Set tmptable = mydb.TableDefs(I)
+240	0	             
+241	0	    If tmptable.Connect <> "" Then
+242	0	        tblConn = tmptable.Connect
+243	0	        Exit For
+244	0	    End If
+245	0	    Next I
+246	0	    
+247	0	    If tblConn <> "" Then
+248	1	        'If InStr(tblConn, "catalsql") = 0 Then
+249	0	        If InStr(tblConn, "catalsql") = 0 Then
+250	0	            Dim formsql
+251	0	           
+252	0	           formsql = "select record_id, stringvalue from view_Portfolio_Lab_RecordID " & _
+253	2	                     " where (field_id = " & LabRecordID & ") AND (stringvalue = '" & Me!FullConservation_Ref & "') " & _
+254	0	                    " AND (record_id IN " & _
+255	0	                    " (SELECT record_id FROM view_Portfolio_Lab_TeamID " & _
+256	2	                    " WHERE field_id = " & LabTeamID & " AND stringvalue ='conservation')) "
+257	0	           
+258	0	            DoCmd.OpenForm "Image_Display", acNormal
+259	0	           Forms!Image_Display.RecordSource = formsql
+260	1	            'DoCmd.OpenForm "Image_Display", acNormal, , "[IntValue] = " & Me![Unit Number] & " AND [Field_ID] = " & fldid, acFormReadOnly, acDialog, Me![Year]
+261	0	            
+262	0	        Else
+263	1	            'database is running remotely must access images via internet
+264	0	            msg = "As you are working remotely the system will have to display the images in a web browser." & Chr(13) & Chr(13)
+265	0	            msg = msg & "At present this part of the website is secure, you must enter following details to gain access:" & Chr(13) & Chr(13)
+266	0	            msg = msg & "Username: catalhoyuk" & Chr(13)
+267	0	            msg = msg & "Password: SiteDatabase1" & Chr(13) & Chr(13)
+268	0	            msg = msg & "When you have finished viewing the images close your browser to return to the database."
+269	0	            MsgBox msg, vbInformation, "Photo Web Link"
+270	0	            
+271	0	            Application.FollowHyperlink (ImageLocationOnWeb & "?field=unit&id=" & Me![Unit Number])
+272	0	        End If
+273	0	
+274	0	    Else
+275	0	        
+276	0	    End If
+277	0	    
+278	0	    Set tmptable = Nothing
+279	0	    mydb.Close
+280	0	    Set mydb = Nothing
+281	0	    
+282	0	    
+283	0	Exit Sub
+284	0	
+285	0	err_cmdGoToImage_Click:
+286	0	    Call General_Error_Trap
+287	0	    Exit Sub
+288	0	
+289	0	End Sub
+290	0	
+291	0	Private Sub cmdReport_Click()
+292	1	'new for season 2006 - Anjas report has been altered and offered here on record
+293	1	'by record basis
+294	0	On Error GoTo err_cmdReport
+295	0	
+296	3	    'DoCmd.OpenReport "Conserv: Full Printout", acViewPreview, , "[ConservationRef_Year] = '" & Me![txtConservationRef_Year] & "' AND [ConservationRef_ID] = " & Me![ConservationRef_ID]
+297	0	    DoCmd.OpenForm "FrmPopDataOutputOptions", acNormal, , , , acDialog, "Conservation_Basic_Record;" & Me![txtFullRef]
+298	0	
+299	0	Exit Sub
+300	0	
+301	0	err_cmdReport:
+302	0	    Call General_Error_Trap
+303	0	    Exit Sub
+304	0	
+305	0	End Sub
+306	0	
+307	0	Private Sub Command44_Click()
+308	1	'***************************************************
+309	1	' Existing close button revamped - text changed from close
+310	1	' to trowel as in rest of database
+311	1	'
+312	1	' SAJ
+313	1	'***************************************************
+314	0	On Error GoTo err_Command44_Click
+315	0	
+316	0	    Dim stDocName As String
+317	0	    Dim stLinkCriteria As String
+318	0	    
+319	0	    DoCmd.Close acForm, "Conserv: Basic Record"
+320	0	    
+321	0	Exit_Command44_Click:
+322	0	    Exit Sub
+323	0	
+324	0	err_Command44_Click:
+325	0	    MsgBox Err.Description
+326	0	    Resume Exit_Command44_Click
+327	0	End Sub
+328	0	
+329	0	Private Sub Form_Current()
+330	1	'new for season 2006 - set up form on open
+331	1	'SAJ
+332	0	On Error GoTo err_current
+333	1	'If Not IsNull(Me![Finds: Basic Data.GID]) Then
+334	1	'Me![finds].Enabled = True
+335	1	'Else
+336	1	'Me![finds].Enabled = False
+337	1	'End If
+338	0	
+339	0	Dim permiss
+340	0	permiss = GetGeneralPermissions
+341	0	
+342	1	'If Not IsNull(Me![txtConservationRef_Year]) And Not IsNull(Me![txtConservationRef_ID]) Then
+343	1	'i have now set the default value of the ref year to this year so this must just check on the
+344	1	'ref field as otherwise it will lock even new records!
+345	0	If Not IsNull(Me![txtConservationRef_ID]) Then
+346	1	    'existing record - lock conservation ref for everyone including admin but show admin a
+347	1	    'an edit number button. If they simply edit the number the link to the sub tables is lost so
+348	1	    'it must be done in code
+349	1	    'do not existing conservation ref to be altered
+350	0	    Me![txtConservationRef_Year].Enabled = False
+351	0	    Me![txtConservationRef_Year].Locked = True
+352	0	    Me![txtConservationRef_Year].BackColor = -2147483633
+353	0	    Me![txtConservationRef_ID].Enabled = False
+354	0	    Me![txtConservationRef_ID].Locked = True
+355	0	    Me![txtConservationRef_ID].BackColor = -2147483633
+356	0	    
+357	0	    If permiss = "ADMIN" Then
+358	1	        'enable conservatio ref to be alterd via edit button
+359	0	        Me![cmdEditNum].Visible = True
+360	0	    Else
+361	0	        Me![cmdEditNum].Visible = False
+362	0	    End If
+363	0	    
+364	1	'ElseIf IsNull(Me![txtConservationRef_Year]) And IsNull(Me![txtConservationRef_ID]) Then
+365	0	ElseIf IsNull(Me![txtConservationRef_ID]) Then
+366	1	    'a new record allow everyone except RO to update
+367	0	    If permiss = "RO" Then
+368	1	        'read only uses can do nothing
+369	0	        Me![txtConservationRef_Year].Enabled = False
+370	0	        Me![txtConservationRef_Year].Locked = True
+371	0	        Me![txtConservationRef_Year].BackColor = -2147483633
+372	0	        Me![txtConservationRef_ID].Enabled = False
+373	0	        Me![txtConservationRef_ID].Locked = True
+374	0	        Me![txtConservationRef_ID].BackColor = -2147483633
+375	1	    Else 'enable new conservatio ref to be entered
+376	0	        Me![txtConservationRef_Year].Enabled = True
+377	0	        Me![txtConservationRef_Year].Locked = False
+378	0	        Me![txtConservationRef_Year].BackColor = 16777215
+379	0	        Me![txtConservationRef_ID].Enabled = True
+380	0	        Me![txtConservationRef_ID].Locked = False
+381	0	        Me![txtConservationRef_ID].BackColor = 16777215
+382	0	    End If
+383	0	End If
+384	0	
+385	0	
+386	0	If IsNull(Me![cboRelatedToID]) Then
+387	0	    Me![frm_subform_conservation_ref_relatedto].Locked = True
+388	0	    Me![frm_subform_conservation_ref_relatedto].Enabled = False
+389	0	    
+390	0	    Me![cboRelatedToID].Enabled = True
+391	0	    Me![cboRelatedToID].Locked = False
+392	0	    Me![cboRelatedToID].BackColor = 16777215
+393	0	Else
+394	0	    Me![frm_subform_conservation_ref_relatedto].Locked = False
+395	0	    Me![frm_subform_conservation_ref_relatedto].Enabled = True
+396	0	    
+397	0	    If permiss <> "ADMIN" Then
+398	0	        Me![cboRelatedToID].Enabled = True
+399	0	        Me![cboRelatedToID].Locked = False
+400	0	        Me![cboRelatedToID].BackColor = -2147483633
+401	0	    End If
+402	0	End If
+403	0	
+404	0	
+405	0	On Error Resume Next
+406	1	'DC wants to see the excavation area the ref is related to quickly on screen. So this sets
+407	1	'up the recordsource of a subform (frm_subform_exca_area) to link to the first excavation ID
+408	1	'in the conservationref_relatedto list - not great but its a start on this functionality.
+409	1	'This is only valid of records with a building/space/feature or unit number
+410	1	'when the form is first opened the field below is not known and err 2455:
+411	1	'expression that has an invalid reference to the property Form/Report is thrown so ignore
+412	1	'it and carry on this will work for moving between records thereafter
+413	0	If Me![frm_subform_conservation_ref_relatedto].Form![txtExcavationIDNumber] <> "" Then
+414	2	    ''MsgBox Me![frm_subform_conservation_ref_relatedto].Form![txtExcavationIDNumber]
+415	0	
+416	0	    If Me![RelatedToID] = 1 Or Me![RelatedToID] = 2 Or Me![RelatedToID] = 3 Then
+417	1	        'related to an excavation id - building, feature, space or unit
+418	0	        Me![frm_subform_exca_area].Visible = True
+419	0	        If Me![frm_subform_conservation_ref_relatedto].Form![RelatedToSubTypeID] = 1 Then
+420	1	            'building
+421	0	            Me![frm_subform_exca_area].Form.RecordSource = "SELECT [Area], [Number] from [Exca: Building Details] WHERE [Number] = " & Me![frm_subform_conservation_ref_relatedto].Form![txtExcavationIDNumber]
+422	1	            'MsgBox Me![frm_subform_exca_area].Form.RecordSource
+423	0	        ElseIf Me![frm_subform_conservation_ref_relatedto].Form![RelatedToSubTypeID] = 2 Then
+424	1	            'space
+425	0	            Me![frm_subform_exca_area].Form.RecordSource = "SELECT [Area], [Space Number] from [Exca: Space Sheet] WHERE [Space Number] = " & Me![frm_subform_conservation_ref_relatedto].Form![txtExcavationIDNumber]
+426	1	            'MsgBox Me![frm_subform_exca_area].Form.RecordSource
+427	0	        ElseIf Me![frm_subform_conservation_ref_relatedto].Form![RelatedToSubTypeID] = 3 Then
+428	1	            'feature
+429	0	            Me![frm_subform_exca_area].Form.RecordSource = "SELECT [Area], [Feature Number] from [Exca: Features] WHERE [Feature Number] = " & Me![frm_subform_conservation_ref_relatedto].Form![txtExcavationIDNumber]
+430	1	            'MsgBox Me![frm_subform_exca_area].Form.RecordSource
+431	0	        Else
+432	1	            'unit
+433	0	            Me![frm_subform_exca_area].Form.RecordSource = "SELECT [Area], [Unit Number] from [Exca: Unit Sheet with Relationships] WHERE [Unit Number] = " & Me![frm_subform_conservation_ref_relatedto].Form![txtExcavationIDNumber]
+434	1	            'MsgBox Me![frm_subform_exca_area].Form.RecordSource
+435	0	        End If
+436	0	        Me![frm_subform_exca_area].Requery
+437	0	    Else
+438	0	        Me![frm_subform_exca_area].Visible = False
+439	0	    End If
+440	0	Else
+441	0	    Me![frm_subform_exca_area].Visible = False
+442	0	End If
+443	0	
+444	0	
+445	1	'maintain error resume next status on this for on open reason (as above)
+446	1	'if the relationship is to an object/s show cmdRange button on the relatedto subform
+447	1	'so a range of X numbers can be entered automatically
+448	0	If Me![RelatedToID] = 2 Then
+449	0	    Me![frm_subform_conservation_ref_relatedto].Form![cmdRange].Visible = True
+450	0	Else
+451	0	    Me![frm_subform_conservation_ref_relatedto].Form![cmdRange].Visible = False
+452	0	End If
+453	0	
+454	0	
+455	0	On Error GoTo err_current
+456	0	
+457	0	
+458	1	'COMMENT OUT FOR OFF SITE
+459	1	 'new season 2006 - link in portfolio image info
+460	1	 'find out is any images available
+461	0	 Dim imageCount, Imgcaption
+462	1	 '2006 link
+463	3	 'imageCount = DCount("[Lab Record ID]", "view_Conservation_Image_Metadata", "[Lab Record ID] = '" & Me![FullConservation_Ref] & "'")
+464	0	 Dim mydb As DAO.Database
+465	0	 Dim myq1 As QueryDef, connStr
+466	0	 
+467	0	    Set mydb = CurrentDb
+468	0	
+469	0	    Set myq1 = mydb.CreateQueryDef("")
+470	0	
+471	0	    myq1.Connect = mydb.TableDefs(0).Connect & ";UID=portfolio;PWD=portfolio"
+472	0	    myq1.ReturnsRecords = True
+473	0	    
+474	4	    myq1.sql = "sp_Web_Images_Count_for_Specific_Lab_Team_Entity '" & Me![txtFullRef] & "', 'conservation'"
+475	0	 
+476	0	
+477	0	    Dim myrs As Recordset
+478	0	    
+479	0	    Set myrs = myq1.OpenRecordset
+480	0	    
+481	0	    If myrs.Fields(0).Value = "" Or myrs.Fields(0).Value = 0 Then
+482	0	           imageCount = 0
+483	0	    Else
+484	0	
+485	0	        imageCount = myrs.Fields(0).Value
+486	0	   End If
+487	0	
+488	0	 myrs.Close
+489	0	 Set myrs = Nothing
+490	0	 myq1.Close
+491	0	 Set myq1 = Nothing
+492	0	 mydb.Close
+493	0	 Set mydb = Nothing
+494	0	
+495	0	
+496	0	
+497	0	 If imageCount > 0 Then
+498	0	    Imgcaption = imageCount
+499	0	    If imageCount = 1 Then
+500	0	        Imgcaption = Imgcaption & " Image to Display"
+501	0	    Else
+502	0	        Imgcaption = Imgcaption & " Images to Display"
+503	0	    End If
+504	0	    Me![cmdGoToImage].Caption = Imgcaption
+505	0	    Me![cmdGoToImage].Enabled = True
+506	0	 Else
+507	0	    Me![cmdGoToImage].Caption = "No Image to Display"
+508	0	    Me![cmdGoToImage].Enabled = False
+509	0	 End If
+510	0	
+511	4	'''OFF SITE - RESURRECT THIS CODE - COMMENT OUT ALL ABOVE FROM 'COMMENT OUT FOR OFF SITE
+512	3	'''Me![cmdGoToImage].Caption = "No Image Link Offsite"
+513	3	'''Me![cmdGoToImage].Enabled = False
+514	0	
+515	0	Exit Sub
+516	0	
+517	0	err_current:
+518	0	    Call General_Error_Trap
+519	0	    Exit Sub
+520	0	
+521	0	End Sub
+522	0	
+523	0	
+524	0	
+525	0	Private Sub Form_Open(Cancel As Integer)
+526	1	'new season 2006
+527	0	On Error GoTo err_open
+528	0	
+529	0	
+530	0	    DoCmd.GoToRecord acActiveDataObject, "Conserv: Basic record", acLast
+531	0	    
+532	0	    Dim permiss
+533	0	    permiss = GetGeneralPermissions
+534	0	
+535	0	    If permiss = "ADMIN" Then
+536	0	        Me![cmdAdminMenu].Visible = True
+537	0	        Me![cmdDelete].Visible = True
+538	0	    Else
+539	0	        Me![cmdAdminMenu].Visible = False
+540	0	        Me![cmdDelete].Visible = False
+541	0	    End If
+542	0	
+543	0	    DoCmd.Maximize
+544	0	Exit Sub
+545	0	
+546	0	err_open:
+547	0	    Call General_Error_Trap
+548	0	    Exit Sub
+549	0	End Sub
+550	0	
+551	0	
+552	0	Private Sub find_Click()
+553	2	'hijacking a button, that has been already here but invisible and seemingly unused'
+554	1	'sending to the basic data list form for searching mutiple attributes - DL 2015
+555	0	
+556	0	On Error GoTo err_find_Click
+557	0	
+558	0	DoCmd.OpenForm "Conserv_BasicRecord_List", acNormal
+559	0	
+560	0	Forms![Conserv_BasicRecord_List].Form![queryfullconserv].SetFocus
+561	0	
+562	0	Exit_find_Click:
+563	0	    Exit Sub
+564	0	
+565	0	err_find_Click:
+566	0	    MsgBox Err.Description
+567	0	    Resume Exit_find_Click
+568	0	    
+569	0	End Sub
+570	0	
+571	0	Sub close_Click()
+572	0	On Error GoTo Err_close_Click
+573	0	
+574	0	
+575	0	    DoCmd.Close
+576	0	
+577	0	Exit_close_Click:
+578	0	    Exit Sub
+579	0	
+580	0	Err_close_Click:
+581	0	    MsgBox Err.Description
+582	0	    Resume Exit_close_Click
+583	0	    
+584	0	End Sub
+585	0	Sub finds_Click()
+586	0	On Error GoTo Err_finds_Click
+587	0	
+588	0	    Dim stDocName As String
+589	0	    Dim stLinkCriteria As String
+590	0	
+591	0	    stDocName = "Finds: Basic Data"
+592	0	    
+593	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+594	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+595	0	
+596	0	Exit_finds_Click:
+597	0	    Exit Sub
+598	0	
+599	0	Err_finds_Click:
+600	0	    MsgBox Err.Description
+601	0	    Resume Exit_finds_Click
+602	0	    
+603	0	End Sub
+604	0	
+605	0	Private Sub go_next_Click()
+606	0	On Error GoTo Err_go_next_Click
+607	0	
+608	0	
+609	0	    DoCmd.GoToRecord , , acNext
+610	0	
+611	0	Exit_go_next_Click:
+612	0	    Exit Sub
+613	0	
+614	0	Err_go_next_Click:
+615	0	    MsgBox Err.Description
+616	0	    Resume Exit_go_next_Click
+617	0	    
+618	0	
+619	0	End Sub
+620	0	
+621	0	Private Sub go_previous2_Click()
+622	0	On Error GoTo Err_go_previous2_Click
+623	0	
+624	0	
+625	0	    DoCmd.GoToRecord , , acPrevious
+626	0	
+627	0	Exit_go_previous2_Click:
+628	0	    Exit Sub
+629	0	
+630	0	Err_go_previous2_Click:
+631	0	    MsgBox Err.Description
+632	0	    Resume Exit_go_previous2_Click
+633	0	    
+634	0	End Sub
+635	0	
+636	0	Private Sub go_to_first_Click()
+637	0	On Error GoTo Err_go_to_first_Click
+638	0	
+639	0	
+640	0	    DoCmd.GoToRecord , , acFirst
+641	0	
+642	0	Exit_go_to_first_Click:
+643	0	    Exit Sub
+644	0	
+645	0	Err_go_to_first_Click:
+646	0	    MsgBox Err.Description
+647	0	    Resume Exit_go_to_first_Click
+648	0	End Sub
+649	0	
+650	0	Private Sub go_to_last_Click()
+651	0	
+652	0	On Error GoTo Err_go_last_Click
+653	0	
+654	0	
+655	0	    DoCmd.GoToRecord , , acLast
+656	0	
+657	0	Exit_go_last_Click:
+658	0	    Exit Sub
+659	0	
+660	0	Err_go_last_Click:
+661	0	    MsgBox Err.Description
+662	0	    Resume Exit_go_last_Click
+663	0	    
+664	0	End Sub
+665	0	
+666	0	Private Sub txtConservationRef_ID_AfterUpdate()
+667	0	Call UpdateFullConservRef
+668	0	End Sub
+669	0	
+670	0	Private Sub txtConservationRef_Year_AfterUpdate()
+671	1	'check 4 digit year entered
+672	0	On Error GoTo err_txtRef
+673	0	
+674	0	    If Len(Me![txtConservationRef_Year]) <> 4 Then
+675	1	        'all years must be 4 digits
+676	0	        MsgBox "All years must be entered as a four digit number eg: 2006, your entry has been altered to this year.", vbExclamation, "Entry Altered"
+677	0	        Me![txtConservationRef_Year] = Year(Date)
+678	1	'       MsgBox Me![txtConservationRef_Year].OldValue
+679	0	    End If
+680	0	    Call UpdateFullConservRef
+681	0	    
+682	0	Exit Sub
+683	0	
+684	0	err_txtRef:
+685	0	    Call General_Error_Trap
+686	0	    Exit Sub
+687	0	End Sub
+688	0	Private Sub cmdEditNum_Click()
+689	1	'control conservation reference edits
+690	0	On Error GoTo Err_cmdEditNum_Click
+691	0	
+692	0	Dim retVal, newvalueYear, newvalueID, sql, fullref, theYear, theID
+693	0	
+694	0	retVal = MsgBox("This button enables you to change the conservation reference number: " & Me![txtConservationRef_Year] & "." & Me![txtConservationRef_ID] & Chr(13) & Chr(13) & "Are you sure you want to continue?", vbExclamation + vbYesNo, "Confirm Action")
+695	0	If retVal = vbYes Then
+696	0	    newvalueYear = InputBox("Please enter the new Conservation Year below (even if it matches the current year you must enter it):", "Conservation Year")
+697	0	    If newvalueYear <> "" Then
+698	0	        If Len(newvalueYear) <> 4 Then
+699	0	            MsgBox "Sorry but this does not represent a valid year, please enter the year like this: 2006. Action cancelled", vbCritical, "Action Cancelled"
+700	0	        Else
+701	0	            newvalueID = InputBox("Please enter the new Conservation Number below (just the number part):", "Conservation Number")
+702	0	            If newvalueID <> "" Then
+703	0	                retVal = MsgBox("The existing reference: " & Me![txtConservationRef_Year] & "." & Me![txtConservationRef_ID] & " will now be altered to: " & newvalueYear & "." & newvalueID & Chr(13) & Chr(13) & "Are you sure you want to continue?", vbExclamation + vbYesNo, "Confirm Action")
+704	0	                If retVal = vbYes Then
+705	0	                
+706	0	                    theYear = Right(newvalueYear, 2)
+707	0	                
+708	0	                    If Len(newvalueID) = 1 Then
+709	0	                        theID = "00" & newvalueID
+710	0	                    ElseIf Len(newvalueID) = 2 Then
+711	0	                        theID = "0" & newvalueID
+712	0	                    Else
+713	0	                        theID = newvalueID
+714	0	                    End If
+715	0	                
+716	0	                    fullref = theYear & "." & theID
+717	1	                    'first update an subtable references to this number
+718	4	                    sql = "UPDATE [Conservation_ConservedBy] SET [ConservationRef_Year] = '" & newvalueYear & "', [ConservationRef_ID] = " & newvalueID & " WHERE [ConservationRef_Year] = '" & Me![txtConservationRef_Year] & "' AND [ConservationRef_ID] = " & Me![txtConservationRef_ID] & ";"
+719	0	                    DoCmd.RunSQL sql
+720	0	                
+721	4	                    sql = "UPDATE [Conservation_ConservRef_RelatedTo] SET [ConservationRef_Year] = '" & newvalueYear & "', [ConservationRef_ID] = " & newvalueID & " WHERE [ConservationRef_Year] = '" & Me![txtConservationRef_Year] & "' AND [ConservationRef_ID] = " & Me![txtConservationRef_ID] & ";"
+722	0	                    DoCmd.RunSQL sql
+723	0	                
+724	6	                    sql = "UPDATE [Conservation_Basic_Record] SET [ConservationRef_Year] = '" & newvalueYear & "', [ConservationRef_ID] = " & newvalueID & ", [FullConservation_Ref] = '" & fullref & "' WHERE [ConservationRef_Year] = '" & Me![txtConservationRef_Year] & "' AND [ConservationRef_ID] = " & Me![txtConservationRef_ID] & ";"
+725	0	                    DoCmd.RunSQL sql
+726	0	                
+727	0	                    Me.Requery
+728	0	                    Me![txtFullRef].Enabled = True
+729	0	        
+730	0	                    DoCmd.GoToControl "txtFullRef"
+731	0	                    DoCmd.FindRecord fullref
+732	0	                    Me![cboFind].Requery
+733	0	                    DoCmd.GoToControl "cboFind"
+734	0	                    Me![txtFullRef].Enabled = False
+735	0	                Else
+736	0	                    MsgBox "Action cancelled, no change has been made", vbCritical, "Action Cancelled"
+737	0	                End If
+738	0	        Else
+739	0	            MsgBox "No Number entered, action cancelled", vbCritical, "Action Cancelled"
+740	0	        End If
+741	0	      End If
+742	0	    Else
+743	0	        MsgBox "No Year entered, action cancelled", vbCritical, "Action Cancelled"
+744	0	    End If
+745	0	    
+746	0	End If
+747	0	
+748	0	
+749	0	Exit_cmdEditNum_Click:
+750	0	    Exit Sub
+751	0	
+752	0	Err_cmdEditNum_Click:
+753	0	    Call General_Error_Trap
+754	0	    Resume Exit_cmdEditNum_Click
+755	0	    
+756	0	End Sub

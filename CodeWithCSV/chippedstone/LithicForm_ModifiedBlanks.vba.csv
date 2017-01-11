@@ -1,0 +1,45 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Sub Button_OpenForm_ME_Click()
+5	0	On Error GoTo Err_Button_OpenForm_ME_Click
+6	0	
+7	0	    Dim stDocName As String
+8	0	    Dim stLinkCriteria As String
+9	0	
+10	0	    stDocName = "LithicForm:ModifiedEdges"
+11	0	    
+12	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+13	0	    
+14	0	    DoCmd.Minimize
+15	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+16	0	
+17	0	Exit_Button_OpenForm_ME_Click:
+18	0	    Exit Sub
+19	0	
+20	0	Err_Button_OpenForm_ME_Click:
+21	0	    MsgBox Err.Description
+22	0	    Resume Exit_Button_OpenForm_ME_Click
+23	0	    
+24	0	End Sub
+25	0	Sub Button_OpenForm_Bifaces_Click()
+26	0	On Error GoTo Err_Button_OpenForm_Bifaces_Click
+27	0	
+28	0	    Dim stDocName As String
+29	0	    Dim stLinkCriteria As String
+30	0	
+31	0	    stDocName = "LithicForm:Bifaces"
+32	0	    
+33	2	    stLinkCriteria = "[GID]=" & "'" & Me![GID] & "'"
+34	0	    
+35	0	    DoCmd.Minimize
+36	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+37	0	
+38	0	Exit_Button_OpenForm_Bifaces_Click:
+39	0	    Exit Sub
+40	0	
+41	0	Err_Button_OpenForm_Bifaces_Click:
+42	0	    MsgBox Err.Description
+43	0	    Resume Exit_Button_OpenForm_Bifaces_Click
+44	0	    
+45	0	End Sub

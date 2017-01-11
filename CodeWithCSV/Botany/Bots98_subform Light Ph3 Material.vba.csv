@@ -1,0 +1,65 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	Private Sub Update_Family_GID()
+4	0	Me![Family_GID] = Me![Family] & "." & Me![Genus] & "." & Me![Species] & "." & Me![SubSpecies] & "." & Me![Variety] & "." & Me![Part/Type]
+5	0	End Sub
+6	0	
+7	0	
+8	0	Private Sub Family_AfterUpdate()
+9	0	Update_Family_GID
+10	0	End Sub
+11	0	
+12	0	Private Sub Family_Change()
+13	0	Update_Family_GID
+14	0	End Sub
+15	0	
+16	0	
+17	0	Private Sub Genus_AfterUpdate()
+18	0	Update_Family_GID
+19	0	End Sub
+20	0	
+21	0	
+22	0	Private Sub Genus_Change()
+23	0	Update_Family_GID
+24	0	End Sub
+25	0	
+26	0	
+27	0	Private Sub Part_Type_AfterUpdate()
+28	0	Update_Family_GID
+29	0	End Sub
+30	0	
+31	0	Private Sub Part_Type_Change()
+32	0	Update_Family_GID
+33	0	End Sub
+34	0	
+35	0	
+36	0	Private Sub Species_AfterUpdate()
+37	0	Update_Family_GID
+38	0	End Sub
+39	0	
+40	0	
+41	0	Private Sub Species_Change()
+42	0	Update_Family_GID
+43	0	End Sub
+44	0	
+45	0	
+46	0	Private Sub SubSpecies_AfterUpdate()
+47	0	Update_Family_GID
+48	0	End Sub
+49	0	
+50	0	
+51	0	Private Sub SubSpecies_Change()
+52	0	Update_Family_GID
+53	0	End Sub
+54	0	
+55	0	
+56	0	Private Sub Variety_AfterUpdate()
+57	0	Update_Family_GID
+58	0	End Sub
+59	0	
+60	0	
+61	0	Private Sub Variety_Change()
+62	0	Update_Family_GID
+63	0	End Sub
+64	0	
+65	0	

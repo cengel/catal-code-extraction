@@ -1,0 +1,33 @@
+1	0	Option Compare Database
+2	0	
+3	0	Private Sub cmdCloseSingleEntryPopup_Click()
+4	0	On Error GoTo Err_Close_Form_Click
+5	0	
+6	0	    DoCmd.Close
+7	0	
+8	0	Exit_Close_Form_Click:
+9	0	    Exit Sub
+10	0	
+11	0	Err_Close_Form_Click:
+12	0	    MsgBox Err.Description
+13	0	    Resume Exit_Close_Form_Click
+14	0	    
+15	0	End Sub
+16	0	
+17	0	Private Sub Post_a_reply_Click()
+18	0	On Error GoTo Err_Post_a_reply_Click
+19	0	
+20	1	  ' added to open a sligtly different form to reply to an entry
+21	1	'  DoCmd.OpenForm "Diary Reply Form", acNormal, , "In_Reply_To = " & Me![txt_diaryID], , , I
+22	0	   DoCmd.OpenForm "Diary Reply Form", acNormal, , , , , ID
+23	0	  
+24	1	  'DoCmd.OpenForm "Diary_SingleEntry_popup", acNormal, , "ID=" & Me![txt_diaryID], acFormReadOnly, , Me![txt_diaryID]
+25	0	  
+26	0	Exit_Post_a_reply_Click:
+27	0	    Exit Sub
+28	0	
+29	0	Err_Post_a_reply_Click:
+30	0	    MsgBox Err.Description
+31	0	    Resume Exit_Post_a_reply_Click
+32	0	
+33	0	End Sub

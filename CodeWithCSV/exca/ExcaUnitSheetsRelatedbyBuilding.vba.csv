@@ -1,0 +1,37 @@
+1	0	Option Compare Database
+2	0	
+3	0	
+4	0	Private Sub cmdPrintUnitSheet_Click()
+5	0	On Error GoTo err_print
+6	0	
+7	0	    If LCase(Me![Category]) = "layer" Or LCase(Me![Category]) = "cluster" Then
+8	0	        DoCmd.OpenReport "R_Unit_Sheet_layercluster", acViewPreview, , "[unit number] = " & Me![related_unit]
+9	0	    ElseIf LCase(Me![Category]) = "cut" Then
+10	0	        DoCmd.OpenReport "R_Unit_Sheet_cut", acViewPreview, , "[unit number] = " & Me![related_unit]
+11	0	    ElseIf LCase(Me![Category]) = "skeleton" Then
+12	0	        DoCmd.OpenReport "R_Unit_Sheet_skeleton", acViewPreview, , "[unit number] = " & Me![related_unit]
+13	0	    End If
+14	0	Exit Sub
+15	0	
+16	0	err_print:
+17	0	    Call General_Error_Trap
+18	0	    Exit Sub
+19	0	End Sub
+20	0	
+21	0	
+22	0	
+23	0	Private Sub gotorelatedunit_Click()
+24	0	On Error GoTo Err_gotorelatedunit_Click
+25	0	    
+26	1	    'Me.Parent.SetFocus
+27	1	    'DoCmd.GoToRecord , , acGoTo, "[Unit Number] = " & Me![related_unit]
+28	0	    DoCmd.OpenForm "Exca: Unit Sheet", , , "[Unit Number] = " & Me![related_unit]
+29	0	    
+30	0	Exit_gotorelatedunit_Click:
+31	0	    Exit Sub
+32	0	
+33	0	Err_gotorelatedunit_Click:
+34	0	    MsgBox Err.Description
+35	0	    Resume Exit_gotorelatedunit_Click
+36	0	    
+37	0	End Sub

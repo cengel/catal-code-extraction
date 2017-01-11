@@ -1,0 +1,63 @@
+1	0	
+2	0	
+3	0	Private Sub cmdChangeStatus_Click()
+4	0	On Error GoTo err_cmdAddNew_Click
+5	0	
+6	0	    Me![combostatus].Locked = False
+7	0	    Me![statusdate].Locked = False
+8	0	    Me![statuswho].Locked = False
+9	0	
+10	0	    DoCmd.GoToRecord acActiveDataObject, , acNewRec
+11	0	    Me![statusdate].Value = Now()
+12	0	    DoCmd.GoToControl Me![unitstatus_determination]
+13	0	Exit Sub
+14	0	
+15	0	err_cmdAddNew_Click:
+16	0	    If Err.Number = 2498 Then
+17	0	        Resume Next
+18	0	    Else
+19	0	    Call General_Error_Trap
+20	0	    End If
+21	0	    Exit Sub
+22	0	End Sub
+23	0	
+24	0	
+25	0	
+26	0	
+27	0	Private Sub combostatus_BeforeUpdate(Cancel As Integer)
+28	0	On Error GoTo err_combostatus_BeforeUpdate
+29	0	
+30	0	If Me![combostatus].Value = "to be checked" And _
+31	0	IsNull(Forms![Exca: Unit Sheet]![Exca: Unit Data Categories LAYER subform].Form![Data Category].Value) And _
+32	0	IsNull(Forms![Exca: Unit Sheet]![Exca: Unit Data Categories SKELL subform].Form![Data Category].Value) And _
+33	0	IsNull(Forms![Exca: Unit Sheet]![Exca: Unit Data Categories CUT subform].Form![Data Category].Value) And _
+34	0	IsNull(Forms![Exca: Unit Sheet]![Exca: Unit Data Categories CLUSTER subform].Form![Data Category].Value) Then
+35	0	
+36	1	    'this event will trigger when move to subform, which is really hard
+37	1	    'on this form as there are so many. So really can only catch this
+38	1	    'when they are editing at the bottom of the form
+39	0	   
+40	2	    MsgBox "There is no Data Category entered for this Unit. This information is mandatory and has to be inserted!" & Chr(13) & Chr(13) & "Click okay, press 'ESC' and enter a valid data category.", vbInformation, "What is the Category?"
+41	0	    Cancel = True
+42	0	End If
+43	0	Exit Sub
+44	0	
+45	0	err_combostatus_BeforeUpdate:
+46	0	
+47	0	    Call General_Error_Trap
+48	0	    Exit Sub
+49	0	
+50	0	End Sub
+51	0	
+52	0	Private Sub Form_Current()
+53	0	If Me![status].Value <> "" Then
+54	0	    Debug.Print okay
+55	0	    Me![combostatus].Locked = True
+56	0	    Me![statusdate].Locked = True
+57	0	    Me![statuswho].Locked = True
+58	0	Else
+59	0	End If
+60	0	End Sub
+61	0	
+62	0	
+63	0	

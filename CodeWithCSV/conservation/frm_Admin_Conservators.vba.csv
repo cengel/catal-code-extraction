@@ -1,0 +1,37 @@
+1	0	Option Compare Database
+2	0	
+3	0	Private Sub Command44_Click()
+4	0	On Error GoTo err_Command44_Click
+5	0	
+6	0	    Dim stDocName As String
+7	0	    Dim stLinkCriteria As String
+8	0	    
+9	0	    DoCmd.Close acForm, "frm_Admin_Conservators"
+10	0	    
+11	0	Exit_Command44_Click:
+12	0	    Exit Sub
+13	0	
+14	0	err_Command44_Click:
+15	0	    MsgBox Err.Description
+16	0	    Resume Exit_Command44_Click
+17	0	End Sub
+18	0	
+19	0	Private Sub Form_Open(Cancel As Integer)
+20	1	'new for season 2006
+21	1	'must only allow admins in
+22	0	On Error GoTo err_open
+23	0	
+24	0	    Dim permiss
+25	0	    permiss = GetGeneralPermissions
+26	0	
+27	0	    If permiss <> "ADMIN" Then
+28	0	        MsgBox "Only administrators can view this form", vbInformation, "Access Denied"
+29	0	        DoCmd.Close acForm, "frm_admin_conservators"
+30	0	        
+31	0	    End If
+32	0	Exit Sub
+33	0	
+34	0	err_open:
+35	0	    Call General_Error_Trap
+36	0	    Exit Sub
+37	0	End Sub

@@ -1,0 +1,14 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	1	'Public Const DBName = "Ceramics_NEW"
+5	0	
+6	0	Public Const DBName = "Ceramics_2013"
+7	0	
+8	0	Public VersionNumber
+9	1	Public Const VersionNumberLocal = "3.2" 'NEW 2009 TO FLAG UPDATE MESSAGE TO USER - see SetCurrentVersion in module General Procedures-shared
+10	0	
+11	0	Public GeneralPermissions
+12	0	
+13	1	Public spString 'var to hold call to sp used in Delete_Category_SubTable_Entry() on Unit Sheet
+14	0	

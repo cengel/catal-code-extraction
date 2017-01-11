@@ -1,0 +1,55 @@
+1	0	Option Compare Database
+2	0	
+3	0	
+4	0	Private Sub addNew_Click()
+5	0	On Error GoTo err_addNew_Click
+6	0	
+7	0	DoCmd.GoToRecord , , acNewRec
+8	0	Forms![Phytolith_NewSampleRegister].Form![UnitNumber].SetFocus
+9	0	
+10	0	Exit Sub
+11	0	
+12	0	err_addNew_Click:
+13	0	    MsgBox "An error has occured setting up a new record, the error is as follows: " & Err.Description
+14	0	    Exit Sub
+15	0	End Sub
+16	0	
+17	0	Private Sub closeform_Click()
+18	0	On Error GoTo err_closeform_Click
+19	0	
+20	0	Dim lastunit, lastsample
+21	0	Dim checknum
+22	0	
+23	0	If Not IsNull(Me![UnitNumber]) And Not IsNull(Me![SampleNumber]) And _
+24	0	Me![UnitNumber] <> "" And Me![SampleNumber] <> "" Then
+25	0	    lastunit = Me![UnitNumber]
+26	0	    lastsample = Me![SampleNumber]
+27	0	    Forms![Phytolith_NewSampleRegister].Form.Requery
+28	0	    DoCmd.OpenForm "frm_Phyto_SampleRegister", acNormal
+29	0	    Forms![frm_Phyto_SampleRegister].Form.Requery
+30	0	    checknum = DLookup("[UniqueID]", "[Phytolith_SampleRegister]", "[UnitNumber] = " & lastunit & " And [SampleNumber] = " & lastsample)
+31	0	    Debug.Print checknum
+32	0	    If Not IsNull(checknum) Then
+33	0	        Forms![frm_Phyto_SampleRegister].Form![UniqueID].SetFocus
+34	0	        DoCmd.FindRecord checknum
+35	0	    Else
+36	0	        DoCmd.GoToRecord , "frm_Phyto_SampleRegister", acLast
+37	0	    End If
+38	0	Else
+39	0	    Forms![Phytolith_NewSampleRegister].Form.Requery
+40	0	    DoCmd.OpenForm "frm_Phyto_SampleRegister", acNormal
+41	0	    Forms![frm_Phyto_SampleRegister].Form.Requery
+42	0	    DoCmd.GoToRecord , "frm_Phyto_SampleRegister", acLast
+43	0	End If
+44	0	
+45	0	
+46	0	Forms![frm_Phyto_SampleRegister].Form![UnitNumber].SetFocus
+47	0	DoCmd.Close , "Phytolith_NewSampleRegister"
+48	0	
+49	0	Exit Sub
+50	0	
+51	0	err_closeform_Click:
+52	0	    MsgBox "An error has occured setting up a new record, the error is as follows: " & Err.Description
+53	0	    Exit Sub
+54	0	
+55	0	End Sub

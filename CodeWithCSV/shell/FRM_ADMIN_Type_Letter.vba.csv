@@ -1,0 +1,99 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdClose_Click()
+5	1	'close this form and return to main menu
+6	0	On Error GoTo err_close
+7	0	    
+8	0	    DoCmd.OpenForm "FRM_menu"
+9	0	    DoCmd.Restore
+10	0	    DoCmd.Close acForm, Me.Name
+11	0	    
+12	0	
+13	0	Exit Sub
+14	0	
+15	0	err_close:
+16	0	
+17	0	    Call General_Error_Trap
+18	0	    Exit Sub
+19	0	End Sub
+20	0	
+21	0	Private Sub Form_Delete(Cancel As Integer)
+22	1	'must check this entry has not been used before deletion allowed
+23	0	On Error GoTo err_delete
+24	0	
+25	0	Dim checknum
+26	0	
+27	0	    
+28	0	    checknum = DLookup("[Type]", "[Shell_Level_One_Data]", "[Type] = " & Me![type number])
+29	0	    If IsNull(checknum) Then
+30	1	        'number not exist can allow delete
+31	0	        Cancel = False
+32	0	    Else
+33	1	        'number exists do not allow
+34	0	        MsgBox "This type number has been used in data entry, please edit the relevant records first and then return to delete it.", vbCritical, "Invalid Action"
+35	0	        Cancel = True
+36	0	    End If
+37	0	    
+38	0	Exit Sub
+39	0	err_delete:
+40	0	    Call General_Error_Trap
+41	0	    Exit Sub
+42	0	End Sub
+43	0	
+44	0	Private Sub genus_AfterUpdate()
+45	1	'check genus not already used
+46	0	On Error GoTo err_num
+47	0	
+48	0	    Dim oldval, checknum
+49	0	
+50	0	    oldval = Me![genus].OldValue
+51	2	    checknum = DLookup("[species]", "[Shell_Level_One_Data]", "[species] = '" & oldval & "'")
+52	0	    If Not IsNull(checknum) Then
+53	1	        'number exists do not allow
+54	0	        MsgBox "This genus has been used in data entry, please edit the relevant records first and then return to change it.", vbCritical, "Invalid Action"
+55	0	        Me![genus] = oldval
+56	0	    End If
+57	0	
+58	0	
+59	0	Exit Sub
+60	0	
+61	0	err_num:
+62	0	    Call General_Error_Trap
+63	0	    Exit Sub
+64	0	End Sub
+65	0	
+66	0	Private Sub type_number_AfterUpdate()
+67	1	'check number not already used
+68	0	On Error GoTo err_num
+69	0	
+70	0	    Dim oldval, checknum
+71	0	
+72	0	    oldval = Me![type number].OldValue
+73	0	    checknum = DLookup("[Type]", "[Shell_Level_One_Data]", "[Type] = " & oldval)
+74	0	    If Not IsNull(checknum) Then
+75	1	        'number exists do not allow
+76	0	        MsgBox "This type number has been used in data entry, please edit the relevant records first and then return to change it.", vbCritical, "Invalid Action"
+77	0	        Me![type number] = oldval
+78	0	    End If
+79	0	
+80	0	
+81	0	Exit Sub
+82	0	
+83	0	err_num:
+84	0	    Call General_Error_Trap
+85	0	    Exit Sub
+86	0	End Sub
+87	0	
+88	0	Private Sub Form_Open(Cancel As Integer)
+89	1	'maximise
+90	0	On Error GoTo err_open
+91	0	
+92	0	    DoCmd.Maximize
+93	0	
+94	0	Exit Sub
+95	0	
+96	0	err_open:
+97	0	    Call General_Error_Trap
+98	0	    Exit Sub
+99	0	End Sub

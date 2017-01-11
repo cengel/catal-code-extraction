@@ -1,0 +1,123 @@
+1	0	Option Compare Database
+2	0	
+3	0	
+4	0	Private Sub find_Click()
+5	1	'find conservation ref
+6	0	On Error GoTo err_find_Click
+7	0	Dim filterquery, filterrelated, filterreference, filtertreatment, filterlocation, filterunit, querywunits As String
+8	0	Dim rs, rsMV As DAO.Recordset
+9	0	Dim strSQL, strOUT, fullrefwunits, fullrefwunitsyear, fullrefwunitsid As String
+10	0	Dim lnglen As Long
+11	0	Dim bismultivalue As Boolean
+12	0	
+13	0	        If Not IsNull(Me![queryfullconserv]) Then
+14	2	            filterquery = filterquery & "[FullConservation_Ref] like '*" & Me![queryfullconserv] & "*' AND "
+15	0	        End If
+16	0	        If Not IsNull(Me![querylocation]) Then
+17	2	            filterquery = filterquery & "[Location] like '*" & Me![querylocation] & "*' AND "
+18	0	        End If
+19	0	        If Not IsNull(Me![queryunit]) Then
+20	0	        strSQL = "SELECT [ConservationRef_Year], [ConservationRef_ID] FROM [Conservation_ConservRef_RelatedTo] WHERE [ExcavationIDNumber] = " & Trim(Me.queryunit.Value)
+21	0	        Set rs = DBEngine(0)(0).OpenRecordset(strSQL, dbOpenDynaset)
+22	0	
+23	0	        bismultivalue = (rs(0).Type > 100)
+24	0	
+25	0	        Do While Not rs.EOF
+26	0	            If bismultivalue Then
+27	0	                Set rsMV = rs(0).Value
+28	0	                Do While Not rsMV.EOF
+29	0	                    If Not IsNull(rsMV(0)) Then
+30	0	                        If (CInt(rsMV(0)) < 2000) Then
+31	0	                            fullrefwunitsyear = Str(CInt(rsMV(0)) - 1900)
+32	0	                        Else
+33	0	                            fullrefwunitsyear = Str(CInt(rsMV(0)) - 2000)
+34	0	                        End If
+35	0	                        If (CInt(rsMV(1)) < 10) Then
+36	0	                            fullrefwunitsid = "00" & rsMV(1)
+37	0	                        ElseIf (CInt(rsMV(1)) < 100) Then
+38	0	                            fullrefwunitsid = "0" & rsMV(1)
+39	0	                                Else
+40	0	                            fullrefwunitsid = rsMV(1)
+41	0	                        End If
+42	2	                        strOUT = strOUT & "[FullConservation_Ref] like '*" & Trim(fullrefwunitsyear) & "." & Trim(fullrefwunitsid) & "*' OR "
+43	0	                    End If
+44	0	                    rsMV.MoveNext
+45	0	                Loop
+46	0	                Set rsMV = Nothing
+47	0	            ElseIf Not IsNull(rs(0)) Then
+48	0	                If (CInt(rs(0)) < 2000) Then
+49	0	                    fullrefwunitsyear = Str(CInt(rs(0)) - 1900)
+50	0	                Else
+51	0	                    If (CInt(rs(0)) < 2010) Then
+52	0	                        fullrefwunitsyear = "0" & Trim(Str(CInt(rs(0)) - 2000))
+53	0	                    Else
+54	0	                        fullrefwunitsyear = Str(CInt(rs(0)) - 2000)
+55	0	                    End If
+56	0	                End If
+57	0	                If (CInt(rs(1)) < 10) Then
+58	0	                    fullrefwunitsid = "00" & rs(1)
+59	0	                ElseIf (CInt(rs(1)) < 100) Then
+60	0	                    fullrefwunitsid = "0" & rs(1)
+61	0	                Else
+62	0	                    fullrefwunitsid = rs(1)
+63	0	                End If
+64	2	                strOUT = strOUT & "[FullConservation_Ref] like '*" & Trim(fullrefwunitsyear) & "." & Trim(fullrefwunitsid) & "*' OR "
+65	0	            End If
+66	0	            rs.MoveNext
+67	0	        Loop
+68	0	        rs.Close
+69	0	
+70	0	        lnglen = Len(strOUT) - 4
+71	0	        If lnglen > 0 Then
+72	0	            querywunits = "(" & Left(strOUT, lnglen) & ")"
+73	0	        End If
+74	0	            filterquery = filterquery & querywunits & " AND "
+75	0	        End If
+76	0	        If Not IsNull(Me![queryrelatedid]) Then
+77	0	            filterquery = filterquery & "[RelatedToID] = " & Me![queryrelatedid] & " AND "
+78	0	        End If
+79	0	        If Not IsNull(Me![queryFindType]) Then
+80	2	            filterquery = filterquery & "[Find Type] like '*" & Me![queryFindType] & "*' AND "
+81	0	        End If
+82	0	        If Not IsNull(Me![querytreatment]) Then
+83	2	            filterquery = filterquery & "[Treatment] like '*" & Me![querytreatment] & "*' AND "
+84	0	        End If
+85	0	
+86	0	If filterquery <> "" Then
+87	0	    filterquery = Left(filterquery, Len(filterquery) - 5)
+88	0	    DoCmd.ApplyFilter , filterquery
+89	0	Else
+90	0	End If
+91	0	If filterlocation <> "" Then
+92	0	    DoCmd.ApplyFilter , filterquery
+93	0	Else
+94	0	End If
+95	0	
+96	0	Exit Sub
+97	0	
+98	0	err_find_Click:
+99	0	    Call General_Error_Trap
+100	0	    Exit Sub
+101	0	
+102	0	End Sub
+103	0	
+104	0	Private Sub findunit_AfterUpdate()
+105	2	    Me.Form.Filter = "[field_concat_units] like '*" & Me.findunit.Value & "*'"
+106	0	    Me.Form.FilterOn = True
+107	0	End Sub
+108	0	
+109	0	Private Sub GoTo_Click()
+110	0	On Error GoTo Err_GoTo_Click
+111	0	
+112	2	            stLinkCriteria = "[FullConservation_Ref] = '" & Me![FullConservation_Ref] & "'"
+113	0	            DoCmd.OpenForm "Conserv: Basic Record", acNormal, , stLinkCriteria
+114	0	
+115	0	Exit_GoTo_Click:
+116	0	    Exit Sub
+117	0	
+118	0	Err_GoTo_Click:
+119	0	    MsgBox Err.Description
+120	0	    Resume Exit_GoTo_Click
+121	0	    
+122	0	End Sub
+123	0	

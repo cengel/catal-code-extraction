@@ -1,0 +1,1139 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Type POINTAPI
+5	0	    X As Long
+6	0	    Y As Long
+7	0	End Type
+8	0	
+9	0	Public Type RECTL
+10	0	    Left As Long
+11	0	    top As Long
+12	0	    right As Long
+13	0	    Bottom As Long
+14	0	End Type
+15	0	
+16	0	Private Type SIZEL
+17	0	    cx As Long
+18	0	    cy As Long
+19	0	End Type
+20	0	              
+21	0	Private Type RGBQUAD
+22	0	  rgbBlue As Byte
+23	0	  rgbGreen As Byte
+24	0	  rgbRed As Byte
+25	0	  rgblReterved As Byte
+26	0	End Type
+27	0	
+28	1	Private Type BITMAPINFOHEADER '40 bytes
+29	0	  biSize As Long
+30	0	  biWidth As Long
+31	0	  biHeight As Long
+32	0	  biPlanes As Integer
+33	0	  biBitCount As Integer
+34	1	  biCompression As Long 'ERGBCompression
+35	0	  biSizeImage As Long
+36	0	  biXPelsPerMeter As Long
+37	0	  biYPelsPerMeter As Long
+38	0	  biClrUsed As Long
+39	0	  biClrImportant As Long
+40	0	End Type
+41	0	
+42	0	
+43	0	Private Type BITMAPINFO
+44	0	  bmiHeader As BITMAPINFOHEADER
+45	1	  'bmiColors As RGBQUAD
+46	0	End Type
+47	0	
+48	0	
+49	0	Private Type Bitmap
+50	0	  bmType As Long
+51	0	  bmWidth As Long
+52	0	  bmHeight As Long
+53	0	  bmWidthBytes As Long
+54	0	  bmPlanes As Integer
+55	0	  bmBitsPixel As Integer
+56	0	  BmBits As Long
+57	0	End Type
+58	0	
+59	0	Private Type DIBSECTION
+60	0	    dsBm As Bitmap
+61	0	    dsBmih As BITMAPINFOHEADER
+62	0	    dsBitfields(2) As Long
+63	0	    dshSection As Long
+64	0	    dsOffset As Long
+65	0	End Type
+66	0	
+67	0	
+68	1	' Here is the header for the Bitmap file
+69	1	' as it resides in a disk file
+70	1	Private Type BITMAPFILEHEADER    '14 bytes
+71	0	  bfType As Integer
+72	0	  bfSize As Long
+73	0	  bfReserved1 As Integer
+74	0	  bfReserved2 As Integer
+75	0	  bfOffBits As Long
+76	0	End Type
+77	0	
+78	0	
+79	0	
+80	0	Private Declare Function apiGetObject Lib "gdi32" _
+81	0	Alias "GetObjectA" _
+82	0	(ByVal hObject As Long, ByVal nCount As Long, _
+83	0	lpObject As Any) As Long
+84	0	
+85	0	
+86	0	Private Declare Sub CopyMem Lib "kernel32" Alias "RtlMoveMemory" _
+87	0	(Destination As Any, Source As Any, ByVal Length As Long)
+88	0	
+89	2	'Create our own copy of the metafile, so it doesn't get wiped out by subsequent clipboard updates.
+90	0	Declare Function CopyEnhMetaFile Lib "gdi32" Alias "CopyEnhMetaFileA" (ByVal hemfSrc As Long, ByVal lpszFile As String) As Long
+91	0	
+92	0	Private Declare Function PlayEnhMetaFile Lib "gdi32" (ByVal hDC As Long, ByVal hEMF As Long, lpRect As RECTL) As Long
+93	0	
+94	0	Private Declare Function apiCloseEnhMetaFile Lib "gdi32" _
+95	0	Alias "CloseEnhMetaFile" (ByVal hDC As Long) As Long
+96	0	
+97	1	'Private Declare Function apiCreateEnhMetaFile Lib "gdi32" _
+98	1	'Alias "CreateEnhMetaFileA" (ByVal hDCref As Long, _
+99	1	'ByVal lpFileName As String, ByVal lpRect As Any, ByVal lpDescription As String) As Long
+100	2	'' lprect as RECT changed to as BYVAL as Any to allow for NULL
+101	0	
+102	0	Private Declare Function apiCreateEnhMetaFileRECT Lib "gdi32" _
+103	0	Alias "CreateEnhMetaFileA" (ByVal hDCref As Long, _
+104	0	ByVal lpFileName As String, ByRef lpRect As RECTL, ByVal lpDescription As String) As Long
+105	0	
+106	0	Private Declare Function apiDeleteEnhMetaFile Lib "gdi32" _
+107	0	Alias "DeleteEnhMetaFile" (ByVal hEMF As Long) As Long
+108	0	
+109	0	Private Declare Function GetEnhMetaFileBits Lib "gdi32" _
+110	0	(ByVal hEMF As Long, ByVal cbBuffer As Long, lpbBuffer As Byte) As Long
+111	0	
+112	0	Private Declare Function apiSelectObject Lib "gdi32" _
+113	0	 Alias "SelectObject" (ByVal hDC As Long, ByVal hObject As Long) As Long
+114	0	
+115	0	Private Declare Function apiGetDC Lib "user32" _
+116	0	  Alias "GetDC" (ByVal hWnd As Long) As Long
+117	0	
+118	0	Private Declare Function apiReleaseDC Lib "user32" _
+119	0	  Alias "ReleaseDC" (ByVal hWnd As Long, _
+120	0	  ByVal hDC As Long) As Long
+121	0	
+122	0	Private Declare Function apiDeleteObject Lib "gdi32" _
+123	0	  Alias "DeleteObject" (ByVal hObject As Long) As Long
+124	0	
+125	0	Private Declare Function GetStockObject Lib "gdi32" (ByVal nIndex As Long) As Long
+126	0	
+127	0	Private Declare Function SendMessage Lib "user32" Alias "SendMessageA" _
+128	0	(ByVal hWnd As Long, ByVal wMsg As Long, _
+129	0	ByVal wParam As Long, lParam As Any) As Long
+130	0	
+131	0	Private Declare Function SetStretchBltMode Lib "gdi32" (ByVal hDC As Long, _
+132	0	ByVal nStretchMode As Long) As Long
+133	0	
+134	0	Private Declare Function SetMapMode Lib "gdi32" (ByVal hDC As Long, ByVal nMapMode As Long) As Long
+135	0	
+136	0	Private Declare Function SetViewportExtEx Lib "gdi32" _
+137	0	(ByVal hDC As Long, ByVal nX As Long, ByVal nY As Long, lpSize As SIZEL) As Long
+138	0	
+139	0	Private Declare Function SetViewportOrgEx Lib "gdi32" _
+140	0	(ByVal hDC As Long, ByVal nX As Long, ByVal nY As Long, lpPoint As POINTAPI) As Long
+141	0	
+142	0	Private Declare Function SetWindowOrgEx Lib "gdi32" _
+143	0	(ByVal hDC As Long, ByVal nX As Long, ByVal nY As Long, lpPoint As POINTAPI) As Long
+144	0	
+145	0	Private Declare Function SetWindowExtEx Lib "gdi32" _
+146	0	(ByVal hDC As Long, ByVal nX As Long, ByVal nY As Long, lpSize As SIZEL) As Long
+147	0	
+148	0	Private Declare Function apiGetDeviceCaps Lib "gdi32" Alias "GetDeviceCaps" _
+149	0	(ByVal hDC As Long, ByVal nIndex As Long) As Long
+150	0	
+151	0	Private Declare Function SetBkMode Lib "gdi32" (ByVal hDC As Long, ByVal nBkMode As Long) As Long
+152	0	
+153	0	
+154	1	' CONSTANTS
+155	0	
+156	1	' StretchBlt() Modes
+157	0	Private Const BLACKONWHITE = 1
+158	0	Private Const WHITEONBLACK = 2
+159	0	Private Const COLORONCOLOR = 3
+160	0	Private Const HALFTONE = 4
+161	0	Private Const MAXSTRETCHBLTMODE = 4
+162	0	
+163	0	
+164	1	' Windows Message -> ScrollBar
+165	0	Private Const WM_HSCROLL = &H114
+166	0	Private Const WM_VSCROLL = &H115
+167	1	' ScrollBar Commands
+168	0	Private Const SB_LINEUP = 0
+169	0	Private Const SB_LINELEFT = 0
+170	0	Private Const SB_LINEDOWN = 1
+171	0	Private Const SB_LINERIGHT = 1
+172	0	Private Const SB_PAGEUP = 2
+173	0	Private Const SB_PAGELEFT = 2
+174	0	Private Const SB_PAGEDOWN = 3
+175	0	Private Const SB_PAGERIGHT = 3
+176	0	Private Const SB_THUMBPOSITION = 4
+177	0	Private Const SB_THUMBTRACK = 5
+178	0	Private Const SB_TOP = 6
+179	0	Private Const SB_LEFT = 6
+180	0	Private Const SB_BOTTOM = 7
+181	0	Private Const SB_RIGHT = 7
+182	0	Private Const SB_ENDSCROLL = 8
+183	0	
+184	1	'  Ternary raster operations
+185	1	Private Const SRCCOPY = &HCC0020 ' (DWORD) dest = source
+186	0	
+187	1	' Predefined Clipboard Formats
+188	0	Private Const CF_TEXT = 1
+189	0	Private Const CF_BITMAP = 2
+190	0	Private Const CF_METAFILEPICT = 3
+191	0	Private Const CF_SYLK = 4
+192	0	Private Const CF_DIF = 5
+193	0	Private Const CF_TIFF = 6
+194	0	Private Const CF_OEMTEXT = 7
+195	0	Private Const CF_DIB = 8
+196	0	Private Const CF_PALETTE = 9
+197	0	Private Const CF_PENDATA = 10
+198	0	Private Const CF_RIFF = 11
+199	0	Private Const CF_WAVE = 12
+200	0	Private Const CF_UNICODETEXT = 13
+201	0	Private Const CF_ENHMETAFILE = 14
+202	0	
+203	1	'  Mapping Modes
+204	0	Private Const MM_TEXT = 1
+205	0	Private Const MM_LOMETRIC = 2
+206	0	Private Const MM_HIMETRIC = 3
+207	0	Private Const MM_LOENGLISH = 4
+208	0	Private Const MM_HIENGLISH = 5
+209	0	Private Const MM_TWIPS = 6
+210	0	Private Const MM_ISOTROPIC = 7
+211	0	Private Const MM_ANISOTROPIC = 8
+212	0	
+213	1	Private Const vbPicTypeNone = 0 'Picture is empty
+214	1	Private Const vbPicTypeBitmap = 1 'Bitmap (.bmpBMP files)
+215	1	Private Const vbPicTypeMetafile = 2 'Metafile (.wmfWMF files)
+216	1	Private Const vbPicTypeIcon = 3 'Icon (.icoICO files)
+217	1	Private Const vbPicTypeEMetafile = 4 'Enhanced Metafile (.emfEMF files)
+218	0	
+219	1	' Stock Logical Objects
+220	0	Private Const WHITE_BRUSH = 0
+221	0	Private Const LTGRAY_BRUSH = 1
+222	0	Private Const GRAY_BRUSH = 2
+223	0	Private Const DKGRAY_BRUSH = 3
+224	0	Private Const BLACK_BRUSH = 4
+225	0	Private Const NULL_BRUSH = 5
+226	0	Private Const HOLLOW_BRUSH = NULL_BRUSH
+227	0	Private Const WHITE_PEN = 6
+228	0	Private Const BLACK_PEN = 7
+229	0	Private Const NULL_PEN = 8
+230	0	Private Const OEM_FIXED_FONT = 10
+231	0	Private Const ANSI_FIXED_FONT = 11
+232	0	Private Const ANSI_VAR_FONT = 12
+233	0	Private Const SYSTEM_FONT = 13
+234	0	Private Const DEVICE_DEFAULT_FONT = 14
+235	0	Private Const DEFAULT_PALETTE = 15
+236	0	Private Const SYSTEM_FIXED_FONT = 16
+237	0	Private Const STOCK_LAST = 16
+238	0	
+239	1	' Background Modes
+240	0	Private Const TRANSPARENT = 1
+241	0	Private Const OPAQUE = 2
+242	0	Private Const BKMODE_LAST = 2
+243	0	
+244	1	' GetDeviceCaps
+245	1	Private Const HORZSIZE = 4           '  Horizontal size in millimeters
+246	1	Private Const VERTSIZE = 6           '  Vertical size in millimeters
+247	1	Private Const HORZRES = 8            '  Horizontal width in pixels
+248	1	Private Const VERTRES = 10           '  Vertical width in pixels
+249	0	Private Const LOGPIXELSY = 90
+250	0	Private Const LOGPIXELSX = 88
+251	0	
+252	1	' How many Twips in 1 inch
+253	0	Private Const TWIPSPERINCH = 1440
+254	0	
+255	1	'-- GDI+
+256	1	Private m_GDIpToken         As Long         ' Needed to close GDI+
+257	0	
+258	0	
+259	1	'*******************************************
+260	1	'DEVELOPED AND TESTED UNDER MICROSOFT ACCESS 97, 2K and 2K2
+261	1	'
+262	1	'
+263	1	'Copyright: Lebans Holdings 1999 Ltd.
+264	1	'           May not be resold in whole or part by itself, or as part of a collection.
+265	1	'           Please feel free to use any/all of this code within your
+266	1	'           own applications, whether private or commercial, without cost or obligation.
+267	1	'           Please include the one line Copyright notice if you use this function in your own code.
+268	1	'
+269	1	'Version:  Ver 6.0
+270	1	'
+271	1	'Name:      Public Function fLoadPicture(ctl As Access.Image,
+272	1	'            Optional strfName As String = "", Optional AutoSize As Boolean = False) As Boolean
+273	1	'Inputs:
+274	1	'           ctl -> Access Image control
+275	1	'           strfName -> Optional name of Image file to load and bypass File Dialog
+276	1	'           Autosize -> flag to signify whether to autosize the control to its contents
+277	1	'
+278	1	'Purpose:   Provides functionality to load JPG,GIF,TIF,PNG,BMP,EMF,WMF,CUR and ICO
+279	1	'           files on systems without the Office Graphics Filters loaded.
+280	1	'           Originally developed for Systems with Access Runtime only.
+281	1	'           Supports transparency in Transparent Gifs.
+282	1	'           Allows you to resize Images on Forms/Reports at runtime
+283	1	'           with no loss of Image quality.
+284	1	'
+285	1	'Dependencies: In order to have the ability to Load TIF or PNG files your system must have
+286	1	'           the GDI+ Runtime DLL. With Windows XP or higher GDI+ support is native. For Windows 2K or lower
+287	1	'           you must install the GDI+ DLL into the same folder as your MDB resides!!!
+288	1	'           You can get the GDI+ DLL from my site or from Microsoft here:
+289	1	'     Platform SDK Redistributable: GDI+ RTM
+290	1	'     http://www.microsoft.com/downloads/release.asp?releaseid=32738
+291	1	'
+292	1	'       *******************************************************************
+293	1	'       The Microsoft GDI+ DLL is freely redistributable
+294	1	'       *******************************************************************
+295	1	'
+296	1	'Author:    Stephen Lebans
+297	1	'Email:     Stephen@lebans.com
+298	1	'Date:      Feb 20, 2004, 11:11:11 PM
+299	1	'
+300	1	'Called by: Anybody that wants to!
+301	1	'
+302	1	'How to use:See inline documentation within each function call.
+303	1	'
+304	1	'Notes:
+305	0	
+306	1	' *************************************************************
+307	1	' Version 5.0 Notes
+308	1	' April 5, 2003
+309	2	' Finally got around to fixing the resizing issues when control's
+310	1	' SizeMode prop is set to Zoom or Stretch. With A97 any format other
+311	1	' than Bitmap would resize correctly. With A2K and higher the issue was
+312	1	' reversed and only Bitmap images would resize properly.
+313	1	' Solution was to use Use StretchBlt with SetStretchBltMode instead
+314	1	' of BitBlt in the Enhanced Metafile records.
+315	1	' This current version now works in all versions of Access for
+316	1	' both Forms and Reports.
+317	1	' Found a silly bug/feature. Access use the Office Graphics filters
+318	1	' for Bitmap and Metafile images is dependant on the letter case
+319	2	' of the file extensions. I'm serious!
+320	1	' Will document this and other Image handling anomolies on my Web site.
+321	1	'
+322	1	'
+323	0	
+324	1	' Version 3.2 Notes
+325	1	' The function was performing perfectly until I changed the Image
+326	2	' Control's Size Mode property from CLIP to either ZOOM or STRETCH.
+327	2	' After experimenting I've reached the following conclusions
+328	1	' pertaining to a standard Image control in A97.
+329	1	' 1) Any BMP or DIB file will only display properly with a Size Mode prop
+330	1	' of CLIP. This statement is directed towards Bitmap files of 16 bits or
+331	1	' higher. The results vary depending on the number of colors in the Image
+332	1	' and how large the blocks of solid colors are. Your mileage may vary!
+333	1	'
+334	1	' 2) All other graphic file types will display properly with any Size Mode
+335	1	' property setting.
+336	0	
+337	3	' Why? BMP's and DIB's are an OS native file format. They are
+338	2	' loaded/stored as DIB's. All other graphics formats are loaded and
+339	2	' converted to DIB's and stored within a Metafile wrapper.
+340	1	'
+341	1	' It seems that the resizing algorithm works better on Metafiles than
+342	2	' DIB's. Visually, it looks to be more of a Palette issue then the actual
+343	2	' resizing routines but I haven't take the time to explore further. If
+344	1	' anyone knows I would appreciate hearing from you.
+345	0	
+346	1	' The workaround is to simply package my Bitmap within a Metafile ,
+347	1	' which is the core logic employed by this function.
+348	0	
+349	1	'Credits:
+350	1	'Everyone I ever talked to in the whole world!<BG>
+351	1	'
+352	1	'BUGS:
+353	1	'No serious bugs notices at this point in time.
+354	1	'Please report any bugs to my email address.
+355	1	'There is a GDI Resource leak if you play back
+356	1	'several hundred Metafiles in one session. Should not showup as
+357	1	'a problem in the normal course of events.
+358	1	'
+359	2	'What's Missing:
+360	2	'Oh I'm sure there is something...there always is!
+361	1	'
+362	1	'HOW TO USE:
+363	1	' See Example Form for how to call these functions.
+364	0	
+365	1	'HISTORY
+366	0	
+367	1	' Version 5.0
+368	1	' Use the Render method of the StdPicture object to render the
+369	1	' Image into the EMF. The load function now handles
+370	1	' JPG, GIF,BMP,EMF,WMF,CUR and ICO
+371	0	
+372	1	' Version 4.0
+373	1	' Modified code that builds the EMF. Use StretchBlt with
+374	1	' SetStretchBltMode to allow for smooth resizing when
+375	2	' control's SizeMode prop is set to Zoom or Stretch
+376	0	
+377	1	' Version 3.2
+378	1	' Added code to simulate Magnification for the Image control.
+379	1	' Autosizing of Image control to match dimensions of loaded picture.
+380	1	' ScrollBars return to TOP and LEFT when CLIP is selected.
+381	0	
+382	1	' Version 3.
+383	1	' Added code to simulate ScrollBars for the Image Control.
+384	1	'
+385	1	' Version 2.
+386	1	' Added code to have cursor change to HourGlass during the
+387	1	' process to load/display the Jpeg or Gif file. Certain large
+388	2	' JPEG's can take several seconds to load depending on
+389	1	' the performance of the system.
+390	0	
+391	1	' Version 1
+392	1	' No stones yet!<bg>
+393	0	
+394	1	'Enjoy
+395	1	'Stephen Lebans
+396	1	 '*******************************************
+397	0	
+398	0	        
+399	0	
+400	0	
+401	1	' ***************************************
+402	1	' Called by the fLoadPicture function to copy the bits of the
+403	1	' selected Image from a StdPicture object into our
+404	1	' memory Enahnced Metafile.
+405	1	' Changed to use StretchBlt and SetStretchBltMode
+406	0	
+407	0	Function fStdPicToImageData(hStdPic As Object, ctl As Access.Image, _
+408	0	Optional FileNamePath As String = "", Optional AutoSize As Boolean = False) As Boolean
+409	0	
+410	1	' Changed all references to StdPicture to Object
+411	2	' I'm going with late binding as this is a  sample database
+412	1	' and many users may not be comfortable setting references.
+413	0	
+414	1	' If you need the faster performance you can use Early binding and Declare
+415	1	' hStdPic as StdPicture.  Requires a Reference to Standard OLE Types.
+416	1	' This file, OLEPRO32.DLL
+417	1	' is usually found in your System folder. Goto the Menu Tools->References
+418	1	' and set a reference to the above file.
+419	0	
+420	0	On Error GoTo ERR_SHOWPIC
+421	0	
+422	1	' Temp Device Context for EMF creation
+423	0	Dim hDCref As Long
+424	0	
+425	1	' DC/Window extents
+426	0	Dim sz As SIZEL
+427	0	Dim pt As POINTAPI
+428	0	Dim rc As RECTL
+429	0	
+430	1	' Temp var to hold API returns
+431	0	Dim lngRet As Long
+432	0	Dim s As String
+433	0	
+434	1	' handle to EMF
+435	0	Dim hMetafile As Long
+436	0	
+437	1	' handle to Metafile DC
+438	0	Dim hDCMeta As Long
+439	0	
+440	1	' Array to hold binary copy of Enhanced Metafile
+441	1	' we will create.
+442	0	Dim arrayMeta() As Byte
+443	0	
+444	1	' Vars to calculate resolution
+445	0	Dim sngConvertX As Single
+446	0	Dim sngConvertY As Single
+447	0	Dim ImageWidth As Long
+448	0	Dim ImageHeight As Long
+449	0	Dim Xdpi As Single
+450	0	Dim Ydpi As Single
+451	0	Dim TwipsPerPixelX As Single
+452	0	Dim TwipsPerPixely As Single
+453	0	Dim sngHORZRES As Single
+454	0	Dim sngVERTRES As Single
+455	0	Dim sngHORZSIZE As Single
+456	0	Dim sngVERTSIZE As Single
+457	0	
+458	0	
+459	1	' It must be GetDC not CreateCompatibleDC!!!
+460	0	hDCref = apiGetDC(0)
+461	0	
+462	1	' Make sure user has selected a valid supported Image type
+463	0	If hStdPic.Type = 0 Then
+464	0	 Err.Raise vbObjectError + 523, "fStdPicToImageData.modStdPic", _
+465	0	    "Sorry...This function can only read Image files." & vbCrLf & "Please Select a Valid Supported Image File"
+466	0	End If
+467	0	
+468	1	' Calculate the current Screen resolution.
+469	1	' I used to simply use GetDeviceCaps and
+470	1	' LOGPIXELSY/LOGPIXELSX. Unfortunately this does not yield accurate results
+471	1	' with Metafiles.  LOGPIXELSY will return the value of 96dpi or 120dpi
+472	1	' depending on the current Windows setting for Small Fonts or Large Fonts.
+473	2	' Thanks to Feng Yuan's book "Windows Graphics Programming" for
+474	1	' explaining the correct method to ascertain screen resolution.
+475	0	
+476	2	' Let's grab the current size and resolution of our Screen DC.
+477	0	sngHORZRES = apiGetDeviceCaps(hDCref, HORZRES)
+478	0	sngVERTRES = apiGetDeviceCaps(hDCref, VERTRES)
+479	0	sngHORZSIZE = apiGetDeviceCaps(hDCref, HORZSIZE)
+480	0	sngVERTSIZE = apiGetDeviceCaps(hDCref, VERTSIZE)
+481	0	
+482	1	' Convert millimeters to inches
+483	0	sngConvertX = (sngHORZSIZE * 0.1) / 2.54
+484	0	sngConvertY = (sngVERTSIZE * 0.1) / 2.54
+485	1	' Convert to DPI
+486	0	sngConvertX = sngHORZRES / sngConvertX
+487	0	sngConvertY = sngVERTRES / sngConvertY
+488	0	Xdpi = sngConvertX
+489	0	Ydpi = sngConvertY
+490	0	
+491	0	
+492	1	' Convert Image dimensions to Twips and Pixels
+493	2	' For fun let's not convert pixels to TWIPS since
+494	2	' we always do it that way. Let's be different and
+495	1	' convert the StdPicture Height & Width props directly.
+496	1	' These are in a Map Mode of HiMetric units, expressed in .01 mm units.
+497	0	
+498	1	' Convert to CM
+499	0	sngConvertX = hStdPic.Width * 0.001
+500	0	sngConvertY = hStdPic.Height * 0.001
+501	0	
+502	1	'Convert to Inches
+503	0	sngConvertX = sngConvertX / 2.54
+504	0	sngConvertY = sngConvertY / 2.54
+505	0	
+506	1	'Convert to TWIPS
+507	0	sngConvertX = sngConvertX * 1440
+508	0	sngConvertY = sngConvertY * 1440
+509	0	    
+510	1	' Calculate TwipsPerPixel
+511	0	TwipsPerPixelX = TWIPSPERINCH / Xdpi
+512	0	TwipsPerPixely = TWIPSPERINCH / Ydpi
+513	0	
+514	1	' Convert to pixels
+515	0	ImageWidth = sngConvertX / TwipsPerPixelX
+516	0	ImageHeight = sngConvertY / TwipsPerPixely
+517	0	
+518	0	
+519	1	' Create our Enhanced Metafile - Memory Based
+520	1	' Set our bounding rectangle to match that of the StdPicture object
+521	0	rc.right = hStdPic.Width
+522	0	rc.Bottom = hStdPic.Height
+523	0	
+524	2	' Since this EMF may be copied to disk let's included come creator info.
+525	0	s = "Stephen Lebans" & Chr(0) & Chr(0) & "www.lebans.com" & Chr(0) & Chr(0)
+526	0	hDCMeta = apiCreateEnhMetaFileRECT(hDCref, vbNullString, rc, s)
+527	0	
+528	1	' Was the EMF creation successful?
+529	0	If hDCMeta = 0 Then
+530	0	    Err.Raise vbObjectError + 525, "fStdPicToImageData.modStdPic", _
+531	0	    "Sorry...cannot Create Enhanced Metafile"
+532	0	End If
+533	0	
+534	1	' Setup our Metafile Device Context
+535	1	' Set our mapping mode
+536	2	lngRet = SetMapMode(hDCMeta, MM_TEXT) 'ANISOTROPIC) 'TEXT)
+537	1	' Setup the extents for our DC
+538	0	lngRet = SetWindowExtEx(hDCMeta, ImageWidth, ImageHeight, sz)
+539	0	lngRet = SetWindowOrgEx(hDCMeta, 0&, 0&, pt)
+540	0	lngRet = SetWindowExtEx(hDCMeta, ImageWidth, ImageHeight, sz)
+541	1	' Setup the basics
+542	0	lngRet = SetBkMode(hDCMeta, TRANSPARENT)
+543	0	lngRet = apiSelectObject(hDCMeta, GetStockObject(NULL_BRUSH))
+544	0	lngRet = apiSelectObject(hDCMeta, GetStockObject(NULL_PEN))
+545	0	
+546	1	' Fixes resizing issue.
+547	0	lngRet = SetStretchBltMode(hDCMeta, COLORONCOLOR)
+548	0	
+549	1	' Use the Render method of the StdPicture object.
+550	1	' Boy the MS docs on this method are not easy to digest.
+551	1	' I actually found a german web site that explained it in better detail
+552	1	' with examples. My problem is that I could not find a sample
+553	1	' of Rendering to a Metafile DC. The MS Docs state that you must supply
+554	1	' a bounding rectangle as the last argument. No matter how I tried,
+555	1	' I could not get the method to accept this parameter in any condiguration.
+556	1	' Nearly ready to give up, by mistake I set the param to NULL and it worked.
+557	1	' Go figure!
+558	0	
+559	1	' The documentation regarding the Render method is not accurate.
+560	1	' You do not need to suplly a bounding RECT when rendering
+561	1	' to a Metafile DC.
+562	0	hStdPic.Render CLng(hDCMeta), 0&, 0&, CLng(ImageWidth), CLng(ImageHeight), _
+563	0	0&, hStdPic.Height, hStdPic.Width, -hStdPic.Height, vbNull
+564	0	
+565	1	' You just never know...better safe than sorry!<grin>
+566	0	DoEvents
+567	0	
+568	1	' I have seen the following call fail on WIndos 98 systems.
+569	1	' This happens when you have a report with a lot of Images
+570	1	' and is due to a bug in the GDI with respect to Metafiles.
+571	1	' Full details are on my web site in the Image handling FAQ.
+572	0	hMetafile = apiCloseEnhMetaFile(hDCMeta)
+573	0	If hMetafile = 0 Then
+574	0	    fStdPicToImageData = False
+575	0	    Exit Function
+576	0	End If
+577	0	
+578	0	
+579	1	' Grab the contents of the Metafile
+580	0	lngRet = GetEnhMetaFileBits(hMetafile, 0, ByVal 0&)
+581	0	If lngRet = 0 Then
+582	0	    fStdPicToImageData = False
+583	0	    Exit Function
+584	0	End If
+585	0	
+586	0	
+587	0	ReDim arrayMeta((lngRet - 1) + 8)
+588	0	lngRet = GetEnhMetaFileBits(hMetafile, lngRet, arrayMeta(8))
+589	0	
+590	1	' Delete EMF memory footprint.
+591	0	lngRet = apiDeleteEnhMetaFile(hMetafile)
+592	0	
+593	1	' If the first 40 bytes of a PictureData prop are
+594	1	' not a BITMAPINFOHEADER structure then we will find
+595	1	' a ClipBoard Format structure of 8 Bytes in length
+596	1	' signifying whether a Metafile or Enhanced Metafile is present.
+597	1	' The first 8 Bytes of a PictureData prop signify
+598	1	' that the data is structured as one of the
+599	1	' following ClipBoard Formats.
+600	1	' CF_ENHMETAFILE
+601	1	' CF_METAFILEPICT
+602	1	' So the first 4 bytes tell us the format of the data.
+603	1	' The next 4 bytes point to handle for a Memory Metafile.
+604	1	' This is not needed for our construction purposes.
+605	0	arrayMeta(0) = CF_ENHMETAFILE
+606	0	
+607	1	' Copy our created PictureData bytes over to the Image Contol.
+608	0	ctl.PictureData = arrayMeta
+609	0	
+610	1	' Do we auto size the Image control to the
+611	1	' dimensions of its the loaded image?
+612	0	If AutoSize Then
+613	1	    ' Error check to ensure we do not exceed
+614	1	    ' SubForm boundaries
+615	0	    If sngConvertX < ctl.Parent.Width Then
+616	1	     '  If sngConvertX < Section(ctl.Section).Width Then
+617	1	       ctl.Width = sngConvertX '+ 15
+618	0	    Else
+619	0	        ctl.Width = ctl.Parent.Width - 200
+620	0	    End If
+621	0	    
+622	0	    If sngConvertY < ctl.Parent.Detail.Height Then
+623	1	        ctl.Height = sngConvertY '+ 15
+624	0	    Else
+625	0	        ctl.Height = ctl.Parent.Detail.Height - 200
+626	0	    End If
+627	0	     ctl.SizeMode = acOLESizeStretch
+628	0	    
+629	0	End If
+630	0	
+631	0	EXIT_SHOWPIC:
+632	1	' Release our reference DC
+633	0	lngRet = apiReleaseDC(0&, hDCref)
+634	0	Exit Function
+635	0	
+636	0	ERR_SHOWPIC:
+637	0	MsgBox Err.Description, vbOKOnly, Err.Source & ":" & Err.Number
+638	0	Resume EXIT_SHOWPIC
+639	0	
+640	0	End Function
+641	0	
+642	0	
+643	0	Public Function fLoadPicture(ctl As Access.Image, Optional strfName As String = "", Optional AutoSize As Boolean = False) As Boolean
+644	1	' Inputs
+645	1	' ctl -> Access Image control
+646	1	' strfName -> Optional name of Image file to load and bypass File Dialog
+647	0	On Error GoTo Err_fLoadPicture
+648	0	
+649	1	' Temp Vars
+650	0	Dim lngRet As Long
+651	0	Dim blRet As Boolean
+652	0	
+653	1	' Our StdPicture object returned by LoadPicture
+654	0	Dim hPic As Object
+655	0	
+656	1	' Were we passed the Optional FileName and Path
+657	0	If Len(strfName & vbNullString) = 0 Then
+658	1	    ' Call the File Common Dialog Window
+659	0	    Dim clsDialog As Object
+660	0	    Dim strTemp As String
+661	0	
+662	0	    Set clsDialog = New clsCommonDialog
+663	0	
+664	1	    ' Fill in our structure
+665	0	    clsDialog.Filter = "All (*.*)" & Chr$(0) & "*.*" & Chr$(0)
+666	0	    clsDialog.Filter = clsDialog.Filter & "JPEG (*.JPG)" & Chr$(0) & "*.JPG" & Chr$(0)
+667	0	     clsDialog.Filter = clsDialog.Filter & "Tif (*.TIF)" & Chr$(0) & "*.TIF" & Chr$(0)
+668	0	    clsDialog.Filter = clsDialog.Filter & "Gif (*.GIF)" & Chr$(0) & "*.GIF" & Chr$(0)
+669	0	    clsDialog.Filter = clsDialog.Filter & "PNG (*.PNG)" & Chr$(0) & "*.PNG" & Chr$(0)
+670	0	    clsDialog.Filter = clsDialog.Filter & "Bitmap (*.BMP)" & Chr$(0) & "*.BMP" & Chr$(0)
+671	0	    clsDialog.Filter = clsDialog.Filter & "Bitmap (*.DIB)" & Chr$(0) & "*.DIB" & Chr$(0)
+672	0	    clsDialog.Filter = clsDialog.Filter & "Enhanced Metafile (*.EMF)" & Chr$(0) & "*.EMF" & Chr$(0)
+673	0	    clsDialog.Filter = clsDialog.Filter & "Windows Metafile (*.WMF)" & Chr$(0) & "*.WMF" & Chr$(0)
+674	0	    clsDialog.Filter = clsDialog.Filter & "Icon (*.ICO)" & Chr$(0) & "*.ICO" & Chr$(0)
+675	0	    clsDialog.Filter = clsDialog.Filter & "Cursor (*.CUR)" & Chr$(0) & "*.CUR" & Chr$(0)
+676	0	    
+677	0	    
+678	0	    clsDialog.hDC = 0
+679	0	    clsDialog.MaxFileSize = 256
+680	0	    clsDialog.Max = 256
+681	0	    clsDialog.FileTitle = vbNullString
+682	0	    clsDialog.DialogTitle = "Please Select an Image File"
+683	0	    clsDialog.InitDir = vbNullString
+684	0	    clsDialog.DefaultExt = vbNullString
+685	0	    
+686	1	    ' Display the File Dialog
+687	0	    clsDialog.ShowOpen
+688	0	    
+689	1	    ' See if user clicked Cancel or even selected
+690	1	    ' the very same file already selected
+691	0	    strfName = clsDialog.FileName
+692	0	    If Len(strfName & vbNullString) = 0 Then
+693	1	    ' Raise the exception
+694	0	      Err.Raise vbObjectError + 513, "LoadJpegGif.modStdPic", _
+695	0	      "Please Select a Valid JPEG or GIF File"
+696	0	    End If
+697	0	
+698	1	' If we jumped to here then user supplied a FileName
+699	0	End If
+700	0	
+701	1	' It may take a few seconds to render larger JPEGs.
+702	1	' Set the MousePointer to "HOURGLASS"
+703	1	' Application.Screen.MousePointer = 11
+704	0	  
+705	0	  
+706	0	Select Case right$(strfName, 3)
+707	0	
+708	0	    Case "bmp", "dib", "Gif", "emf", "Wmf", "ico", "cur", "jpg"
+709	0	    
+710	1	    ' Load the Picture as a StandardPicture object
+711	1	    ' Use VBA LoadPicture function
+712	0	    Set hPic = LoadPicture(strfName)
+713	0	    
+714	0	    Case "tif", "png"
+715	0	    Dim GpInput As GdiplusStartupInput
+716	1	    '-- Load the GDI+ Dll
+717	0	    GpInput.GdiplusVersion = 1
+718	0	    If (mGDIpEx.GdiplusStartup(m_GDIpToken, GpInput) <> [OK]) Then
+719	0	      Call MsgBox("Error loading GDI+!", vbCritical)
+720	1	      'Call Unload(Me)
+721	0	      Exit Function
+722	0	    End If
+723	0	    
+724	1	    ' Load the Picture as a StandardPicture object
+725	1	    ' Use GDI+
+726	0	    Set hPic = LoadPictureEx(strfName)
+727	1	    ' Unload the GDI+ Dll
+728	0	    Call mGDIpEx.GdiplusShutdown(m_GDIpToken)
+729	0	    
+730	0	    Case Else
+731	1	    ' Unsupported Format
+732	1	    ' Raise the exception
+733	0	    Err.Raise vbObjectError + 518, "LoadJpegGif.modStdPic", _
+734	0	    "This Image format is not supported!" & vbCrLf & strfName & vbCrLf & _
+735	0	    "Please Select a Supported Image format:" & vbCrLf & _
+736	0	    "JPEG, TIFF, PNG, BMP, DIB, GIF, EMF, WMF, ICO or CUR"
+737	0	
+738	0	End Select
+739	0	  
+740	0	  
+741	1	' Was Image loaded?
+742	0	If hPic = 0 Then
+743	0	    Err.Raise vbObjectError + 514, "LoadJpegGif.modStdPic", _
+744	0	    "Please Select a Supported Image format:" & vbCrLf & _
+745	0	    "JPEG, TIFF, PNG, BMP, DIB, GIF, EMF, WMF, ICO or CUR"
+746	0	End If
+747	0	
+748	0	
+749	1	' Call our function to convert the StdPicture object
+750	1	' into a DIB wrapped within an Enhanced Metafile
+751	0	blRet = fStdPicToImageData(hPic, ctl, , AutoSize)
+752	1	' need error handling here
+753	0	
+754	0	
+755	1	' Cleanup
+756	0	fLoadPicture = True
+757	0	
+758	0	Exit_LoadPic:
+759	0	
+760	1	' Set the MousePointer back to Default
+761	0	Application.Echo True
+762	0	Application.Screen.MousePointer = 0
+763	0	Err.Clear
+764	0	Set hPic = Nothing
+765	0	Set clsDialog = Nothing
+766	0	Exit Function
+767	0	
+768	0	Err_fLoadPicture:
+769	0	fLoadPicture = False
+770	0	Application.Screen.MousePointer = 0
+771	0	MsgBox Err.Description, vbOKOnly, Err.Source & ":" & Err.Number
+772	0	Resume Exit_LoadPic
+773	0	
+774	0	End Function
+775	0	
+776	0	
+777	1	' This function only works if the contents of the Image control
+778	1	' are an Enhanced Metafile, which it will always be in
+779	1	' this project. There is a general purpose solution
+780	1	' for all formats on my site that uses the Clipboard to convert formats.
+781	0	Public Function fSaveImagetoDisk(ctl As Access.Image) As Boolean
+782	0	
+783	1	' User selected FileName from our File Dialog window
+784	0	Dim sName As String
+785	1	' Junk var
+786	0	Dim lngRet As Long
+787	0	
+788	1	' handle to Clipboard memory EMF
+789	0	Dim hEMF As Long
+790	0	
+791	1	' handle to our Disk based Metafile
+792	0	Dim hMetafile As Long
+793	0	
+794	1	' Array to hold binary copy of Enhanced Metafile
+795	1	' we will create.
+796	0	Dim arrayMeta() As Byte
+797	0	
+798	1	' Open File Dialog
+799	0	sName = fSavePicture
+800	0	    If Len(sName & vbNullString) = 0 Then
+801	0	    fSaveImagetoDisk = False
+802	0	    Exit Function
+803	0	End If
+804	0	
+805	1	' resize our byte array to match length of PictureData prop
+806	0	ReDim arrayMeta((LenB(ctl.PictureData) - 1))
+807	0	arrayMeta = ctl.PictureData
+808	0	
+809	1	' Verify CF_ENHMETAFILE
+810	0	If arrayMeta(0) <> CF_ENHMETAFILE Then
+811	0	    fSaveImagetoDisk = False
+812	0	    MsgBox "Sorry..not a valid Enhanced Metafile contained in the Image control"
+813	0	    Exit Function
+814	0	End If
+815	0	
+816	1	' Grab a local copy of the memory EMF
+817	0	CopyMem hEMF, arrayMeta(4), 4
+818	1	' Create a disk based copy of the Metafile
+819	0	hMetafile = CopyEnhMetaFile(hEMF, sName)
+820	0	
+821	1	' Delete EMF memory footprint.
+822	0	lngRet = apiDeleteEnhMetaFile(hMetafile)
+823	0	
+824	0	
+825	0	End Function
+826	0	
+827	0	
+828	0	
+829	0	Public Function fSavePicture(Optional strfName As String = "") As String
+830	1	' Inputs
+831	1	' strfName -> Optional name of Image file to Save
+832	0	On Error GoTo Err_fSavePicture
+833	0	
+834	1	' Temp Vars
+835	0	Dim lngRet As Long
+836	0	Dim blRet As Boolean
+837	0	
+838	0	
+839	1	' Were we passed the Optional FileName and Path
+840	0	If Len(strfName & vbNullString) = 0 Then
+841	1	    ' Call the File Common Dialog Window
+842	0	    Dim clsDialog As Object
+843	0	    Dim strTemp As String
+844	0	
+845	0	    Set clsDialog = New clsCommonDialog
+846	0	
+847	1	    ' Fill in our structure
+848	1	    ' ***********************************************
+849	1	    ' WARNING
+850	1	    ' You must specify lowercase "emf" for the file extension. I will explain this
+851	1	    ' and how it is related to the office graphics filters in detail on my web site.
+852	0	       clsDialog.Filter = clsDialog.Filter & "Enhanced Metafile (*.emf)" & Chr$(0) & "*.emf" & Chr$(0)
+853	0	    clsDialog.hDC = 0
+854	0	    clsDialog.MaxFileSize = 256
+855	0	    clsDialog.Max = 256
+856	0	    clsDialog.FileTitle = vbNullString
+857	0	    clsDialog.DialogTitle = "Please Enter a Valid FileName"
+858	0	    clsDialog.InitDir = vbNullString
+859	1	    clsDialog.DefaultExt = ".emf" 'vbNullString
+860	0	    
+861	1	    ' Display the File Dialog
+862	0	    clsDialog.ShowSave
+863	0	    
+864	1	    ' See if user clicked Cancel or even selected
+865	1	    ' the very same file already selected
+866	0	    strfName = clsDialog.FileName
+867	0	    If Len(strfName & vbNullString) = 0 Then
+868	1	    ' Raise the exception
+869	0	      Err.Raise vbObjectError + 513, "fSavePicture.modStdPic", _
+870	0	      "Please Enter a Valid EMF Filename"
+871	0	    End If
+872	0	
+873	1	' If we jumped to here then user supplied a FileName
+874	0	End If
+875	0	
+876	0	
+877	1	' Cleanup
+878	0	fSavePicture = strfName
+879	0	
+880	0	Exit_SavePic:
+881	0	Err.Clear
+882	0	Set clsDialog = Nothing
+883	0	Exit Function
+884	0	
+885	0	Err_fSavePicture:
+886	0	fSavePicture = strfName
+887	0	MsgBox Err.Description, vbOKOnly, Err.Source & ":" & Err.Number
+888	0	Resume Exit_SavePic
+889	0	
+890	0	End Function
+891	0	
+892	0	
+893	0	Public Sub ScrollToHome(ctl As Control)
+894	1	' Scroll the Form back to X:0,Y:0
+895	1	' The Form is heavily Subclassed by Access.
+896	1	' It does not seem to respond to SB_TOP or SB_LEFT
+897	1	' so we have to resort to the following kludge.
+898	0	
+899	1	' Temp var
+900	0	Dim lngRet As Long
+901	0	
+902	1	' Temp counter
+903	0	Dim lngTemp As Long
+904	0	
+905	1	' Be careful because of Echo Off
+906	0	On Error Resume Next
+907	0	
+908	1	' Stop Screen Redraws
+909	0	Application.Echo False
+910	0	
+911	0	For lngTemp = 1 To 9
+912	0	lngRet = SendMessage(ctl.Parent.hWnd, WM_VSCROLL, SB_PAGEUP, 0&)
+913	0	lngRet = SendMessage(ctl.Parent.hWnd, WM_HSCROLL, SB_PAGELEFT, 0&)
+914	0	Next lngTemp
+915	0	
+916	1	' Start Screen Redraws
+917	0	Application.Echo True
+918	0	
+919	0	End Sub
+920	0	
+921	0	
+922	0	
+923	0	
+924	0	
+925	1	'Public Function DIBtoPictureData(hDib As Long, ctl As Access.Image) As Boolean
+926	2	'' DIBSECTION structure
+927	1	'Dim ds As DIBSECTION
+928	2	'' Array to hold Byte data formatted as
+929	2	'' CF_DIB for the PictureData property
+930	1	'Dim varTemp() As Byte
+931	1	' Dim lRet As Long
+932	2	'        ' Fill in our DIBSECTION structure
+933	1	'        lRet = apiGetObject(hDib, Len(ds), ds)
+934	1	'    If lRet = 0 Then
+935	1	'    DIBtoPictureData = False
+936	1	'    Exit Function
+937	1	'    End If
+938	1	'
+939	1	'
+940	1	'
+941	2	'    ' Allow 40 Bytes for the DIBHeader
+942	1	'    ReDim varTemp(ds.dsBmih.biSizeImage + 40)
+943	1	'     If DIBnum = 0 Then
+944	1	'        apiCopyMemory varTemp(40), ByVal m_lPtr, ds.dsBmih.biSizeImage
+945	1	'    Else
+946	1	'        apiCopyMemory varTemp(40), ByVal m_lPtr2, ds.dsBmih.biSizeImage
+947	1	'    End If
+948	1	'
+949	1	'    apiCopyMemory varTemp(0), ds.dsBmih, 40
+950	1	'
+951	2	'    ' Update the PictureData property of the Image control
+952	1	'     m_ImageControl.PictureData = varTemp
+953	2	'    'Debug.Print "Updated PictureData Prop:" & Now
+954	1	'
+955	1	'End Function
+956	0	
+957	0	
+958	0	
+959	0	
+960	0	
+961	0	
+962	0	
+963	0	
+964	0	
+965	0	
+966	0	
+967	0	
+968	0	
+969	0	
+970	0	
+971	1	' Here are some notes I attach to every
+972	1	' project I do that include Metafiles and StdPicture object.
+973	1	'Notes:
+974	2	'1) When creating compatible DC's and Compatible Bitmaps
+975	1	' make sure you use a REAL DC, not one you created!
+976	1	' Had this problem before with CreateEnhancedMetafile.
+977	0	
+978	1	'2) You cannot write directly to the Bitmap of a StdPicture
+979	1	' This cost me hours to figure out. :-(
+980	1	' So all you have to do is create another Memory DC and Bitmap and
+981	2	' copy the StdPicture's Bitmap into that!
+982	0	
+983	0	
+984	0	
+985	1	' Here two other methods to save the contents of an Image control to disk.
+986	1	' This wonly works when the Image control contains an EMF but this is the case
+987	1	' when you load any Image type other than WMF or BITMAP.
+988	0	
+989	1	' ********************************************************************
+990	1	'#1
+991	1	' ********************************************************************
+992	0	                 
+993	1	' We are stripping off the first 8 Bytes of the
+994	1	' Image1.PictureData prop and saving this to a
+995	1	' disk based EMF file.
+996	0	
+997	1	' Hold next File#
+998	1	'Dim fNum As Integer
+999	1	'Dim sName As String
+1000	1	'
+1001	2	'' Byte arrays to hold the PictureData prop
+1002	1	'Dim bArray() As Byte
+1003	1	'Dim cArray() As Byte
+1004	1	'
+1005	2	'' Temp var
+1006	1	'Dim lngRet As Long
+1007	1	'
+1008	2	'' Ensure there is data in the PcitureData prop
+1009	2	''If LenB(Me.JGSForm.Form.Image1.PictureData) < 108 Then Exit Sub
+1010	1	'
+1011	1	'If IsNull(Me.JGSForm.Form.Image1.PictureData) Then Exit Sub
+1012	1	'
+1013	2	'' Call the standard WIndows File Dialog
+1014	1	'sName = fSavePicture()
+1015	1	'If Len(sName & vbNullString) = 0 Then Exit Sub
+1016	1	'
+1017	2	'' Resize to hold entire PictureData prop
+1018	1	'ReDim bArray(LenB(Me.JGSForm.Form.Image1.PictureData) - 1)
+1019	2	'' Resize to hold the EMF wrapped in the PictureData prop
+1020	1	'ReDim cArray(LenB(Me.JGSForm.Form.Image1.PictureData) - (1 + 8))
+1021	1	'
+1022	2	'' Copy to our array
+1023	1	'bArray = Me.JGSForm.Form.Image1.PictureData
+1024	1	'
+1025	2	'' Copy the embedded EMF - SKIP first 8 bytes
+1026	3	'For lngRet = 8 To UBound(cArray) ' - (1) '+ 8)
+1027	1	'    cArray(lngRet - 8) = bArray(lngRet)
+1028	1	'Next
+1029	1	'
+1030	2	'' Get next avail file handle
+1031	1	'fNum = FreeFile
+1032	1	'
+1033	1	'
+1034	3	'' Let's Create/Open our new EMF File.
+1035	1	'Open sName For Binary As fNum
+1036	1	'
+1037	2	'' Write out the EMF
+1038	1	'Put fNum, , cArray
+1039	1	'
+1040	2	'' Close the File
+1041	1	'Close fNum
+1042	0	
+1043	0	
+1044	0	
+1045	1	' ********************************************************************
+1046	1	'#2
+1047	1	' ********************************************************************
+1048	0	
+1049	2	' Original Save Image control's contents to disk as an EMF
+1050	1	'Public Function fSaveImagetoDisk(ctl As Access.Image) As Boolean
+1051	1	'Dim sName As String
+1052	1	'Dim lngRet As Long
+1053	1	'Dim hEMF As Long
+1054	2	'' handle to Clipboard memory EMF
+1055	1	'Dim hMetafile As Long
+1056	1	'
+1057	2	'' handle to Metafile DC
+1058	2	''Dim hDCMeta As Long
+1059	1	'
+1060	2	'' Array to hold binary copy of Enhanced Metafile
+1061	2	'' we will create.
+1062	1	'Dim arrayMeta() As Byte
+1063	1	'
+1064	2	'' Open File Dialog
+1065	1	'sName = fSavePicture
+1066	1	'    If Len(sName & vbNullString) = 0 Then
+1067	1	'    fSaveImagetoDisk = False
+1068	1	'    Exit Function
+1069	1	'End If
+1070	1	'
+1071	1	'lngRet = FPictureDataToClipBoard(ctl)
+1072	2	'' Geta handle to an EMF from the Clipboard
+1073	1	'hMetafile = GetClipBoard(CF_ENHMETAFILE)
+1074	1	'
+1075	2	'' Grab the contents of the Metafile
+1076	1	'lngRet = GetEnhMetaFileBits(hMetafile, 0, ByVal 0&)
+1077	1	'ReDim arrayMeta((lngRet - 1) + 8)
+1078	1	'lngRet = GetEnhMetaFileBits(hMetafile, lngRet, arrayMeta(8))
+1079	1	'
+1080	2	'' Delete EMF memory footprint.
+1081	1	'lngRet = apiDeleteEnhMetaFile(hMetafile)
+1082	1	'
+1083	2	'' If the first 40 bytes of a PictureData prop are
+1084	2	'' not a BITMAPINFOHEADER structure then we will find
+1085	2	'' a ClipBoard Format structure of 8 Bytes in length
+1086	2	'' signifying whether a Metafile or Enhanced Metafile is present.
+1087	2	'' The first 8 Bytes of a PictureData prop signify
+1088	2	'' that the data is structured as one of the
+1089	2	'' following ClipBoard Formats.
+1090	2	'' CF_ENHMETAFILE
+1091	2	'' CF_METAFILEPICT
+1092	2	'' So the first 4 bytes tell us the format of the data.
+1093	2	'' The next 4 bytes point to handle for a Memory Metafile.
+1094	2	'' This is not needed for our construction purposes.
+1095	1	'arrayMeta(0) = CF_ENHMETAFILE
+1096	1	'
+1097	1	'
+1098	2	'' Save to disk
+1099	1	'Dim fNum As Integer
+1100	1	'
+1101	1	'
+1102	2	'' Byte arrays to hold the PictureData prop
+1103	1	'Dim bArray() As Byte
+1104	1	'Dim cArray() As Byte
+1105	1	'
+1106	1	'
+1107	1	'
+1108	2	'' Resize to hold entire PictureData prop
+1109	2	''ReDim bArray(LenB(Me.JGSForm.Form.Image1.PictureData) - 1)
+1110	2	'' Resize to hold the EMF wrapped in the PictureData prop
+1111	1	'ReDim cArray(UBound(arrayMeta) - (8))
+1112	1	'
+1113	2	'' Copy to our array
+1114	2	''bArray = Me.JGSForm.Form.Image1.PictureData
+1115	1	'
+1116	2	'' Copy the embedded EMF - SKIP first 8 bytes
+1117	3	'For lngRet = 8 To UBound(cArray) ' - (1) '+ 8)
+1118	1	'    cArray(lngRet - 8) = arrayMeta(lngRet)
+1119	1	'Next
+1120	1	'
+1121	2	'' Get next avail file handle
+1122	1	'fNum = FreeFile
+1123	1	'
+1124	1	'
+1125	3	'' Let's Create/Open our new EMF File.
+1126	1	'Open sName For Binary As fNum
+1127	1	'
+1128	2	'' Write out the EMF
+1129	1	'Put fNum, , cArray
+1130	1	'
+1131	2	'' Close the File
+1132	1	'Close fNum
+1133	1	'
+1134	1	'
+1135	1	'
+1136	1	'
+1137	1	'End Function
+1138	1	'
+1139	0	

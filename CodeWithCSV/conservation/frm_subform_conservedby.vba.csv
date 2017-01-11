@@ -1,0 +1,29 @@
+1	0	Option Compare Database
+2	0	
+3	0	Private Sub cboName_NotInList(NewData As String, Response As Integer)
+4	1	'On Error GoTo err_cboName_NotInList
+5	0	
+6	1	'Dim retVal, sql, getfirst, getsurname
+7	1	'retVal = MsgBox("This Name does not appear in the pre-defined list. Have you checked the list to make sure there is no match?", vbQuestion + vbYesNo, "New Conservator Name")
+8	1	'If retVal = vbYes Then
+9	2	'    'allow value,
+10	1	'     Response = acDataErrAdded
+11	1	'
+12	1	'    getfirst = InputBox("Please enter the first name of this conservator", "First Name")
+13	1	'    getsurname = InputBox("Plese enter the surname of this conservator", "Surname")
+14	1	'
+15	6	'    'sql = "INSERT INTO [Conservation_Code_ConservatorNames] ([ConservatorFirstName], [ConservatorSurname]) VALUES ('" & getfirst & "', '" & getsurname & "');"
+16	5	'    sql = "INSERT INTO [Conservation_Code_ConservatorNames] ([ConservatorFirstName], [ConservatorSurname]) VALUES ('" & NewData & "', '" & getsurname & "');"
+17	1	'    DoCmd.RunSQL sql
+18	1	'
+19	1	'Else
+20	2	'    'no leave it so they can edit it
+21	1	'    Response = acDataErrContinue
+22	1	'End If
+23	1	'Exit Sub
+24	1	'
+25	1	'err_cboName_NotInList:
+26	1	'    Call General_Error_Trap
+27	1	'    Exit Sub
+28	0	
+29	0	End Sub

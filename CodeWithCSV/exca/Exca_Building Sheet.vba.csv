@@ -1,0 +1,611 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cboFindBuilding_AfterUpdate()
+5	1	'********************************************
+6	1	'Find the selected building number from the list
+7	1	'
+8	1	'SAJ v9.1
+9	1	'********************************************
+10	0	On Error GoTo err_cboFindBuilding_AfterUpdate
+11	0	
+12	0	    If Me![cboFindBuilding] <> "" Then
+13	1	        'for existing number the field with be disabled, enable it as when find num
+14	1	        'is shown the on current event will deal with disabling it again
+15	0	        If Me![Number].Enabled = False Then Me![Number].Enabled = True
+16	0	        DoCmd.GoToControl "Number"
+17	0	        DoCmd.FindRecord Me![cboFindBuilding]
+18	0	        Me![cboFindBuilding] = ""
+19	0	    End If
+20	0	Exit Sub
+21	0	
+22	0	err_cboFindBuilding_AfterUpdate:
+23	0	    Call General_Error_Trap
+24	0	    Exit Sub
+25	0	
+26	0	End Sub
+27	0	
+28	0	Private Sub cboFindBuilding_NotInList(NewData As String, response As Integer)
+29	1	'stop not in list msg loop - 2009
+30	0	On Error GoTo err_cbofindNot
+31	0	
+32	0	    MsgBox "Sorry this Building cannot be found in the list", vbInformation, "No Match"
+33	0	    response = acDataErrContinue
+34	0	    
+35	0	    Me![cboFindBuilding].Undo
+36	0	Exit Sub
+37	0	
+38	0	err_cbofindNot:
+39	0	    Call General_Error_Trap
+40	0	    Exit Sub
+41	0	End Sub
+42	0	
+43	0	Private Sub cmdAddNew_Click()
+44	1	'********************************************
+45	1	'Add a new record
+46	1	'
+47	1	'SAJ v9.1
+48	1	'********************************************
+49	0	On Error GoTo err_cmdAddNew_Click
+50	0	
+51	0	    DoCmd.GoToRecord acActiveDataObject, , acNewRec
+52	0	    DoCmd.GoToControl "Number"
+53	0	Exit Sub
+54	0	
+55	0	err_cmdAddNew_Click:
+56	0	    Call General_Error_Trap
+57	0	    Exit Sub
+58	0	End Sub
+59	0	
+60	0	Private Sub cmdGoToImage_Click()
+61	1	'********************************************************************
+62	1	' New button for 2009 which allows any available images to be
+63	1	' displayed
+64	1	' SAJ
+65	1	'********************************************************************
+66	0	On Error GoTo err_cmdGoToImage_Click
+67	0	
+68	0	Dim mydb As DAO.Database
+69	0	Dim tmptable As TableDef, tblConn, I, msg, fldid
+70	0	Set mydb = CurrentDb
+71	0	
+72	1	    'get the field id for unit in the catalog that matches this year
+73	1	    'NEW 2007 method where by portfolio now uses its own sql database
+74	0	    Dim myq1 As QueryDef, connStr
+75	0	    Set mydb = CurrentDb
+76	0	    Set myq1 = mydb.CreateQueryDef("")
+77	0	    myq1.Connect = mydb.TableDefs(0).Connect & ";UID=portfolio;PWD=portfolio"
+78	0	    myq1.ReturnsRecords = True
+79	2	    'myq1.sql = "sp_Portfolio_GetUnitFieldID " & Me![Year] - year here is random as there isn't one
+80	0	    myq1.sql = "sp_Portfolio_GetBuildingFieldID_2009 2009"
+81	0	    
+82	2	    ''WAS GETTING a 2010 TIMEOUT VERY COMMONLY HENCE CODE BELOW WHICH NOT REALLY HELP - when using my
+83	2	    ''own login it worked fine so tracked it on login. When changed main DB of portfolio login from master
+84	2	    ''to catalhoyuk is works fine (? also tried main DB to portfolio copy db but no difference from master)
+85	3	    ''start = Timer    ' Set start time.
+86	2	    ''        Do While Timer < start + 50
+87	4	     ''           'DoEvents    ' Yield to other processes.
+88	2	    ''        Loop
+89	0	    Dim myrs As Recordset
+90	0	    Set myrs = myq1.OpenRecordset
+91	0	    
+92	0	    
+93	0	         
+94	2	    ''MsgBox myrs.Fields(0).Value
+95	0	    If myrs.Fields(0).Value = "" Or myrs.Fields(0).Value = 0 Then
+96	0	        fldid = 0
+97	0	    Else
+98	0	        fldid = myrs.Fields(0).Value
+99	0	    End If
+100	0	        
+101	0	    myrs.Close
+102	0	    Set myrs = Nothing
+103	0	    myq1.Close
+104	0	    Set myq1 = Nothing
+105	0	    
+106	0	    
+107	0	    
+108	1	    For I = 0 To mydb.TableDefs.Count - 1 'loop the tables collection
+109	0	    Set tmptable = mydb.TableDefs(I)
+110	0	             
+111	0	    If tmptable.Connect <> "" Then
+112	0	        tblConn = tmptable.Connect
+113	0	        Exit For
+114	0	    End If
+115	0	    Next I
+116	0	    
+117	0	    If tblConn <> "" Then
+118	1	        'If InStr(tblConn, "catalsql") = 0 Then
+119	0	        If InStr(tblConn, "catalsql") = 0 Then
+120	1	            'if on site the image can be loaded from the server directly into Access
+121	0	            DoCmd.OpenForm "Image_Display", acNormal, , "[IntValue] = " & Me![Number] & " AND [Field_ID] = " & fldid, acFormReadOnly, acDialog, 2009
+122	0	            
+123	0	        Else
+124	1	            'database is running remotely must access images via internet
+125	0	            msg = "As you are working remotely the system will have to display the images in a web browser." & Chr(13) & Chr(13)
+126	0	            msg = msg & "At present this part of the website is secure, you must enter following details to gain access:" & Chr(13) & Chr(13)
+127	0	            msg = msg & "Username: catalhoyuk" & Chr(13)
+128	0	            msg = msg & "Password: SiteDatabase1" & Chr(13) & Chr(13)
+129	0	            msg = msg & "When you have finished viewing the images close your browser to return to the database."
+130	0	            MsgBox msg, vbInformation, "Photo Web Link"
+131	0	            
+132	0	            Application.FollowHyperlink (ImageLocationOnWeb & "?field=feature&id=" & Me![Number])
+133	0	        End If
+134	0	
+135	0	    Else
+136	0	        
+137	0	    End If
+138	0	    
+139	0	    Set tmptable = Nothing
+140	0	    mydb.Close
+141	0	    Set mydb = Nothing
+142	0	    
+143	0	Exit Sub
+144	0	
+145	0	err_cmdGoToImage_Click:
+146	1	    'If Err.Number = 3146 Then
+147	1	    '
+148	1	    '    response = MsgBox("Call to photo catalogue timed out - try again?", vbYesNo + vbQuestion, Err.Description)
+149	1	    '    If response = vbYes Then
+150	2	    '        start = Timer    ' Set start time.
+151	1	    '        Do While Timer < start + 100
+152	3	    '            'DoEvents    ' Yield to other processes.
+153	1	    '        Loop
+154	1	    '      Resume
+155	1	    '    End If
+156	1	    'Else
+157	0	        Call General_Error_Trap
+158	1	    'End If
+159	0	    Exit Sub
+160	0	End Sub
+161	0	
+162	0	Private Sub cmdPrintBuildingSheet_Click()
+163	1	'new for 2009
+164	0	On Error GoTo err_cmdBuilding
+165	0	
+166	0	    Dim both
+167	0	    both = MsgBox("Do you want a list of the associated Units as well?", vbQuestion + vbYesNo, "Units?")
+168	0	        DoCmd.OpenReport "R_BuildingSheet", acViewPreview, , "[Number] = " & Me![Number]
+169	0	        If both = vbYes Then DoCmd.OpenReport "R_Units_in_Buildings", acViewPreview, , "[In_Building] = " & Me![Number]
+170	0	Exit Sub
+171	0	
+172	0	err_cmdBuilding:
+173	0	    Call General_Error_Trap
+174	0	    Exit Sub
+175	0	End Sub
+176	0	
+177	0	Private Sub cmdReportProblem_Click()
+178	1	'bring up a popup to allow user to report a problem
+179	0	On Error GoTo err_reportprob
+180	0	    DoCmd.OpenForm "frm_pop_problemreport", , , , acFormAdd, acDialog, "building;" & Me![Number]
+181	0	    
+182	0	Exit Sub
+183	0	
+184	0	err_reportprob:
+185	0	    Call General_Error_Trap
+186	0	    Exit Sub
+187	0	End Sub
+188	0	
+189	0	Private Sub cmdViewBuildingsketch_Click()
+190	0	On Error GoTo err_ViewBuildingsketch_Click
+191	0	    Dim Path
+192	0	    Dim fname, newfile
+193	0	    
+194	1	    'check if can find sketch image
+195	1	    'using global constanst sktechpath Declared in globals-shared
+196	1	    'path = "\\catal\Site_Sketches\Features\Sketches"
+197	0	    Path = sketchpath2015 & "buildings\sketches\"
+198	0	    Path = Path & "B" & Me![Number] & "*" & ".jpg"
+199	0	    
+200	0	    fname = Dir(Path & "*", vbNormal)
+201	0	    While fname <> ""
+202	0	        newfile = fname
+203	0	        fname = Dir()
+204	0	    Wend
+205	0	    Path = sketchpath2015 & "buildings\sketches\" & newfile
+206	0	    
+207	0	    If Dir(Path) = "" Then
+208	1	        'directory not exist
+209	0	        MsgBox "The sketch plan of this building has not been scanned in yet.", vbInformation, "No Sketch available to view"
+210	0	    Else
+211	0	        DoCmd.OpenForm "frm_pop_buildingsketch", acNormal, , , acFormReadOnly, , Me![Number]
+212	0	    End If
+213	0	 
+214	0	Exit Sub
+215	0	
+216	0	err_ViewBuildingsketch_Click:
+217	0	    Call General_Error_Trap
+218	0	    Exit Sub
+219	0	End Sub
+220	0	
+221	0	Private Sub EstProportionofBuildingEx_AfterUpdate()
+222	1	'new 2010
+223	0	On Error GoTo err_est
+224	0	
+225	0	If Me![EstProportionofBuildingEx] = "" Or IsNull(Me![EstProportionofBuildingEx]) Then
+226	0	    Me![chkInfill].Enabled = False
+227	0	    Me![chkPartOcc].Enabled = False
+228	0	    Me![chkComplete].Enabled = False
+229	0	    Me![chkConstruction].Enabled = False
+230	0	    Me![chkWalls].Enabled = False
+231	0	    Me![chkOutline].Enabled = False
+232	0	    Me![chkOther].Enabled = False
+233	0	    Me![txtPropNotes].Enabled = False
+234	0	Else
+235	0	    Me![chkInfill].Enabled = True
+236	0	    Me![chkPartOcc].Enabled = True
+237	0	    Me![chkComplete].Enabled = True
+238	0	    Me![chkConstruction].Enabled = True
+239	0	    Me![chkWalls].Enabled = True
+240	0	    Me![chkOutline].Enabled = True
+241	0	    Me![chkOther].Enabled = True
+242	0	    Me![txtPropNotes].Enabled = True
+243	0	End If
+244	0	
+245	0	Exit Sub
+246	0	
+247	0	err_est:
+248	0	    Call General_Error_Trap
+249	0	    Exit Sub
+250	0	End Sub
+251	0	
+252	0	Private Sub Excavation_Click()
+253	1	'********************************************
+254	1	'This is the trowel button to close the form
+255	1	' Error trap added v9.1
+256	1	' removed open excavation form (menu) as this form
+257	1	' can now be called by other forms
+258	1	' SAJ v9.1
+259	1	'********************************************
+260	0	On Error GoTo err_Excavation_Click
+261	0	    Dim stDocName As String
+262	0	    Dim stLinkCriteria As String
+263	0	
+264	1	    'stDocName = "Excavation"
+265	1	    'DoCmd.OpenForm stDocName, , , stLinkCriteria
+266	0	    DoCmd.Close acForm, "Exca: Building Sheet"
+267	0	Exit Sub
+268	0	err_Excavation_Click:
+269	0	    Call General_Error_Trap
+270	0	    Exit Sub
+271	0	    
+272	0	End Sub
+273	0	
+274	0	
+275	0	
+276	0	
+277	0	
+278	0	
+279	0	Private Sub Field24_AfterUpdate()
+280	1	'show mound from area combo
+281	0	Me![Mound] = Me![Field24].Column(1)
+282	0	End Sub
+283	0	
+284	0	Private Sub Form_BeforeUpdate(Cancel As Integer)
+285	1	'***************************************************************************
+286	1	' If no building number entered key violation occurs - intercept and provide
+287	1	' nice msg, plus way to escape msg loop
+288	1	'
+289	1	' SAJ v9.1
+290	1	'***************************************************************************
+291	0	On Error GoTo err_Form_BeforeUpdate
+292	0	
+293	0	If IsNull(Me![Number] And (Not IsNull(Me![Field24]) Or Not IsNull(Me![Location]) Or (Me![Description] <> "" And Not IsNull(Me![Description])))) Then
+294	0	    MsgBox "You must enter a building number otherwise the record cannot be saved." & Chr(13) & Chr(13) & "If you wish to cancel this record being entered and start again completely press ESC", vbInformation, "Incomplete data"
+295	0	    Cancel = True
+296	0	    DoCmd.GoToControl "Number"
+297	0	ElseIf IsNull(Me![Number]) And IsNull(Me![Field24]) And IsNull(Me![Location]) And (IsNull(Me![Description]) Or Me![Description] = "") Then
+298	1	    'blank record that was edited but all data scrubbed - system still thinks it should
+299	1	    'try and save the record as it created a shell for it so just tell it to undo
+300	0	    Me.Undo
+301	0	End If
+302	0	
+303	0	If Me.Dirty And (IsNull(Me![LastUpdatedBy]) Or Me![LastUpdatedBy] = "") Then
+304	0	    MsgBox "You must enter your name in the Last Updated By field", vbInformation, "Last Updated By Field not filled out"
+305	0	    Cancel = True
+306	0	    DoCmd.GoToControl "LastUpdatedBy"
+307	0	End If
+308	0	
+309	0	Me![LastUpdatedDate] = Date
+310	0	
+311	0	Exit Sub
+312	0	
+313	0	err_Form_BeforeUpdate:
+314	0	    Call General_Error_Trap
+315	0	    Exit Sub
+316	0	
+317	0	End Sub
+318	0	
+319	0	
+320	0	Private Sub Form_Current()
+321	1	'*************************************************************************
+322	1	' New requirement that building number cannot be edited after entry. This
+323	1	' can only be done by an administrator so lock field here
+324	1	'
+325	1	' SAJ v9.1
+326	1	'*************************************************************************
+327	0	On Error GoTo err_Form_Open
+328	0	
+329	0	   If Me![Number] <> "" Then
+330	1	    'building number exists, lock field
+331	0	        Me![Number].Locked = True
+332	0	        Me![Number].Enabled = False
+333	0	        Me![Number].BackColor = Me.Section(0).BackColor
+334	0	        
+335	0	        Me![Location].SetFocus
+336	0	    Else
+337	1	    'no building number - new record allow entry
+338	0	        Me![Number].Locked = False
+339	0	        Me![Number].Enabled = True
+340	0	        Me![Number].BackColor = 16777215
+341	0	        
+342	0	        Me![Number].SetFocus
+343	0	    End If
+344	0	    
+345	2	'See oncurrent of unit sheet for why I've now commented this out - button is enabled and image form deterimes if images
+346	3	''    'new 2009
+347	2	''find out is any images available
+348	0	Dim imageCount, Imgcaption
+349	2	''
+350	2	''Dim mydb As DAO.Database
+351	2	''Dim myq1 As QueryDef, connStr
+352	2	''    Set mydb = CurrentDb
+353	2	''    Set myq1 = mydb.CreateQueryDef("")
+354	2	''    myq1.Connect = mydb.TableDefs(0).Connect & ";UID=portfolio;PWD=portfolio"
+355	2	''    myq1.ReturnsRecords = True
+356	2	''    myq1.sql = "sp_Portfolio_CountImagesForBuilding_2009 " & Me![Number]
+357	2	''
+358	2	''    Dim myrs1 As Recordset
+359	2	''    Set myrs1 = myq1.OpenRecordset
+360	4	''    ''MsgBox myrs.Fields(0).Value
+361	2	''    If myrs1.Fields(0).Value = "" Or myrs1.Fields(0).Value = 0 Then
+362	2	''           imageCount = 0
+363	2	''    Else
+364	2	''        imageCount = myrs1.Fields(0).Value
+365	2	''   End If
+366	2	''
+367	2	''myrs1.close
+368	2	''Set myrs1 = Nothing
+369	0	
+370	0	backhere:
+371	2	''myq1.close
+372	2	''Set myq1 = Nothing
+373	2	''mydb.close
+374	2	''Set mydb = Nothing
+375	2	''
+376	2	''If imageCount > 0 Then
+377	2	''    Imgcaption = imageCount
+378	2	''    If imageCount = 1 Then
+379	2	''        Imgcaption = Imgcaption & " Image to Display"
+380	2	''    Else
+381	2	''        Imgcaption = Imgcaption & " Images to Display"
+382	2	''    End If
+383	2	''    Me![cmdGoToImage].Caption = Imgcaption
+384	2	''    Me![cmdGoToImage].Enabled = True
+385	2	''Else
+386	2	''    Me![cmdGoToImage].Caption = "No Image to Display"
+387	2	''    Me![cmdGoToImage].Enabled = False
+388	2	''End If
+389	0	Imgcaption = "Images of Building"
+390	0	    Me![cmdGoToImage].Caption = Imgcaption
+391	0	    Me![cmdGoToImage].Enabled = True
+392	0	    
+393	3	'''OFFSITE 2009 - ignore photos and sketches offsite
+394	3	'''JUST TAKE THIS LINE OUT ON SITE TO RETRIEVE FUNCTIONALITY
+395	2	''Me![cmdGoToImage].Enabled = False
+396	0	
+397	1	'New 2010 post ex fields
+398	0	If Me![EstProportionofBuildingEx] = "" Or IsNull(Me![EstProportionofBuildingEx]) Then
+399	0	    Me![chkInfill].Enabled = False
+400	0	    Me![chkPartOcc].Enabled = False
+401	0	    Me![chkComplete].Enabled = False
+402	0	    Me![chkConstruction].Enabled = False
+403	0	    Me![chkWalls].Enabled = False
+404	0	    Me![chkOutline].Enabled = False
+405	0	    Me![chkOther].Enabled = False
+406	0	    Me![txtPropNotes].Enabled = False
+407	0	Else
+408	0	    Me![chkInfill].Enabled = True
+409	0	    Me![chkPartOcc].Enabled = True
+410	0	    Me![chkComplete].Enabled = True
+411	0	    Me![chkConstruction].Enabled = True
+412	0	    Me![chkWalls].Enabled = True
+413	0	    Me![chkOutline].Enabled = True
+414	0	    Me![chkOther].Enabled = True
+415	0	    Me![txtPropNotes].Enabled = True
+416	0	End If
+417	0	
+418	1	'show mound from area combo
+419	0	Me![Mound] = Me![Field24].Column(1)
+420	0	
+421	0	Exit Sub
+422	0	
+423	0	err_Form_Open:
+424	1	    If Err.Number = 3146 Then 'odbc call failed, crops up every so often on all
+425	1	    'sheets bar unit and have NO idea why except it always starts with building with no photos
+426	1	    'but not all time, it occurs on Set myrs1 = myq1.OpenRecordset statement, tried everything
+427	1	    '    Resume Next
+428	0	        imageCount = "?"
+429	0	        GoTo backhere
+430	0	    Else
+431	1	        'MsgBox myq1.sql
+432	0	        Call General_Error_Trap
+433	0	    End If
+434	0	    Exit Sub
+435	0	End Sub
+436	0	
+437	0	Private Sub Form_Open(Cancel As Integer)
+438	1	'*************************************************************************
+439	1	' OpenArg may now be used to set up record for dataentry - specific format
+440	1	' must be used:
+441	1	' OpenArgs = "NEW,Num:building num to be entered if known,Area:area assoc if known
+442	1	' eg: "NEW,Num:300,Area:west"
+443	1	' Then it can be unpicked by code
+444	1	'
+445	1	' SAJ v9.1
+446	1	'*************************************************************************
+447	0	On Error GoTo err_Form_Open
+448	0	
+449	0	    If Not IsNull(Me.OpenArgs) Then
+450	0	        Dim getArgs, whatTodo, NumKnown, AreaKnown
+451	0	        Dim firstcomma, Action
+452	0	        getArgs = Me.OpenArgs
+453	0	        
+454	0	        If Len(getArgs) > 0 Then
+455	1	            'get 1st comma to see what action is
+456	0	            firstcomma = InStr(getArgs, ",")
+457	0	            If firstcomma <> 0 Then
+458	1	                'get action word upto 1st comma
+459	0	                Action = Left(getArgs, firstcomma - 1)
+460	1	                'if new then create new rec
+461	0	                If UCase(Action) = "NEW" Then DoCmd.GoToRecord acActiveDataObject, , acNewRec
+462	0	                
+463	1	                'check term num is present, getting its starting point
+464	0	                NumKnown = InStr(UCase(getArgs), "NUM:")
+465	0	                If NumKnown <> 0 Then
+466	3	                    'num phrase is there so obtain it between 'num:' (ie start pt of num: plus its 4 chars)
+467	1	                    'and place of next comma
+468	0	                    NumKnown = Mid(getArgs, NumKnown + 4, InStr(NumKnown, getArgs, ",") - (NumKnown + 4))
+469	1	                    Me![Number] = NumKnown 'add it to the number fld
+470	1	                    Me![Number].Locked = True 'lock the number field
+471	1	                  '  DoCmd.RunCommand acCmdSaveRecord
+472	0	                    
+473	0	                End If
+474	0	                
+475	1	                'check term area is present, getting its starting point
+476	0	                AreaKnown = InStr(UCase(getArgs), "AREA:")
+477	0	                If AreaKnown <> 0 Then
+478	3	                    'area phrase is there so obtain it between 'area:' (ie start pt of area: plus its 5 chars)
+479	1	                    'and end of str
+480	0	                    AreaKnown = Mid(getArgs, AreaKnown + 5, Len(getArgs))
+481	1	                    Me![Field24] = AreaKnown 'add it to the area fld
+482	0	                    Me![Field24].Locked = True
+483	0	                End If
+484	0	            End If
+485	0	        
+486	0	            
+487	1	            'disable find and add new in this instance
+488	0	            Me![cboFindBuilding].Enabled = False
+489	0	            Me![cmdAddNew].Enabled = False
+490	0	            Me.AllowAdditions = False
+491	0	        End If
+492	0	    End If
+493	0	    
+494	0	    If Me.FilterOn = True Or Me.AllowEdits = False Then
+495	1	        'disable find and add new in this instance
+496	0	        Me![cboFindBuilding].Enabled = False
+497	0	        Me![cmdAddNew].Enabled = False
+498	0	        Me.AllowAdditions = False
+499	0	    Else
+500	1	        'new end of season 2008 to ensure not within record when opened, try and prevent overwriting
+501	0	        DoCmd.GoToControl "cboFindBuilding"
+502	0	    End If
+503	0	    
+504	1	    'now sort out view depending on permissions
+505	0	    Dim permiss
+506	0	    permiss = GetGeneralPermissions
+507	0	    If (permiss = "ADMIN" Or permiss = "RW" Or permiss = "exsuper") And (Me.AllowAdditions = True Or Me.AllowDeletions = True Or Me.AllowEdits = True) Then
+508	2	        'SAJ season 2006 - don't allow deletions from this screen
+509	0	        ToggleFormReadOnly Me, False, "NoDeletions"
+510	0	    Else
+511	0	        ToggleFormReadOnly Me, True
+512	0	        Me![cmdAddNew].Enabled = False
+513	0	    End If
+514	0	    
+515	1	    'new 2010
+516	0	    If Me![EstProportionofBuildingEx] = "" Or IsNull(Me![EstProportionofBuildingEx]) Then
+517	0	        Me![chkInfill].Enabled = False
+518	0	        Me![chkPartOcc].Enabled = False
+519	0	        Me![chkComplete].Enabled = False
+520	0	        Me![chkConstruction].Enabled = False
+521	0	        Me![chkWalls].Enabled = False
+522	0	        Me![chkOutline].Enabled = False
+523	0	        Me![chkOther].Enabled = False
+524	0	        Me![txtPropNotes].Enabled = False
+525	0	    Else
+526	0	        Me![chkInfill].Enabled = True
+527	0	        Me![chkPartOcc].Enabled = True
+528	0	        Me![chkComplete].Enabled = True
+529	0	        Me![chkConstruction].Enabled = True
+530	0	        Me![chkWalls].Enabled = True
+531	0	        Me![chkOutline].Enabled = True
+532	0	        Me![chkOther].Enabled = True
+533	0	        Me![txtPropNotes].Enabled = True
+534	0	    End If
+535	0	
+536	0	Exit Sub
+537	0	
+538	0	err_Form_Open:
+539	0	    Call General_Error_Trap
+540	0	    Exit Sub
+541	0	
+542	0	End Sub
+543	0	
+544	0	Private Sub Number_AfterUpdate()
+545	1	'***********************************************************************
+546	1	' Intro of a validity check to ensure duplicate building numbers not entered
+547	1	' which would result in nasty key violation msg back from sql server
+548	1	'
+549	1	' SAJ v9.1
+550	1	'***********************************************************************
+551	0	On Error GoTo err_Number_AfterUpdate
+552	0	
+553	0	Dim checknum
+554	0	
+555	0	If Me![Number] <> "" Then
+556	1	    'check that building num not exist
+557	0	    checknum = DLookup("[Number]", "[Exca: Building Details]", "[Number] = " & Me![Number])
+558	0	    If Not IsNull(checknum) Then
+559	0	        MsgBox "Sorry but this Building Number already exists, please enter another number.", vbInformation, "Duplicate Building Number"
+560	0	        
+561	0	        If Not IsNull(Me![Number].OldValue) Then
+562	1	            'return field to old value if there was one
+563	0	            Me![Number] = Me![Number].OldValue
+564	0	        Else
+565	1	            'if its a new record and no oldval (ie: null error is try to set it to oldval)
+566	1	            'then just undo entry - me![number].undo does not undo this field, only
+567	1	            'me.undo will but this removes all edits in all fields so must gather them first (!!)
+568	0	            Dim currloc, currarea, currdesc
+569	0	            currloc = Me![Location]
+570	0	            currarea = Me![Field24]
+571	0	            currdesc = Me![Description]
+572	0	            DoCmd.GoToControl "Number"
+573	0	            Me.Undo
+574	0	            
+575	1	            'reset all fields, for some reason if description is null (and currdesc is null)
+576	2	            'it won't set ti back to null, instead "". This throws out the form_beforeupdate
+577	1	            'code, to ensure this not happen have added the if not isnull check, so only updates
+578	1	            'field if there was an original value
+579	0	            If Not IsNull(currloc) Then Me![Location] = currloc
+580	0	            If Not IsNull(currarea) Then Me![Field24] = currarea
+581	0	            If Not IsNull(currdesc) Then Me![Description] = currdesc
+582	0	            
+583	1	            'for some reason have to send focus to another field to bring it back
+584	1	            'otherwise goes onto area- setfocus not work either
+585	0	            DoCmd.GoToControl "Description"
+586	0	            DoCmd.GoToControl "Number"
+587	0	        End If
+588	0	    End If
+589	0	End If
+590	0	
+591	0	Exit Sub
+592	0	
+593	0	err_Number_AfterUpdate:
+594	0	    Call General_Error_Trap
+595	0	    Exit Sub
+596	0	End Sub
+597	0	
+598	0	Private Sub cmdHelp_Click()
+599	0	On Error GoTo Err_cmdHelp_Click
+600	0	
+601	1	'either pop up a window or have a message
+602	0	MsgBox "A help message to explain the Human Burial Assemblage field will appear soon", vbInformation, "Help"
+603	0	    
+604	0	
+605	0	Exit_cmdHelp_Click:
+606	0	    Exit Sub
+607	0	
+608	0	Err_cmdHelp_Click:
+609	0	    Resume Exit_cmdHelp_Click
+610	0	    
+611	0	End Sub

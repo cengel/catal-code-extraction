@@ -1,0 +1,74 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	
+5	0	
+6	0	Private Sub open_dendro_Click()
+7	0	On Error GoTo Err_open_dendro_Click
+8	0	
+9	0	    Dim stDocName As String
+10	0	    Dim stLinkCriteria As String
+11	0	
+12	0	    stDocName = "Anthracology: Dendro"
+13	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+14	0	
+15	0	Exit_open_dendro_Click:
+16	0	    Exit Sub
+17	0	
+18	0	Err_open_dendro_Click:
+19	0	    MsgBox Err.description
+20	0	    Resume Exit_open_dendro_Click
+21	0	    
+22	0	End Sub
+23	0	
+24	0	Private Sub open_dendroHandpicked_Click()
+25	0	On Error GoTo Err_open_dendroHandpicked_Click
+26	0	
+27	0	    Dim stDocName As String
+28	0	    Dim stLinkCriteria As String
+29	0	
+30	0	    stDocName = "Anthracology: Dendro_handpicked"
+31	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+32	0	
+33	0	Exit_open_dendroHandpicked_Click:
+34	0	    Exit Sub
+35	0	
+36	0	Err_open_dendroHandpicked_Click:
+37	0	    MsgBox Err.description
+38	0	End Sub
+39	0	
+40	0	Sub open_HR_Click()
+41	0	On Error GoTo Err_open_HR_Click
+42	0	
+43	0	    Dim stDocName As String
+44	0	    Dim stLinkCriteria As String
+45	0	
+46	0	    stDocName = "ClayObjects: Basic"
+47	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+48	0	
+49	0	Exit_open_HR_Click:
+50	0	    Exit Sub
+51	0	
+52	0	Err_open_HR_Click:
+53	0	    MsgBox Err.description
+54	0	    Resume Exit_open_HR_Click
+55	0	    
+56	0	End Sub
+57	0	
+58	0	Private Sub openLevelOne_Click()
+59	0	On Error GoTo Err_openLevelOne_Click
+60	0	
+61	0	    Dim stDocName As String
+62	0	    Dim stLinkCriteria As String
+63	0	
+64	0	    stDocName = "ClayObjects: LevelOne"
+65	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+66	0	
+67	0	Exit_openLevelOne_Click:
+68	0	    Exit Sub
+69	0	
+70	0	Err_openLevelOne_Click:
+71	0	    MsgBox Err.description
+72	0	    Resume Exit_openLevelOne_Click
+73	0	    
+74	0	End Sub

@@ -1,0 +1,175 @@
+1	0	Option Compare Database
+2	0	
+3	0	
+4	0	
+5	0	Private Sub Find_Number_Change()
+6	0	
+7	0	End Sub
+8	0	
+9	0	Private Sub Unit_AfterUpdate()
+10	0	
+11	0	End Sub
+12	0	
+13	0	
+14	0	Private Sub Unit_Change()
+15	0	
+16	0	End Sub
+17	0	
+18	0	
+19	0	Private Sub Unit_Enter()
+20	0	
+21	0	End Sub
+22	0	
+23	0	
+24	0	Sub first_Click()
+25	0	On Error GoTo Err_first_Click
+26	0	
+27	0	
+28	0	    DoCmd.GoToRecord , , acFirst
+29	0	
+30	0	Exit_first_Click:
+31	0	    Exit Sub
+32	0	
+33	0	Err_first_Click:
+34	0	    MsgBox Err.Description
+35	0	    Resume Exit_first_Click
+36	0	    
+37	0	End Sub
+38	0	Sub prev_Click()
+39	0	On Error GoTo Err_prev_Click
+40	0	
+41	0	
+42	0	    DoCmd.GoToRecord , , acPrevious
+43	0	
+44	0	Exit_prev_Click:
+45	0	    Exit Sub
+46	0	
+47	0	Err_prev_Click:
+48	0	    MsgBox Err.Description
+49	0	    Resume Exit_prev_Click
+50	0	    
+51	0	End Sub
+52	0	Sub next_Click()
+53	0	On Error GoTo Err_next_Click
+54	0	
+55	0	
+56	0	    DoCmd.GoToRecord , , acNext
+57	0	
+58	0	Exit_next_Click:
+59	0	    Exit Sub
+60	0	
+61	0	Err_next_Click:
+62	0	    MsgBox Err.Description
+63	0	    Resume Exit_next_Click
+64	0	    
+65	0	End Sub
+66	0	Sub last_Click()
+67	0	On Error GoTo Err_last_Click
+68	0	
+69	0	
+70	0	    DoCmd.GoToRecord , , acLast
+71	0	
+72	0	Exit_last_Click:
+73	0	    Exit Sub
+74	0	
+75	0	Err_last_Click:
+76	0	    MsgBox Err.Description
+77	0	    Resume Exit_last_Click
+78	0	    
+79	0	End Sub
+80	0	Sub new_Click()
+81	0	On Error GoTo Err_new_Click
+82	0	
+83	0	
+84	0	    DoCmd.GoToRecord , , acNewRec
+85	0	
+86	0	Exit_new_Click:
+87	0	    Exit Sub
+88	0	
+89	0	Err_new_Click:
+90	0	    MsgBox Err.Description
+91	0	    Resume Exit_new_Click
+92	0	    
+93	0	End Sub
+94	0	Sub closeCommand45_Click()
+95	0	On Error GoTo Err_closeCommand45_Click
+96	0	
+97	0	
+98	0	    DoCmd.Close
+99	0	
+100	0	Exit_closeCommand45_Click:
+101	0	    Exit Sub
+102	0	
+103	0	Err_closeCommand45_Click:
+104	0	    MsgBox Err.Description
+105	0	    Resume Exit_closeCommand45_Click
+106	0	    
+107	0	End Sub
+108	0	Sub find_Click()
+109	0	On Error GoTo Err_find_Click
+110	0	
+111	0	
+112	0	    Screen.PreviousControl.SetFocus
+113	1	    'GID.SetFocus
+114	0	    DoCmd.DoMenuItem acFormBar, acEditMenu, 10, , acMenuVer70
+115	0	
+116	0	Exit_find_Click:
+117	0	    Exit Sub
+118	0	
+119	0	Err_find_Click:
+120	0	    MsgBox Err.Description
+121	0	    Resume Exit_find_Click
+122	0	    
+123	0	End Sub
+124	0	
+125	0	
+126	0	Private Sub search_Click()
+127	0	On Error GoTo Err_search_Click
+128	0	
+129	0	    Dim stDocName As String
+130	0	    Dim stLinkCriteria As String
+131	0	
+132	0	    DoCmd.Close
+133	0	    stDocName = "Log: Query functions"
+134	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+135	0	
+136	0	Exit_search_Click:
+137	0	    Exit Sub
+138	0	
+139	0	Err_search_Click:
+140	0	    MsgBox Err.Description
+141	0	    Resume Exit_search_Click
+142	0	    
+143	0	End Sub
+144	0	Private Sub Command60_Click()
+145	0	On Error GoTo Err_Command60_Click
+146	0	
+147	0	
+148	0	    DoCmd.Close
+149	0	
+150	0	Exit_Command60_Click:
+151	0	    Exit Sub
+152	0	
+153	0	Err_Command60_Click:
+154	0	    MsgBox Err.Description
+155	0	    Resume Exit_Command60_Click
+156	0	    
+157	0	End Sub
+158	0	Private Sub open_entry_Click()
+159	0	On Error GoTo Err_open_entry_Click
+160	0	
+161	0	    Dim stDocName As String
+162	0	    Dim stLinkCriteria As String
+163	0	
+164	0	    DoCmd.Close
+165	0	    stDocName = "Log: Daily Log Sheet"
+166	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+167	0	
+168	0	Exit_open_entry_Click:
+169	0	    Exit Sub
+170	0	
+171	0	Err_open_entry_Click:
+172	0	    MsgBox Err.Description
+173	0	    Resume Exit_open_entry_Click
+174	0	    
+175	0	End Sub

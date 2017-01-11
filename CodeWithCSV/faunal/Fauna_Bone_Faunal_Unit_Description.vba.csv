@@ -1,0 +1,296 @@
+1	1	Option Compare Database   'Use database order for string comparisons
+2	1	Option Explicit 'added saj
+3	0	
+4	0	Sub Button_Goto_BFD_Click()
+5	1	'adapted season 2006 to error trap no unit number- SAJ
+6	0	On Error GoTo Err_Button_Goto_BFD_Click
+7	0	
+8	0	    Dim stDocName As String
+9	0	    Dim stLinkCriteria As String
+10	0	
+11	0	If Me![Unit number] <> "" Then
+12	1	    'check intro by SAJ
+13	0	    stDocName = "Fauna_Bone_Basic_Faunal_Data"
+14	0	    
+15	0	    stLinkCriteria = "[Unit number]=" & Me![Unit number]
+16	0	    
+17	1	    ' MR July 18 2005
+18	2	    'DoCmd.Save 'SAJ comment out as throwing error  29068, Microsoft Access cannot complete this operation. You must stop the code and try again.
+19	0	    DoCmd.RunCommand acCmdSaveRecord
+20	0	    
+21	0	    DoCmd.Minimize
+22	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+23	0	
+24	2	    'If [Forms]![Fauna_Bone_Basic_Faunal_Data].[Unit number] = 0 Then ' MR July 17 2005
+25	2	    ''[Forms]![Fauna_Bone_Basic_Faunal_Data].[Unit number] = [Forms]![Fauna_Bone_Faunal_Unit_Description].[Unit number]
+26	2	    'End If ' MR July 17 2005
+27	1	    'SAJ comment out line 2 above, replace with below
+28	0	    If IsNull([Forms]![Fauna_Bone_Basic_Faunal_Data].[Unit number]) Then
+29	0	        Forms![Fauna_Bone_Basic_Faunal_Data].[Unit number] = Forms![Fauna_Bone_Faunal_Unit_Description].[Unit number]
+30	0	    End If
+31	0	Else
+32	0	    MsgBox "Please enter or select a Unit Number first", vbInformation, "No Unit Number"
+33	0	End If
+34	0	
+35	0	Exit_Button_Goto_BFD_Click:
+36	0	    Exit Sub
+37	0	
+38	0	Err_Button_Goto_BFD_Click:
+39	0	    If Err.Number = 2046 And Me.Dirty = False Then
+40	1	        'save record has failed  - DB might be Read only, added dirty check to make sure nothing added
+41	0	        Resume Next
+42	0	    Else
+43	0	        Call General_Error_Trap
+44	0	        Resume Exit_Button_Goto_BFD_Click
+45	0	    End If
+46	0	End Sub
+47	0	Sub Command25_Click()
+48	0	On Error GoTo Err_Command25_Click
+49	0	
+50	0	
+51	0	    DoCmd.DoMenuItem acFormBar, acRecordsMenu, 2, , acMenuVer70
+52	0	
+53	0	Exit_Command25_Click:
+54	0	    Exit Sub
+55	0	
+56	0	Err_Command25_Click:
+57	0	    MsgBox Err.Description
+58	0	    Resume Exit_Command25_Click
+59	0	    
+60	0	End Sub
+61	0	
+62	0	Private Sub Button67_Click()
+63	1	'replace macro bone.bone button
+64	0	On Error GoTo err_but67
+65	0	
+66	0	    DoCmd.OpenForm "Bone", acNormal
+67	0	    DoCmd.Close acForm, Me.Name
+68	0	Exit Sub
+69	0	
+70	0	err_but67:
+71	0	    Call General_Error_Trap
+72	0	    Exit Sub
+73	0	End Sub
+74	0	
+75	0	Private Sub cboFind_AfterUpdate()
+76	1	'new find combo by SAJ - NR remove filter msg 5/7/06
+77	0	On Error GoTo err_cboFind
+78	0	
+79	0	If Me![cboFind] <> "" Then
+80	0	    If Me.Filter <> "" Then
+81	2	        If Me.Filter <> "[Unit Number] = '" & Me![cboFind] & "'" Then
+82	1	    '        MsgBox "This form was opened to only show a particular Unit. This action has removed the filter and all records are available to view.", vbInformation, "Filter Removed"
+83	0	            Me.FilterOn = False
+84	0	        End If
+85	0	    End If
+86	0	
+87	0	    DoCmd.GoToControl "Unit Number"
+88	0	    DoCmd.FindRecord Me![cboFind]
+89	0	
+90	0	End If
+91	0	
+92	0	Exit Sub
+93	0	
+94	0	err_cboFind:
+95	0	    Call General_Error_Trap
+96	0	    Exit Sub
+97	0	End Sub
+98	0	
+99	0	Private Sub cboFind_NotInList(NewData As String, response As Integer)
+100	1	'stop not in list msg loop
+101	0	On Error GoTo err_cbofindNot
+102	0	
+103	0	    MsgBox "Sorry there is no FUD for this Unit", vbInformation, "No Match"
+104	0	    response = acDataErrContinue
+105	0	    
+106	0	    Me![cboFind].Undo
+107	0	Exit Sub
+108	0	
+109	0	err_cbofindNot:
+110	0	    Call General_Error_Trap
+111	0	    Exit Sub
+112	0	End Sub
+113	0	
+114	0	Private Sub cmdMenu_Click()
+115	1	'replace macro bone.bone button on button67
+116	0	On Error GoTo err_but67
+117	0	
+118	0	    DoCmd.OpenForm "Bone", acNormal
+119	0	    DoCmd.Close acForm, Me.Name
+120	0	Exit Sub
+121	0	
+122	0	err_but67:
+123	0	    Call General_Error_Trap
+124	0	    Exit Sub
+125	0	End Sub
+126	0	
+127	0	Private Sub Form_Activate()
+128	0	
+129	0	On Error GoTo err_activate
+130	1	    'request by NR 5/7/06 so when revisited is uptodate (mainly last F# entered)
+131	0	    Me.Requery
+132	1	    'saj 2008 - faunal wishlist, ensure focus is in cboFind everytime opened so unit number not overwritten
+133	0	    DoCmd.GoToControl "cboFind"
+134	0	Exit Sub
+135	0	
+136	0	err_activate:
+137	0	    Call General_Error_Trap
+138	0	    Exit Sub
+139	0	End Sub
+140	0	
+141	0	Private Sub Form_Current()
+142	1	'new season 2006, saj
+143	1	'show number of basic records on screen for each record
+144	0	On Error GoTo err_current
+145	0	Dim recCount, lastrec, pieces, elements
+146	0	
+147	1	'new 2009 lock unit number field if not a new entry
+148	0	If Me![Unit number] <> "" Then
+149	0	    Me![Unit number].Locked = True
+150	2	    'Me![Unit number].BackColor = 16763904 'kathy not like colour
+151	1	    Me![Unit number].BackColor = 12632256 'darker blue at top is too dark here
+152	0	Else
+153	0	    Me![Unit number].Locked = False
+154	0	    Me![Unit number].BackColor = 16777215
+155	0	End If
+156	0	
+157	0	If Me![Unit number] <> "" Then
+158	0	    recCount = DCount("[Unit Number]", "Fauna_Bone_Basic_Faunal_Data", "[Unit Number] = " & Me![Unit number])
+159	0	    Me![txtCount] = recCount
+160	0	    
+161	1	    'v2.2 add in counts of elements and pieces
+162	0	    pieces = DLookup("[TotalPieces]", "Q_Total_Pieces_and_Elements_Per_Unit", "[Unit Number] = " & Me![Unit number])
+163	0	    Me![txtPieces] = pieces
+164	0	    elements = DLookup("[TotalElements]", "Q_Total_Pieces_and_Elements_Per_Unit", "[Unit Number] = " & Me![Unit number])
+165	0	    Me![txtElements] = elements
+166	0	    
+167	0	    If recCount > 0 Then
+168	1	        'get the last record entered
+169	0	        Dim mydb As DAO.Database, myrs As DAO.Recordset
+170	0	        Set mydb = CurrentDb()
+171	2	        Set myrs = mydb.OpenRecordset("Select [GID] FROM [Fauna_Bone_Basic_Faunal_Data] WHERE [Unit Number] = " & Me![Unit number] & " AND Ucase([Letter Code]) = 'F' ORDER BY [Find number];", dbOpenSnapshot)
+172	0	        If Not (myrs.BOF And myrs.EOF) Then
+173	0	            myrs.MoveLast
+174	0	            lastrec = myrs![GID]
+175	0	        Else
+176	0	            lastrec = "No F Numbers"
+177	0	        End If
+178	0	        myrs.Close
+179	0	        Set myrs = Nothing
+180	0	        mydb.Close
+181	0	        Set mydb = Nothing
+182	0	    
+183	0	        Me![txtLast] = lastrec
+184	0	    Else
+185	0	         Me![txtLast] = "No F Numbers"
+186	0	    End If
+187	0	End If
+188	0	Exit Sub
+189	0	
+190	0	err_current:
+191	0	    Call General_Error_Trap
+192	0	    Exit Sub
+193	0	
+194	0	End Sub
+195	0	
+196	0	
+197	0	
+198	0	Private Sub Form_Open(Cancel As Integer)
+199	1	'NEW 2009 - show hide post ex fields depending on permissions
+200	0	On Error GoTo err_open
+201	0	
+202	0	If GetGeneralPermissions = "Admin" Then
+203	0	    Me![cboWorkingPhase].Visible = True
+204	0	    Me![cboConsumptionContext].Visible = True
+205	0	    Me![cboDepositionalContext].Visible = True
+206	0	Else
+207	0	    Me![cboWorkingPhase].Visible = False
+208	0	    Me![cboConsumptionContext].Visible = False
+209	0	    Me![cboDepositionalContext].Visible = False
+210	0	End If
+211	0	
+212	0	Exit Sub
+213	0	
+214	0	err_open:
+215	0	    Call General_Error_Trap
+216	0	    Exit Sub
+217	0	End Sub
+218	0	
+219	0	Sub open_short_Click()
+220	1	'altered season 2006 - capture no unit number - SAJ
+221	0	On Error GoTo Err_open_short_Click
+222	0	
+223	0	    Dim stDocName As String
+224	0	    Dim stLinkCriteria As String
+225	0	    
+226	0	If Me![Unit number] <> "" Then
+227	1	    'check intro by SAJ
+228	0	    stDocName = "Bone: Short Faunal Data"
+229	0	    
+230	0	    stLinkCriteria = "[Unit number]=" & Me![Unit number]
+231	0	    
+232	0	    DoCmd.Minimize
+233	0	    DoCmd.OpenForm stDocName, , , stLinkCriteria
+234	1	    'saj comment out and replace
+235	1	    'If [Forms]![Bone: Short Faunal Data].[Unit number] = 0 Then
+236	1	    '[Forms]![Bone: Short Faunal Data].[Unit number] = [Forms]![Fauna_Bone_Faunal_Unit_Description].[Unit number]
+237	1	    'End If
+238	0	    If IsNull([Forms]![Bone: Short Faunal Data].[Unit number]) Then
+239	0	        [Forms]![Bone: Short Faunal Data].[Unit number] = Forms![Fauna_Bone_Faunal_Unit_Description].[Unit number]
+240	0	    End If
+241	0	Else
+242	0	    MsgBox "Please enter or select a Unit Number first", vbInformation, "No Unit Number"
+243	0	End If
+244	0	Exit_open_short_Click:
+245	0	    Exit Sub
+246	0	
+247	0	Err_open_short_Click:
+248	0	    MsgBox Err.Description
+249	0	    Resume Exit_open_short_Click
+250	0	    
+251	0	End Sub
+252	0	Sub New_record_Click()
+253	0	On Error GoTo Err_New_record_Click
+254	0	
+255	0	
+256	0	    DoCmd.GoToRecord , , acNewRec
+257	1	    DoCmd.GoToControl "Unit Number" 'added by saj
+258	0	    Me![txtCount] = ""
+259	0	    Me![txtLast] = ""
+260	1	    '2008 wishlist saj
+261	0	    Me![txtPieces] = ""
+262	0	    Me![txtElements] = ""
+263	0	
+264	0	Exit_New_record_Click:
+265	0	    Exit Sub
+266	0	
+267	0	Err_New_record_Click:
+268	0	    MsgBox Err.Description
+269	0	    Resume Exit_New_record_Click
+270	0	    
+271	0	End Sub
+272	0	
+273	0	Private Sub Unit_number_AfterUpdate()
+274	1	'check existence of unit number - new 2008 wishlist - saj
+275	0	On Error GoTo err_unit
+276	0	
+277	0	    If IsNull(Me![Unit number].OldValue) Then
+278	0	        Dim checknum, unit
+279	0	        checknum = DLookup("[Unit number]", "[Fauna_Bone_Faunal_Unit_Description]", "[Unit number] = " & Me![Unit number])
+280	0	        If Not IsNull(checknum) Then
+281	1	            'exists
+282	0	            MsgBox "This unit number exists already, the system will take you to the record", vbInformation, "Duplicate Unit Number"
+283	0	            unit = Me![Unit number]
+284	1	            'Me![txtBag] = ""
+285	0	            Me.Undo
+286	0	            DoCmd.GoToControl Me![Unit number].Name
+287	0	            DoCmd.FindRecord unit
+288	0	        End If
+289	0	    End If
+290	0	
+291	0	Exit Sub
+292	0	
+293	0	err_unit:
+294	0	    Call General_Error_Trap
+295	0	    Exit Sub
+296	0	End Sub

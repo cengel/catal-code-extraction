@@ -1,0 +1,174 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Sub PostEx_BFD_BodyPortion(tblrun, Taxon, Element)
+5	1	'this code will update the bodyportion field on the bfd dependant on values in
+6	1	'taxon and element field.
+7	1	'It can be run to do the whole table (tblrun = true) or for an individual record on entry
+8	1	'which will carry in taxon and element
+9	0	On Error GoTo err_postex1
+10	0	Dim sql
+11	0	
+12	0	    If tblrun = True Then
+13	2	        sql = "UPDATE [Fauna_Bone_Basic_Faunal_Data] SET [Body Portion] = 'Skull' WHERE (Taxon between 1 and 199) AND ((Element between 1 AND 24) OR (Element = 118));"
+14	0	        DoCmd.RunSQL sql
+15	0	        
+16	2	        sql = "UPDATE [Fauna_Bone_Basic_Faunal_Data] SET [Body Portion] = 'Axial' WHERE (Taxon between 1 and 199) AND (Element between 25 AND 35);"
+17	0	        DoCmd.RunSQL sql
+18	0	        
+19	2	        sql = "UPDATE [Fauna_Bone_Basic_Faunal_Data] SET [Body Portion] = 'Girdle' WHERE (Taxon between 1 and 199) AND ((Element between 36 AND 37) OR (Element between 66 AND 72));"
+20	0	        DoCmd.RunSQL sql
+21	0	        
+22	2	        sql = "UPDATE [Fauna_Bone_Basic_Faunal_Data] SET [Body Portion] = 'Upperlimb' WHERE (Taxon between 1 and 199) AND ((Element between 38 AND 40) OR (Element between 74 AND 78) OR (Element =115));"
+23	0	        DoCmd.RunSQL sql
+24	0	        
+25	2	        sql = "UPDATE [Fauna_Bone_Basic_Faunal_Data] SET [Body Portion] = 'Lowerlimb' WHERE (Taxon between 1 and 199) AND ((Element between 41 AND 64) OR (Element between 79 AND 113));"
+26	0	        DoCmd.RunSQL sql
+27	0	        
+28	2	        sql = "UPDATE [Fauna_Bone_Basic_Faunal_Data] SET [Body Portion] = 'Unidentified' WHERE (Taxon between 1 and 199) AND (Element =116);"
+29	0	        DoCmd.RunSQL sql
+30	0	
+31	0	    Else
+32	1	        'must have element and taxon to proceed
+33	0	        If Taxon <> "" And Element <> "" Then
+34	0	            If (Taxon >= 1 And Taxon <= 199) And ((Element = 118) Or (Element >= 1 And Element <= 24)) Then
+35	0	                Forms![Fauna_Bone_Basic_Faunal_Data]![txtBodyPortion] = "Skull"
+36	0	
+37	0	            ElseIf (Taxon >= 1 And Taxon <= 199) And (Element >= 25 And Element <= 35) Then
+38	0	                Forms![Fauna_Bone_Basic_Faunal_Data]![txtBodyPortion] = "Axial"
+39	0	
+40	0	            ElseIf (Taxon >= 1 And Taxon <= 199) And (Element = 36 Or Element = 37) Then
+41	0	                Forms![Fauna_Bone_Basic_Faunal_Data]![txtBodyPortion] = "Girdle"
+42	0	
+43	0	            ElseIf (Taxon >= 1 And Taxon <= 199) And ((Element >= 38 And Element <= 40) Or (Element >= 74 And Element <= 78) Or (Element = 115)) Then
+44	0	                Forms![Fauna_Bone_Basic_Faunal_Data]![txtBodyPortion] = "Upperlimb"
+45	0	         
+46	0	            ElseIf (Taxon >= 1 And Taxon <= 199) And ((Element >= 41 And Element <= 64) Or (Element >= 79 And Element <= 113)) Then
+47	0	                Forms![Fauna_Bone_Basic_Faunal_Data]![txtBodyPortion] = "Lowerlimb"
+48	0	
+49	0	           
+50	0	
+51	0	            ElseIf (Taxon >= 1 And Taxon <= 199) And (Element = 116) Then
+52	0	                Forms![Fauna_Bone_Basic_Faunal_Data]![txtBodyPortion] = "Unidentified"
+53	0	    
+54	0	            ElseIf (Taxon >= 1 And Taxon <= 199) And (Element >= 66 And Element <= 72) Then
+55	0	                Forms![Fauna_Bone_Basic_Faunal_Data]![txtBodyPortion] = "Girdle"
+56	0	
+57	0	            End If
+58	0	        End If
+59	0	    End If
+60	0	Exit Sub
+61	0	
+62	0	err_postex1:
+63	0	    Call General_Error_Trap
+64	0	    Exit Sub
+65	0	End Sub
+66	0	
+67	0	Sub PostEx_BFD_SizeClass(tblrun, Taxon)
+68	1	'this code will update the size class field on the bfd dependant on values in
+69	1	'taxon field.
+70	1	'It can be run to do the whole table (tblrun = true) or for an individual record on entry
+71	1	'which will carry in taxon and element
+72	0	On Error GoTo err_postex2
+73	0	Dim sql
+74	0	
+75	0	    If tblrun = True Then
+76	2	        sql = "UPDATE [Fauna_Bone_Basic_Faunal_Data] SET [Size Class] = '02 size' WHERE (Taxon = 2) OR (Taxon = 50) OR (Taxon = 61) OR (Taxon between 64 and 69) OR (Taxon between 75 and 85) OR (Taxon between 95 and 98) OR (Taxon = 106) OR (Taxon between 153 and 158 );"
+77	0	        DoCmd.RunSQL sql
+78	0	    
+79	2	        sql = "UPDATE [Fauna_Bone_Basic_Faunal_Data] SET [Size Class] = '03 size' WHERE (Taxon = 3) OR (Taxon between 14 and 23) OR (Taxon = 30) OR (Taxon = 32) OR (Taxon = 51) OR (Taxon between 86 and 91);"
+80	0	        DoCmd.RunSQL sql
+81	0	    
+82	2	        sql = "UPDATE [Fauna_Bone_Basic_Faunal_Data] SET [Size Class] = '05 size' WHERE (Taxon = 5) OR (Taxon = 34) OR (Taxon = 37) OR (Taxon = 40) OR (Taxon between 42 and 44)  OR (Taxon between 46 and 47)  OR (Taxon = 100);"
+83	0	        DoCmd.RunSQL sql
+84	0	    
+85	2	        sql = "UPDATE [Fauna_Bone_Basic_Faunal_Data] SET [Size Class] = '07 size' WHERE (Taxon between 7 and 8) OR (Taxon = 11) OR (Taxon = 13) OR (Taxon between 25 and 28) OR (Taxon = 31)  OR (Taxon = 33)  OR (Taxon = 41) OR (Taxon = 45);"
+86	0	        DoCmd.RunSQL sql
+87	0	    Else
+88	1	    'must have taxon to proceed
+89	0	        If Taxon <> "" Then
+90	1	            'size class 2
+91	0	            If Taxon = 2 Or Taxon = 50 Or Taxon = 61 Or (Taxon >= 64 And Taxon <= 69) Or (Taxon >= 75 And Taxon <= 85) Or (Taxon >= 95 And Taxon <= 98) Or Taxon = 106 Or (Taxon >= 153 And Taxon <= 158) Then
+92	0	                Forms![Fauna_Bone_Basic_Faunal_Data]![txtSizeClass] = "02 size"
+93	1	            'size class 3
+94	0	            ElseIf Taxon = 3 Or (Taxon >= 14 And Taxon <= 23) Or (Taxon >= 14 And Taxon <= 23) Or Taxon = 30 Or Taxon = 32 Or Taxon = 51 Or (Taxon >= 86 And Taxon <= 91) Then
+95	0	                Forms![Fauna_Bone_Basic_Faunal_Data]![txtSizeClass] = "03 size"
+96	1	            'size class 5
+97	0	            ElseIf Taxon = 5 Or Taxon = 34 Or Taxon = 37 Or Taxon = 40 Or (Taxon >= 42 And Taxon <= 44) Or Taxon = 46 Or Taxon = 47 Or Taxon = 100 Then
+98	0	                Forms![Fauna_Bone_Basic_Faunal_Data]![txtSizeClass] = "05 size"
+99	1	            'size class 7
+100	0	            ElseIf Taxon = 7 Or Taxon = 8 Or Taxon = 11 Or Taxon = 13 Or (Taxon >= 25 And Taxon <= 28) Or Taxon = 31 Or Taxon = 33 Or Taxon = 41 Or Taxon = 45 Then
+101	0	                Forms![Fauna_Bone_Basic_Faunal_Data]![txtSizeClass] = "07 size"
+102	0	
+103	0	            End If
+104	0	        End If
+105	0	    End If
+106	0	Exit Sub
+107	0	
+108	0	err_postex2:
+109	0	    Call General_Error_Trap
+110	0	    Exit Sub
+111	0	End Sub
+112	0	
+113	0	Sub PostEx_PostCran_ElementPortion(tblrun, ProxDist)
+114	1	'this code will update the element portion field on the post cran dependant on values in
+115	1	'taxon field.
+116	1	'It can be run to do the whole table (tblrun = true) or for an individual record on entry
+117	1	'which will carry in proximal/distal value
+118	0	On Error GoTo err_postex3
+119	0	Dim sql
+120	0	
+121	0	    If tblrun = True Then
+122	2	        sql = "UPDATE [Fauna_Bone_Postcranial] SET [Element Portion] = 'Complete' WHERE [Proximal/Distal] = 10;"
+123	0	        DoCmd.RunSQL sql
+124	0	    
+125	2	        sql = "UPDATE [Fauna_Bone_Postcranial] SET [Element Portion] = 'Proximal End' WHERE [Proximal/Distal] between 1 and 3;"
+126	0	        DoCmd.RunSQL sql
+127	0	    
+128	2	        sql = "UPDATE [Fauna_Bone_Postcranial] SET [Element Portion] = 'Shaft' WHERE [Proximal/Distal] between 4 and 6;"
+129	0	        DoCmd.RunSQL sql
+130	0	    
+131	2	        sql = "UPDATE [Fauna_Bone_Postcranial] SET [Element Portion] = 'Distal End' WHERE [Proximal/Distal] between 7 and 9;"
+132	0	        DoCmd.RunSQL sql
+133	0	        
+134	2	        sql = "UPDATE [Fauna_Bone_Postcranial] SET [Element Portion] = 'Vertebral Body' WHERE [Proximal/Distal] = 20;"
+135	0	        DoCmd.RunSQL sql
+136	0	        
+137	2	        sql = "UPDATE [Fauna_Bone_Postcranial] SET [Element Portion] = 'Vertebral Processes' WHERE [Proximal/Distal] between 21 and 22;"
+138	0	        DoCmd.RunSQL sql
+139	0	        
+140	2	        sql = "UPDATE [Fauna_Bone_Postcranial] SET [Element Portion] = 'Indeterminate' WHERE [Proximal/Distal] <1;"
+141	0	        DoCmd.RunSQL sql
+142	0	        
+143	2	        sql = "UPDATE [Fauna_Bone_Postcranial] SET [Element Portion] = 'Body and Processes' WHERE [Proximal/Distal] between 23 and 24;"
+144	0	        DoCmd.RunSQL sql
+145	0	    Else
+146	1	    'must have prox/distal to proceed
+147	0	        If ProxDist <> "" Then
+148	1	            'set element portion
+149	0	            If ProxDist = 10 Then
+150	0	                Forms![Fauna_Bone_Postcranial]![txtElementPortion] = "Complete"
+151	0	            ElseIf ProxDist >= 1 And ProxDist <= 3 Then
+152	0	                Forms![Fauna_Bone_Postcranial]![txtElementPortion] = "Proximal End"
+153	0	            ElseIf ProxDist >= 4 And ProxDist <= 6 Then
+154	0	                Forms![Fauna_Bone_Postcranial]![txtElementPortion] = "Shaft"
+155	0	            ElseIf ProxDist >= 7 And ProxDist <= 9 Then
+156	0	                Forms![Fauna_Bone_Postcranial]![txtElementPortion] = "Distal End"
+157	0	            ElseIf ProxDist = 20 Then
+158	0	                Forms![Fauna_Bone_Postcranial]![txtElementPortion] = "Vertebral Body"
+159	0	            ElseIf ProxDist >= 21 And ProxDist <= 22 Then
+160	0	                Forms![Fauna_Bone_Postcranial]![txtElementPortion] = "Vertebral Processes"
+161	0	            ElseIf ProxDist < 1 Then
+162	0	                Forms![Fauna_Bone_Postcranial]![txtElementPortion] = "Indeterminate"
+163	0	            ElseIf ProxDist >= 23 And ProxDist <= 24 Then
+164	0	                Forms![Fauna_Bone_Postcranial]![txtElementPortion] = "Vertebral Processes"
+165	0	            End If
+166	0	        End If
+167	0	    End If
+168	0	Exit Sub
+169	0	
+170	0	err_postex3:
+171	0	    Call General_Error_Trap
+172	0	    Exit Sub
+173	0	End Sub
+174	0	

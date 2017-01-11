@@ -1,0 +1,49 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	1	'*********************************************************
+4	1	' This form is new in v9.1 to give read only view of spaces
+5	1	'*********************************************************
+6	0	
+7	0	Private Sub cmdgotounit_Click()
+8	1	'***********************************************************
+9	1	' Open space form with a filter on the space number related
+10	1	' to the button. Open as readonly.
+11	1	'
+12	1	' SAJ v9.1
+13	1	'***********************************************************
+14	0	On Error GoTo Err_cmdGoToSpace_Click
+15	0	
+16	0	    Dim stDocName As String
+17	0	    Dim stLinkCriteria As String
+18	0	
+19	0	    stDocName = "frm_pop_phases_in_SpaceBuilding"
+20	0	    
+21	2	    stLinkCriteria = "[PhaseInBuilding]= '" & Me![BuildingPhase] & "'"
+22	0	    
+23	0	    DoCmd.OpenForm stDocName, acNormal, , stLinkCriteria, acFormPropertySettings
+24	0	    
+25	0	    Exit Sub
+26	0	
+27	0	Err_cmdGoToSpace_Click:
+28	0	    Call General_Error_Trap
+29	0	    Exit Sub
+30	0	End Sub
+31	0	
+32	0	
+33	0	
+34	0	Private Sub Form_Delete(Cancel As Integer)
+35	1	'must check that no units are associated with this phase before allow delete
+36	0	On Error GoTo err_delete
+37	0	
+38	0	    Dim checkit
+39	2	    checkit = DCount("[Unit Number]", "[Exca: Unit Sheet]", "[PhaseInBuilding] = '" & Me!BuildingPhase & "'")
+40	0	    If checkit > 0 Then
+41	0	        MsgBox "Units are associated with this Phase. It cannot be deleted as it is in use", vbInformation, "Action Cancelled"
+42	0	        Cancel = True
+43	0	    End If
+44	0	Exit Sub
+45	0	
+46	0	err_delete:
+47	0	    Call General_Error_Trap
+48	0	    Exit Sub
+49	0	End Sub

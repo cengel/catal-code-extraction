@@ -1,0 +1,215 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cboFilterUnit_AfterUpdate()
+5	1	'filter - new 2011
+6	0	On Error GoTo err_filter
+7	0	
+8	0	    If Me![cboFilterUnit] <> "" Then
+9	0	        Me.Filter = "[Unit] = " & Me![cboFilterUnit]
+10	0	        Me.FilterOn = True
+11	0	        Me![cboFilterUnit] = ""
+12	0	        Me![cmdRemoveFilter].Visible = True
+13	0	    End If
+14	0	
+15	0	Exit Sub
+16	0	
+17	0	err_filter:
+18	0	    Call General_Error_Trap
+19	0	    Exit Sub
+20	0	End Sub
+21	0	
+22	0	Private Sub cboFilterUnit_NotInList(NewData As String, response As Integer)
+23	1	'stop not in list msg loop - new 2011
+24	0	On Error GoTo err_cbofilterNot
+25	0	
+26	0	    MsgBox "Sorry this Unit does not exist in this database yet", vbInformation, "No Match"
+27	0	    response = acDataErrContinue
+28	0	    
+29	0	    Me![cboFilterUnit].Undo
+30	0	Exit Sub
+31	0	
+32	0	err_cbofilterNot:
+33	0	    Call General_Error_Trap
+34	0	    Exit Sub
+35	0	End Sub
+36	0	
+37	0	
+38	0	Private Sub cmdAddNew_Click()
+39	1	'********************************************************************
+40	1	' Create new record
+41	1	' SAJ
+42	1	'********************************************************************
+43	0	On Error GoTo Err_cmdgonew_Click
+44	0	
+45	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+46	0	    DoCmd.GoToRecord , , acNewRec
+47	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Form![Analyst].Name
+48	0	    DoCmd.GoToControl Me![Unit].Name
+49	0	    Exit Sub
+50	0	
+51	0	Err_cmdgonew_Click:
+52	0	    Call General_Error_Trap
+53	0	    Exit Sub
+54	0	End Sub
+55	0	
+56	0	Private Sub cmdDelete_Click()
+57	1	'new 2011 - control the delete of a record to ensure both tables are clear
+58	0	On Error GoTo err_del
+59	0	
+60	0	Dim response
+61	0	    response = MsgBox("Do you really want to remove Sample " & Me!Sample & " from Unit " & Me!Unit & " and all its related material records from your database?", vbYesNo + vbQuestion, "Remove Record")
+62	0	    If response = vbYes Then
+63	0	        Dim sql
+64	0	        
+65	0	        sql = "Delete from [Anthracology: Dendro_Handpicked] WHERE [unit] = " & Me![Unit] & " and [sample] = " & Me![Sample] & ";"
+66	0	        DoCmd.RunSQL sql
+67	0	        
+68	0	        sql = "Delete from [Anthracology: Basic_Handpicked] WHERE [unit] = " & Me![Unit] & " and [sample] = " & Me![Sample] & ";"
+69	0	        DoCmd.RunSQL sql
+70	0	        
+71	0	        Me.Requery
+72	0	        MsgBox "Deletion completed", vbInformation, "Done"
+73	0	        
+74	0	        Me![cboFilterUnit].Requery
+75	0	        
+76	0	    End If
+77	0	Exit Sub
+78	0	
+79	0	err_del:
+80	0	    Call General_Error_Trap
+81	0	    Exit Sub
+82	0	End Sub
+83	0	
+84	0	Private Sub cmdGoFirst_Click()
+85	1	'********************************************************************
+86	1	' Go to first record
+87	1	' SAJ
+88	1	'********************************************************************
+89	0	On Error GoTo Err_cmdgofirst_Click
+90	0	
+91	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+92	0	    DoCmd.GoToRecord , , acFirst
+93	0	
+94	0	    Exit Sub
+95	0	
+96	0	Err_cmdgofirst_Click:
+97	0	    Call General_Error_Trap
+98	0	    Exit Sub
+99	0	End Sub
+100	0	
+101	0	Private Sub cmdGoLast_Click()
+102	1	'********************************************************************
+103	1	' Go to last record
+104	1	' SAJ
+105	1	'********************************************************************
+106	0	On Error GoTo Err_cmdgoLast_Click
+107	0	
+108	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+109	0	    DoCmd.GoToRecord , , acLast
+110	0	
+111	0	    Exit Sub
+112	0	
+113	0	Err_cmdgoLast_Click:
+114	0	    Call General_Error_Trap
+115	0	    Exit Sub
+116	0	End Sub
+117	0	
+118	0	Private Sub cmdGoNext_Click()
+119	1	'********************************************************************
+120	1	' Go to next record
+121	1	' SAJ
+122	1	'********************************************************************
+123	0	On Error GoTo Err_cmdgoNext_Click
+124	0	
+125	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+126	0	    DoCmd.GoToRecord , , acNext
+127	0	
+128	0	    Exit Sub
+129	0	
+130	0	Err_cmdgoNext_Click:
+131	0	    If Err.Number = 2105 Then
+132	0	        MsgBox "No more records to show", vbInformation, "End of records"
+133	0	    Else
+134	0	        Call General_Error_Trap
+135	0	    End If
+136	0	    Exit Sub
+137	0	End Sub
+138	0	
+139	0	Private Sub cmdGoPrev_Click()
+140	1	'********************************************************************
+141	1	' Go to previous record
+142	1	' SAJ
+143	1	'********************************************************************
+144	0	On Error GoTo Err_cmdgoprevious_Click
+145	0	
+146	2	    ''DoCmd.GoToControl Me![frm_subform_basic].Name
+147	0	    DoCmd.GoToRecord , , acPrevious
+148	0	
+149	0	    Exit Sub
+150	0	
+151	0	Err_cmdgoprevious_Click:
+152	0	    If Err.Number = 2105 Then
+153	0	        MsgBox "Already at the begining of the recordset", vbInformation, "Begining of records"
+154	0	    Else
+155	0	        Call General_Error_Trap
+156	0	    End If
+157	0	    Exit Sub
+158	0	End Sub
+159	0	
+160	0	
+161	0	
+162	0	Private Sub cmdRemoveFilter_Click()
+163	1	'remove unit filter - new 2011
+164	0	On Error GoTo err_Removefilter
+165	0	
+166	0	    Me![cboFilterUnit] = ""
+167	0	    Me.Filter = ""
+168	0	    Me.FilterOn = False
+169	0	    
+170	0	    DoCmd.GoToControl "cboFind"
+171	0	    Me![cmdRemoveFilter].Visible = False
+172	0	   
+173	0	
+174	0	Exit Sub
+175	0	
+176	0	err_Removefilter:
+177	0	    Call General_Error_Trap
+178	0	    Exit Sub
+179	0	End Sub
+180	0	
+181	0	
+182	0	
+183	0	Private Sub Flot_Sample_number_Change()
+184	1	'comment out saj
+185	1	'Update_GID
+186	0	End Sub
+187	0	
+188	0	
+189	0	Private Sub Flot_Sample_number_Enter()
+190	1	'SAJ before versioning - this causes sql update error to be returned to user even
+191	1	'they have not tried to edit anything, most confusing and unnecessary so removed
+192	1	' 11/01/05
+193	1	'Update_GID
+194	0	End Sub
+195	0	
+196	0	Private Sub Sample_Change()
+197	1	'comment out saj
+198	1	'Update_GID
+199	0	End Sub
+200	0	
+201	0	
+202	0	Private Sub Sample_Enter()
+203	1	'SAJ before versioning - this causes sql update error to be returned to user even
+204	1	'they have not tried to edit anything, most confusing and unnecessary so removed
+205	1	' 11/01/05
+206	1	'Update_GID
+207	0	End Sub
+208	0	
+209	0	
+210	0	Private Sub Unit_Change()
+211	1	'Update_GID
+212	0	End Sub
+213	0	
+214	0	
+215	0	

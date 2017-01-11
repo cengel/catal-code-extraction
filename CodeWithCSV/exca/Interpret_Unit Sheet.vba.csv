@@ -1,0 +1,88 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Sub Go_first_Click()
+5	0	On Error GoTo Err_Go_first_Click
+6	0	
+7	0	
+8	0	    DoCmd.GoToRecord , , acFirst
+9	0	
+10	0	Exit_Go_first_Click:
+11	0	    Exit Sub
+12	0	
+13	0	Err_Go_first_Click:
+14	0	    MsgBox Err.Description
+15	0	    Resume Exit_Go_first_Click
+16	0	    
+17	0	End Sub
+18	0	Sub go_previous_Click()
+19	0	On Error GoTo Err_go_previous_Click
+20	0	
+21	0	
+22	0	    DoCmd.GoToRecord , , acPrevious
+23	0	
+24	0	Exit_go_previous_Click:
+25	0	    Exit Sub
+26	0	
+27	0	Err_go_previous_Click:
+28	0	    MsgBox Err.Description
+29	0	    Resume Exit_go_previous_Click
+30	0	    
+31	0	End Sub
+32	0	Sub find_unit_Click()
+33	0	On Error GoTo Err_find_unit_Click
+34	0	
+35	0	    Screen.PreviousControl.SetFocus
+36	0	    Unit_Number.SetFocus
+37	0	    DoCmd.DoMenuItem acFormBar, acEditMenu, 10, , acMenuVer70
+38	0	
+39	0	Exit_find_unit_Click:
+40	0	    Exit Sub
+41	0	
+42	0	Err_find_unit_Click:
+43	0	    MsgBox Err.Description
+44	0	    Resume Exit_find_unit_Click
+45	0	    
+46	0	End Sub
+47	0	Sub go_next_Click()
+48	0	On Error GoTo Err_go_next_Click
+49	0	
+50	0	
+51	0	    DoCmd.GoToRecord , , acNext
+52	0	
+53	0	Exit_go_next_Click:
+54	0	    Exit Sub
+55	0	
+56	0	Err_go_next_Click:
+57	0	    MsgBox Err.Description
+58	0	    Resume Exit_go_next_Click
+59	0	    
+60	0	End Sub
+61	0	Sub go_last_Click()
+62	0	On Error GoTo Err_go_last_Click
+63	0	
+64	0	
+65	0	    DoCmd.GoToRecord , , acLast
+66	0	
+67	0	Exit_go_last_Click:
+68	0	    Exit Sub
+69	0	
+70	0	Err_go_last_Click:
+71	0	    MsgBox Err.Description
+72	0	    Resume Exit_go_last_Click
+73	0	    
+74	0	End Sub
+75	0	Sub Close_Click()
+76	0	On Error GoTo err_close_Click
+77	0	
+78	0	
+79	0	    DoCmd.Close
+80	0	
+81	0	Exit_close_Click:
+82	0	    Exit Sub
+83	0	
+84	0	err_close_Click:
+85	0	    MsgBox Err.Description
+86	0	    Resume Exit_close_Click
+87	0	    
+88	0	End Sub

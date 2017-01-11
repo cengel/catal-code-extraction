@@ -1,0 +1,14 @@
+1	0	Option Compare Database
+2	0	
+3	0	Private Sub Form_Current()
+4	0	If Me.Parent![cbo_year_studied].Value = 6 Then
+5	0	    Me!cbo_heat.Enabled = False
+6	0	    Me!yn_coated.Enabled = False
+7	0	    Me.sub_Clay_texture.Enabled = False
+8	0	
+9	0	Else
+10	0	    Me!cbo_heat.Enabled = True
+11	0	    Me!yn_coated.Enabled = True
+12	0	    Me.sub_Clay_texture.Enabled = True
+13	0	End If
+14	0	End Sub

@@ -1,0 +1,19 @@
+1	0	Option Compare Database
+2	0	
+3	0	Private Sub cmdAddRelation_Click()
+4	1	'new 2008
+5	1	'allow relationship to be entered = bones  from same individual skeleton found in different Units
+6	0	On Error GoTo err_skel
+7	0	
+8	0	    Dim strArgs
+9	0	    strArgs = Forms![FRM_SkeletonDescription]![txtUnit] & "." & Forms![FRM_SkeletonDescription]![txtIndivid]
+10	0	    DoCmd.OpenForm "FRM_pop_Add_Skel_Relation", acNormal, , , acFormPropertySettings, acDialog, strArgs
+11	0	    Me.Requery
+12	0	
+13	0	Exit Sub
+14	0	
+15	0	err_skel:
+16	0	    MsgBox Err.Description
+17	0	    Exit Sub
+18	0	
+19	0	End Sub

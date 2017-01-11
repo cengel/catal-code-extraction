@@ -1,0 +1,598 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	Private Sub FindFacility(what)
+4	1	'original code moved from Find Unit button - kept very basic
+5	1	'saj season 2006
+6	0	On Error GoTo Err_find_unit_Click
+7	0	
+8	0	
+9	0	    Dim stDocName As String
+10	0	    Dim stLinkCriteria As String
+11	0	    Dim message As String, title As String, Unit As String, default As String
+12	0	    Dim Material As String, descrip As String
+13	0	    If what = "unit" Then
+14	1	        message = "Enter a unit number"   ' Set prompt.
+15	1	        title = "Searching Crate Register" ' Set title.
+16	1	        default = "1000"   ' Set default.
+17	1	        ' Display message, title, and default value.
+18	0	        Unit = InputBox(message, title, default)
+19	1	        If Unit = "" Then Exit Sub 'saj catch no entry
+20	3	        'stLinkCriteria = "[Unit Number] like '*" & Unit & "*'"
+21	1	        'saj - jules wants to just find numbers directly
+22	0	        stLinkCriteria = "[Unit Number] =" & Unit
+23	0	    ElseIf what = "material" Then
+24	1	        message = "Enter a material"   ' Set prompt.
+25	1	        title = "Searching Crate Register" ' Set title.
+26	1	        default = ""   ' Set default.
+27	1	        ' Display message, title, and default value.
+28	0	        Material = InputBox(message, title, default)
+29	1	        If Material = "" Then Exit Sub 'saj catch no entry
+30	2	        stLinkCriteria = "[Material] like '*" & Material & "*'"
+31	0	    ElseIf what = "descrip" Then
+32	1	        message = "Enter a description"   ' Set prompt.
+33	1	        title = "Searching Crate Register" ' Set title.
+34	1	        default = ""   ' Set default.
+35	1	        ' Display message, title, and default value.
+36	0	        descrip = InputBox(message, title, default)
+37	1	        If descrip = "" Then Exit Sub 'saj catch no entry
+38	2	        stLinkCriteria = "[TempDescription] like '*" & descrip & "*'"
+39	0	    ElseIf what = "find" Then
+40	1	        message = "Enter a description"   ' Set prompt.
+41	1	        title = "Searching Crate Register" ' Set title.
+42	1	        default = ""   ' Set default.
+43	1	        ' Display message, title, and default value.
+44	0	        Dim un, lett, num
+45	1	        message = "Enter a Unit"   ' Set prompt.
+46	0	        un = InputBox(message, title, default)
+47	1	        If un = "" Then Exit Sub 'saj catch no entry
+48	1	        message = "Enter a letter code"   ' Set prompt.
+49	0	        lett = InputBox(message, title, default)
+50	1	        If lett = "" Then Exit Sub 'saj catch no entry
+51	1	        message = "Enter a number"   ' Set prompt.
+52	0	        num = InputBox(message, title, default)
+53	1	        If num = "" Then Exit Sub 'saj catch no entry
+54	2	        stLinkCriteria = "[Unit number] =" & un & " AND [FindLetter] ='" & lett & "' AND [FindNumber] = " & num
+55	0	        
+56	0	    Else
+57	0	        Exit Sub
+58	0	    End If
+59	0	    stDocName = "Store: Find Unit in Crate2"
+60	3	    'stLinkCriteria = "[Unit Number] like '*" & Unit & "*'"
+61	1	    'DoCmd.OpenForm stDocName, acFormDS, , stLinkCriteria
+62	0	    DoCmd.OpenForm stDocName, acNormal, , stLinkCriteria
+63	0	    
+64	0	Exit_find_unit_Click:
+65	0	    Exit Sub
+66	0	
+67	0	Err_find_unit_Click:
+68	0	    MsgBox Err.Description
+69	0	    Resume Exit_find_unit_Click
+70	0	End Sub
+71	0	
+72	0	Private Sub Update_GID()
+73	1	'sub used by crate fields written
+74	0	On Error GoTo err_updategid
+75	0	
+76	0	Me![txtFullCrateName] = Me![cboCrateLetter] & Me![txtCrateNumber]
+77	0	If Me![cboCrateLetter] <> "" And Me![txtCrateNumber] <> "" Then
+78	0	    Me.Refresh
+79	0	End If
+80	0	Exit Sub
+81	0	
+82	0	err_updategid:
+83	0	    Call General_Error_Trap
+84	0	    Exit Sub
+85	0	End Sub
+86	0	
+87	0	Private Sub cboCrateLetter_AfterUpdate()
+88	1	'update field that holds crate number and letter together
+89	0	On Error GoTo err_cboCrate
+90	0	
+91	0	    Update_GID
+92	0	    
+93	0	Exit Sub
+94	0	
+95	0	err_cboCrate:
+96	0	    Call General_Error_Trap
+97	0	    Exit Sub
+98	0	
+99	0	End Sub
+100	0	
+101	0	Private Sub cboCrateLetter_NotInList(NewData As String, Response As Integer)
+102	1	'only admin can add new codes
+103	0	On Error GoTo err_new
+104	0	
+105	0	    If GetGeneralPermissions = "Admin" Then
+106	0	        Response = acDataErrContinue
+107	0	        Dim retVal
+108	0	        retVal = MsgBox("Are you sure you want to add this completely new crate code prefix", vbQuestion + vbYesNo, "Confirm New Code")
+109	0	        If retVal = vbYes Then
+110	0	            Me![cboCrateLetter].LimitToList = False
+111	0	            Me![txtCrateNumber] = 1
+112	0	            Me![txtFullCrateName] = Me![cboCrateLetter] & Me![txtCrateNumber]
+113	0	            DoCmd.RunCommand acCmdSaveRecord
+114	0	            Me![cboCrateLetter].LimitToList = True
+115	0	        End If
+116	0	    End If
+117	0	
+118	0	Exit Sub
+119	0	
+120	0	err_new:
+121	0	    Call General_Error_Trap
+122	0	    Exit Sub
+123	0	End Sub
+124	0	
+125	0	Private Sub cboFindUnit_AfterUpdate()
+126	1	'********************************************
+127	1	'Find the selected crate from the list
+128	1	'********************************************
+129	0	On Error GoTo err_cboFindUnit_AfterUpdate
+130	0	
+131	0	    If Me![cboFindUnit] <> "" Then
+132	0	        DoCmd.GoToControl "txtFullCrateName"
+133	0	        DoCmd.FindRecord Me![cboFindUnit]
+134	0	        Me![cboFindUnit] = ""
+135	0	    End If
+136	0	Exit Sub
+137	0	
+138	0	err_cboFindUnit_AfterUpdate:
+139	0	    Call General_Error_Trap
+140	0	    Exit Sub
+141	0	End Sub
+142	0	
+143	0	Private Sub cboFindUnit_NotInList(NewData As String, Response As Integer)
+144	1	'stop not in list msg loop
+145	0	On Error GoTo err_cbofindNot
+146	0	
+147	0	    MsgBox "Sorry this value cannot be found in the list", vbInformation, "No Match"
+148	0	    Response = acDataErrContinue
+149	0	    
+150	0	    Me![cboFindUnit].Undo
+151	0	Exit Sub
+152	0	
+153	0	err_cbofindNot:
+154	0	    Call General_Error_Trap
+155	0	    Exit Sub
+156	0	End Sub
+157	0	
+158	0	Private Sub cmdAddNew_Click()
+159	0	On Error GoTo err_cmdAddNew_Click
+160	0	
+161	0	    DoCmd.GoToRecord acActiveDataObject, , acNewRec
+162	1	    'new record allow GID entry
+163	0	    Me![txtCrateNumber].Enabled = True
+164	0	    Me![txtCrateNumber].Locked = False
+165	0	    Me![txtCrateNumber].BackColor = 16777215
+166	0	    Me![cboCrateLetter].Enabled = True
+167	0	    Me![cboCrateLetter].Locked = False
+168	0	    Me![cboCrateLetter].BackColor = 16777215
+169	0	 
+170	0	    DoCmd.GoToControl "cboCrateLetter"
+171	0	Exit Sub
+172	0	
+173	0	err_cmdAddNew_Click:
+174	0	    Call General_Error_Trap
+175	0	    Exit Sub
+176	0	End Sub
+177	0	
+178	0	Private Sub cmdCodes_Click()
+179	1	'just a quick view of the crate codes
+180	0	On Error GoTo err_codes
+181	0	
+182	0	    DoCmd.OpenForm "frm_pop_cratecodes", acNormal, , , acFormReadOnly, acDialog
+183	0	    
+184	0	Exit Sub
+185	0	
+186	0	err_codes:
+187	0	    Call General_Error_Trap
+188	0	    Exit Sub
+189	0	End Sub
+190	0	
+191	0	Private Sub cmdDelete_Click()
+192	1	'allow administrators to delete a crate and all its contents
+193	0	On Error GoTo err_delete
+194	0	
+195	0	    Dim retVal
+196	0	    retVal = MsgBox("This action will delete crate " & Me![Crate Number] & " and all its contents, are you really sure you want to delete this crate?", vbCritical + vbYesNo, "Confirm Deletion")
+197	0	    If retVal = vbYes Then
+198	1	        'ok proceed
+199	0	        On Error Resume Next
+200	0	        Dim mydb As DAO.Database, wrkdefault As Workspace, sql1, sql2, myq As QueryDef
+201	0	        Dim myrs As DAO.Recordset
+202	0	        Set wrkdefault = DBEngine.Workspaces(0)
+203	0	        Set mydb = CurrentDb
+204	0	        
+205	1	        ' Start of outer transaction.
+206	0	        wrkdefault.BeginTrans
+207	0	        
+208	2	        'this method doesn't seem to work as it says you need to use dbSeeChanges for tables that use an identity field
+209	3	        'sql1 = "DELETE FROM [Store: Units in Crates] WHERE [Crate Number] = '" & Me![Crate Number] & "';"
+210	3	        'sql2 = "DELETE FROM [Store: Crate Register] WHERE [Crate Number] = '" & Me![Crate Number] & "';"
+211	1	        'Set myq = mydb.CreateQueryDef("")
+212	1	        'myq.sql = sql1
+213	1	        'myq.Execute
+214	0	                
+215	1	        'myq.close
+216	1	        'Set myq = Nothing
+217	0	        
+218	1	        'Set myq = mydb.CreateQueryDef("")
+219	1	        'myq.sql = sql2
+220	1	        'myq.Execute
+221	0	                
+222	1	        'myq.close
+223	1	        'Set myq = Nothing
+224	0	        If spString <> "" Then
+225	0	
+226	0	
+227	0	            Set myq = mydb.CreateQueryDef("")
+228	0	            myq.Connect = spString
+229	0	            myq.ReturnsRecords = False
+230	2	            myq.sql = "sp_Store_Delete_AllCrateContents " & Me![txtCrateNumber] & ",'" & Me![cboCrateLetter] & "'"
+231	0	            myq.Execute
+232	0	    
+233	2	            myq.sql = "sp_Store_Delete_Crate " & Me![txtCrateNumber] & ",'" & Me![cboCrateLetter] & "'"
+234	0	            myq.Execute
+235	0	            myq.Close
+236	0	            Set myq = Nothing
+237	0	    
+238	0	        Else
+239	0	            MsgBox "Sorry but this crate cannot be deleted at the moment, restart the database and try again", vbCritical, "Error"
+240	0	        
+241	0	        End If
+242	0	        
+243	0	        If Err.Number = 0 Then
+244	0	            wrkdefault.CommitTrans
+245	0	            MsgBox "Crate Deleted"
+246	0	            Me.Requery
+247	0	            Me![cboFindUnit].Requery
+248	0	        Else
+249	0	            wrkdefault.Rollback
+250	0	            MsgBox "A problem has occured and the deletion has been cancelled. The error message is: " & Err.Description
+251	0	        End If
+252	0	
+253	0	        mydb.Close
+254	0	        Set mydb = Nothing
+255	0	        wrkdefault.Close
+256	0	        Set wrkdefault = Nothing
+257	0	    
+258	0	    End If
+259	0	    
+260	0	    
+261	0	Exit Sub
+262	0	
+263	0	err_delete:
+264	0	    Call General_Error_Trap
+265	0	    Exit Sub
+266	0	End Sub
+267	0	
+268	0	Private Sub cmdFindDescrip_Click()
+269	0	Call FindFacility("Descrip")
+270	0	
+271	0	End Sub
+272	0	
+273	0	Private Sub cmdLocateFind_Click()
+274	0	Call FindFacility("find")
+275	0	End Sub
+276	0	
+277	0	Private Sub cmdMaterial_Click()
+278	0	Call FindFacility("material")
+279	0	
+280	0	End Sub
+281	0	
+282	0	Private Sub cmdPrint_Click()
+283	0	On Error GoTo err_print
+284	0	
+285	0	    Dim stDocName As String
+286	0	
+287	0	    stDocName = "Finds Store: Crate Register"
+288	2	    DoCmd.OpenReport stDocName, acPreview, , "[Crate Number] = '" & Me![txtFullCrateName] & "'"
+289	0	
+290	0	
+291	0	    Exit Sub
+292	0	
+293	0	err_print:
+294	0	    Call General_Error_Trap
+295	0	    Exit Sub
+296	0	End Sub
+297	0	
+298	0	Private Sub cmdMove_Click()
+299	1	'new season 2007 - move entire contents of one crate into another
+300	0	On Error GoTo err_cmdMove
+301	0	
+302	0	    DoCmd.OpenForm "frm_subform_AdminMoveCrateContents", acNormal, , , acFormPropertySettings, acDialog
+303	0	
+304	0	Exit Sub
+305	0	
+306	0	err_cmdMove:
+307	0	    Call General_Error_Trap
+308	0	    Exit Sub
+309	0	
+310	0	End Sub
+311	0	
+312	0	Private Sub cmdRenameCrate_Click()
+313	1	'rename a crate and associate contents with new name
+314	0	On Error GoTo err_cmdRename_Click
+315	0	
+316	0	    Dim retVal, nwname, nwnum, sql1, sql2
+317	0	    nwname = InputBox("Please enter the new Crate name below - just characters here, the number will entered next", "Crate Name")
+318	0	    If nwname <> "" Then
+319	0	        nwname = UCase(nwname)
+320	0	        nwnum = InputBox("Please enter the new Crate number - just numbers here", "Crate Number")
+321	0	        If nwnum <> "" Then
+322	0	            retVal = MsgBox("This action will rename crate " & Me![Crate Number] & " and all its contents to " & nwname & nwnum & ", are you really sure you want to continue?", vbCritical + vbYesNo, "Confirm Rename")
+323	0	            If retVal = vbYes Then
+324	6	                sql1 = "UPDATE [Store: Units in Crates] SET [Store: Units in Crates].[Crate Number] = '" & nwname & nwnum & "', [Store: Units in Crates].CrateNumber = " & nwnum & ", [Store: Units in Crates].CrateLetter = '" & nwname & "' WHERE [Crate Number] ='" & Me![Crate Number] & "';"
+325	6	                sql2 = "UPDATE [Store: Crate Register] SET [Store: Crate Register].[Crate Number] = '" & nwname & nwnum & "', [Store: Crate Register].CrateNumber = " & nwnum & ", [Store: Crate Register].CrateLetter = '" & nwname & "' WHERE [Crate Number] ='" & Me![Crate Number] & "';"
+326	0	                On Error Resume Next
+327	0	                Dim mydb As DAO.Database, wrkdefault As Workspace, myq As QueryDef
+328	0	                Set wrkdefault = DBEngine.Workspaces(0)
+329	0	                Set mydb = CurrentDb
+330	0	        
+331	1	                ' Start of outer transaction.
+332	0	                wrkdefault.BeginTrans
+333	0	                Set myq = mydb.CreateQueryDef("")
+334	0	                myq.sql = sql1
+335	0	                myq.Execute
+336	0	    
+337	0	                myq.sql = sql2
+338	0	                myq.Execute
+339	0	                
+340	0	                myq.Close
+341	0	                Set myq = Nothing
+342	0	            
+343	0	                If Err.Number = 0 Then
+344	0	                    wrkdefault.CommitTrans
+345	0	                    MsgBox "Crate Renamed"
+346	0	                    Me.Requery
+347	0	                    Me![cboFindUnit].Requery
+348	0	                    DoCmd.GoToControl "txtFullCrateName"
+349	0	                    DoCmd.FindRecord nwname & nwnum
+350	0	                Else
+351	0	                    wrkdefault.Rollback
+352	0	                    MsgBox "A problem has occured and the rename has been cancelled. The error message is: " & Err.Description
+353	0	                End If
+354	0	
+355	0	                mydb.Close
+356	0	                Set mydb = Nothing
+357	0	                wrkdefault.Close
+358	0	                Set wrkdefault = Nothing
+359	0	            End If
+360	0	        End If
+361	0	    End If
+362	0	    
+363	0	    
+364	0	Exit Sub
+365	0	
+366	0	err_cmdRename_Click:
+367	0	    Call General_Error_Trap
+368	0	    Exit Sub
+369	0	End Sub
+370	0	
+371	0	Private Sub Command21_Click()
+372	0	On Error GoTo err_cmdAddNew_Click
+373	0	
+374	0	    DoCmd.Close acForm, Me.Name
+375	0	Exit Sub
+376	0	
+377	0	err_cmdAddNew_Click:
+378	0	    Call General_Error_Trap
+379	0	    Exit Sub
+380	0	End Sub
+381	0	
+382	0	Private Sub find_unit_Click()
+383	0	
+384	0	Call FindFacility("unit")
+385	0	
+386	1	'On Error GoTo Err_find_unit_Click
+387	1	'
+388	1	'
+389	1	'    Dim stDocName As String
+390	1	'    Dim stLinkCriteria As String
+391	1	'    Dim message As String, title As String, Unit As String, default As String
+392	1	'
+393	2	'message = "Enter a unit number"   ' Set prompt.
+394	2	'title = "Searching Crate Register" ' Set title.
+395	2	'default = "1000"   ' Set default.
+396	2	'' Display message, title, and default value.
+397	1	'Unit = InputBox(message, title, default)
+398	1	'
+399	1	'    stDocName = "Store: Find Unit in Crate2"
+400	3	'    stLinkCriteria = "[Unit Number] like '*" & Unit & "*'"
+401	2	'    'DoCmd.OpenForm stDocName, acFormDS, , stLinkCriteria
+402	1	'    DoCmd.OpenForm stDocName, acNormal, , stLinkCriteria
+403	1	'
+404	1	'Exit_find_unit_Click:
+405	1	'    Exit Sub
+406	1	'
+407	1	'Err_find_unit_Click:
+408	1	'    MsgBox Err.Description
+409	1	'    Resume Exit_find_unit_Click
+410	0	    
+411	0	End Sub
+412	0	
+413	0	
+414	0	Private Sub Form_AfterUpdate()
+415	1	'moved from before update
+416	0	On Error GoTo err_after
+417	0	
+418	1	'this was looping and not letting move on thro records - dirty check seems to cure this
+419	0	If Me.Dirty Then
+420	0	    Me![Date Changed] = Now()
+421	0	End If
+422	0	Exit Sub
+423	0	
+424	0	err_after:
+425	0	    Call General_Error_Trap
+426	0	    Exit Sub
+427	0	End Sub
+428	0	
+429	0	
+430	0	
+431	0	
+432	0	
+433	0	Sub find_Click()
+434	0	On Error GoTo Err_find_Click
+435	0	
+436	0	
+437	0	    Screen.PreviousControl.SetFocus
+438	0	    DoCmd.DoMenuItem acFormBar, acEditMenu, 10, , acMenuVer70
+439	0	
+440	0	Exit_find_Click:
+441	0	    Exit Sub
+442	0	
+443	0	Err_find_Click:
+444	0	    MsgBox Err.Description
+445	0	    Resume Exit_find_Click
+446	0	    
+447	0	End Sub
+448	0	
+449	0	
+450	0	Sub Close_Click()
+451	0	On Error GoTo Err_close_Click
+452	0	
+453	0	
+454	0	    DoCmd.Close
+455	0	
+456	0	Exit_close_Click:
+457	0	    Exit Sub
+458	0	
+459	0	Err_close_Click:
+460	0	    MsgBox Err.Description
+461	0	    Resume Exit_close_Click
+462	0	    
+463	0	End Sub
+464	0	
+465	0	Private Sub Form_Current()
+466	1	'new code for 2006
+467	0	On Error GoTo err_current
+468	0	
+469	0	    If (Me![cboCrateLetter] = "" Or IsNull(Me![cboCrateLetter])) And (Me![txtCrateNumber] = "" Or IsNull(Me![txtCrateNumber])) Then
+470	1	        'new record allow GID entry
+471	0	        Me![cboCrateLetter].Enabled = True
+472	0	        Me![cboCrateLetter].Locked = False
+473	0	        Me![cboCrateLetter].BackColor = 16777215
+474	0	        Me![txtCrateNumber].Enabled = True
+475	0	        Me![txtCrateNumber].Locked = False
+476	0	        Me![txtCrateNumber].BackColor = 16777215
+477	0	        Me![cboMainMaterial].Locked = False
+478	0	        Me![cboMainMaterial].Enabled = True
+479	0	        Me![cboMainMaterial].BackStyle = 1
+480	0	    Else
+481	1	        'existing entry lock
+482	0	        Me![cboCrateLetter].Enabled = False
+483	0	        Me![cboCrateLetter].Locked = True
+484	0	        Me![cboCrateLetter].BackColor = Me.Section(0).BackColor
+485	0	        Me![txtCrateNumber].Enabled = False
+486	0	        Me![txtCrateNumber].Locked = True
+487	0	        Me![txtCrateNumber].BackColor = Me.Section(0).BackColor
+488	0	        Me![cboMainMaterial].Locked = True
+489	0	        Me![cboMainMaterial].Enabled = False
+490	0	        Me![cboMainMaterial].BackStyle = 0
+491	0	    End If
+492	0	    
+493	0	    If GetGeneralPermissions = "Admin" Then
+494	0	        Me![cboMainMaterial].Locked = False
+495	0	        Me![cboMainMaterial].Enabled = True
+496	0	        Me![cboMainMaterial].BackStyle = 1
+497	0	    End If
+498	0	Exit Sub
+499	0	
+500	0	
+501	0	err_current:
+502	0	    Call General_Error_Trap
+503	0	    Exit Sub
+504	0	End Sub
+505	0	
+506	0	Private Sub Form_Open(Cancel As Integer)
+507	1	'on error goto err_open
+508	0	
+509	0	If GetGeneralPermissions = "Admin" Then
+510	0	    Me![cmdDelete].Visible = True
+511	0	    Me![cmdRenameCrate].Visible = True
+512	1	    'jules request this hidden season 2008 - v3.1
+513	1	    'Me![cmdMove].Visible = True
+514	0	Else
+515	0	    Me![cmdDelete].Visible = False
+516	0	    Me![cmdRenameCrate].Visible = False
+517	1	     'jules request this stay hidden season 2008 - v3.1
+518	1	    'Me![cmdMove].Visible = False
+519	0	End If
+520	0	
+521	0	DoCmd.GoToControl "cboFindUnit"
+522	0	Exit Sub
+523	0	
+524	0	
+525	0	err_open:
+526	0	    Call General_Error_Trap
+527	0	    Exit Sub
+528	0	
+529	0	End Sub
+530	0	
+531	0	Private Sub go_next_Click()
+532	0	On Error GoTo Err_go_next_Click
+533	0	
+534	0	
+535	0	    DoCmd.GoToRecord , , acNext
+536	0	
+537	0	Exit_go_next_Click:
+538	0	    Exit Sub
+539	0	
+540	0	Err_go_next_Click:
+541	0	    Call General_Error_Trap
+542	0	    Resume Exit_go_next_Click
+543	0	End Sub
+544	0	
+545	0	Private Sub go_previous2_Click()
+546	0	On Error GoTo Err_go_previous2_Click
+547	0	
+548	0	
+549	0	    DoCmd.GoToRecord , , acPrevious
+550	0	
+551	0	Exit_go_previous2_Click:
+552	0	    Exit Sub
+553	0	
+554	0	Err_go_previous2_Click:
+555	0	    Call General_Error_Trap
+556	0	    Resume Exit_go_previous2_Click
+557	0	End Sub
+558	0	
+559	0	Private Sub go_to_first_Click()
+560	0	On Error GoTo Err_go_to_first_Click
+561	0	
+562	0	
+563	0	    DoCmd.GoToRecord , , acFirst
+564	0	
+565	0	Exit_go_to_first_Click:
+566	0	    Exit Sub
+567	0	
+568	0	Err_go_to_first_Click:
+569	0	    Call General_Error_Trap
+570	0	    Resume Exit_go_to_first_Click
+571	0	End Sub
+572	0	
+573	0	Private Sub go_to_last_Click()
+574	0	On Error GoTo Err_go_last_Click
+575	0	
+576	0	
+577	0	    DoCmd.GoToRecord , , acLast
+578	0	
+579	0	Exit_go_last_Click:
+580	0	    Exit Sub
+581	0	
+582	0	Err_go_last_Click:
+583	0	    Call General_Error_Trap
+584	0	    Resume Exit_go_last_Click
+585	0	End Sub
+586	0	
+587	0	Private Sub txtCrateNumber_AfterUpdate()
+588	1	'update field that holds crate number and letter together
+589	0	On Error GoTo err_txtCrateNum
+590	0	
+591	0	    Update_GID
+592	0	    
+593	0	Exit Sub
+594	0	
+595	0	err_txtCrateNum:
+596	0	    Call General_Error_Trap
+597	0	    Exit Sub
+598	0	End Sub

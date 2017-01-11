@@ -1,0 +1,145 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdCancel_Click()
+5	1	'close with no action
+6	0	On Error GoTo err_cancel
+7	0	
+8	0	    DoCmd.Close acForm, Me.Name
+9	0	    
+10	0	
+11	0	Exit Sub
+12	0	
+13	0	err_cancel:
+14	0	    Call General_Error_Trap
+15	0	    Exit Sub
+16	0	End Sub
+17	0	
+18	0	Private Sub cmdOK_Click()
+19	1	'NEW 2009 season ok take the phase number and fill out field
+20	0	On Error GoTo err_cmdOK
+21	0	    
+22	1	    'first round implementation when field was simply in Unit Sheet table (assumption unit can only
+23	1	    'be phased to 1 space or building.
+24	1	    'If Me![cboSelect] <> "" Then
+25	1	    '    Forms![Exca: Unit Sheet]![Phase] = Me!cboSelect
+26	1	    'End If
+27	0	    
+28	1	    'second round - a unit can be phased to more than one space - but only once within that space
+29	1	    'must take unit number from unit sheet
+30	0	    Dim Unit, getBuildingorSpace, getDivider
+31	0	    If Me![cboSelect] <> "" Then
+32	0	        Unit = Forms![Exca: Unit Sheet]![Unit Number]
+33	1	        getDivider = InStr(Me!cboSelect, ".") 'format is B42.A or Sp115.1 etc etc
+34	0	        getBuildingorSpace = Left(Me!cboSelect, getDivider - 1)
+35	0	    
+36	1	        'is this a new entry for this unit or an overwrite of an existing entry for this space or building
+37	0	        Dim checkRec, sql
+38	2	        checkRec = DLookup("OccupationPhase", "[Exca: Units Occupation Phase]", "[Unit] = " & Unit & " AND [OccupationPhase] like '" & getBuildingorSpace & "%%'")
+39	0	        If IsNull(checkRec) Then
+40	1	            'no phasing yet for this building or space so simply add
+41	2	            sql = "INSERT INTO [Exca: Units Occupation Phase] ([Unit], [OccupationPhase]) VALUES (" & Unit & ",'" & Me!cboSelect & "');"
+42	0	            DoCmd.RunSQL sql
+43	0	        Else
+44	1	            'it exists so must update it
+45	4	            sql = "UPDATE [Exca: Units Occupation Phase] SET [OccupationPhase] = '" & Me![cboSelect] & "' WHERE Unit = " & Unit & " AND [OccupationPhase] = '" & checkRec & "';"
+46	0	            DoCmd.RunSQL sql
+47	0	        End If
+48	0	        DoCmd.Close acForm, Me.Name
+49	0	    Else
+50	0	        MsgBox "You must select a phase from the list or press cancel to leave this form", vbInformation, "No Phase Selected"
+51	0	        
+52	0	    End If
+53	0	    
+54	0	    
+55	0	Exit Sub
+56	0	
+57	0	err_cmdOK:
+58	0	    Call General_Error_Trap
+59	0	    Exit Sub
+60	0	End Sub
+61	0	
+62	0	Private Sub cmdRemove_Click()
+63	1	'remove phase number for this unit
+64	0	On Error GoTo err_cmdRemove
+65	1	    'first round implementation when field was simply in Unit Sheet table (assumption unit can only
+66	1	    'Forms![Exca: Unit Sheet]![Phase] = ""
+67	0	    
+68	1	    'second round - a unit can be phased to more than one space - but only once within that space
+69	1	    'must take unit number from unit sheet
+70	0	    Dim Unit, getEquals, Phase, getNumber, sql, resp
+71	0	
+72	0	    Unit = Forms![Exca: Unit Sheet]![Unit Number]
+73	0	 resp = MsgBox("This will remove all the phasing associated with Unit " & Unit & " - ARE YOU SURE?" & Chr(13) & Chr(13) & "To remove one phase item only: on the main unit sheet click over the arrow to the right of the specific phase and press delete.", vbCritical + vbYesNo, "Confirm Action")
+74	0	 If resp = vbYes Then
+75	1	    getEquals = InStr(Me!cboSelect.RowSource, "=") 'format is =Sp115.1 or B42. etc etc
+76	1	    'getNumber = right(Me!cboSelect.RowSource, Len(Me!cboSelect.RowSource) - (getEquals - 1))
+77	0	    getNumber = Mid(Me!cboSelect.RowSource, getEquals + 1, (Len(Me!cboSelect.RowSource) - 1) - getEquals)
+78	0	    If InStr(Me!cboSelect.RowSource, "Space") > 0 Then
+79	1	        'its space
+80	0	        Phase = "Sp" & getNumber & "."
+81	0	    Else
+82	1	        'its building
+83	0	        Phase = "B" & getNumber & "."
+84	0	        
+85	0	    End If
+86	0	    
+87	1	    'delete phasing for this space or building
+88	4	    ''sql = "DELETE FROM [Exca: Units Occupation Phase] WHERE Unit = " & Unit & " AND [OccupationPhase] like '" & Phase & "%%';"
+89	3	    ''2010 - this code would only work where the phase has been put in exactly in the correct format of eg: sp1004. but this doesn't always
+90	4	    ''happen as not enfored = any not in this format eg: just in as '5' will not be deleted. This is giving in correct impression of functionality
+91	2	    ''simply taking this SQL down to unit number which is the same effect
+92	0	    sql = "DELETE FROM [Exca: Units Occupation Phase] WHERE Unit = " & Unit & ";"
+93	0	    DoCmd.RunSQL sql
+94	0	       
+95	0	End If
+96	0	    DoCmd.Close acForm, Me.Name
+97	0	Exit Sub
+98	0	
+99	0	err_cmdRemove:
+100	0	    Call General_Error_Trap
+101	0	    Exit Sub
+102	0	End Sub
+103	0	
+104	0	Private Sub Form_Open(Cancel As Integer)
+105	1	'this form is new 2009 to deal with phasing - it must present a list of phases relevant to
+106	1	'the units space or building
+107	0	On Error GoTo err_open
+108	0	
+109	1	    'get the recordsource from the combo from the openargs
+110	0	    If Not IsNull(Me.OpenArgs) Then
+111	0	        Me!cboSelect.RowSource = Me.OpenArgs
+112	0	        Me!cboSelect.Requery
+113	0	        
+114	0	        Dim Unit, getEquals, getNumber, Phase, phasedalready, sql
+115	0	        Unit = Forms![Exca: Unit Sheet]![Unit Number]
+116	1	        getEquals = InStr(Me!cboSelect.RowSource, "=") 'format is =Sp115.1 or B42. etc etc
+117	1	        'getNumber = right(Me!cboSelect.RowSource, Len(Me!cboSelect.RowSource) - (getEquals - 1))
+118	0	        getNumber = Mid(Me!cboSelect.RowSource, getEquals + 1, (Len(Me!cboSelect.RowSource) - 1) - getEquals)
+119	0	        If InStr(Me!cboSelect.RowSource, "Space") > 0 Then
+120	1	            'its space
+121	0	            Phase = "Sp" & getNumber & "."
+122	0	        Else
+123	1	            'its building
+124	0	            Phase = "B" & getNumber & "."
+125	0	        End If
+126	0	        
+127	2	        phasedalready = DCount("[OccupationPhase]", "[Exca: Units Occupation Phase]", "[OccupationPhase] like '" & Phase & "%%'")
+128	0	        Me!cmdRemove.Caption = "Remove Unit from Phasing of " & Phase
+129	0	        If phasedalready >= 1 Then
+130	0	            Me!cmdRemove.Enabled = True
+131	0	            
+132	0	        Else
+133	0	            Me!cmdRemove.Enabled = False
+134	0	        End If
+135	0	    Else
+136	0	        MsgBox "Form opened with no parametres. Invalid action. The form will now close.", vbInformation, "No OpenArgs"
+137	0	        DoCmd.Close acForm, Me.Name
+138	0	    End If
+139	0	
+140	0	Exit Sub
+141	0	
+142	0	err_open:
+143	0	    Call General_Error_Trap
+144	0	    Exit Sub
+145	0	End Sub

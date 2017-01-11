@@ -1,0 +1,39 @@
+1	0	Option Compare Database
+2	0	
+3	0	Option Explicit
+4	0	
+5	0	Sub SortBodySherd()
+6	0	
+7	1	'first deal with surface treatment - sep from warecode
+8	0	Dim mydb As DAO.Database, myrs As DAO.Recordset, WareCode As String, sql As String, streatment, newwarecode As String
+9	0	Set mydb = CurrentDb
+10	0	Set myrs = mydb.OpenRecordset("ceramics_body_sherds", dbOpenDynaset)
+11	0	
+12	0	If Not (myrs.BOF And myrs.EOF) Then
+13	0	    myrs.MoveFirst
+14	0	    Do Until myrs.EOF
+15	0	        WareCode = myrs![WARE CODE]
+16	0	        If InStr(WareCode, ",") Then
+17	0	            Debug.Print myrs![Unit] & myrs![WARE CODE]
+18	0	        Else
+19	0	            streatment = Right(myrs![WARE CODE], 1)
+20	0	            newwarecode = Left(myrs![WARE CODE], Len(myrs![WARE CODE]) - 1)
+21	0	            If IsNumeric(streatment) Then
+22	2	                sql = "INSERT INTO [ceramics_body_sherd_surfacetreatment] ([unit], [ware code], [surfacetreatment]) VALUES (" & myrs![Unit] & ", '" & newwarecode & "'," & streatment & ");"
+23	0	                DoCmd.RunSQL sql
+24	0	            End If
+25	0	            myrs.Edit
+26	0	                myrs![WARE CODE] = newwarecode
+27	0	            myrs.Update
+28	0	            
+29	0	        End If
+30	0	        myrs.MoveNext
+31	0	    Loop
+32	0	End If
+33	0	
+34	0	myrs.Close
+35	0	Set myrs = Nothing
+36	0	mydb.Close
+37	0	Set mydb = Nothing
+38	0	
+39	0	End Sub

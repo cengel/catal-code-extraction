@@ -1,0 +1,145 @@
+1	0	Option Compare Database
+2	0	
+3	0	Private Sub Befehl0_Click()
+4	0	On Error GoTo Err_Befehl0_Click
+5	0	
+6	0	
+7	0	    Screen.PreviousControl.SetFocus
+8	0	    DoCmd.RunCommand acCmdFind
+9	0	
+10	0	Exit_Befehl0_Click:
+11	0	    Exit Sub
+12	0	
+13	0	Err_Befehl0_Click:
+14	0	    MsgBox Err.Description
+15	0	    Resume Exit_Befehl0_Click
+16	0	    
+17	0	End Sub
+18	0	Private Sub Befehl1_Click()
+19	0	On Error GoTo Err_Befehl1_Click
+20	0	
+21	0	    Dim stDocName As String
+22	0	
+23	0	    stDocName = "Exca: Building Sheet"
+24	0	    DoCmd.OpenReport stDocName, acNormal
+25	0	
+26	0	Exit_Befehl1_Click:
+27	0	    Exit Sub
+28	0	
+29	0	Err_Befehl1_Click:
+30	0	    MsgBox Err.Description
+31	0	    Resume Exit_Befehl1_Click
+32	0	    
+33	0	End Sub
+34	0	
+35	0	
+36	0	Private Sub Form_Load()
+37	0	
+38	0	Dim prt As Printer
+39	0	
+40	0	For Each prt In Printers
+41	0	    Me.cbo_Printer.AddItem prt.DeviceName
+42	0	Next prt
+43	0	
+44	0	End Sub
+45	0	
+46	0	Private Sub print_bulk_Click()
+47	0	On Error GoTo Err_print_bulk_Click
+48	0	
+49	0	Dim retval, retvalprint
+50	0	Dim msg
+51	0	Dim checknum
+52	0	Dim prt As Printer
+53	0	
+54	0	If Not IsNull(Me.cbo_Printer.Value) Or Not IsNull(Me.Path) Then
+55	0	
+56	0	If Not IsNull(Me.cbo_Printer.Value) Then
+57	0	msg = "Do you want to send all units in between " & Me!unit_from & " and " & Me!unit_to & " to the printer (" & Me.cbo_Printer.Value & ")?"
+58	0	
+59	0	retval = MsgBox(msg, vbInformation + vbYesNo, "print bulk")
+60	0	        
+61	0	            If retval = vbNo Then
+62	0	                MsgBox "Ok, units will not be printed!", vbExclamation, "noprinting!"
+63	0	            Else
+64	0	                Application.Printer = Application.Printers(Me.cbo_Printer.Value)
+65	0	                
+66	0	                For I = unit_from To unit_to
+67	0	                    checknum = DLookup("[Category]", "[Exca: Unit Sheet]", "[Unit Number] = " & I)
+68	0	                    If Not IsNull(checknum) Then
+69	0	                        If LCase(checknum) = "layer" Or LCase(checknum) = "cluster" Then
+70	0	                            reportname = "R_Unit_Sheet_layercluster"
+71	0	                        ElseIf LCase(checknum) = "cut" Then
+72	0	                            reportname = "R_Unit_Sheet_cut"
+73	0	                        ElseIf LCase(checknum) = "skeleton" Then
+74	0	                            reportname = "R_Unit_Sheet_skeleton"
+75	0	                        End If
+76	0	                        
+77	0	                        If reportname <> "" Then
+78	0	                            DoCmd.OpenReport reportname, acPreview, , "[unit number] = " & I, acHidden
+79	0	                            Set Reports(reportname).Printer = Application.Printer
+80	0	                            DoCmd.OpenReport reportname, acViewNormal, , "[unit number] = " & I
+81	0	                            DoCmd.Close acReport, reportname
+82	0	                        Else
+83	0	                        
+84	0	                        End If
+85	0	                    Else
+86	0	                        Debug.Print "Unit " & I & " does not contain enough information (category)!", vbExclamation, "nocategory!"
+87	0	                    End If
+88	0	                    checknum = ""
+89	0	                    reportname = ""
+90	0	                
+91	0	                Next I
+92	0	            
+93	0	            End If
+94	0	ElseIf Not IsNull(Me.Path) Then
+95	0	
+96	0	msg = "Do you want to export all units in between " & Me!unit_from & " and " & Me!unit_to & " as pdfs to " & Me.Path & "?"
+97	0	
+98	0	retval = MsgBox(msg, vbInformation + vbYesNo, "pdf bulk")
+99	0	        
+100	0	            If retval = vbNo Then
+101	0	                MsgBox "Ok, units will not be exported!", vbExclamation, "nopdf!"
+102	0	            Else
+103	0	                
+104	0	                For I = unit_from To unit_to
+105	0	                    checknum = DLookup("[Category]", "[Exca: Unit Sheet]", "[Unit Number] = " & I)
+106	0	                    If Not IsNull(checknum) Then
+107	0	                        If LCase(checknum) = "layer" Or LCase(checknum) = "cluster" Then
+108	0	                            reportname = "R_Unit_Sheet_layercluster"
+109	0	                        ElseIf LCase(checknum) = "cut" Then
+110	0	                            reportname = "R_Unit_Sheet_cut"
+111	0	                        ElseIf LCase(checknum) = "skeleton" Then
+112	0	                            reportname = "R_Unit_Sheet_skeleton"
+113	0	                        End If
+114	0	                        
+115	0	                        If reportname <> "" Then
+116	0	                            DoCmd.OpenReport reportname, acViewPreview, , "[unit number] = " & I
+117	0	                            DoCmd.OutputTo acOutputReport, "", acFormatPDF, Path & "\U" & I & ".pdf", False
+118	0	                            DoCmd.Close acReport, reportname
+119	0	                        Else
+120	0	                        
+121	0	                        End If
+122	0	                    Else
+123	0	                        Debug.Print "Unit " & I & " does not contain enough information (category)!", vbExclamation, "nocategory!"
+124	0	                    End If
+125	0	                    checknum = ""
+126	0	                    reportname = ""
+127	0	                
+128	0	                Next I
+129	0	            
+130	0	            End If
+131	0	
+132	0	
+133	0	End If
+134	0	
+135	0	Else
+136	0	    MsgBox "You have to select a printer or enter a pathname first!", vbExclamation, "noprinter!"
+137	0	End If
+138	0	
+139	0	
+140	0	Exit Sub
+141	0	
+142	0	Err_print_bulk_Click:
+143	0	    Call General_Error_Trap
+144	0	    Exit Sub
+145	0	End Sub

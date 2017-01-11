@@ -1,0 +1,328 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	
+4	0	Private Sub cmdAbrasion_Click()
+5	0	On Error GoTo err_Ab
+6	0	
+7	0	    DoCmd.OpenForm "Frm_Admin_Abrasion", acNormal
+8	0	Exit Sub
+9	0	
+10	0	err_Ab:
+11	0	    Call General_Error_Trap
+12	0	    Exit Sub
+13	0	End Sub
+14	0	
+15	0	Private Sub cmdBaseSection_Click()
+16	0	On Error GoTo err_Base
+17	0	
+18	0	    DoCmd.OpenForm "Frm_Admin_BaseSection", acNormal
+19	0	Exit Sub
+20	0	
+21	0	err_Base:
+22	0	    Call General_Error_Trap
+23	0	    Exit Sub
+24	0	
+25	0	End Sub
+26	0	
+27	0	Private Sub cmdBurnishing_Click()
+28	0	On Error GoTo err_Burn
+29	0	
+30	0	    DoCmd.OpenForm "Frm_Admin_Burnishing", acNormal
+31	0	Exit Sub
+32	0	
+33	0	err_Burn:
+34	0	    Call General_Error_Trap
+35	0	    Exit Sub
+36	0	End Sub
+37	0	
+38	0	Private Sub cmdClose_Click()
+39	0	On Error GoTo err_close
+40	0	
+41	0	DoCmd.OpenForm "Frm_Menu"
+42	0	DoCmd.Close acForm, Me.Name
+43	0	
+44	0	
+45	0	Exit Sub
+46	0	
+47	0	err_close:
+48	0	    Call General_Error_Trap
+49	0	    Exit Sub
+50	0	End Sub
+51	0	
+52	0	Private Sub cmdClues_Click()
+53	0	On Error GoTo err_Cl
+54	0	
+55	0	    DoCmd.OpenForm "Frm_Admin_CluesForUse", acNormal
+56	0	Exit Sub
+57	0	
+58	0	err_Cl:
+59	0	    Call General_Error_Trap
+60	0	    Exit Sub
+61	0	End Sub
+62	0	
+63	0	Private Sub cmdColour_Click()
+64	0	On Error GoTo err_Clr
+65	0	
+66	0	    DoCmd.OpenForm "Frm_Admin_Colour", acNormal
+67	0	Exit Sub
+68	0	
+69	0	err_Clr:
+70	0	    Call General_Error_Trap
+71	0	    Exit Sub
+72	0	End Sub
+73	0	
+74	0	Private Sub cmdCompleteness_Click()
+75	0	On Error GoTo err_Co
+76	0	
+77	0	    DoCmd.OpenForm "Frm_Admin_Completeness", acNormal
+78	0	Exit Sub
+79	0	
+80	0	err_Co:
+81	0	    Call General_Error_Trap
+82	0	    Exit Sub
+83	0	End Sub
+84	0	
+85	0	Private Sub cmdCondition_Click()
+86	0	On Error GoTo err_con
+87	0	
+88	0	    DoCmd.OpenForm "Frm_Admin_ConditionDetail", acNormal
+89	0	Exit Sub
+90	0	
+91	0	err_con:
+92	0	    Call General_Error_Trap
+93	0	    Exit Sub
+94	0	End Sub
+95	0	
+96	0	Private Sub cmdElement_Click()
+97	0	On Error GoTo err_E
+98	0	
+99	0	    DoCmd.OpenForm "Frm_Admin_Element", acNormal
+100	0	Exit Sub
+101	0	
+102	0	err_E:
+103	0	    Call General_Error_Trap
+104	0	    Exit Sub
+105	0	End Sub
+106	0	
+107	0	Private Sub cmdCoreLocation_Click()
+108	0	On Error GoTo err_Core
+109	0	
+110	0	    DoCmd.OpenForm "Frm_Admin_CoreLocation", acNormal
+111	0	Exit Sub
+112	0	
+113	0	err_Core:
+114	0	    Call General_Error_Trap
+115	0	    Exit Sub
+116	0	End Sub
+117	0	
+118	0	Private Sub cmdFiringQuality_Click()
+119	0	On Error GoTo err_Firing
+120	0	
+121	0	    DoCmd.OpenForm "Frm_Admin_FiringQuality", acNormal
+122	0	Exit Sub
+123	0	
+124	0	err_Firing:
+125	0	    Call General_Error_Trap
+126	0	    Exit Sub
+127	0	End Sub
+128	0	
+129	0	Private Sub cmdForming_Enter()
+130	0	On Error GoTo err_Frm
+131	0	
+132	0	    DoCmd.OpenForm "Frm_Admin_Forming", acNormal
+133	0	Exit Sub
+134	0	
+135	0	err_Frm:
+136	0	    Call General_Error_Trap
+137	0	    Exit Sub
+138	0	End Sub
+139	0	
+140	0	Private Sub cmdHandleTypes_Click()
+141	0	On Error GoTo err_Ht
+142	0	
+143	0	    DoCmd.OpenForm "Frm_Admin_HandleTypes", acNormal
+144	0	Exit Sub
+145	0	
+146	0	err_Ht:
+147	0	    Call General_Error_Trap
+148	0	    Exit Sub
+149	0	End Sub
+150	0	
+151	0	Private Sub cmdHardness_Click()
+152	0	On Error GoTo err_Hardn
+153	0	
+154	0	    DoCmd.OpenForm "Frm_Admin_Hardness", acNormal
+155	0	Exit Sub
+156	0	
+157	0	err_Hardn:
+158	0	    Call General_Error_Trap
+159	0	    Exit Sub
+160	0	End Sub
+161	0	
+162	0	Private Sub cmdInclusions_Click()
+163	0	On Error GoTo err_I
+164	0	
+165	0	    DoCmd.OpenForm "Frm_Admin_Inclusions", acNormal
+166	0	Exit Sub
+167	0	
+168	0	err_I:
+169	0	    Call General_Error_Trap
+170	0	    Exit Sub
+171	0	End Sub
+172	0	
+173	0	Private Sub cmdLetterCode_Click()
+174	0	On Error GoTo err_Lc
+175	0	
+176	0	    DoCmd.OpenForm "Frm_Admin_LetterCode", acNormal
+177	0	Exit Sub
+178	0	
+179	0	err_Lc:
+180	0	    Call General_Error_Trap
+181	0	    Exit Sub
+182	0	End Sub
+183	0	
+184	0	Private Sub cmdPeriods_Click()
+185	0	On Error GoTo err_P
+186	0	
+187	0	    DoCmd.OpenForm "Frm_Admin_Period", acNormal
+188	0	Exit Sub
+189	0	
+190	0	err_P:
+191	0	    Call General_Error_Trap
+192	0	    Exit Sub
+193	0	End Sub
+194	0	
+195	0	Private Sub cmdRimSection_Click()
+196	0	On Error GoTo err_Rim
+197	0	
+198	0	    DoCmd.OpenForm "Frm_Admin_RimSection", acNormal
+199	0	Exit Sub
+200	0	
+201	0	err_Rim:
+202	0	    Call General_Error_Trap
+203	0	    Exit Sub
+204	0	End Sub
+205	0	
+206	0	Private Sub cmdSecondary_Click()
+207	0	On Error GoTo err_Sec
+208	0	
+209	0	    DoCmd.OpenForm "Frm_Admin_SecondaryUse", acNormal
+210	0	Exit Sub
+211	0	
+212	0	err_Sec:
+213	0	    Call General_Error_Trap
+214	0	    Exit Sub
+215	0	End Sub
+216	0	
+217	0	Private Sub cmdSherdSection_Click()
+218	0	On Error GoTo err_SS
+219	0	
+220	0	    DoCmd.OpenForm "Frm_Admin_SherdSection", acNormal
+221	0	Exit Sub
+222	0	
+223	0	err_SS:
+224	0	    Call General_Error_Trap
+225	0	    Exit Sub
+226	0	End Sub
+227	0	
+228	0	Private Sub cmdSTreatment_Click()
+229	0	On Error GoTo err_ST
+230	0	
+231	0	    DoCmd.OpenForm "Frm_Admin_SurfaceTreatment", acNormal
+232	0	Exit Sub
+233	0	
+234	0	err_ST:
+235	0	    Call General_Error_Trap
+236	0	    Exit Sub
+237	0	End Sub
+238	0	
+239	0	Private Sub cmdtechnology_Click()
+240	0	On Error GoTo err_T
+241	0	
+242	0	    DoCmd.OpenForm "Frm_Admin_Technology", acNormal
+243	0	Exit Sub
+244	0	
+245	0	err_T:
+246	0	    Call General_Error_Trap
+247	0	    Exit Sub
+248	0	End Sub
+249	0	
+250	0	Private Sub cmdPhase_Click()
+251	0	On Error GoTo err_Phase
+252	0	
+253	0	    DoCmd.OpenForm "Frm_Admin_Phase", acNormal
+254	0	Exit Sub
+255	0	
+256	0	err_Phase:
+257	0	    Call General_Error_Trap
+258	0	    Exit Sub
+259	0	End Sub
+260	0	
+261	0	Private Sub cmdProperty_Click()
+262	0	On Error GoTo err_Prop
+263	0	
+264	0	    DoCmd.OpenForm "Frm_Admin_Property", acNormal
+265	0	Exit Sub
+266	0	
+267	0	err_Prop:
+268	0	    Call General_Error_Trap
+269	0	    Exit Sub
+270	0	End Sub
+271	0	
+272	0	Private Sub cmdSlipping_Click()
+273	0	On Error GoTo err_Slip
+274	0	
+275	0	    DoCmd.OpenForm "Frm_Admin_Slipping", acNormal
+276	0	Exit Sub
+277	0	
+278	0	err_Slip:
+279	0	    Call General_Error_Trap
+280	0	    Exit Sub
+281	0	End Sub
+282	0	
+283	0	Private Sub cmdTemper_Click()
+284	0	
+285	0	On Error GoTo err_T
+286	0	
+287	0	    DoCmd.OpenForm "Frm_Admin_Temper", acNormal
+288	0	Exit Sub
+289	0	
+290	0	err_T:
+291	0	    Call General_Error_Trap
+292	0	    Exit Sub
+293	0	End Sub
+294	0	
+295	0	
+296	0	Private Sub cmdTexture_Click()
+297	0	On Error GoTo err_Tex
+298	0	
+299	0	    DoCmd.OpenForm "Frm_Admin_Texture", acNormal
+300	0	Exit Sub
+301	0	
+302	0	err_Tex:
+303	0	    Call General_Error_Trap
+304	0	    Exit Sub
+305	0	End Sub
+306	0	
+307	0	Private Sub cmdTypecodes_Click()
+308	0	On Error GoTo err_Tco
+309	0	
+310	0	    DoCmd.OpenForm "Frm_AdminMenu_Typecodes", acNormal
+311	0	Exit Sub
+312	0	
+313	0	err_Tco:
+314	0	    Call General_Error_Trap
+315	0	    Exit Sub
+316	0	End Sub
+317	0	
+318	0	Private Sub cmdWareCode_Click()
+319	0	On Error GoTo err_Wc
+320	0	
+321	0	    DoCmd.OpenForm "Frm_Admin_WareGroup", acNormal
+322	0	Exit Sub
+323	0	
+324	0	err_Wc:
+325	0	    Call General_Error_Trap
+326	0	    Exit Sub
+327	0	End Sub
+328	0	

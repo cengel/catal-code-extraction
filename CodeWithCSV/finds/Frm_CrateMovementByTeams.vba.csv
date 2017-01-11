@@ -1,0 +1,214 @@
+1	0	Option Compare Database
+2	0	Option Explicit
+3	0	Const RecSource = "SELECT * FROM [Store: Crate Movement by Teams]"
+4	0	
+5	0	Private Sub cboCrate_AfterUpdate()
+6	1	'new 2010
+7	0	On Error GoTo err_cboCrate
+8	0	
+9	0	    If Me![cboCrate] <> "" Then
+10	0	        If Me![cboFindTeam] <> "" And Me![cboDate] <> "" Then
+11	8	            Me.RecordSource = RecSource & " WHERE [MovedBy] = '" & Me![cboFindTeam] & "' AND Format([MovedOn], 'dd/mm/yyyy') = #" & Me![cboDate] & "# AND ([MovedFromCrate] = '" & Me![cboCrate] & "' OR [MovedToCrate] = '" & Me![cboCrate] & "')"
+12	0	            Me!lblFilter.caption = "Current Filter: " & Me![cboFindTeam] & ", " & Me![cboDate] & ", " & Me![cboCrate]
+13	0	        ElseIf Me![cboFindTeam] <> "" Then
+14	6	            Me.RecordSource = RecSource & " WHERE [MovedBy] = '" & Me![cboFindTeam] & "' AND ([MovedFromCrate] = '" & Me![cboCrate] & "' OR [MovedToCrate] = '" & Me![cboCrate] & "')"
+15	0	            Me!lblFilter.caption = "Current Filter: " & Me![cboFindTeam] & ", " & Me![cboCrate]
+16	0	        ElseIf Me![cboDate] <> "" Then
+17	6	            Me.RecordSource = RecSource & " WHERE Format([MovedOn], 'dd/mm/yyyy') = #" & Me![cboDate] & "# AND ([MovedFromCrate] = '" & Me![cboCrate] & "' OR [MovedToCrate] = '" & Me![cboCrate] & "')"
+18	0	            Me!lblFilter.caption = "Current Filter: " & Me![cboDate] & ", " & Me![cboCrate]
+19	0	        Else
+20	4	            Me.RecordSource = RecSource & " WHERE ([MovedFromCrate] = '" & Me![cboCrate] & "' OR [MovedToCrate] = '" & Me![cboCrate] & "')"
+21	0	            Me!lblFilter.caption = "Current Filter: " & Me![cboCrate]
+22	0	        End If
+23	1	        'Me.Requery
+24	0	    Else
+25	1	        'no crate info but keep other details if there
+26	0	        If Me![cboFindTeam] <> "" And Me![cboDate] <> "" Then
+27	4	            Me.RecordSource = RecSource & " WHERE [MovedBy] = '" & Me![cboFindTeam] & "' AND Format([MovedOn], 'dd/mm/yyyy') = #" & Me![cboDate] & "#"
+28	0	            Me!lblFilter.caption = "Current Filter: " & Me![cboFindTeam] & ", " & Me![cboDate]
+29	0	        ElseIf Me![cboFindTeam] <> "" Then
+30	2	            Me.RecordSource = RecSource & " WHERE [MovedBy] = '" & Me![cboFindTeam] & "'"
+31	0	            Me!lblFilter.caption = "Current Filter: " & Me![cboFindTeam]
+32	0	        ElseIf Me![cboDate] <> "" Then
+33	2	            Me.RecordSource = RecSource & " WHERE Format([MovedOn], 'dd/mm/yyyy') = #" & Me![cboDate] & "#"
+34	0	            Me!lblFilter.caption = "Current Filter: " & Me![cboDate]
+35	0	        Else
+36	0	            Me.RecordSource = RecSource
+37	0	            Me!lblFilter.caption = "Current Filter: none"
+38	0	        End If
+39	0	    End If
+40	0	
+41	0	Exit Sub
+42	0	
+43	0	err_cboCrate:
+44	0	    Call General_Error_Trap
+45	0	    Exit Sub
+46	0	End Sub
+47	0	
+48	0	Private Sub cboDate_AfterUpdate()
+49	1	'new 2010
+50	0	On Error GoTo err_cboDate
+51	0	
+52	0	    If Me![cboDate] <> "" Then
+53	0	        If Me![cboFindTeam] <> "" And Me![cboCrate] <> "" Then
+54	8	            Me.RecordSource = RecSource & " WHERE [MovedBy] = '" & Me![cboFindTeam] & "' AND Format([MovedOn], 'dd/mm/yyyy') = #" & Me![cboDate] & "# AND ([MovedFromCrate] = '" & Me![cboCrate] & "' OR [MovedToCrate] = '" & Me![cboCrate] & "')"
+55	0	            Me!lblFilter.caption = "Current Filter: " & Me![cboFindTeam] & ", " & Me![cboDate] & ", " & Me![cboCrate]
+56	0	        ElseIf Me![cboFindTeam] <> "" Then
+57	4	            Me.RecordSource = RecSource & " WHERE [MovedBy] = '" & Me![cboFindTeam] & "' AND Format([MovedOn], 'dd/mm/yyyy') = #" & Me![cboDate] & "#"
+58	0	            Me!lblFilter.caption = "Current Filter: " & Me![cboFindTeam] & ", " & Me![cboDate]
+59	0	        ElseIf Me![cboCrate] <> "" Then
+60	6	            Me.RecordSource = RecSource & " WHERE Format([MovedOn], 'dd/mm/yyyy') = #" & Me![cboDate] & "# AND ([MovedFromCrate] = '" & Me![cboCrate] & "' OR [MovedToCrate] = '" & Me![cboCrate] & "')"
+61	0	            Me!lblFilter.caption = "Current Filter: " & Me![cboDate] & ", " & Me![cboCrate]
+62	0	        Else
+63	2	            Me.RecordSource = RecSource & " WHERE Format([MovedOn], 'dd/mm/yyyy') = #" & Me![cboDate] & "#"
+64	0	            Me!lblFilter.caption = "Current Filter: " & Me![cboDate]
+65	0	        End If
+66	1	        'Me.Requery
+67	0	    Else
+68	0	        If Me![cboFindTeam] <> "" And Me![cboCrate] <> "" Then
+69	6	            Me.RecordSource = RecSource & " WHERE [MovedBy] = '" & Me![cboFindTeam] & "' AND ([MovedFromCrate] = '" & Me![cboCrate] & "' OR [MovedToCrate] = '" & Me![cboCrate] & "')"
+70	0	            Me!lblFilter.caption = "Current Filter: " & Me![cboFindTeam] & ", " & Me![cboCrate]
+71	0	        ElseIf Me![cboFindTeam] <> "" Then
+72	2	            Me.RecordSource = RecSource & " WHERE [MovedBy] = '" & Me![cboFindTeam] & "'"
+73	0	            Me!lblFilter.caption = "Current Filter: " & Me![cboFindTeam]
+74	0	        ElseIf Me![cboCrate] <> "" Then
+75	4	            Me.RecordSource = RecSource & " WHERE ([MovedFromCrate] = '" & Me![cboCrate] & "' OR [MovedToCrate] = '" & Me![cboCrate] & "')"
+76	0	            Me!lblFilter.caption = "Current Filter: " & Me![cboCrate]
+77	0	        Else
+78	0	            Me.RecordSource = RecSource
+79	0	            Me!lblFilter.caption = "Current Filter: none"
+80	0	        End If
+81	0	    End If
+82	0	
+83	0	Exit Sub
+84	0	
+85	0	err_cboDate:
+86	0	    Call General_Error_Trap
+87	0	    Exit Sub
+88	0	End Sub
+89	0	
+90	0	Private Sub cboFindTeam_AfterUpdate()
+91	1	'new 2010
+92	0	On Error GoTo err_cboTeam
+93	0	
+94	0	    If Me![cboFindTeam] <> "" Then
+95	0	        If Me![cboDate] <> "" And Me![cboCrate] <> "" Then
+96	8	            Me.RecordSource = RecSource & " WHERE [MovedBy] = '" & Me![cboFindTeam] & "' AND Format([MovedOn], 'dd/mm/yyyy') = #" & Me![cboDate] & "# AND ([MovedFromCrate] = '" & Me![cboCrate] & "' OR [MovedToCrate] = '" & Me![cboCrate] & "')"
+97	0	            Me!lblFilter.caption = "Current Filter: " & Me![cboFindTeam] & ", " & Me![cboDate] & ", " & Me![cboCrate]
+98	0	        ElseIf Me![cboCrate] <> "" Then
+99	6	            Me.RecordSource = RecSource & " WHERE [MovedBy] = '" & Me![cboFindTeam] & "' AND ([MovedFromCrate] = '" & Me![cboCrate] & "' OR [MovedToCrate] = '" & Me![cboCrate] & "')"
+100	0	            Me!lblFilter.caption = "Current Filter: " & Me![cboFindTeam] & ", " & Me![cboCrate]
+101	0	        ElseIf Me![cboDate] <> "" Then
+102	4	            Me.RecordSource = RecSource & " WHERE [MovedBy] = '" & Me![cboFindTeam] & "' AND Format([MovedOn], 'dd/mm/yyyy') = #" & Me![cboDate] & "#"
+103	0	            Me!lblFilter.caption = "Current Filter: " & Me![cboFindTeam] & ", " & Me![cboDate]
+104	0	        Else
+105	2	            Me.RecordSource = RecSource & " WHERE [MovedBy] = '" & Me![cboFindTeam] & "'"
+106	0	            Me!lblFilter.caption = "Current Filter: " & Me![cboFindTeam]
+107	0	        End If
+108	1	        'Me.Requery
+109	0	    Else
+110	0	        If Me![cboDate] <> "" And Me![cboCrate] <> "" Then
+111	6	            Me.RecordSource = RecSource & " WHERE Format([MovedOn], 'dd/mm/yyyy') = #" & Me![cboDate] & "# AND ([MovedFromCrate] = '" & Me![cboCrate] & "' OR [MovedToCrate] = '" & Me![cboCrate] & "')"
+112	0	            Me!lblFilter.caption = "Current Filter: " & Me![cboDate] & ", " & Me![cboCrate]
+113	0	        ElseIf Me![cboCrate] <> "" Then
+114	4	            Me.RecordSource = RecSource & " WHERE ([MovedFromCrate] = '" & Me![cboCrate] & "' OR [MovedToCrate] = '" & Me![cboCrate] & "')"
+115	0	            Me!lblFilter.caption = "Current Filter: " & Me![cboCrate]
+116	0	        ElseIf Me![cboDate] <> "" Then
+117	2	            Me.RecordSource = RecSource & " WHERE Format([MovedOn], 'dd/mm/yyyy') = #" & Me![cboDate] & "#"
+118	0	            Me!lblFilter.caption = "Current Filter: " & Me![cboDate]
+119	0	        Else
+120	0	            Me.RecordSource = RecSource
+121	0	            Me!lblFilter.caption = "Current Filter: none"
+122	0	        End If
+123	0	    End If
+124	0	
+125	0	Exit Sub
+126	0	
+127	0	err_cboTeam:
+128	0	    Call General_Error_Trap
+129	0	    Exit Sub
+130	0	End Sub
+131	0	
+132	0	Private Sub Command21_Click()
+133	0	On Error GoTo err_cmdClose_Click
+134	0	
+135	0	    DoCmd.Close acForm, Me.Name
+136	0	Exit Sub
+137	0	
+138	0	err_cmdClose_Click:
+139	0	    Call General_Error_Trap
+140	0	    Exit Sub
+141	0	End Sub
+142	0	
+143	0	Private Sub go_next_Click()
+144	0	On Error GoTo Err_go_next_Click
+145	0	
+146	0	
+147	0	    DoCmd.GoToRecord , , acNext
+148	0	
+149	0	Exit_go_next_Click:
+150	0	    Exit Sub
+151	0	
+152	0	Err_go_next_Click:
+153	0	    Call General_Error_Trap
+154	0	    Resume Exit_go_next_Click
+155	0	End Sub
+156	0	
+157	0	Private Sub go_previous2_Click()
+158	0	On Error GoTo Err_go_previous2_Click
+159	0	
+160	0	
+161	0	    DoCmd.GoToRecord , , acPrevious
+162	0	
+163	0	Exit_go_previous2_Click:
+164	0	    Exit Sub
+165	0	
+166	0	Err_go_previous2_Click:
+167	0	    Call General_Error_Trap
+168	0	    Resume Exit_go_previous2_Click
+169	0	End Sub
+170	0	
+171	0	Private Sub go_to_first_Click()
+172	0	On Error GoTo Err_go_to_first_Click
+173	0	
+174	0	
+175	0	    DoCmd.GoToRecord , , acFirst
+176	0	
+177	0	Exit_go_to_first_Click:
+178	0	    Exit Sub
+179	0	
+180	0	Err_go_to_first_Click:
+181	0	    Call General_Error_Trap
+182	0	    Resume Exit_go_to_first_Click
+183	0	End Sub
+184	0	
+185	0	Private Sub go_to_last_Click()
+186	0	On Error GoTo Err_go_last_Click
+187	0	
+188	0	
+189	0	    DoCmd.GoToRecord , , acLast
+190	0	
+191	0	Exit_go_last_Click:
+192	0	    Exit Sub
+193	0	
+194	0	Err_go_last_Click:
+195	0	    Call General_Error_Trap
+196	0	    Resume Exit_go_last_Click
+197	0	End Sub
+198	0	Private Sub cmdAll_Click()
+199	0	On Error GoTo Err_cmdAll_Click
+200	0	
+201	0	    Me.RecordSource = RecSource
+202	0	    Me.Requery
+203	0	    Me![cboFindTeam] = ""
+204	0	    Me![cboDate] = ""
+205	0	    Me![cboCrate] = ""
+206	0	
+207	0	Exit_cmdAll_Click:
+208	0	    Exit Sub
+209	0	
+210	0	Err_cmdAll_Click:
+211	0	    MsgBox Err.Description
+212	0	    Resume Exit_cmdAll_Click
+213	0	    
+214	0	End Sub
