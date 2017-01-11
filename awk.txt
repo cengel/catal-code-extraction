@@ -1,21 +1,25 @@
 # This script takes the *vba files and generates a csv file for each.
-### v 0.1
+# The first column is a count of the 's per line
+#
+# Version 0.2:
+# - removes field delimiter, so we print out the line, including 's and spaces
+# - adds a column with the line number for convenience
+# ce 9-1-2017
 
+### v 0.2
 for file in Code/*/*.vba;
 do
-  awk -F ''\''' '{gsub("%","%%"); printf gsub("'\''","'\''") "\t"; for (i = 2; i < NF; i++) printf $i " "; print $NF}' "$file" > $file".csv"
+  awk '{gsub("%","%%"); printf NR "\t"; printf gsub("'\''","'\''") "\t"; print}' "$file" > $file".csv"
 done
 
 # Explanation
-awk -F ''\''' ## use ' as field separator (we need to escape it)
-  ## awk fix: a single % makes printf choke so we make it two %%
-  '{gsub("%","%%");
+awk
+  '{gsub("%","%%"); ## fix: a single % makes printf choke so we make it two %%
+  printf NR ## print the line number
+   "\t"; ## print Tab delimiter
   ## here's the trick: we replace ' with itself (senseless)
   ## but gsub counts the number of replacements
   ## per line so we can print them!
   printf gsub("'\''","'\''")
-  ## print Tab delimiter, >> hoping that it is unique
-  "\t";
-  ## loop through each field per line and print
-  ## everything or everything after the first '
-  for (i = 2; i < NF; i++) printf $i " "; print $NF}'
+  "\t"; ## print Tab delimiter
+  print}' # print the current line
